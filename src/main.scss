@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css?family=EB+Garamond');
+$font-family-base: 'EB Garamond', sans-serif;
+
+@import "node_modules/bootstrap/scss/bootstrap";
+
+$slate-blue: #4f53d1;
+
+$ruby: #ff0a03;
+
+
+.bg-slate-blue {
+  background: $slate-blue;
+}
+
+
+.bg-ruby {
+  background: $ruby;
+}
+
+
+[data-elm-hot="true"] {
+  height: inherit;
+}
+
+
+.header {
+  position: sticky;
+  top: 0px;
+  background-color: white;
+  z-index: 1000;
+}
+
+
+.header-info-bank-logo {
+  width: 100px;
+}
+
+.header-logo {
+  width: 200px;
+}
+
+.header-search-box {
+  border-radius: 50px;
+}
+
+.nav-icon {
+  width: 35px;
+}
+
+.sort-asset {
+  height: 50px;
+}
+
+
+.stripe-logo {
+  width: 50px;
+}
