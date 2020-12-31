@@ -1,9 +1,6 @@
 module Transaction.ContributionsData exposing (Contribution, ContributionsData, decode)
 
 import Json.Decode as Decode exposing (Decoder)
-import Url.Parser exposing (Parser)
-
-
 
 type alias Contribution =
     { record : String
@@ -13,6 +10,7 @@ type alias Contribution =
     , amount: String
     , paymentMethod: String
     , verified: String
+    , refCode: Maybe String
     }
 
 type alias Aggregations =
@@ -23,6 +21,7 @@ type alias Aggregations =
     , qualifyingDonors: String
     , qualifyingFunds: String
     , totalTransactions: String
+    , totalInProcessing: String
     }
 
 type alias ContributionsData =
@@ -40,7 +39,7 @@ decode =
 
 aggregationsDecoder : Decode.Decoder Aggregations
 aggregationsDecoder =
-    Decode.map7
+    Decode.map8
         Aggregations
         (Decode.field "balance" Decode.string)
         (Decode.field "totalRaised" Decode.string)
@@ -49,11 +48,12 @@ aggregationsDecoder =
         (Decode.field "qualifyingDonors" Decode.string)
         (Decode.field "qualifyingFunds" Decode.string)
         (Decode.field "totalTransactions" Decode.string)
+        (Decode.field "totalInProcessing" Decode.string)
 
 
 contributionDecoder : Decode.Decoder Contribution
 contributionDecoder =
-    Decode.map7
+    Decode.map8
         Contribution
         (Decode.field "record" Decode.string)
         (Decode.field "datetime" Decode.string)
@@ -62,6 +62,7 @@ contributionDecoder =
         (Decode.field "amount" Decode.string)
         (Decode.field "paymentMethod" Decode.string)
         (Decode.field "verified" Decode.string)
+        (Decode.maybe <| Decode.field "refCode" Decode.string)
 
 
 listOfContributionsDecoder : Decode.Decoder (List Contribution)

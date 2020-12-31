@@ -157,7 +157,7 @@ toolBarLink glyph link = Grid.row
     [ Row.attrs [class "mt-3"]]
     [ Grid.col
         []
-        [ a [ Route.href (Route.LinkBuilder) ]
+        [ a [ Route.href (Route.LinkBuilder), class "nav-link" ]
             [ Grid.containerFluid
               [ class "text-center" ]
               [ Grid.row

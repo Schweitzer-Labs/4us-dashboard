@@ -15,19 +15,27 @@
             "elm/random": "1.0.0",
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
+            "pablohirafuji/elm-qrcode": "4.0.1",
             "rundis/elm-bootstrap": "5.2.0"
         },
         "indirect": {
             "avh4/elm-color": "1.0.0",
+            "danfishgold/base64-bytes": "1.1.0",
             "elm/bytes": "1.0.8",
-            "elm/file": "1.0.5",
-            "elm/virtual-dom": "1.0.2"
+            "elm/regex": "1.0.0",
+            "elm/svg": "1.0.1",
+            "elm/virtual-dom": "1.0.2",
+            "elm-community/list-extra": "8.2.4",
+            "folkertdev/elm-flate": "2.0.4",
+            "justgook/elm-image": "4.0.0"
         }
     },
     "test-dependencies": {
         "direct": {
             "elm-explorations/test": "1.0.0"
         },
-        "indirect": {}
+        "indirect": {
+            "elm/file": "1.0.5"
+        }
     }
 }

@@ -107,6 +107,9 @@ update msg model =
         ( GotHomeMsg subMsg, Home home ) ->
             Home.update subMsg home
                 |> updateWith Home GotHomeMsg model
+        ( GotLinkBuilderMsg subMsg, LinkBuilder linkBuilder ) ->
+            LinkBuilder.update subMsg linkBuilder
+                |> updateWith LinkBuilder GotLinkBuilderMsg model
 
         ( GotSession session, Redirect _ ) ->
             ( Redirect session

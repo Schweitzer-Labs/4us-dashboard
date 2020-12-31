@@ -39,6 +39,7 @@ type alias Model =
     , qualifyingDonors: String
     , qualifyingFunds: String
     , totalTransactions: String
+    , totalInProcessing: String
     }
 
 
@@ -48,13 +49,14 @@ init session =
     ( { session = session
       , timeZone = Time.utc
       , contributions = []
-      , balance = "0"
-      , totalRaised = "0"
-      , totalSpent = "0"
-      , totalDonors = "0"
-      , qualifyingDonors = "0"
-      , qualifyingFunds = "0"
-      , totalTransactions = "0"
+      , balance = ""
+      , totalRaised = ""
+      , totalSpent = ""
+      , totalDonors = ""
+      , qualifyingDonors = ""
+      , qualifyingFunds = ""
+      , totalTransactions = ""
+      , totalInProcessing = ""
       }
     , send
     )
@@ -70,7 +72,7 @@ view model =
         div
             []
             [ Banner.container [] <| aggsContainer model
-            , Content.container <| contributionsContainer model.contributions
+            , Content.container <| [ contributionsContainer model.contributions ]
             ]
     }
 
@@ -99,7 +101,7 @@ aggsDataContainer model = Grid.containerFluid
     [ Grid.row []
         <| List.map agg
            [ ("Balance", dollar model.balance)
-           , ("Total pending", dollar model.totalRaised)
+           , ("Total pending", dollar model.totalInProcessing)
            , ("Total raised", dollar model.totalRaised)
            , ("Total spent", dollar model.totalSpent)
            , ("Total donors", model.totalDonors)
@@ -149,6 +151,7 @@ contributionsTable contributions
                       , "Processor"
                       , "Status"
                       , "Verified"
+                      , "Reference Code"
                       ]
         , tbody = Table.tbody [] <| List.map contributionRow contributions
         }
@@ -178,6 +181,7 @@ contributionRow c =
             else Asset.minusCircleGlyph [class "text-warning"]
           ]
         , Table.td [] [ Asset.circleCheckGlyph [class "text-success"]]
+        , Table.td [] [ text <| Maybe.withDefault "" c.refCode ]
         ]
 
 
@@ -201,12 +205,12 @@ update msg model =
             ( { model | session = session }, Cmd.none )
         LoadContributionsData res ->
             case res of
-                  Ok str ->
-                      let aggregates = str.aggregations
+                  Ok data ->
+                      let aggregates = data.aggregations
                       in
                       (
                         { model
-                        | contributions = str.contributions
+                        | contributions = data.contributions
                         , balance = aggregates.balance
                         , totalRaised = aggregates.totalRaised
                         , totalSpent = aggregates.totalSpent
@@ -214,6 +218,7 @@ update msg model =
                         , qualifyingDonors = aggregates.qualifyingDonors
                         , qualifyingFunds = aggregates.qualifyingFunds
                         , totalTransactions = aggregates.totalTransactions
+                        , totalInProcessing = aggregates.totalInProcessing
                         }
                       , Cmd.none
                       )
@@ -225,7 +230,7 @@ update msg model =
 
 getContributionsData : Http.Request ContributionsData
 getContributionsData =
-  Api.get (Endpoint.contributions "3e947da3-c8bd-4881-a9aa-5afb57ef5b12") Nothing ContributionsData.decode
+  Api.get (Endpoint.contributions Session.committeeId) Nothing ContributionsData.decode
 
 send : Cmd Msg
 send =
@@ -258,20 +263,3 @@ subscriptions model =
 toSession : Model -> Session
 toSession model =
     model.session
-
-
-type alias Aggregates =
-    { balance: String
-    , totalRaised: String
-    , totalSpent: String
-    , totalDonors: String
-    , qualifyingDonors: String
-    , qualifyingFunds: String
-    , totalTransactions: String
-    }
-
-type alias ContribResponse =
-    { aggregates: Aggregates
-    , contributions: List Contribution
-    }
-

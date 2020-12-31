@@ -89,6 +89,10 @@ $banner-home-height : 65px;
   width: 50px;
 }
 
-a:hover, a {
+.nav-link:hover, .nav-link {
   color: $black;
+}
+
+.max-height-90 {
+  min-height: 90px;
 }
