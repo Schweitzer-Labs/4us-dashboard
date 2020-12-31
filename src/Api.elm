@@ -229,7 +229,6 @@ delete url cred body decoder =
         , withCredentials = False
         }
 
-
 login : Http.Body -> Decoder (Cred -> a) -> Http.Request a
 login body decoder =
     post Endpoint.login Nothing body (Decode.field "user" (decoderFromCred decoder))
@@ -243,7 +242,6 @@ register body decoder =
 settings : Cred -> Http.Body -> Decoder (Cred -> a) -> Http.Request a
 settings cred body decoder =
     put Endpoint.user cred body (Decode.field "user" (decoderFromCred decoder))
-
 
 decoderFromCred : Decoder (Cred -> a) -> Decoder a
 decoderFromCred decoder =

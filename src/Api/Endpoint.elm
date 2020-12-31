@@ -1,7 +1,7 @@
 module Api.Endpoint exposing (Endpoint, articles, feed, follow, login, profiles, request, tags, user, users, contributions)
 
 import Http
-import Url.Builder exposing (QueryParameter)
+import Url.Builder exposing (QueryParameter, string)
 import Username exposing (Username)
 
 
@@ -34,7 +34,7 @@ request config =
 -- TYPES
 
 
-{-| Get a URL to the Conduit API.
+{-| Get a URL to the 4US API.
 
 This is not publicly exposed, because we want to make sure the only way to get one of these URLs is from this module.
 
@@ -60,9 +60,9 @@ url paths queryParams =
 
 
 -- ENDPOINTS
-contributions : List QueryParameter -> Endpoint
-contributions params =
-    url [ "contributions" ] params
+contributions : String -> Endpoint
+contributions committeeId =
+    url [ "contributions" ] [string "committeeId" committeeId]
 
 
 login : Endpoint

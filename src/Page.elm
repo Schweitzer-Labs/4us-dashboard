@@ -1,13 +1,13 @@
 module Page exposing (Page(..), view, viewErrors)
 
-import Asset as Asset
+import Asset as Asset exposing (Image)
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser exposing (Document)
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Form.Input as Input
-import Html exposing (Html, a, button, div, footer, h1, h2, i, img, li, nav, p, span, text, ul)
+import Html exposing (Html, a, button, div, footer, h1, h2, h3, i, img, li, nav, p, span, text, ul)
 import Html.Attributes as Attr exposing (class, classList, href, style)
 import Html.Events exposing (onClick)
 import Route exposing (Route)
@@ -25,6 +25,7 @@ under Other.
 type Page
     = Other
     | Home
+    | LinkBuilder
     | Login
     | Register
     | Settings
@@ -44,12 +45,14 @@ in the header. (This comes up during slow page transitions.)
 view : Maybe Viewer -> Page -> { title : String, content : Html msg } -> Document msg
 view maybeViewer page { title, content } =
     { title = title ++ " - Transactions"
-    , body = viewHeader page maybeViewer :: viewContent content :: [ viewFooter ]
+    , body = viewHeader page maybeViewer
+        :: toolBarContainer
+        :: contentContainer content
+        :: [ viewFooter ]
     }
 
-viewContent : Html msg -> Html msg
-viewContent content = div [class "content"] [content]
-
+contentContainer : Html msg -> Html msg
+contentContainer content = div [] [content]
 
 viewHeader : Page -> Maybe Viewer -> Html msg
 viewHeader page maybeViewer =
@@ -80,7 +83,6 @@ ruleInfoRow =
     Grid.row
     [Row.centerXs]
     [ Grid.col [Col.xs4, Col.attrs [class "border-right", class "text-center"]] [text "Comptroller"]
-    --, Grid.col [Col.xs4, Col.attrs [class "border-right", class "text-center"]] [text "Option A"]
     , Grid.col [Col.xs4]
         [ img
             [Asset.src Asset.amalgamatedLogo, class "header-info-bank-logo"] []
@@ -89,7 +91,8 @@ ruleInfoRow =
 
 
 logoContent : Html msg
-logoContent = img [Asset.src Asset.usLogo, class "header-logo"] []
+logoContent = a [Route.href Route.Home]
+                [ img [Asset.src Asset.usLogo, class "header-logo"] [] ]
 
 
 zeroSpacing : List (Html.Attribute msg)
@@ -112,38 +115,8 @@ searchBox = Input.text [Input.attrs [class "header-search-box"]]
 searchButton : Html msg
 searchButton = img [Asset.src Asset.search, class "nav-icon"] []
 
-blockchainButton : Html msg
-blockchainButton = img [Asset.src Asset.blockchainDiamond, class "nav-icon"] []
-
 gearButton : Html msg
 gearButton = img [Asset.src Asset.gearHires, class "nav-icon"] []
-
-
-
-
-
-viewMenu : Page -> Maybe Viewer -> List (Html msg)
-viewMenu page maybeViewer =
-    let
-        linkTo =
-            navbarLink page
-    in
-    case maybeViewer of
-        Just viewer ->
-            let
-                username =
-                    Viewer.username viewer
-
-                avatar =
-                    Viewer.avatar viewer
-            in
-            [ div [] [text "view menu "]
-            ]
-
-        Nothing ->
-            [ div [] [text "nothing menu "]
-            ]
-
 
 viewFooter : Html msg
 viewFooter =
@@ -161,6 +134,60 @@ isActive page route =
             True
         _ ->
             False
+
+-- TOOLBAR
+
+toolBarContainer : Html msg
+toolBarContainer = div [class "tool-bar-container"] [toolBarGrid]
+
+toolBarGrid : Html msg
+toolBarGrid = Grid.containerFluid
+    [ class "text-center mt-2"]
+    [ h3 [class "pt-2 pb-2"] [text "TOOLS"]
+    , toolBarLink (Asset.linkGlyph [class "tool-glyph"]) "Link Builder"
+    , toolBarItem Asset.calendar "Calendar"
+    , toolBarItem Asset.person "Contributions"
+    , toolBarItem Asset.house "Disbursements"
+    , toolBarItem Asset.binoculars "Needs review"
+    , toolBarItem Asset.documents "Documents"
+    ]
+
+toolBarLink : Html msg -> String -> Html msg
+toolBarLink glyph link = Grid.row
+    [ Row.attrs [class "mt-3"]]
+    [ Grid.col
+        []
+        [ a [ Route.href (Route.LinkBuilder) ]
+            [ Grid.containerFluid
+              [ class "text-center" ]
+              [ Grid.row
+                  [ Row.centerXs ]
+                  [ Grid.col [] [glyph] ]
+              , Grid.row
+                  []
+                  [ Grid.col [] [text link] ]
+              ]
+            ]
+        ]
+    ]
+
+
+toolBarItem : Image -> String ->  Html msg
+toolBarItem image label = Grid.row
+    [ Row.attrs [class "mt-3"]]
+    [ Grid.col
+        []
+        [ Grid.containerFluid
+            [ class "text-center" ]
+            [ Grid.row
+                [ Row.centerXs ]
+                [ Grid.col [] [img [Asset.src image, class "tool-asset text-center"] []] ]
+            , Grid.row
+                []
+                [ Grid.col [] [text label] ]
+            ]
+        ]
+    ]
 
 
 {-| Render dismissable errors. We use this all over the place!

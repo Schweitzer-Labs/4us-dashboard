@@ -19,6 +19,7 @@ module Asset exposing
     , circleCheckGlyph
     , sackDollarGlyph
     , minusCircleGlyph
+    , linkGlyph
     )
 
 {-| Assets, such as images, videos, and audio. (We only have images for now.)
@@ -101,8 +102,6 @@ defaultAvatar : Image
 defaultAvatar =
     image "smiley-cyrus.jpg"
 
-
-
 image : String -> Image
 image filename =
     Image ("/assets/images/" ++ filename)
@@ -130,8 +129,10 @@ circleCheckGlyph = glyph "fa-check-circle"
 sackDollarGlyph : List (Attribute msg) -> Html msg
 sackDollarGlyph = glyph "fa-sack-dollar"
 
-
 minusCircleGlyph : List (Attribute msg) -> Html msg
 minusCircleGlyph = glyph "fa-minus-circle"
 
+
+linkGlyph : List (Attribute msg) -> Html msg
+linkGlyph = glyph "fa-link"
 

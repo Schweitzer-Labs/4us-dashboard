@@ -15,12 +15,14 @@ import Username exposing (Username)
 
 type Route
     = Home
+    | LinkBuilder
 
 
 parser : Parser (Route -> a) a
 parser =
     oneOf
         [ Parser.map Home Parser.top
+        , Parser.map LinkBuilder (s "link-builder")
         ]
 
 
@@ -52,7 +54,7 @@ fromUrl url =
 
 routeToString : Route -> String
 routeToString page =
-    "#/" ++ String.join "/" (routeToPieces page)
+    "#" ++ String.join "/" (routeToPieces page)
 
 
 routeToPieces : Route -> List String
@@ -60,3 +62,5 @@ routeToPieces page =
     case page of
         Home ->
             []
+        LinkBuilder ->
+            ["link-builder"]

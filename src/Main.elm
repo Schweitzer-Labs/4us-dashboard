@@ -8,6 +8,7 @@ import Json.Decode exposing (Value)
 import Page
 import Page.Blank as Blank
 import Page.Home as Home
+import Page.LinkBuilder as LinkBuilder
 import Page.NotFound as NotFound
 import Route exposing (Route)
 import Session exposing (Session)
@@ -21,6 +22,7 @@ type Model
     = NotFound Session
     | Redirect Session
     | Home Home.Model
+    | LinkBuilder LinkBuilder.Model
 
 
 init : Maybe Viewer -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -35,6 +37,7 @@ type Msg
     = ChangedUrl Url
     | ClickedLink Browser.UrlRequest
     | GotHomeMsg Home.Msg
+    | GotLinkBuilderMsg LinkBuilder.Msg
     | GotSession Session
 
 toSession : Model -> Session
@@ -48,6 +51,9 @@ toSession page =
 
         Home home ->
             Home.toSession home
+
+        LinkBuilder session ->
+            LinkBuilder.toSession session
 
 
 changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -63,7 +69,9 @@ changeRouteTo maybeRoute model =
         Just Route.Home ->
             Home.init session
                 |> updateWith Home GotHomeMsg model
-
+        Just Route.LinkBuilder ->
+            LinkBuilder.init session
+                |> updateWith LinkBuilder GotLinkBuilderMsg model
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -144,6 +152,9 @@ view model =
         Home home ->
             viewPage Page.Home GotHomeMsg (Home.view home)
 
+        LinkBuilder linkBuilder ->
+            viewPage Page.LinkBuilder GotLinkBuilderMsg (LinkBuilder.view linkBuilder)
+
 
 
 
@@ -161,6 +172,9 @@ subscriptions model =
 
         Home home ->
             Sub.map GotHomeMsg (Home.subscriptions home)
+
+        LinkBuilder linkBuilder ->
+            Sub.map GotLinkBuilderMsg (LinkBuilder.subscriptions linkBuilder)
 
 
 

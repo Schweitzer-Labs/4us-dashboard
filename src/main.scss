@@ -23,12 +23,42 @@ $ruby: #ff0a03;
 }
 
 
+$vertical-offset : 150px;
+$banner-home-height : 65px;
+
 .header {
   position: sticky;
   top: 0px;
   background-color: white;
   z-index: 1000;
+  height: $vertical-offset;
 }
+
+.banner-container {
+  position: sticky;
+  top: $vertical-offset;
+  z-index: 1000;
+}
+
+.banner-home {
+  height: $banner-home-height;
+}
+
+.content-container {
+  padding-left: 150px;
+}
+
+.tool-bar-container {
+  position: fixed;
+  top: $banner-home-height + $vertical-offset;
+}
+
+
+.sticky-th {
+  // make up for myserious extra pixel
+  top: $banner-home-height + $vertical-offset - 1;
+}
+
 
 
 .header-info-bank-logo {
@@ -47,11 +77,18 @@ $ruby: #ff0a03;
   width: 35px;
 }
 
-.sort-asset {
+.tool-asset {
   height: 50px;
 }
 
+.tool-glyph {
+  font-size: 30px;
+}
 
 .stripe-logo {
   width: 50px;
+}
+
+a:hover, a {
+  color: $black;
 }

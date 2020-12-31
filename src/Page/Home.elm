@@ -5,7 +5,9 @@ module Page.Home exposing (Model, Msg, init, subscriptions, toSession, update, v
 
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
+import Banner
 import Browser.Dom as Dom
+import Content
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, classList, href, id, placeholder)
 import Session exposing (Session)
@@ -15,12 +17,11 @@ import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
-import Bootstrap.Table as Table
+import Bootstrap.Table as Table exposing (Cell)
 import Asset as Asset exposing (Image)
 import Http
-import Random
 import Task exposing (Task)
-import Json.Decode as Decode exposing (Decoder, field, string)
+import Transaction.ContributionsData as ContributionsData exposing (Contribution, ContributionsData)
 
 
 
@@ -41,15 +42,6 @@ type alias Model =
     }
 
 
-type alias Contribution =
-    { record : String
-    , datetime: String
-    , rule: String
-    , entityName: String
-    , amount: String
-    , paymentMethod: String
-    , verified: String
-    }
 
 init : Session -> ( Model, Cmd Msg )
 init session =
@@ -71,27 +63,25 @@ init session =
 
 -- VIEW
 
-
 view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "4US"
     , content =
         div
             []
-            [ aggsContainer model
-            , transactionsContainer model
+            [ Banner.container [] <| aggsContainer model
+            , Content.container <| contributionsContainer model.contributions
             ]
     }
 
 aggsContainer : Model -> Html msg
-aggsContainer model = Grid.containerFluid
-    [ class "bg-slate-blue text-white font-weight-bold", Spacing.mt3 ]
-    [ Grid.row
+aggsContainer model =
+    Grid.row
         [ Row.attrs [class "align-items-center"] ]
-        [ Grid.col [Col.xs2] [ aggsTitleContainer ]
-        , Grid.col [Col.attrs [Spacing.pr0]] [ aggsDataContainer model ]
+        [ Grid.col [Col.xs2] [aggsTitleContainer]
+        , Grid.col [Col.attrs [Spacing.pr0]] [aggsDataContainer model]
         ]
-    ]
+
 
 aggsTitleContainer : Html msg
 aggsTitleContainer = Grid.containerFluid
@@ -125,81 +115,52 @@ agg (name, number) = Grid.col
     , Grid.row [Row.attrs [class "border-top", Spacing.pt1, Spacing.pb1]] [Grid.col [] [text number]]
     ]
 
-transactionsContainer : Model -> Html msg
-transactionsContainer model =
-    Grid.containerFluid
-        []
-        [ transactionsLabelContainer
-        , Grid.row
+
+
+-- Contributions
+
+contributionsContainer : List Contribution -> Html msg
+contributionsContainer contributions =
+        Grid.row
             []
-            [ Grid.col [Col.xs1] [txnSortContainer]
-            , Grid.col [] [txnDataContainer model ]
+            [ Grid.col [] [contributionsTable contributions ]
             ]
-         ]
-
-transactionsLabelContainer : Html msg
-transactionsLabelContainer =
-    Grid.row
-        [ Row.attrs [class "align-items-center"] ]
-        [ Grid.col [Col.xs1 ] [h2 [class "text-center"] [text "Tools"]]
-        , Grid.col [] []
-        ]
-
-
-txnSortContainer : Html msg
-txnSortContainer = Grid.containerFluid
-    [ class "text-center mt-2"]
-    [ txnSort Asset.calendar "Calendar"
-    , txnSort Asset.person "Contributions"
-    , txnSort Asset.house "Disbursements"
-    , txnSort Asset.binoculars "Needs review"
-    , txnSort Asset.documents "Documents"
-    ]
-
-txnSort : Image -> String ->  Html msg
-txnSort image label = Grid.row
-    [ Row.attrs [class "mt-3"]]
-    [ Grid.col
-        []
-        [ Grid.containerFluid
-            [ class "text-center" ]
-            [ Grid.row
-                [ Row.centerXs ]
-                [ Grid.col [] [img [Asset.src image, class "sort-asset text-center"] []] ]
-            , Grid.row
-                []
-                [ Grid.col [] [text label] ]
-            ]
-        ]
-    ]
 
 dollar : String -> String
 dollar str = "$" ++ str
 
-txnDataContainer : Model -> Html msg
-txnDataContainer model = Table.simpleTable
-    ( Table.simpleThead
-        [ Table.th [] [ text "Record"]
-        , Table.th [] [ text "Date / Time"]
-        , Table.th [] [ text "Rule"]
-        , Table.th [] [ text "Entity name"]
-        , Table.th [] [ text "Amount"]
-        , Table.th [] [ text "Payment Method"]
-        , Table.th [] [ text "Processor"]
-        , Table.th [] [ text "Status"]
-        , Table.th [] [ text "Verified"]
-        ]
-    , Table.tbody [] <| List.map contributionRow model.contributions
-    )
+-- CONTRIBUTIONS
 
+contributionsTable : List Contribution -> Html msg
+contributionsTable contributions
+    = Table.table
+        { options = [Table.attr <| class "main-table border-left"]
+        , thead = Table.thead
+                  []
+                  <| List.singleton
+                  <| Table.tr []
+                  <| List.map stickyTh
+                      [ "Record"
+                      , "Date / Time"
+                      , "Rule"
+                      , "Entity name"
+                      , "Amount"
+                      , "Payment Method"
+                      , "Processor"
+                      , "Status"
+                      , "Verified"
+                      ]
+        , tbody = Table.tbody [] <| List.map contributionRow contributions
+        }
 
+stickyTh : String -> Cell msg
+stickyTh label = Table.th [Table.cellAttr <| class "sticky-top sticky-th bg-white shadow-sm"] [ text label]
 
 stringToBool : String -> Bool
 stringToBool str =
     case str of
         "true" -> True
         _ -> False
-
 
 contributionRow : Contribution -> Table.Row msg
 contributionRow c =
@@ -220,8 +181,6 @@ contributionRow c =
         ]
 
 
--- TABS
-
 -- TAGS
 
 -- UPDATE
@@ -231,12 +190,7 @@ type ContributionId = ContributionId String
 
 type Msg
     = GotSession Session
-    | GetContributions ContributionId
-    | GotContributionResponse (Result Http.Error String)
-    | GotContributionResponseFailure
-    | Roll
-    | NewFace Int
-    | LoadMetadata (Result Http.Error Metadata)
+    | LoadContributionsData (Result Http.Error ContributionsData)
 
 
 
@@ -245,21 +199,7 @@ update msg model =
     case msg of
         GotSession session ->
             ( { model | session = session }, Cmd.none )
-        GotContributionResponse res ->
-            case res of
-              Ok str ->
-                  ( model, Cmd.none )
-              Err _ ->
-                  ( model, Cmd.none )
-        Roll ->
-              ( model
-              , Random.generate NewFace (Random.int 1 6)
-              )
-        NewFace newFace ->
-          ( { model | balance = String.fromInt newFace }
-          , Cmd.none
-          )
-        LoadMetadata res ->
+        LoadContributionsData res ->
             case res of
                   Ok str ->
                       let aggregates = str.aggregations
@@ -279,74 +219,17 @@ update msg model =
                       )
                   Err _ ->
                       ( model, Cmd.none )
-        _ ->
-            ( model, Cmd.none )
 
 
 -- HTTP
 
-getMetadata : Http.Request Metadata
-getMetadata =
-  Http.get "http://localhost:5000/contributions?committeeId=3e947da3-c8bd-4881-a9aa-5afb57ef5b12" decodeMetadata
-
-
-type alias Aggregations =
-    { balance: String
-    , totalRaised: String
-    , totalSpent: String
-    , totalDonors: String
-    , qualifyingDonors: String
-    , qualifyingFunds: String
-    , totalTransactions: String
-    }
-
-type alias Metadata =
-  { contributions : List Contribution
-  , aggregations : Aggregations
-  }
-
-
-decodeMetadata : Decode.Decoder Metadata
-decodeMetadata =
-  Decode.map2
-    Metadata
-    (Decode.field "transactions" listOfRecordsDecoder)
-    (Decode.field "aggregates" aggregationsDecoder)
-
-
-aggregationsDecoder : Decode.Decoder Aggregations
-aggregationsDecoder =
-    Decode.map7
-        Aggregations
-        (Decode.field "balance" Decode.string)
-        (Decode.field "totalRaised" Decode.string)
-        (Decode.field "totalSpent" Decode.string)
-        (Decode.field "totalDonors" Decode.string)
-        (Decode.field "qualifyingDonors" Decode.string)
-        (Decode.field "qualifyingFunds" Decode.string)
-        (Decode.field "totalTransactions" Decode.string)
-
-
-recordDecoder : Decode.Decoder Contribution
-recordDecoder =
-    Decode.map7
-        Contribution
-        (Decode.field "record" Decode.string)
-        (Decode.field "datetime" Decode.string)
-        (Decode.field "rule" Decode.string)
-        (Decode.field "entityName" Decode.string)
-        (Decode.field "amount" Decode.string)
-        (Decode.field "paymentMethod" Decode.string)
-        (Decode.field "verified" Decode.string)
-
-
-listOfRecordsDecoder : Decode.Decoder (List Contribution)
-listOfRecordsDecoder =
-    Decode.list recordDecoder
+getContributionsData : Http.Request ContributionsData
+getContributionsData =
+  Api.get (Endpoint.contributions "3e947da3-c8bd-4881-a9aa-5afb57ef5b12") Nothing ContributionsData.decode
 
 send : Cmd Msg
 send =
-  Http.send LoadMetadata getMetadata
+  Http.send LoadContributionsData getContributionsData
 
 
 
