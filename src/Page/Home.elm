@@ -9,9 +9,8 @@ import Banner
 import Browser.Dom as Dom
 import Content
 import DataTable
-import Dict exposing (Dict)
 import Html exposing (..)
-import Html.Attributes exposing (attribute, class, classList, href, id, placeholder)
+import Html.Attributes exposing (class)
 import Session exposing (Session)
 import Task exposing (Task)
 import Time

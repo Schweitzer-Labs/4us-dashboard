@@ -1,6 +1,7 @@
 module DataTable exposing (view)
 
 import Bootstrap.Table as Table exposing (Cell)
+import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Html, div, img, span, text)
 import Html.Attributes exposing (class)
 
@@ -8,7 +9,9 @@ import Html.Attributes exposing (class)
 
 view : List String -> (a -> (List (String, Html msg))) -> List a -> Html msg
 view labels mapper data = Table.table
-    { options = [Table.attr <| class "main-table border-left"]
+    { options =
+        [ Table.attr <| class "main-table border-left"
+        , Table.striped, Table.hover]
     , thead = Table.thead
               []
               <| List.singleton
@@ -25,4 +28,5 @@ stickyTh label = Table.th [Table.cellAttr <| class "sticky-top sticky-th bg-whit
 dataRow : List (String, (Html msg)) -> Table.Row msg
 dataRow data =
     Table.tr []
-        <| List.map (\(label, content) -> Table.td [] [ content ]) data
+        <| List.map (\(label, content) ->
+            Table.td [ Table.cellAttr <| Spacing.p3] [ content ]) data

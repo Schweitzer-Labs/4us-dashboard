@@ -5,11 +5,11 @@ module Page.Disbursements exposing (Model, Msg, init, subscriptions, toSession, 
 
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
+import Asset
 import Banner
 import Browser.Dom as Dom
 import Content
 import DataTable
-import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Session exposing (Session)
@@ -138,10 +138,11 @@ labels =
     [ "Record"
     , "Date / Time"
     , "Entity Name"
-    , "Address"
     , "Amount"
     , "Purpose"
-    , "Record Date"
+    , "Payment Method"
+    , "Status"
+    , "Verified"
     ]
 
 disbursementsTable : List Disbursement -> Html msg
@@ -155,26 +156,28 @@ stringToBool str =
         _ -> False
 
 
+oneLineAddressFromDisbursement : Disbursement -> String
+oneLineAddressFromDisbursement d
+    = d.addressLine1
+    ++ ", "
+    ++ d.addressLine2
+    ++ ", "
+    ++ d.city
+    ++ ", "
+    ++ d.state
+    ++ " "
+    ++ d.postalCode
+
 disbursementRowMap : Disbursement -> (List (String, (Html msg)))
 disbursementRowMap d =
-    let
-        address = d.addressLine1
-            ++ ", "
-            ++ d.addressLine2
-            ++ ","
-            ++ d.city
-            ++ ", "
-            ++ d.state
-            ++ " "
-            ++ d.postalCode
-    in
         [ ("Record", text d.recordNumber)
         , ("Date / Time", text d.date)
         , ("Entity Name", text d.entityName)
-        , ("Address", text address)
         , ("Amount", span [class "text-failure font-weight-bold"] [text <| dollar d.amount])
         , ("Purpose", text d.purposeCode)
-        , ("Record Date", text d.date)
+        , ("Payment Method", span [class "text-failure font-weight-bold"] [text <| dollar d.amount])
+        , ("Status",  Asset.circleCheckGlyph [class "text-success"])
+        , ("Verified", Asset.circleCheckGlyph [class "text-success"])
         ]
 
 
