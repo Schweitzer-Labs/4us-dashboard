@@ -26,6 +26,7 @@ type Page
     = Other
     | Home
     | LinkBuilder
+    | Disbursements
     | Login
     | Register
     | Settings
@@ -144,20 +145,24 @@ toolBarGrid : Html msg
 toolBarGrid = Grid.containerFluid
     [ class "text-center mt-2"]
     [ h3 [class "pt-2 pb-2"] [text "TOOLS"]
-    , toolBarLink (Asset.linkGlyph [class "tool-glyph"]) "Link Builder"
     , toolBarItem Asset.calendar "Calendar"
     , toolBarItem Asset.person "Contributions"
-    , toolBarItem Asset.house "Disbursements"
-    , toolBarItem Asset.binoculars "Needs review"
+    , toolBarLink (toolBarAsset Asset.house) Route.Disbursements "Disbursements"
     , toolBarItem Asset.documents "Documents"
+    , toolBarLink (Asset.linkGlyph [class "tool-glyph"]) Route.LinkBuilder "Link Builder"
+    , toolBarItem Asset.binoculars "Needs review"
     ]
 
-toolBarLink : Html msg -> String -> Html msg
-toolBarLink glyph link = Grid.row
+toolBarAsset : Image -> Html msg
+toolBarAsset image =
+    (img [Asset.src image, class "tool-asset"] [])
+
+toolBarLink : Html msg -> Route -> String -> Html msg
+toolBarLink glyph route label = Grid.row
     [ Row.attrs [class "mt-3"]]
     [ Grid.col
         []
-        [ a [ Route.href (Route.LinkBuilder), class "nav-link" ]
+        [ a [ Route.href route, class "nav-link" ]
             [ Grid.containerFluid
               [ class "text-center" ]
               [ Grid.row
@@ -165,7 +170,7 @@ toolBarLink glyph link = Grid.row
                   [ Grid.col [] [glyph] ]
               , Grid.row
                   []
-                  [ Grid.col [] [text link] ]
+                  [ Grid.col [] [text label] ]
               ]
             ]
         ]

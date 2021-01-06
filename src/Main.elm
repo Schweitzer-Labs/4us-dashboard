@@ -10,6 +10,7 @@ import Page.Blank as Blank
 import Page.Home as Home
 import Page.LinkBuilder as LinkBuilder
 import Page.NotFound as NotFound
+import Page.Disbursements as Disbursements
 import Route exposing (Route)
 import Session exposing (Session)
 import Url exposing (Url)
@@ -23,6 +24,7 @@ type Model
     | Redirect Session
     | Home Home.Model
     | LinkBuilder LinkBuilder.Model
+    | Disbursements Disbursements.Model
 
 
 init : Maybe Viewer -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -38,6 +40,7 @@ type Msg
     | ClickedLink Browser.UrlRequest
     | GotHomeMsg Home.Msg
     | GotLinkBuilderMsg LinkBuilder.Msg
+    | GotDisbursementsMsg Disbursements.Msg
     | GotSession Session
 
 toSession : Model -> Session
@@ -54,6 +57,9 @@ toSession page =
 
         LinkBuilder session ->
             LinkBuilder.toSession session
+
+        Disbursements session ->
+            Disbursements.toSession session
 
 
 changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -72,6 +78,9 @@ changeRouteTo maybeRoute model =
         Just Route.LinkBuilder ->
             LinkBuilder.init session
                 |> updateWith LinkBuilder GotLinkBuilderMsg model
+        Just Route.Disbursements ->
+            Disbursements.init session
+                |> updateWith Disbursements GotDisbursementsMsg model
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -107,9 +116,14 @@ update msg model =
         ( GotHomeMsg subMsg, Home home ) ->
             Home.update subMsg home
                 |> updateWith Home GotHomeMsg model
+
         ( GotLinkBuilderMsg subMsg, LinkBuilder linkBuilder ) ->
             LinkBuilder.update subMsg linkBuilder
                 |> updateWith LinkBuilder GotLinkBuilderMsg model
+
+        ( GotDisbursementsMsg subMsg, Disbursements disbursements ) ->
+            Disbursements.update subMsg disbursements
+                |> updateWith Disbursements GotDisbursementsMsg model
 
         ( GotSession session, Redirect _ ) ->
             ( Redirect session
@@ -158,8 +172,8 @@ view model =
         LinkBuilder linkBuilder ->
             viewPage Page.LinkBuilder GotLinkBuilderMsg (LinkBuilder.view linkBuilder)
 
-
-
+        Disbursements disbursements ->
+            viewPage Page.Disbursements GotDisbursementsMsg (Disbursements.view disbursements)
 
 
 ---- PROGRAM ----
@@ -178,6 +192,9 @@ subscriptions model =
 
         LinkBuilder linkBuilder ->
             Sub.map GotLinkBuilderMsg (LinkBuilder.subscriptions linkBuilder)
+
+        Disbursements disbursements ->
+            Sub.map GotDisbursementsMsg (Disbursements.subscriptions disbursements)
 
 
 

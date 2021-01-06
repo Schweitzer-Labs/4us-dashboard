@@ -68,4 +68,4 @@ fromViewer key maybeViewer =
             Guest key
 
 committeeId : String
-committeeId = "3e947da3-c8bd-4881-a9aa-5afb57ef5b12"
+committeeId = "dc551f13-dc27-4ca5-8533-60000fdfc9eb"

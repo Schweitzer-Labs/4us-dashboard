@@ -1,4 +1,4 @@
-module Page.Home exposing (Model, Msg, init, subscriptions, toSession, update, view)
+module Page.Disbursements exposing (Model, Msg, init, subscriptions, toSession, update, view)
 
 {-| The homepage. You can get here via either the / or /#/ routes.
 -}
@@ -11,7 +11,7 @@ import Content
 import DataTable
 import Dict exposing (Dict)
 import Html exposing (..)
-import Html.Attributes exposing (attribute, class, classList, href, id, placeholder)
+import Html.Attributes exposing (class)
 import Session exposing (Session)
 import Task exposing (Task)
 import Time
@@ -19,10 +19,9 @@ import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
-import Asset as Asset exposing (Image)
 import Http
 import Task exposing (Task)
-import Transaction.ContributionsData as ContributionsData exposing (Contribution, ContributionsData)
+import Transaction.DisbursementsData as DD exposing (Disbursement, DisbursementsData)
 
 
 
@@ -32,7 +31,7 @@ import Transaction.ContributionsData as ContributionsData exposing (Contribution
 type alias Model =
     { session : Session
     , timeZone : Time.Zone
-    , contributions: List Contribution
+    , disbursements: List Disbursement
     , balance: String
     , totalRaised: String
     , totalSpent: String
@@ -49,7 +48,7 @@ init : Session -> ( Model, Cmd Msg )
 init session =
     ( { session = session
       , timeZone = Time.utc
-      , contributions = []
+      , disbursements = []
       , balance = ""
       , totalRaised = ""
       , totalSpent = ""
@@ -73,7 +72,7 @@ view model =
         div
             []
             [ Banner.container [] <| aggsContainer model
-            , Content.container <| [ contributionsContainer model.contributions ]
+            , Content.container <| [ disbursementsContainer model.disbursements ]
             ]
     }
 
@@ -120,37 +119,34 @@ agg (name, number) = Grid.col
 
 
 
--- Contributions
+-- Disbursements
 
-contributionsContainer : List Contribution -> Html msg
-contributionsContainer contributions =
+disbursementsContainer : List Disbursement -> Html msg
+disbursementsContainer disbursements =
         Grid.row
             []
-            [ Grid.col [] [contributionsTable contributions ]
+            [ Grid.col [] [disbursementsTable disbursements ]
             ]
 
 dollar : String -> String
 dollar str = "$" ++ str
 
--- CONTRIBUTIONS
+-- Disbursements
 
 labels : List String
 labels =
     [ "Record"
     , "Date / Time"
-    , "Rule"
-    , "Entity name"
+    , "Entity Name"
+    , "Address"
     , "Amount"
-    , "Payment Method"
-    , "Processor"
-    , "Status"
-    , "Verified"
-    , "Reference Code"
+    , "Purpose"
+    , "Record Date"
     ]
 
-contributionsTable : List Contribution -> Html msg
-contributionsTable c
-    = DataTable.view labels contributionRowMap c
+disbursementsTable : List Disbursement -> Html msg
+disbursementsTable c
+    = DataTable.view labels disbursementRowMap c
 
 stringToBool : String -> Bool
 stringToBool str =
@@ -159,28 +155,26 @@ stringToBool str =
         _ -> False
 
 
-contributionRowMap : Contribution -> (List (String, (Html msg)))
-contributionRowMap c =
+disbursementRowMap : Disbursement -> (List (String, (Html msg)))
+disbursementRowMap d =
     let
-        status =
-           if (stringToBool c.verified)
-           then Asset.circleCheckGlyph [class "text-success"]
-           else Asset.minusCircleGlyph [class "text-warning"]
-        refCode =
-            text
-            <| (\n -> if (n == "") then "home" else n)
-            <| Maybe.withDefault "Home" c.refCode
+        address = d.addressLine1
+            ++ ", "
+            ++ d.addressLine2
+            ++ ","
+            ++ d.city
+            ++ ", "
+            ++ d.state
+            ++ " "
+            ++ d.postalCode
     in
-        [ ("Record", text c.record)
-        , ("Date / Time", text c.datetime)
-        , ("Rule", text c.rule)
-        , ("Entity name", text c.entityName)
-        , ("Amount", span [class "text-success font-weight-bold"] [text <| dollar c.amount])
-        , ("Payment Method", text c.paymentMethod)
-        , ("Processor", img [Asset.src Asset.stripeLogo, class "stripe-logo"] [])
-        , ("Status", status)
-        , ("Verified", Asset.circleCheckGlyph [class "text-success"])
-        , ("Reference Code", refCode)
+        [ ("Record", text d.recordNumber)
+        , ("Date / Time", text d.date)
+        , ("Entity Name", text d.entityName)
+        , ("Address", text address)
+        , ("Amount", span [class "text-failure font-weight-bold"] [text <| dollar d.amount])
+        , ("Purpose", text d.purposeCode)
+        , ("Record Date", text d.date)
         ]
 
 
@@ -193,7 +187,7 @@ type ContributionId = ContributionId String
 
 type Msg
     = GotSession Session
-    | LoadContributionsData (Result Http.Error ContributionsData)
+    | LoadDisbursementsData (Result Http.Error DisbursementsData)
 
 
 
@@ -202,14 +196,14 @@ update msg model =
     case msg of
         GotSession session ->
             ( { model | session = session }, Cmd.none )
-        LoadContributionsData res ->
+        LoadDisbursementsData res ->
             case res of
                   Ok data ->
                       let aggregates = data.aggregations
                       in
                       (
                         { model
-                        | contributions = data.contributions
+                        | disbursements = data.disbursements
                         , balance = aggregates.balance
                         , totalRaised = aggregates.totalRaised
                         , totalSpent = "10,534"
@@ -227,16 +221,13 @@ update msg model =
 
 -- HTTP
 
-getContributionsData : Http.Request ContributionsData
-getContributionsData =
-  Api.get (Endpoint.contributions Session.committeeId) Nothing ContributionsData.decode
+getDisbursementsData : Http.Request DisbursementsData
+getDisbursementsData =
+  Api.get (Endpoint.disbursements Session.committeeId) Nothing DD.decode
 
 send : Cmd Msg
 send =
-  Http.send LoadContributionsData getContributionsData
-
-
-
+  Http.send LoadDisbursementsData getDisbursementsData
 
 scrollToTop : Task x ()
 scrollToTop =

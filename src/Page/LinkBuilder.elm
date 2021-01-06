@@ -4,15 +4,19 @@ module Page.LinkBuilder exposing (Model, Msg, init, subscriptions, toSession, up
 -}
 
 import Banner
+import Bootstrap.Button as Button
+import Bootstrap.Card as Card
+import Bootstrap.Card.Block as Block
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
+import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Content
 import Html exposing (..)
-import Html.Attributes as SvgA exposing (class, for, href, src)
+import Html.Attributes as SvgA exposing (class, for, href, src, style)
 import QRCode
 import Session exposing (Session)
 import Task exposing (Task)
@@ -47,7 +51,7 @@ view model =
         div
             []
             [ Banner.container [] <| h2 [ class "text-center p-1" ] [ text "Link Builder" ]
-            , Content.container <| [ linkRow model, formRow model, qrRow model ]
+            , Content.container <| [ formRow model ]
             ]
     }
 
@@ -56,7 +60,7 @@ view model =
 
 formRow : Model -> Html Msg
 formRow model = Grid.row
-    []
+    [ Row.attrs [Spacing.mt3] ]
     [ Grid.col
         [ Col.sm5]
             [ Form.group []
@@ -70,7 +74,13 @@ formRow model = Grid.row
                 , Form.help [] [ text "This amount will be prefilled when the donation form is loaded."]
                 ]
             ]
+    , Grid.col
+        [ Col.sm5 ]
+        [ linkRow model
+        ]
     ]
+
+-- Link Card
 
 linkRow : Model -> Html msg
 linkRow model =
@@ -80,22 +90,27 @@ linkRow model =
     Grid.row
         []
         [ Grid.col
-            [ Col.sm5 ]
-            [ Form.label [] [ text "Link"]
-            , a
-                [ href url, class "border d-block max-height-90", Spacing.mt1, Spacing.mb3, Spacing.p3]
-                [ text url
-                ]
+            []
+            [ linkCard url
             ]
         ]
-qrRow : Model -> Html msg
-qrRow model =
-    let
-       url = createUrl model.refCode model.amount
-    in
-       Grid.row
-           []
-           [Grid.col [] [qrCodeView url]]
+
+linkCard : String -> Html msg
+linkCard url =
+    Card.config [ Card.attrs [] ]
+        |> Card.block []
+            [ Block.titleH4 [] [ text "Link" ]
+            , Block.text []
+                [ a
+                  [ href url, class "d-block max-height-80", Spacing.mt1, Spacing.mb3, Spacing.p3]
+                  [ text url ]
+                ]
+            , Block.text [] [ qrCodeView url ]
+
+            , Block.custom <|
+                Button.button [ Button.primary ] [ text "Download" ]
+            ]
+        |> Card.view
 
 -- QR Codes
 
@@ -104,8 +119,8 @@ qrCodeView message =
     QRCode.fromString message
         |> Result.map
             (QRCode.toSvg
-                [ SvgA.width 100
-                , SvgA.height 100
+                [ SvgA.width 300
+                , SvgA.height 300
                 ]
             )
         |> Result.withDefault (Html.text "Error while encoding to QRCode.")

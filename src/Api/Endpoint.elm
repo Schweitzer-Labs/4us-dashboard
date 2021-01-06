@@ -1,4 +1,17 @@
-module Api.Endpoint exposing (Endpoint, articles, feed, follow, login, profiles, request, tags, user, users, contributions)
+module Api.Endpoint exposing
+    ( Endpoint
+    , articles
+    , feed
+    , follow
+    , login
+    , profiles
+    , request
+    , tags
+    , user
+    , users
+    , contributions
+    , disbursements
+    )
 
 import Http
 import Url.Builder exposing (QueryParameter, string)
@@ -63,6 +76,11 @@ url paths queryParams =
 contributions : String -> Endpoint
 contributions committeeId =
     url [ "contributions" ] [string "committeeId" committeeId]
+
+
+disbursements : String -> Endpoint
+disbursements committeeId =
+    url [ "disbursements" ] [string "committeeId" committeeId]
 
 
 login : Endpoint
