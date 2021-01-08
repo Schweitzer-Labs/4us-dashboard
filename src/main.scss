@@ -58,9 +58,9 @@ $banner-home-height : 65px;
   top: $banner-home-height + $vertical-offset - 1;
 }
 
-//.sticky-th-with-action
-//
-
+.hover-underline:hover {
+  text-decoration: underline;
+}
 
 .header-info-bank-logo {
   width: 100px;

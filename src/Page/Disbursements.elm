@@ -225,12 +225,7 @@ disbursementRowMap d =
             status =
                if (stringToBool d.verified)
                then Asset.circleCheckGlyph [class "text-success data-icon-size"]
-               else (Spinner.spinner
-                         [ Spinner.small
-                         , Spinner.color Text.warning
-                         ]
-                         [ Spinner.srMessage "Loading..." ]
-                   )
+               else Asset.minusCircleGlyph [class "text-warning data-icon-size"]
         in
             [ ("Record", text d.recordNumber)
             , ("Date / Time", text d.date)
@@ -277,7 +272,7 @@ update msg model =
                         | disbursements = data.disbursements
                         , balance = aggregates.balance
                         , totalRaised = aggregates.totalRaised
-                        , totalSpent = "10,534"
+                        , totalSpent = aggregates.totalSpent
                         , totalDonors = aggregates.totalDonors
                         , qualifyingDonors = aggregates.qualifyingDonors
                         , qualifyingFunds = aggregates.qualifyingFunds

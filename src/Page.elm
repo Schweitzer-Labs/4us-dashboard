@@ -146,7 +146,7 @@ toolBarGrid = Grid.containerFluid
     [ class "text-center mt-2"]
     [ h3 [class "pt-2 pb-2"] [text "TOOLS"]
     , toolBarItem Asset.calendar "Calendar"
-    , toolBarItem Asset.person "Contributions"
+    , toolBarLink (toolBarAsset Asset.person) Route.Home "Contributions"
     , toolBarLink (toolBarAsset Asset.house) Route.Disbursements "Disbursements"
     , toolBarItem Asset.documents "Documents"
     , toolBarLink (Asset.linkGlyph [class "tool-glyph"]) Route.LinkBuilder "Link Builder"
@@ -159,7 +159,7 @@ toolBarAsset image =
 
 toolBarLink : Html msg -> Route -> String -> Html msg
 toolBarLink glyph route label = Grid.row
-    [ Row.attrs [class "mt-3"]]
+    [ Row.attrs [class "mt-3 hover-underline"]]
     [ Grid.col
         []
         [ a [ Route.href route, class "nav-link" ]

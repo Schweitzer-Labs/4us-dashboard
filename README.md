@@ -1,20 +1,27 @@
 # 4US Dashboard
 
-## Install and Run
+## Dependencies
+These instructions require [npm](https://nodejs.org/en/) to be installed on local.
+
+## Install
 Build web dependencies
 
 ```npm install```
 
-Install elm app runner for hot reloading and build tooling.
+Install elm app runner and SCSS preprocessor.
 
-```npm install create-elm-app -g```
+```npm install node-sass-chokidar create-elm-app -g```
 
-Install SCSS processor
+## Start Developing
 
-```npm install node-sass-chokidar -g```
-
-Run elm app and begin development
+Run elm app
 
 ```elm-app start```
+
+Run SCSS file watch
+
+```npm run watch-css```
+
+
 
 
