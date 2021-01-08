@@ -153,7 +153,7 @@ createUrl refCode amount =
         refCodeVal = if (String.length refCode > 0) then [ Url.Builder.string "refCode" refCode ] else []
         amountVal = if (String.length amount > 0) then [ Url.Builder.string "amount" amount] else []
      in
-        Url.Builder.crossOrigin "http://localhost:3001" [] <| committeeIdVal ++ refCodeVal ++ amountVal
+        Url.Builder.crossOrigin "https://donor.4usdemo.com" [] <| committeeIdVal ++ refCodeVal ++ amountVal
 
 
 scrollToTop : Task x ()
