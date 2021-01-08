@@ -7,11 +7,14 @@ import Api exposing (Cred)
 import Api.Endpoint as Endpoint
 import Asset
 import Banner
+import Bootstrap.Button as Button
+import Bootstrap.Text as Text
 import Browser.Dom as Dom
 import Content
 import DataTable
 import Html exposing (..)
 import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
 import Session exposing (Session)
 import Task exposing (Task)
 import Time
@@ -19,9 +22,11 @@ import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
+import Bootstrap.Modal as Modal
 import Http
 import Task exposing (Task)
 import Transaction.DisbursementsData as DD exposing (Disbursement, DisbursementsData)
+import Bootstrap.Spinner as Spinner
 
 
 
@@ -40,6 +45,7 @@ type alias Model =
     , qualifyingFunds: String
     , totalTransactions: String
     , totalInProcessing: String
+    , createDisbursementModalVisibility: Modal.Visibility
     }
 
 
@@ -57,6 +63,7 @@ init session =
       , qualifyingFunds = ""
       , totalTransactions = ""
       , totalInProcessing = ""
+      , createDisbursementModalVisibility = Modal.hidden
       }
     , send
     )
@@ -73,8 +80,46 @@ view model =
             []
             [ Banner.container [] <| aggsContainer model
             , Content.container <| [ disbursementsContainer model.disbursements ]
+            , createVendorModal model
             ]
     }
+
+createVendorModal : Model -> Html Msg
+createVendorModal model =
+    Modal.config HideCreateDisbursementModal
+        |> Modal.withAnimation AnimateCreateDisbursementModal
+        |> Modal.large
+        |> Modal.hideOnBackdropClick True
+        |> Modal.h3 [] [ text "Send Funds" ]
+        |> Modal.body [] [ p [] [ text "Form lives here"] ]
+        |> Modal.footer []
+            [ Grid.containerFluid
+                []
+                [ Grid.row
+                    [ Row.aroundXs ]
+                    [ Grid.col
+                        [ Col.attrs [class "text-left"]]
+                        [ Button.button
+                          [ Button.outlinePrimary
+                          , Button.large
+                          , Button.attrs [ onClick HideCreateDisbursementModal ]
+                          ]
+                          [ text "Exit" ]
+                        ]
+                    , Grid.col
+                      [ Col.attrs [class "text-right"] ]
+                      [ Button.button
+                        [ Button.primary
+                        , Button.large
+                        , Button.attrs [ onClick HideCreateDisbursementModal, class "text-right" ]
+                        ]
+                        [ text "Submit" ]
+                      ]
+                    ]
+                ]
+            ]
+
+        |> Modal.view model.createDisbursementModalVisibility
 
 aggsContainer : Model -> Html msg
 aggsContainer model =
@@ -121,7 +166,7 @@ agg (name, number) = Grid.col
 
 -- Disbursements
 
-disbursementsContainer : List Disbursement -> Html msg
+disbursementsContainer : List Disbursement -> Html Msg
 disbursementsContainer disbursements =
         Grid.row
             []
@@ -145,9 +190,15 @@ labels =
     , "Verified"
     ]
 
-disbursementsTable : List Disbursement -> Html msg
+createDisbursementModalButton : Html Msg
+createDisbursementModalButton =
+        Button.button
+           [ Button.outlineSuccess , Button.attrs [ onClick <| ShowCreateDisbursementModal ] ]
+           [ text "Create Disbursement" ]
+
+disbursementsTable : List Disbursement -> Html Msg
 disbursementsTable c
-    = DataTable.view labels disbursementRowMap c
+    = DataTable.view [createDisbursementModalButton] labels disbursementRowMap c
 
 stringToBool : String -> Bool
 stringToBool str =
@@ -170,15 +221,28 @@ oneLineAddressFromDisbursement d
 
 disbursementRowMap : Disbursement -> (List (String, (Html msg)))
 disbursementRowMap d =
-        [ ("Record", text d.recordNumber)
-        , ("Date / Time", text d.date)
-        , ("Entity Name", text d.entityName)
-        , ("Amount", span [class "text-failure font-weight-bold"] [text <| dollar d.amount])
-        , ("Purpose", text d.purposeCode)
-        , ("Payment Method", span [class "text-failure font-weight-bold"] [text <| dollar d.amount])
-        , ("Status",  Asset.circleCheckGlyph [class "text-success"])
-        , ("Verified", Asset.circleCheckGlyph [class "text-success"])
-        ]
+        let
+            status =
+               if (stringToBool d.verified)
+               then Asset.circleCheckGlyph [class "text-success data-icon-size"]
+               else (Spinner.spinner
+                         [ Spinner.small
+                         , Spinner.color Text.warning
+                         ]
+                         [ Spinner.srMessage "Loading..." ]
+                   )
+        in
+            [ ("Record", text d.recordNumber)
+            , ("Date / Time", text d.date)
+            , ("Entity Name", text d.entityName)
+            , ("Amount", span [class "text-failure font-weight-bold"] [text <| dollar d.amount])
+            , ("Purpose", text d.purposeCode)
+            , ("Payment Method", span [class "text-failure font-weight-bold"] [text "ACH"])
+            , ("Status",  status)
+            , ("Verified", Asset.circleCheckGlyph [class "text-success data-icon-size"])
+            ]
+
+
 
 
 -- TAGS
@@ -191,14 +255,18 @@ type ContributionId = ContributionId String
 type Msg
     = GotSession Session
     | LoadDisbursementsData (Result Http.Error DisbursementsData)
-
-
+    | HideCreateDisbursementModal
+    | ShowCreateDisbursementModal
+    | AnimateCreateDisbursementModal Modal.Visibility
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GotSession session ->
             ( { model | session = session }, Cmd.none )
+        ShowCreateDisbursementModal -> ( { model | createDisbursementModalVisibility = Modal.shown }, Cmd.none)
+        HideCreateDisbursementModal -> ( { model | createDisbursementModalVisibility = Modal.hidden }, Cmd.none)
+        AnimateCreateDisbursementModal visibility -> ( { model | createDisbursementModalVisibility = visibility }, Cmd.none )
         LoadDisbursementsData res ->
             case res of
                   Ok data ->
@@ -246,7 +314,12 @@ scrollToTop =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Session.changes GotSession (Session.navKey model.session)
+    Sub.batch
+        [ Session.changes GotSession (Session.navKey model.session)
+        , Modal.subscriptions model.createDisbursementModalVisibility AnimateCreateDisbursementModal
+        ]
+
+
 
 
 

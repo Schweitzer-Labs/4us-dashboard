@@ -55,10 +55,11 @@ $banner-home-height : 65px;
 
 
 .sticky-th {
-  // make up for myserious extra pixel
   top: $banner-home-height + $vertical-offset - 1;
 }
 
+//.sticky-th-with-action
+//
 
 
 .header-info-bank-logo {
@@ -95,4 +96,8 @@ $banner-home-height : 65px;
 
 .max-height-80 {
   min-height: 80px;
+}
+
+.data-icon-size {
+  font-size: 25px;
 }

@@ -11,7 +11,6 @@ type alias Disbursement =
     , date: String
     , amount: String
     , purposeCode: String
-    , stripTxnId: String
     , addressLine1: String
     , addressLine2: String
     , city: String
@@ -19,6 +18,7 @@ type alias Disbursement =
     , postalCode: String
     , recordNumber: String
     , entityName: String
+    , verified: String
     }
 
 type alias Aggregations =
@@ -65,10 +65,9 @@ disbursementDecoder =
             |> required "disbursementId" string
             |> required "committeeId" string
             |> required "vendorId" string
-            |> required "date" string
+            |> required "timestamp" string
             |> required "amount" string
             |> required "purposeCode" string
-            |> required "stripTxnId" string
             |> required "addressLine1" string
             |> required "addressLine2" string
             |> required "city" string
@@ -76,6 +75,7 @@ disbursementDecoder =
             |> required "postalCode" string
             |> required "recordNumber" string
             |> required "entityName" string
+            |> required "verified" string
 
 
 listOfDisbursementsDecoder : Decode.Decoder (List Disbursement)

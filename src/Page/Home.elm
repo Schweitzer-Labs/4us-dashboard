@@ -149,7 +149,7 @@ labels =
 
 contributionsTable : List Contribution -> Html msg
 contributionsTable c
-    = DataTable.view labels contributionRowMap c
+    = DataTable.view [] labels contributionRowMap c
 
 stringToBool : String -> Bool
 stringToBool str =
@@ -163,8 +163,8 @@ contributionRowMap c =
     let
         status =
            if (stringToBool c.verified)
-           then Asset.circleCheckGlyph [class "text-success"]
-           else Asset.minusCircleGlyph [class "text-warning"]
+           then Asset.circleCheckGlyph [class "text-success data-icon-size"]
+           else Asset.minusCircleGlyph [class "text-warning data-icon-size"]
         refCode =
             text
             <| (\n -> if (n == "") then "home" else n)
@@ -178,7 +178,7 @@ contributionRowMap c =
         , ("Payment Method", text c.paymentMethod)
         , ("Processor", img [Asset.src Asset.stripeLogo, class "stripe-logo"] [])
         , ("Status", status)
-        , ("Verified", Asset.circleCheckGlyph [class "text-success"])
+        , ("Verified", Asset.circleCheckGlyph [class "text-success data-icon-size"])
         , ("Reference Code", refCode)
         ]
 
@@ -211,7 +211,7 @@ update msg model =
                         | contributions = data.contributions
                         , balance = aggregates.balance
                         , totalRaised = aggregates.totalRaised
-                        , totalSpent = "10,534"
+                        , totalSpent = aggregates.totalSpent
                         , totalDonors = aggregates.totalDonors
                         , qualifyingDonors = aggregates.qualifyingDonors
                         , qualifyingFunds = aggregates.qualifyingFunds

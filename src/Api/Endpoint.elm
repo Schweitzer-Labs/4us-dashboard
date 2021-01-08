@@ -65,14 +65,14 @@ url : List String -> List QueryParameter -> Endpoint
 url paths queryParams =
     -- NOTE: Url.Builder takes care of percent-encoding special URL characters.
     -- See https://package.elm-lang.org/packages/elm/url/latest/Url#percentEncode
-    Url.Builder.crossOrigin "http://localhost:5000"
+    Url.Builder.crossOrigin "https://9wp0a5f6ic.execute-api.us-east-1.amazonaws.com/dev"
         paths
         queryParams
         |> Endpoint
 
 
 
--- ENDPOINTS
+-- ENDPOINTSs
 contributions : String -> Endpoint
 contributions committeeId =
     url [ "contributions" ] [string "committeeId" committeeId]
