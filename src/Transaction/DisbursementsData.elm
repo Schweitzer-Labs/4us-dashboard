@@ -19,6 +19,7 @@ type alias Disbursement =
     , recordNumber: String
     , entityName: String
     , verified: String
+    , paymentMethod: String
     }
 
 type alias Aggregations =
@@ -68,14 +69,15 @@ disbursementDecoder =
             |> required "timestamp" string
             |> required "amount" string
             |> required "purposeCode" string
-            |> required "addressLine1" string
-            |> required "addressLine2" string
-            |> required "city" string
-            |> required "state" string
-            |> required "postalCode" string
+            |> optional "addressLine1" string ""
+            |> optional "addressLine2" string ""
+            |> optional "city" string ""
+            |> optional "state" string ""
+            |> optional "postalCode" string ""
             |> required "recordNumber" string
             |> required "entityName" string
             |> required "verified" string
+            |> optional "paymentMethod" string "Check"
 
 
 listOfDisbursementsDecoder : Decode.Decoder (List Disbursement)

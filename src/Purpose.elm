@@ -1,4 +1,4 @@
-module Purpose exposing(Purpose, purposeText)
+module Purpose exposing(Purpose, purposeText, purposeToString)
 
 type Purpose
     = CMAIL
@@ -51,3 +51,12 @@ purposeText =
     , (BKFEE, "BKFEE", "Bank Frees")
     , (LWNSN, "LWNSN", "Lawn Signs")
    ]
+
+purposeToString : Purpose -> String
+purposeToString purpose =
+    let maybePurpose = List.head
+            <| List.filter (\(p, _, _) -> p == purpose) purposeText
+    in
+       case maybePurpose of
+           Just (_, val, _) ->  val
+           Nothing -> ""

@@ -143,7 +143,7 @@ toolBarContainer = div [class "tool-bar-container"] [toolBarGrid]
 
 toolBarGrid : Html msg
 toolBarGrid = Grid.containerFluid
-    [ class "text-center mt-2"]
+    [ class "text-center mt-2", Spacing.pl0]
     [ h3 [class "pt-2 pb-2"] [text "TOOLS"]
     , toolBarItem Asset.calendar "Calendar"
     , toolBarLink (toolBarAsset Asset.person) Route.Home "Contributions"

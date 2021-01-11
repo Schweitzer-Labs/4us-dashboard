@@ -17,6 +17,8 @@ import DataTable
 import Html exposing (..)
 import Html.Attributes exposing (class, for, value)
 import Html.Events exposing (onClick)
+import Json.Decode as Decode
+import Json.Encode as Encode
 import PaymentMethod exposing (PaymentMethod(..))
 import Purpose exposing (Purpose)
 import Session exposing (Session)
@@ -52,7 +54,11 @@ type alias Model =
     , totalInProcessing: String
     , createDisbursementModalVisibility: Modal.Visibility
     , createDisbursementModalPaymentMethod: Maybe PaymentMethod
-    , createDisbursementModalPurpose: Maybe Purpose
+    , createDisbursementModalPurpose: Maybe String
+    , checkAmount: String
+    , checkNumber: String
+    , checkRecipient: String
+    , checkDate: String
     , committeeId: String
     }
 
@@ -74,6 +80,11 @@ init session committeeId =
       , createDisbursementModalVisibility = Modal.hidden
       , createDisbursementModalPaymentMethod = Nothing
       , createDisbursementModalPurpose = Nothing
+      -- Here is be dragons
+      , checkAmount = ""
+      , checkNumber = ""
+      , checkRecipient = ""
+      , checkDate = ""
       , committeeId = committeeId
       }
     , getDisbursementsData committeeId
@@ -104,6 +115,10 @@ selectPurpose model =
         , Select.select
             [ Select.id "purpose"
             , Select.onChange CreateDisbursementModalPurposeUpdated
+            , Select.attrs
+                [ value
+                <| Maybe.withDefault "---" model.createDisbursementModalPurpose
+                ]
             ]
             <| (++) [Select.item [] [ text "---" ]]
             <| List.map (
@@ -121,6 +136,13 @@ selectPaymentMethod model =
         , Select.select
             [ Select.id "payment-method"
             , Select.onChange CreateDisbursementModalPaymentMethodUpdated
+            , Select.attrs
+                [ value
+                <| Maybe.withDefault ""
+                <| Maybe.map
+                    PaymentMethod.paymentMethodToText
+                    model.createDisbursementModalPaymentMethod
+                ]
             ]
             <| (++) [Select.item [] [ text "---" ]]
             <| List.map
@@ -141,24 +163,24 @@ renderPaymentMethodForm model =
                             [ Grid.col
                                   [Col.lg4]
                                   [ Form.label [for "amount"] [ text "Amount"]
-                                  , Input.text [ Input.id "amount" ]
+                                  , Input.text [ Input.id "amount", Input.onInput CheckAmountUpdated ]
                                   ]
                             , Grid.col
                                 [Col.lg4]
                                 [ Form.label [for "check-number"] [ text "Check Number"]
-                                , Input.text [ Input.id "check-number" ]
+                                , Input.text [ Input.id "check-number", Input.onInput CheckNumberUpdated ]
                                 ]
                             , Grid.col
                               [Col.lg4]
                               [ Form.label [for "date"] [ text "Date"]
-                              , Input.date [ Input.id "date" ]
+                              , Input.date [ Input.id "date", Input.onInput CheckDateUpdated ]
                               ]
                             ]
                         , Grid.row [ Row.attrs [Spacing.mt2]]
                             [ Grid.col
                               []
                               [ Form.label [for "recipient-name"] [ text "Recipient Name"]
-                              , Input.text [ Input.id "recipient-name" ]
+                              , Input.text [ Input.id "recipient-name", Input.onInput CheckRecipientUpdated ]
                               ]
                             ]
                         ]
@@ -200,7 +222,7 @@ createDisbursementModal model =
                       [ Button.button
                         [ Button.primary
                         , Button.large
-                        , Button.attrs [ onClick HideCreateDisbursementModal, class "text-right" ]
+                        , Button.attrs [ onClick SubmitCreateDisbursement, class "text-right" ]
                         ]
                         [ text "Submit" ]
                       ]
@@ -321,7 +343,7 @@ disbursementRowMap d =
             , ("Entity Name", text d.entityName)
             , ("Amount", span [class "text-failure font-weight-bold"] [text <| dollar d.amount])
             , ("Purpose", text d.purposeCode)
-            , ("Payment Method", span [class "text-failure font-weight-bold"] [text "ACH"])
+            , ("Payment Method", span [class "text-failure font-weight-bold"] [text d.paymentMethod])
             , ("Status",  status)
             , ("Verified", Asset.circleCheckGlyph [class "text-success data-icon-size"])
             ]
@@ -344,6 +366,12 @@ type Msg
     | AnimateCreateDisbursementModal Modal.Visibility
     | CreateDisbursementModalPurposeUpdated String
     | CreateDisbursementModalPaymentMethodUpdated String
+    | CheckAmountUpdated String
+    | CheckRecipientUpdated String
+    | CheckNumberUpdated String
+    | CheckDateUpdated String
+    | GotCreateDisbursementReponse (Result Http.Error String)
+    | SubmitCreateDisbursement
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -357,13 +385,29 @@ update msg model =
               , createDisbursementModalPaymentMethod = Nothing
               , createDisbursementModalPurpose = Nothing
               }, Cmd.none)
+        SubmitCreateDisbursement ->
+            ( { model
+              | createDisbursementModalVisibility = Modal.hidden
+              , createDisbursementModalPaymentMethod = Nothing
+              , createDisbursementModalPurpose = Nothing
+              }, createDisbursement model)
         AnimateCreateDisbursementModal visibility -> ( { model | createDisbursementModalVisibility = visibility }, Cmd.none )
-        CreateDisbursementModalPurposeUpdated str -> (model, Cmd.none)
+        CreateDisbursementModalPurposeUpdated str -> ({model | createDisbursementModalPurpose = Just str }, Cmd.none)
         CreateDisbursementModalPaymentMethodUpdated str ->
             let
                 paymentMethod = PaymentMethod.init str
             in
                 ( {model | createDisbursementModalPaymentMethod = paymentMethod}, Cmd.none)
+        CheckAmountUpdated str -> ({model | checkAmount = str}, Cmd.none)
+        CheckRecipientUpdated str -> ({model | checkRecipient = str}, Cmd.none)
+        CheckNumberUpdated str -> ({model | checkNumber = str}, Cmd.none)
+        CheckDateUpdated str -> ({model | checkDate = str}, Cmd.none)
+        GotCreateDisbursementReponse res ->
+            case res of
+              Ok data ->
+                  (model, getDisbursementsData model.committeeId)
+              Err _ ->
+                  ( model, Cmd.none )
         LoadDisbursementsData res ->
             case res of
                   Ok data ->
@@ -424,3 +468,40 @@ subscriptions model =
 toSession : Model -> Session
 toSession model =
     model.session
+
+
+-- Http
+
+encodeDisbursement : Model -> Encode.Value
+encodeDisbursement model =
+    Encode.object
+        [ ( "committeeId", Encode.string model.committeeId )
+        , ( "entityName", Encode.string model.checkRecipient )
+        , ( "purposeCode", Encode.string <| Maybe.withDefault "other" model.createDisbursementModalPurpose )
+        , ( "amount", Encode.string model.checkAmount )
+        , ( "date", Encode.string model.checkDate )
+        ]
+
+createDisbursement : Model -> Cmd Msg
+createDisbursement model =
+    let
+       body = encodeDisbursement model |> Http.jsonBody
+    in
+       Http.send GotCreateDisbursementReponse
+       <| Api.post (Endpoint.disbursement) Nothing body Decode.string
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

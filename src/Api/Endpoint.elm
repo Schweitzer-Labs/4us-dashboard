@@ -11,6 +11,7 @@ module Api.Endpoint exposing
     , users
     , contributions
     , disbursements
+    , disbursement
     )
 
 import Http
@@ -83,6 +84,10 @@ contributions committeeId =
 disbursements : String -> Endpoint
 disbursements committeeId =
     url [ "disbursements" ] [string "committeeId" committeeId]
+
+disbursement : Endpoint
+disbursement =
+    url [ "disbursement" ] []
 
 
 login : Endpoint

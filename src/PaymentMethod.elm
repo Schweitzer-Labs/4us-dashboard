@@ -1,4 +1,4 @@
-module PaymentMethod exposing (PaymentMethod(..), paymentMethodText, init)
+module PaymentMethod exposing (PaymentMethod(..), paymentMethodText, init, paymentMethodToText)
 
 import Html exposing (Html, div, text)
 type PaymentMethod
@@ -55,11 +55,15 @@ type alias ACHModel =
 type AccountType = Checking | Saving
 
 
-
-
-
 form : PaymentMethod -> msg -> Html msg
 form paymentMethod submit =
     case paymentMethod of
         Check model -> div [] [text "checking form"]
         _ -> div [] [text "other forms"]
+
+paymentMethodToText : PaymentMethod -> String
+paymentMethodToText method =
+    case method of
+        Check a -> "Check"
+        ACH a -> "ACH"
+        Wire a -> "Wire"
