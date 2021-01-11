@@ -3,6 +3,7 @@ module Main exposing (..)
 import Api
 import Browser exposing (Document)
 import Browser.Navigation as Nav
+import CommitteeId
 import Html exposing (Html)
 import Json.Decode exposing (Value)
 import Page
@@ -29,8 +30,11 @@ type Model
 
 init : Maybe Viewer -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init maybeViewer url navKey =
-    changeRouteTo (Route.fromUrl url)
+    changeRouteTo
+        url
+        (Route.fromUrl url)
         (Redirect (Session.fromViewer navKey maybeViewer))
+
 
 
 ---- UPDATE ----
@@ -62,24 +66,33 @@ toSession page =
             Disbursements.toSession session
 
 
-changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
-changeRouteTo maybeRoute model =
+-- Refactor removed committeeId parsing from URL and move to Session once auth is added.
+changeRouteTo : Url -> Maybe Route -> Model -> ( Model, Cmd Msg )
+changeRouteTo url maybeRoute model =
     let
         session =
             toSession model
+        committeeId =
+            CommitteeId.parse url
     in
     case maybeRoute of
         Nothing ->
             ( NotFound session, Cmd.none )
         -- rest of the routes
         Just Route.Home ->
-            Home.init session
+            Home.init
+                session
+                committeeId
                 |> updateWith Home GotHomeMsg model
         Just Route.LinkBuilder ->
-            LinkBuilder.init session
+            LinkBuilder.init
+                session
+                committeeId
                 |> updateWith LinkBuilder GotLinkBuilderMsg model
         Just Route.Disbursements ->
-            Disbursements.init session
+            Disbursements.init
+                session
+                committeeId
                 |> updateWith Disbursements GotDisbursementsMsg model
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -111,7 +124,7 @@ update msg model =
                     )
 
         ( ChangedUrl url, _ ) ->
-            changeRouteTo (Route.fromUrl url) model
+            changeRouteTo url (Route.fromUrl url) model
 
         ( GotHomeMsg subMsg, Home home ) ->
             Home.update subMsg home

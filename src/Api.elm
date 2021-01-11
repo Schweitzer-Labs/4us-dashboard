@@ -145,7 +145,7 @@ application viewerDecoder config =
                         |> Result.andThen (Decode.decodeString (storageDecoder viewerDecoder))
                         |> Result.toMaybe
             in
-            config.init maybeViewer url navKey
+                config.init maybeViewer url navKey
     in
     Browser.application
         { init = init

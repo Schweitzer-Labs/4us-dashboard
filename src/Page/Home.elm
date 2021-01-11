@@ -40,12 +40,13 @@ type alias Model =
     , qualifyingFunds: String
     , totalTransactions: String
     , totalInProcessing: String
+    , committeeId: String
     }
 
 
 
-init : Session -> ( Model, Cmd Msg )
-init session =
+init : Session -> String -> ( Model, Cmd Msg )
+init session committeeId =
     ( { session = session
       , timeZone = Time.utc
       , contributions = []
@@ -57,8 +58,9 @@ init session =
       , qualifyingFunds = ""
       , totalTransactions = ""
       , totalInProcessing = ""
+      , committeeId = committeeId
       }
-    , send
+    , getContributionsData committeeId
     )
 
 
@@ -226,15 +228,10 @@ update msg model =
 
 -- HTTP
 
-getContributionsData : Http.Request ContributionsData
-getContributionsData =
-  Api.get (Endpoint.contributions Session.committeeId) Nothing ContributionsData.decode
-
-send : Cmd Msg
-send =
-  Http.send LoadContributionsData getContributionsData
-
-
+getContributionsData : String -> Cmd Msg
+getContributionsData committeeId =
+  Http.send LoadContributionsData
+  <| Api.get (Endpoint.contributions committeeId) Nothing ContributionsData.decode
 
 
 scrollToTop : Task x ()

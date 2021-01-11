@@ -30,14 +30,16 @@ type alias Model =
     , refCode: String
     , amount: String
     , url: String
+    , committeeId: String
     }
 
-init : Session -> ( Model, Cmd Msg )
-init session =
+init : Session -> String -> ( Model, Cmd Msg )
+init session committeeId =
     ( { session = session
       , refCode = ""
       , amount = ""
       , url = ""
+      , committeeId = committeeId
       }
     , Cmd.none
     )
@@ -85,7 +87,7 @@ formRow model = Grid.row
 linkRow : Model -> Html msg
 linkRow model =
     let
-       url = createUrl model.refCode model.amount
+       url = createUrl model.committeeId model.refCode model.amount
     in
     Grid.row
         []
@@ -146,10 +148,10 @@ update msg model =
             ( { model | amount = str }, Cmd.none )
 
 
-createUrl : String -> String -> String
-createUrl refCode amount =
+createUrl : String -> String -> String -> String
+createUrl committeeId refCode amount =
      let
-        committeeIdVal = [Url.Builder.string "committeeId" Session.committeeId]
+        committeeIdVal = [Url.Builder.string "committeeId" committeeId]
         refCodeVal = if (String.length refCode > 0) then [ Url.Builder.string "refCode" refCode ] else []
         amountVal = if (String.length amount > 0) then [ Url.Builder.string "amount" amount] else []
      in

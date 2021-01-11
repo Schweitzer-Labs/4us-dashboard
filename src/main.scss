@@ -4,24 +4,19 @@ $font-family-base: 'EB Garamond', sans-serif;
 @import "node_modules/bootstrap/scss/bootstrap";
 
 $slate-blue: #4f53d1;
-
 $ruby: #ff0a03;
-
 
 .bg-slate-blue {
   background: $slate-blue;
 }
 
-
 .bg-ruby {
   background: $ruby;
 }
 
-
 [data-elm-hot="true"] {
   height: inherit;
 }
-
 
 $vertical-offset : 150px;
 $banner-home-height : 65px;
@@ -52,7 +47,6 @@ $banner-home-height : 65px;
   position: fixed;
   top: $banner-home-height + $vertical-offset;
 }
-
 
 .sticky-th {
   top: $banner-home-height + $vertical-offset - 1;

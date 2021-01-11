@@ -8,13 +8,17 @@ import Api.Endpoint as Endpoint
 import Asset
 import Banner
 import Bootstrap.Button as Button
+import Bootstrap.Form as Form
+import Bootstrap.Form.Input as Input
 import Bootstrap.Text as Text
 import Browser.Dom as Dom
 import Content
 import DataTable
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, for, value)
 import Html.Events exposing (onClick)
+import PaymentMethod exposing (PaymentMethod(..))
+import Purpose exposing (Purpose)
 import Session exposing (Session)
 import Task exposing (Task)
 import Time
@@ -27,6 +31,7 @@ import Http
 import Task exposing (Task)
 import Transaction.DisbursementsData as DD exposing (Disbursement, DisbursementsData)
 import Bootstrap.Spinner as Spinner
+import Bootstrap.Form.Select as Select
 
 
 
@@ -46,12 +51,15 @@ type alias Model =
     , totalTransactions: String
     , totalInProcessing: String
     , createDisbursementModalVisibility: Modal.Visibility
+    , createDisbursementModalPaymentMethod: Maybe PaymentMethod
+    , createDisbursementModalPurpose: Maybe Purpose
+    , committeeId: String
     }
 
 
 
-init : Session -> ( Model, Cmd Msg )
-init session =
+init : Session -> String -> ( Model, Cmd Msg )
+init session committeeId =
     ( { session = session
       , timeZone = Time.utc
       , disbursements = []
@@ -64,8 +72,11 @@ init session =
       , totalTransactions = ""
       , totalInProcessing = ""
       , createDisbursementModalVisibility = Modal.hidden
+      , createDisbursementModalPaymentMethod = Nothing
+      , createDisbursementModalPurpose = Nothing
+      , committeeId = committeeId
       }
-    , send
+    , getDisbursementsData committeeId
     )
 
 
@@ -80,18 +91,96 @@ view model =
             []
             [ Banner.container [] <| aggsContainer model
             , Content.container <| [ disbursementsContainer model.disbursements ]
-            , createVendorModal model
+            , createDisbursementModal model
             ]
     }
 
-createVendorModal : Model -> Html Msg
-createVendorModal model =
+
+selectPurpose : Model -> Html Msg
+selectPurpose model =
+    Form.group
+        []
+        [ Form.label [for "purpose"] [ text "Purpose"]
+        , Select.select
+            [ Select.id "purpose"
+            , Select.onChange CreateDisbursementModalPurposeUpdated
+            ]
+            <| (++) [Select.item [] [ text "---" ]]
+            <| List.map (
+               \(_, codeText, purposeText) -> Select.item [value codeText] [ text <| purposeText ]
+            ) Purpose.purposeText
+        ]
+
+
+
+selectPaymentMethod : Model -> Html Msg
+selectPaymentMethod model =
+    Form.group
+        []
+        [ Form.label [for "payment-method"] [ text "Payment Method"]
+        , Select.select
+            [ Select.id "payment-method"
+            , Select.onChange CreateDisbursementModalPaymentMethodUpdated
+            ]
+            <| (++) [Select.item [] [ text "---" ]]
+            <| List.map
+               ( \(valueText, displayText) -> Select.item [value valueText] [ text displayText ]
+               )
+               PaymentMethod.paymentMethodText
+        ]
+
+renderPaymentMethodForm : Model -> Html Msg
+renderPaymentMethodForm model =
+    case model.createDisbursementModalPaymentMethod of
+        Just method ->
+            case method of
+                 PaymentMethod.Check check ->
+                    Grid.containerFluid
+                        []
+                        [ Grid.row []
+                            [ Grid.col
+                                  [Col.lg4]
+                                  [ Form.label [for "amount"] [ text "Amount"]
+                                  , Input.text [ Input.id "amount" ]
+                                  ]
+                            , Grid.col
+                                [Col.lg4]
+                                [ Form.label [for "check-number"] [ text "Check Number"]
+                                , Input.text [ Input.id "check-number" ]
+                                ]
+                            , Grid.col
+                              [Col.lg4]
+                              [ Form.label [for "date"] [ text "Date"]
+                              , Input.date [ Input.id "date" ]
+                              ]
+                            ]
+                        , Grid.row [ Row.attrs [Spacing.mt2]]
+                            [ Grid.col
+                              []
+                              [ Form.label [for "recipient-name"] [ text "Recipient Name"]
+                              , Input.text [ Input.id "recipient-name" ]
+                              ]
+                            ]
+                        ]
+                 _ -> div [] [text "tbd"]
+        Nothing -> span [] []
+
+createDisbursementModal : Model -> Html Msg
+createDisbursementModal model =
     Modal.config HideCreateDisbursementModal
         |> Modal.withAnimation AnimateCreateDisbursementModal
         |> Modal.large
         |> Modal.hideOnBackdropClick True
-        |> Modal.h3 [] [ text "Send Funds" ]
-        |> Modal.body [] [ p [] [ text "Form lives here"] ]
+        |> Modal.h3 [] [ text "Create Disbursement" ]
+        |> Modal.body
+            []
+            [ p
+                []
+                [ selectPurpose model
+                , selectPaymentMethod model
+                , renderPaymentMethodForm model
+                ]
+            ]
         |> Modal.footer []
             [ Grid.containerFluid
                 []
@@ -253,6 +342,8 @@ type Msg
     | HideCreateDisbursementModal
     | ShowCreateDisbursementModal
     | AnimateCreateDisbursementModal Modal.Visibility
+    | CreateDisbursementModalPurposeUpdated String
+    | CreateDisbursementModalPaymentMethodUpdated String
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -260,8 +351,19 @@ update msg model =
         GotSession session ->
             ( { model | session = session }, Cmd.none )
         ShowCreateDisbursementModal -> ( { model | createDisbursementModalVisibility = Modal.shown }, Cmd.none)
-        HideCreateDisbursementModal -> ( { model | createDisbursementModalVisibility = Modal.hidden }, Cmd.none)
+        HideCreateDisbursementModal ->
+            ( { model
+              | createDisbursementModalVisibility = Modal.hidden
+              , createDisbursementModalPaymentMethod = Nothing
+              , createDisbursementModalPurpose = Nothing
+              }, Cmd.none)
         AnimateCreateDisbursementModal visibility -> ( { model | createDisbursementModalVisibility = visibility }, Cmd.none )
+        CreateDisbursementModalPurposeUpdated str -> (model, Cmd.none)
+        CreateDisbursementModalPaymentMethodUpdated str ->
+            let
+                paymentMethod = PaymentMethod.init str
+            in
+                ( {model | createDisbursementModalPaymentMethod = paymentMethod}, Cmd.none)
         LoadDisbursementsData res ->
             case res of
                   Ok data ->
@@ -287,13 +389,11 @@ update msg model =
 
 -- HTTP
 
-getDisbursementsData : Http.Request DisbursementsData
-getDisbursementsData =
-  Api.get (Endpoint.disbursements Session.committeeId) Nothing DD.decode
+getDisbursementsData : String -> Cmd Msg
+getDisbursementsData committeeId =
+  Http.send LoadDisbursementsData
+  <| Api.get (Endpoint.disbursements committeeId) Nothing DD.decode
 
-send : Cmd Msg
-send =
-  Http.send LoadDisbursementsData getDisbursementsData
 
 scrollToTop : Task x ()
 scrollToTop =
