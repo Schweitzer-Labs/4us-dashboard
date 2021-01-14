@@ -94,6 +94,11 @@ changeRouteTo url maybeRoute model =
                 session
                 committeeId
                 |> updateWith Disbursements GotDisbursementsMsg model
+        Just Route.NeedsReview ->
+            Disbursements.init
+                session
+                committeeId
+                |> updateWith Disbursements GotDisbursementsMsg model
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =

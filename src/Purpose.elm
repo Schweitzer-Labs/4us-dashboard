@@ -1,4 +1,4 @@
-module Purpose exposing(Purpose, purposeText, purposeToString)
+module Purpose exposing(Purpose(..), purposeText, purposeToString)
 
 type Purpose
     = CMAIL
@@ -48,7 +48,7 @@ purposeText =
     , (TVADS, "TVADS", "Television Ads")
     , (VOTER, "VOTER", "Voter Reg. Material")
     , (WAGES, "WAGES", "Campaign Salaries")
-    , (BKFEE, "BKFEE", "Bank Frees")
+    , (BKFEE, "BKFEE", "Bank Fees")
     , (LWNSN, "LWNSN", "Lawn Signs")
    ]
 

@@ -2,6 +2,7 @@ module Tests exposing (..)
 
 import Test exposing (..)
 import Expect
+import Purpose as Purpose
 
 
 -- Check out https://package.elm-lang.org/packages/elm-explorations/test/latest to learn more about testing in Elm!
@@ -10,13 +11,7 @@ import Expect
 all : Test
 all =
     describe "A Test Suite"
-        [ test "Addition" <|
+        [ test "Purpose " <|
             \_ ->
-                Expect.equal 10 (3 + 7)
-        , test "String.left" <|
-            \_ ->
-                Expect.equal "a" (String.left 1 "abcdefg")
-        , test "This test should fail" <|
-            \_ ->
-                Expect.fail "failed as expected!"
+                Expect.equal "TVADS" (Purpose.purposeToString Purpose.TVADS)
         ]

@@ -20,18 +20,21 @@ import Html.Attributes as SvgA exposing (class, for, href, src, style)
 import QRCode
 import Session exposing (Session)
 import Task exposing (Task)
-import Task exposing (Task)
 import Url.Builder
+
+
 
 -- MODEL
 
+
 type alias Model =
-    { session: Session
-    , refCode: String
-    , amount: String
-    , url: String
-    , committeeId: String
+    { session : Session
+    , refCode : String
+    , amount : String
+    , url : String
+    , committeeId : String
     }
+
 
 init : Session -> String -> ( Model, Cmd Msg )
 init session committeeId =
@@ -44,7 +47,10 @@ init session committeeId =
     , Cmd.none
     )
 
+
+
 -- VIEW
+
 
 view : Model -> { title : String, content : Html Msg }
 view model =
@@ -52,42 +58,49 @@ view model =
     , content =
         div
             []
-            [ Banner.container [] <| h2 [ class "text-center p-1" ] [ text "Link Builder" ]
-            , Content.container <| [ formRow model ]
+            [ Banner.container [] [ h2 [ class "text-center p-1" ] [ text "Link Builder" ] ]
+            , Content.container [] [ formRow model ]
             ]
     }
 
 
+
 -- Form
 
+
 formRow : Model -> Html Msg
-formRow model = Grid.row
-    [ Row.attrs [Spacing.mt3] ]
-    [ Grid.col
-        [ Col.sm5]
+formRow model =
+    Grid.row
+        [ Row.attrs [ Spacing.mt3 ] ]
+        [ Grid.col
+            [ Col.sm5 ]
             [ Form.group []
-                [ Form.label [for "ref-id"] [ text "Reference Code"]
+                [ Form.label [ for "ref-id" ] [ text "Reference Code" ]
                 , Input.text [ Input.id "ref-id", Input.onInput RefCodeUpdated ]
                 , Form.help [] [ text "This code will be used to track the context of a donation and enable tracking. After sharing a link with a reference code, navigate to the Contributions view to see which transactions come from which context." ]
                 ]
             , Form.group []
-                [ Form.label [for "amount"] [ text "Amount"]
+                [ Form.label [ for "amount" ] [ text "Amount" ]
                 , Input.number [ Input.id "amount", Input.onInput AmountUpdated ]
-                , Form.help [] [ text "This amount will be prefilled when the donation form is loaded."]
+                , Form.help [] [ text "This amount will be prefilled when the donation form is loaded." ]
                 ]
             ]
-    , Grid.col
-        [ Col.sm5 ]
-        [ linkRow model
+        , Grid.col
+            [ Col.sm5 ]
+            [ linkRow model
+            ]
         ]
-    ]
+
+
 
 -- Link Card
+
 
 linkRow : Model -> Html msg
 linkRow model =
     let
-       url = createUrl model.committeeId model.refCode model.amount
+        url =
+            createUrl model.committeeId model.refCode model.amount
     in
     Grid.row
         []
@@ -97,6 +110,7 @@ linkRow model =
             ]
         ]
 
+
 linkCard : String -> Html msg
 linkCard url =
     Card.config [ Card.attrs [] ]
@@ -104,17 +118,19 @@ linkCard url =
             [ Block.titleH4 [] [ text "Link" ]
             , Block.text []
                 [ a
-                  [ href url, class "d-block max-height-80", Spacing.mt1, Spacing.mb3, Spacing.p3]
-                  [ text url ]
+                    [ href url, class "d-block max-height-80", Spacing.mt1, Spacing.mb3, Spacing.p3 ]
+                    [ text url ]
                 ]
             , Block.text [] [ qrCodeView url ]
-
             , Block.custom <|
                 Button.button [ Button.primary ] [ text "Download" ]
             ]
         |> Card.view
 
+
+
 -- QR Codes
+
 
 qrCodeView : String -> Html msg
 qrCodeView message =
@@ -128,7 +144,9 @@ qrCodeView message =
         |> Result.withDefault (Html.text "Error while encoding to QRCode.")
 
 
+
 -- UPDATE
+
 
 type Msg
     = GotSession Session
@@ -136,26 +154,40 @@ type Msg
     | AmountUpdated String
 
 
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GotSession session ->
             ( { model | session = session }, Cmd.none )
+
         RefCodeUpdated str ->
             ( { model | refCode = str }, Cmd.none )
+
         AmountUpdated str ->
             ( { model | amount = str }, Cmd.none )
 
 
 createUrl : String -> String -> String -> String
 createUrl committeeId refCode amount =
-     let
-        committeeIdVal = [Url.Builder.string "committeeId" committeeId]
-        refCodeVal = if (String.length refCode > 0) then [ Url.Builder.string "refCode" refCode ] else []
-        amountVal = if (String.length amount > 0) then [ Url.Builder.string "amount" amount] else []
-     in
-        Url.Builder.crossOrigin "http://localhost:3001" [] <| committeeIdVal ++ refCodeVal ++ amountVal
+    let
+        committeeIdVal =
+            [ Url.Builder.string "committeeId" committeeId ]
+
+        refCodeVal =
+            if String.length refCode > 0 then
+                [ Url.Builder.string "refCode" refCode ]
+
+            else
+                []
+
+        amountVal =
+            if String.length amount > 0 then
+                [ Url.Builder.string "amount" amount ]
+
+            else
+                []
+    in
+    Url.Builder.crossOrigin "http://localhost:3001" [] <| committeeIdVal ++ refCodeVal ++ amountVal
 
 
 scrollToTop : Task x ()

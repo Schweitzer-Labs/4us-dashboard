@@ -15,6 +15,7 @@ type Route
     = Home
     | LinkBuilder
     | Disbursements
+    | NeedsReview
 
 
 parser : Parser (Route -> a) a
@@ -23,6 +24,7 @@ parser =
         [ Parser.map Home Parser.top
         , Parser.map LinkBuilder (s "link-builder")
         , Parser.map Disbursements (s "disbursements")
+        , Parser.map NeedsReview (s "needs-review")
         ]
 
 
@@ -66,3 +68,5 @@ routeToPieces page =
             ["link-builder"]
         Disbursements ->
             ["disbursements"]
+        NeedsReview ->
+            ["needs-review"]

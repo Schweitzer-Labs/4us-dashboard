@@ -49,7 +49,7 @@ view maybeViewer page { title, content } =
     , body = viewHeader page maybeViewer
         :: toolBarContainer
         :: contentContainer content
-        :: [ viewFooter ]
+        :: []
     }
 
 contentContainer : Html msg -> Html msg
@@ -119,9 +119,6 @@ searchButton = img [Asset.src Asset.search, class "nav-icon"] []
 gearButton : Html msg
 gearButton = img [Asset.src Asset.gearHires, class "nav-icon"] []
 
-viewFooter : Html msg
-viewFooter =
-    footer [] []
 
 navbarLink : Page -> Route -> List (Html msg) -> Html msg
 navbarLink page route linkContent =
