@@ -1,105 +1,94 @@
-module Disbursements exposing (Disbursement, decoder, view)
+module Disbursements exposing (Label(..), decoder, view, viewInteractive)
 
 import Asset
-import DataTable
+import DataTable exposing (DataRow)
+import Disbursement as Disbursement
 import Html exposing (Html, span, text)
 import Html.Attributes exposing (class)
-import Json.Decode as Decode exposing (string)
-import Json.Decode.Pipeline exposing (optional, required)
+import Json.Decode as Decode
 
 
-type alias Disbursement =
-    { disbursementId : String
-    , committeeId : String
-    , vendorId : String
-    , date : String
-    , amount : String
-    , purposeCode : String
-    , addressLine1 : String
-    , addressLine2 : String
-    , city : String
-    , state : String
-    , postalCode : String
-    , recordNumber : String
-    , entityName : String
-    , verified : String
-    , paymentMethod : String
-    }
-
-
-disbursementDecoder : Decode.Decoder Disbursement
-disbursementDecoder =
-    Decode.succeed Disbursement
-        |> required "disbursementId" string
-        |> required "committeeId" string
-        |> required "vendorId" string
-        |> required "timestamp" string
-        |> required "amount" string
-        |> required "purposeCode" string
-        |> optional "addressLine1" string ""
-        |> optional "addressLine2" string ""
-        |> optional "city" string ""
-        |> optional "state" string ""
-        |> optional "postalCode" string ""
-        |> required "recordNumber" string
-        |> required "entityName" string
-        |> required "verified" string
-        |> optional "paymentMethod" string "Check"
-
-
-decoder : Decode.Decoder (List Disbursement)
+decoder : Decode.Decoder (List Disbursement.Model)
 decoder =
-    Decode.list disbursementDecoder
+    Decode.list Disbursement.decoder
 
 
 
 -- Disbursements
 
 
-labels : List String
-labels =
-    [ "Record"
-    , "Date / Time"
-    , "Entity Name"
-    , "Amount"
-    , "Purpose"
-    , "Payment Method"
-    , "Status"
-    , "Verified"
+labels : (Label -> msg) -> List ( msg, String )
+labels sortMsg =
+    [ ( sortMsg Record, "Record" )
+    , ( sortMsg DateTime, "Date / Time" )
+    , ( sortMsg EntityName, "Entity Name" )
+    , ( sortMsg Amount, "Amount" )
+    , ( sortMsg Purpose, "Purpose" )
+    , ( sortMsg PaymentMethod, "Payment Method" )
+    , ( sortMsg Status, "Status" )
+    , ( sortMsg Verified, "Verified" )
     ]
 
 
-view : List (Html msg) -> List Disbursement -> Html msg
-view content disbursements =
-    DataTable.view content labels disbursementRowMap disbursements
+type Label
+    = Record
+    | DateTime
+    | EntityName
+    | Amount
+    | Purpose
+    | PaymentMethod
+    | Status
+    | Verified
 
 
-stringToBool : String -> Bool
-stringToBool str =
-    case str of
-        "true" ->
-            True
-
-        _ ->
-            False
+view : (Label -> msg) -> List (Html msg) -> List Disbursement.Model -> Html msg
+view sortMsg content disbursements =
+    DataTable.view content (labels sortMsg) disbursementRowMap <|
+        List.map (\d -> ( Nothing, d )) disbursements
 
 
-disbursementRowMap : Disbursement -> List ( String, Html msg )
-disbursementRowMap d =
+viewInteractive :
+    (Label -> msg)
+    -> (Disbursement.Model -> msg)
+    -> List (Html msg)
+    -> List Disbursement.Model
+    -> Html msg
+viewInteractive sortMsg msg content disbursements =
+    DataTable.view content (labels sortMsg) disbursementRowMap <|
+        List.map (\d -> ( Just (msg d), d )) disbursements
+
+
+disbursementRowMap : ( Maybe msg, Disbursement.Model ) -> ( Maybe msg, DataRow msg )
+disbursementRowMap ( maybeMsg, d ) =
     let
         status =
-            if stringToBool d.verified then
+            if d.bankVerified then
+                Asset.circleCheckGlyph [ class "text-success data-icon-size" ]
+
+            else
+                Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
+
+        verified =
+            if d.ruleVerified then
                 Asset.circleCheckGlyph [ class "text-success data-icon-size" ]
 
             else
                 Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
     in
-    [ ( "Record", text d.recordNumber )
-    , ( "Date / Time", text d.date )
-    , ( "Entity Name", text d.entityName )
-    , ( "Amount", span [ class "text-failure font-weight-bold" ] [ text <| "$" ++ d.amount ] )
-    , ( "Purpose", text d.purposeCode )
-    , ( "Payment Method", span [ class "text-failure font-weight-bold" ] [ text d.paymentMethod ] )
-    , ( "Status", status )
-    , ( "Verified", Asset.circleCheckGlyph [ class "text-success data-icon-size" ] )
-    ]
+    ( maybeMsg
+    , [ ( "Record", text d.recordNumber )
+      , ( "Date / Time", text d.date )
+      , ( "Entity Name", text d.entityName )
+      , ( "Amount", span [ class "text-failure font-weight-bold" ] [ text <| "($" ++ d.amount ++ ")" ] )
+      , ( "Purpose"
+        , if d.purposeCode == "" then
+            span [ class "text-danger" ] [ text "Missing" ]
+
+          else
+            text d.purposeCode
+        )
+      , ( "Payment Method", span [ class "text-failure font-weight-bold text-uppercase" ] [ text d.paymentMethod ] )
+      , ( "Status", status )
+      , ( "Verified", verified )
+      ]
+    )

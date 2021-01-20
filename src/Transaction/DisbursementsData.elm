@@ -1,13 +1,13 @@
 module Transaction.DisbursementsData exposing (DisbursementsData, decode)
 
 import Aggregations exposing (Aggregations)
-import Disbursements exposing (Disbursement)
-import Json.Decode as Decode exposing (Decoder, float, int, string)
-import Json.Decode.Pipeline exposing (hardcoded, optional, required)
+import Disbursement as Disbursement
+import Disbursements
+import Json.Decode as Decode exposing (Decoder)
 
 
 type alias DisbursementsData =
-    { disbursements : List Disbursement
+    { disbursements : List Disbursement.Model
     , aggregations : Aggregations
     }
 

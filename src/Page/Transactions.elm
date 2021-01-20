@@ -1,4 +1,4 @@
-module Page.NeedsReview exposing (Model, Msg, init, subscriptions, toSession, update, view)
+module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, update, view)
 
 import Aggregations as Aggregations exposing (Aggregations)
 import Api exposing (Cred)

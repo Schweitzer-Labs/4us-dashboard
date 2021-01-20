@@ -27,6 +27,8 @@ type Page
     | Home
     | LinkBuilder
     | Disbursements
+    | NeedsReview
+    | Transactions
     | Login
     | Register
     | Settings
@@ -48,7 +50,7 @@ view maybeViewer page { title, content } =
     { title = title ++ " - Transactions"
     , body =
         viewHeader page maybeViewer
-            :: toolBarContainer
+            :: toolBarContainer page
             :: contentContainer content
             :: []
     }
@@ -98,7 +100,7 @@ ruleInfoRow =
         [ Grid.col [ Col.xs4, Col.attrs [ class "border-right", class "text-center" ] ] [ text "City Council" ]
         , Grid.col [ Col.xs4 ]
             [ img
-                [ Asset.src Asset.amalgamatedLogo, class "header-info-bank-logo" ]
+                [ Asset.src Asset.wiseLogo, class "header-info-bank-logo" ]
                 []
             ]
         ]
@@ -155,6 +157,18 @@ isActive page route =
         ( Home, Route.Home ) ->
             True
 
+        ( Disbursements, Route.Disbursements ) ->
+            True
+
+        ( NeedsReview, Route.NeedsReview ) ->
+            True
+
+        ( LinkBuilder, Route.LinkBuilder ) ->
+            True
+
+        ( Transactions, Route.Transactions ) ->
+            True
+
         _ ->
             False
 
@@ -163,22 +177,22 @@ isActive page route =
 -- TOOLBAR
 
 
-toolBarContainer : Html msg
-toolBarContainer =
-    div [ class "tool-bar-container" ] [ toolBarGrid ]
+toolBarContainer : Page -> Html msg
+toolBarContainer page =
+    div [ class "tool-bar-container" ] [ toolBarGrid page ]
 
 
-toolBarGrid : Html msg
-toolBarGrid =
+toolBarGrid : Page -> Html msg
+toolBarGrid page =
     Grid.containerFluid
         [ class "text-center mt-2", Spacing.pl0 ]
-        [ h3 [ class "pt-2 pb-2" ] [ text "TOOLS" ]
-        , toolBarItem Asset.calendar "Calendar"
-        , toolBarLink (toolBarAsset Asset.person) Route.Home "Contributions"
-        , toolBarLink (toolBarAsset Asset.house) Route.Disbursements "Disbursements"
+        [ h3 [ class "pt-1 pb-1" ] [ text "TOOLS" ]
+        , toolBarLink (Asset.coinsGlyph [ class "tool-glyph" ]) page Route.Transactions "Transactions"
+        , toolBarLink (toolBarAsset Asset.person) page Route.Home "Contributions"
+        , toolBarLink (toolBarAsset Asset.house) page Route.Disbursements "Disbursements"
+        , toolBarLink (toolBarAsset Asset.binoculars) page Route.NeedsReview "Needs Review"
+        , toolBarLink (Asset.linkGlyph [ class "tool-glyph" ]) page Route.LinkBuilder "Link Builder"
         , toolBarItem Asset.documents "Documents"
-        , toolBarLink (Asset.linkGlyph [ class "tool-glyph" ]) Route.LinkBuilder "Link Builder"
-        , toolBarItem Asset.binoculars "Needs review"
         ]
 
 
@@ -187,15 +201,27 @@ toolBarAsset image =
     img [ Asset.src image, class "tool-asset" ] []
 
 
-toolBarLink : Html msg -> Route -> String -> Html msg
-toolBarLink glyph route label =
+selected : Page -> Route -> String
+selected page route =
+    if isActive page route then
+        "border-selected"
+
+    else
+        "border-unselected"
+
+
+toolBarLink : Html msg -> Page -> Route -> String -> Html msg
+toolBarLink glyph page route label =
     Grid.row
-        [ Row.attrs [ class "mt-3 hover-underline" ] ]
+        [ Row.attrs [ class "hover-underline" ] ]
         [ Grid.col
             []
             [ a [ Route.href route, class "nav-link" ]
                 [ Grid.containerFluid
-                    [ class "text-center" ]
+                    [ Spacing.pt3
+                    , Spacing.pb3
+                    , class <| "text-center " ++ selected page route
+                    ]
                     [ Grid.row
                         [ Row.centerXs ]
                         [ Grid.col [] [ glyph ] ]

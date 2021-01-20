@@ -11,15 +11,18 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
 import Browser.Dom as Dom
 import Content
-import CreateDisbursementModal
-import Disbursements exposing (Disbursement)
+import CreateDisbursement
+import Delay
+import Disbursement as Disbursement
+import Disbursements exposing (Label(..))
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Http
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (string)
 import Json.Encode as Encode
 import Session exposing (Session)
+import SubmitButton exposing (submitButton)
 import Task exposing (Task)
 import Time
 import Transaction.DisbursementsData as DD exposing (DisbursementsData)
@@ -32,11 +35,12 @@ import Transaction.DisbursementsData as DD exposing (DisbursementsData)
 type alias Model =
     { session : Session
     , timeZone : Time.Zone
-    , disbursements : List Disbursement
+    , disbursements : List Disbursement.Model
     , aggregations : Aggregations
     , createDisbursementModalVisibility : Modal.Visibility
-    , createDisbursementModal : CreateDisbursementModal.Model
+    , createDisbursementModal : CreateDisbursement.Model
     , committeeId : String
+    , createDisbursementSubmitting : Bool
     }
 
 
@@ -48,7 +52,8 @@ init session committeeId =
       , disbursements = []
       , aggregations = Aggregations.init
       , createDisbursementModalVisibility = Modal.hidden
-      , createDisbursementModal = CreateDisbursementModal.init
+      , createDisbursementModal = CreateDisbursement.init
+      , createDisbursementSubmitting = False
       }
     , getDisbursementsData committeeId
     )
@@ -65,7 +70,7 @@ view model =
         div
             []
             [ Banner.container [] [ Aggregations.view model.aggregations ]
-            , Content.container [] [ Disbursements.view [ createDisbursementModalButton ] model.disbursements ]
+            , Content.container [] [ Disbursements.view SortDisbursements [ createDisbursementModalButton ] model.disbursements ]
             , createDisbursementModal model
             ]
     }
@@ -81,35 +86,37 @@ createDisbursementModal model =
         |> Modal.body
             []
             [ Html.map CreateDisbursementModalUpdated <|
-                CreateDisbursementModal.view model.createDisbursementModal
+                CreateDisbursement.view model.createDisbursementModal
             ]
         |> Modal.footer []
             [ Grid.containerFluid
                 []
-                [ Grid.row
-                    [ Row.aroundXs ]
-                    [ Grid.col
-                        [ Col.attrs [ class "text-left" ] ]
-                        [ Button.button
-                            [ Button.outlinePrimary
-                            , Button.large
-                            , Button.attrs [ onClick HideCreateDisbursementModal ]
-                            ]
-                            [ text "Exit" ]
-                        ]
-                    , Grid.col
-                        [ Col.attrs [ class "text-right" ] ]
-                        [ Button.button
-                            [ Button.primary
-                            , Button.large
-                            , Button.attrs [ onClick SubmitCreateDisbursement, class "text-right" ]
-                            ]
-                            [ text "Submit" ]
-                        ]
-                    ]
-                ]
+                [ buttonRow model ]
             ]
         |> Modal.view model.createDisbursementModalVisibility
+
+
+buttonRow : Model -> Html Msg
+buttonRow model =
+    Grid.row
+        [ Row.betweenXs ]
+        [ Grid.col
+            [ Col.lg3, Col.attrs [ class "text-left" ] ]
+            [ exitButton ]
+        , Grid.col
+            [ Col.lg3 ]
+            [ submitButton "Submit" SubmitCreateDisbursement model.createDisbursementSubmitting ]
+        ]
+
+
+exitButton : Html Msg
+exitButton =
+    Button.button
+        [ Button.outlinePrimary
+        , Button.block
+        , Button.attrs [ onClick HideCreateDisbursementModal ]
+        ]
+        [ text "Exit" ]
 
 
 createDisbursementModalButton : Html Msg
@@ -129,10 +136,12 @@ type Msg
     | LoadDisbursementsData (Result Http.Error DisbursementsData)
     | HideCreateDisbursementModal
     | ShowCreateDisbursementModal
-    | CreateDisbursementModalUpdated CreateDisbursementModal.Msg
+    | CreateDisbursementModalUpdated CreateDisbursement.Msg
     | AnimateCreateDisbursementModal Modal.Visibility
     | GotCreateDisbursementResponse (Result Http.Error String)
     | SubmitCreateDisbursement
+    | SubmitCreateDisbursementDelay
+    | SortDisbursements Disbursements.Label
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -151,7 +160,7 @@ update msg model =
 
         SubmitCreateDisbursement ->
             ( { model
-                | createDisbursementModalVisibility = Modal.hidden
+                | createDisbursementSubmitting = True
               }
             , createDisbursement model
             )
@@ -162,16 +171,38 @@ update msg model =
         CreateDisbursementModalUpdated subMsg ->
             let
                 ( subModel, subCmd ) =
-                    CreateDisbursementModal.update subMsg model.createDisbursementModal
+                    CreateDisbursement.update subMsg model.createDisbursementModal
             in
             ( { model | createDisbursementModal = subModel }, Cmd.map CreateDisbursementModalUpdated subCmd )
 
         GotCreateDisbursementResponse res ->
             case res of
                 Ok data ->
-                    ( model, getDisbursementsData model.committeeId )
+                    ( model, Delay.after 2 Delay.Second SubmitCreateDisbursementDelay )
 
                 Err _ ->
+                    ( model, Cmd.none )
+
+        SubmitCreateDisbursementDelay ->
+            ( { model
+                | createDisbursementModalVisibility = Modal.hidden
+                , createDisbursementSubmitting = False
+              }
+            , getDisbursementsData model.committeeId
+            )
+
+        SortDisbursements label ->
+            case label of
+                Disbursements.Record ->
+                    ( { model
+                        | disbursements =
+                            List.reverse <|
+                                List.sortBy (\d -> d.recordNumber) model.disbursements
+                      }
+                    , Cmd.none
+                    )
+
+                _ ->
                     ( model, Cmd.none )
 
         LoadDisbursementsData res ->
@@ -195,7 +226,7 @@ update msg model =
 getDisbursementsData : String -> Cmd Msg
 getDisbursementsData committeeId =
     Http.send LoadDisbursementsData <|
-        Api.get (Endpoint.disbursements committeeId) Nothing DD.decode
+        Api.get (Endpoint.disbursements committeeId []) Nothing DD.decode
 
 
 scrollToTop : Task x ()
@@ -249,4 +280,5 @@ createDisbursement model =
             encodeDisbursement model |> Http.jsonBody
     in
     Http.send GotCreateDisbursementResponse <|
-        Api.post Endpoint.disbursement Nothing body Decode.string
+        Api.post Endpoint.disbursement Nothing body <|
+            Decode.field "message" string

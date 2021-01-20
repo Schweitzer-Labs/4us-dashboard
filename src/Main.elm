@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Main exposing (Model(..), Msg(..), changeRouteTo, init, main, subscriptions, toSession, update, updateWith, view)
 
 import Api
 import Browser exposing (Document)
@@ -8,17 +8,21 @@ import Html exposing (Html)
 import Json.Decode exposing (Value)
 import Page
 import Page.Blank as Blank
+import Page.Disbursements as Disbursements
 import Page.Home as Home
 import Page.LinkBuilder as LinkBuilder
+import Page.NeedsReview as NeedsReview
 import Page.NotFound as NotFound
-import Page.Disbursements as Disbursements
+import Page.Transactions as Transactions
 import Route exposing (Route)
 import Session exposing (Session)
 import Url exposing (Url)
 import Viewer exposing (Viewer)
 
 
+
 ---- MODEL ----
+
 
 type Model
     = NotFound Session
@@ -26,6 +30,8 @@ type Model
     | Home Home.Model
     | LinkBuilder LinkBuilder.Model
     | Disbursements Disbursements.Model
+    | NeedsReview NeedsReview.Model
+    | Transactions Transactions.Model
 
 
 init : Maybe Viewer -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -39,6 +45,7 @@ init maybeViewer url navKey =
 
 ---- UPDATE ----
 
+
 type Msg
     = ChangedUrl Url
     | ClickedLink Browser.UrlRequest
@@ -46,6 +53,9 @@ type Msg
     | GotLinkBuilderMsg LinkBuilder.Msg
     | GotDisbursementsMsg Disbursements.Msg
     | GotSession Session
+    | GotNeedsReviewMsg NeedsReview.Msg
+    | GotTransactionsMsg Transactions.Msg
+
 
 toSession : Model -> Session
 toSession page =
@@ -59,46 +69,67 @@ toSession page =
         Home home ->
             Home.toSession home
 
+        Transactions transactions ->
+            Transactions.toSession transactions
+
         LinkBuilder session ->
             LinkBuilder.toSession session
 
         Disbursements session ->
             Disbursements.toSession session
 
+        NeedsReview session ->
+            NeedsReview.toSession session
+
+
 
 -- Refactor removed committeeId parsing from URL and move to Session once auth is added.
+
+
 changeRouteTo : Url -> Maybe Route -> Model -> ( Model, Cmd Msg )
 changeRouteTo url maybeRoute model =
     let
         session =
             toSession model
+
         committeeId =
             CommitteeId.parse url
     in
     case maybeRoute of
         Nothing ->
             ( NotFound session, Cmd.none )
+
         -- rest of the routes
         Just Route.Home ->
             Home.init
                 session
                 committeeId
                 |> updateWith Home GotHomeMsg model
+
+        Just Route.Transactions ->
+            Transactions.init
+                session
+                committeeId
+                |> updateWith Transactions GotTransactionsMsg model
+
         Just Route.LinkBuilder ->
             LinkBuilder.init
                 session
                 committeeId
                 |> updateWith LinkBuilder GotLinkBuilderMsg model
+
         Just Route.Disbursements ->
             Disbursements.init
                 session
                 committeeId
                 |> updateWith Disbursements GotDisbursementsMsg model
+
         Just Route.NeedsReview ->
-            Disbursements.init
+            NeedsReview.init
                 session
                 committeeId
-                |> updateWith Disbursements GotDisbursementsMsg model
+                |> updateWith NeedsReview GotNeedsReviewMsg model
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -135,6 +166,10 @@ update msg model =
             Home.update subMsg home
                 |> updateWith Home GotHomeMsg model
 
+        ( GotTransactionsMsg subMsg, Transactions transactions ) ->
+            Transactions.update subMsg transactions
+                |> updateWith Transactions GotTransactionsMsg model
+
         ( GotLinkBuilderMsg subMsg, LinkBuilder linkBuilder ) ->
             LinkBuilder.update subMsg linkBuilder
                 |> updateWith LinkBuilder GotLinkBuilderMsg model
@@ -142,6 +177,10 @@ update msg model =
         ( GotDisbursementsMsg subMsg, Disbursements disbursements ) ->
             Disbursements.update subMsg disbursements
                 |> updateWith Disbursements GotDisbursementsMsg model
+
+        ( GotNeedsReviewMsg subMsg, NeedsReview disbursements ) ->
+            NeedsReview.update subMsg disbursements
+                |> updateWith NeedsReview GotNeedsReviewMsg model
 
         ( GotSession session, Redirect _ ) ->
             ( Redirect session
@@ -152,11 +191,13 @@ update msg model =
             -- Disregard messages that arrived for the wrong page.
             ( model, Cmd.none )
 
+
 updateWith : (subModel -> Model) -> (subMsg -> Msg) -> Model -> ( subModel, Cmd subMsg ) -> ( Model, Cmd Msg )
 updateWith toModel toMsg model ( subModel, subCmd ) =
     ( toModel subModel
     , Cmd.map toMsg subCmd
     )
+
 
 
 ---- VIEW ----
@@ -187,14 +228,22 @@ view model =
         Home home ->
             viewPage Page.Home GotHomeMsg (Home.view home)
 
+        Transactions transactions ->
+            viewPage Page.Transactions GotTransactionsMsg (Transactions.view transactions)
+
         LinkBuilder linkBuilder ->
             viewPage Page.LinkBuilder GotLinkBuilderMsg (LinkBuilder.view linkBuilder)
 
         Disbursements disbursements ->
             viewPage Page.Disbursements GotDisbursementsMsg (Disbursements.view disbursements)
 
+        NeedsReview disbursements ->
+            viewPage Page.NeedsReview GotNeedsReviewMsg (NeedsReview.view disbursements)
+
+
 
 ---- PROGRAM ----
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -208,12 +257,17 @@ subscriptions model =
         Home home ->
             Sub.map GotHomeMsg (Home.subscriptions home)
 
+        Transactions transactions ->
+            Sub.map GotTransactionsMsg (Transactions.subscriptions transactions)
+
         LinkBuilder linkBuilder ->
             Sub.map GotLinkBuilderMsg (LinkBuilder.subscriptions linkBuilder)
 
         Disbursements disbursements ->
             Sub.map GotDisbursementsMsg (Disbursements.subscriptions disbursements)
 
+        NeedsReview disbursements ->
+            Sub.map GotNeedsReviewMsg (NeedsReview.subscriptions disbursements)
 
 
 main : Program Value Model Msg

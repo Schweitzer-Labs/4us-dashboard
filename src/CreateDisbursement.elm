@@ -1,4 +1,4 @@
-module CreateDisbursementModal exposing (Model, Msg(..), init, selectPurpose, update, view)
+module CreateDisbursement exposing (Model, Msg(..), init, selectPurpose, update, view)
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input

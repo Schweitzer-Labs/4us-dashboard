@@ -6,19 +6,18 @@ module Page.Home exposing (Model, Msg, init, subscriptions, toSession, update, v
 import Aggregations exposing (Aggregations)
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
-import Asset as Asset exposing (Image)
 import Banner
 import Bootstrap.Grid as Grid exposing (Column)
 import Browser.Dom as Dom
 import Content
-import DataTable
+import Contribution as Contribution
+import Contributions
 import Html exposing (..)
-import Html.Attributes exposing (class)
 import Http
 import Session exposing (Session)
 import Task exposing (Task)
 import Time
-import Transaction.ContributionsData as ContributionsData exposing (Contribution, ContributionsData)
+import Transaction.ContributionsData as ContributionsData exposing (ContributionsData)
 
 
 
@@ -28,7 +27,7 @@ import Transaction.ContributionsData as ContributionsData exposing (Contribution
 type alias Model =
     { session : Session
     , timeZone : Time.Zone
-    , contributions : List Contribution
+    , contributions : List Contribution.Model
     , aggregations : Aggregations
     , committeeId : String
     }
@@ -66,86 +65,12 @@ view model =
 -- Contributions
 
 
-contributionsContainer : List Contribution -> Html msg
+contributionsContainer : List Contribution.Model -> Html Msg
 contributionsContainer contributions =
     Grid.row
         []
-        [ Grid.col [] [ contributionsTable contributions ]
+        [ Grid.col [] [ Contributions.view SortContributions [] contributions ]
         ]
-
-
-dollar : String -> String
-dollar str =
-    "$" ++ str
-
-
-
--- CONTRIBUTIONS
-
-
-labels : List String
-labels =
-    [ "Record"
-    , "Date / Time"
-    , "Rule"
-    , "Entity name"
-    , "Amount"
-    , "Payment Method"
-    , "Processor"
-    , "Status"
-    , "Verified"
-    , "Reference Code"
-    ]
-
-
-contributionsTable : List Contribution -> Html msg
-contributionsTable c =
-    DataTable.view [] labels contributionRowMap c
-
-
-stringToBool : String -> Bool
-stringToBool str =
-    case str of
-        "true" ->
-            True
-
-        _ ->
-            False
-
-
-contributionRowMap : Contribution -> List ( String, Html msg )
-contributionRowMap c =
-    let
-        status =
-            if stringToBool c.verified then
-                Asset.circleCheckGlyph [ class "text-success data-icon-size" ]
-
-            else
-                Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
-
-        refCode =
-            text <|
-                (\n ->
-                    if n == "" then
-                        "home"
-
-                    else
-                        n
-                )
-                <|
-                    Maybe.withDefault "Home" c.refCode
-    in
-    [ ( "Record", text c.record )
-    , ( "Date / Time", text c.datetime )
-    , ( "Rule", text c.rule )
-    , ( "Entity name", text c.entityName )
-    , ( "Amount", span [ class "text-success font-weight-bold" ] [ text <| dollar c.amount ] )
-    , ( "Payment Method", text c.paymentMethod )
-    , ( "Processor", img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] [] )
-    , ( "Status", status )
-    , ( "Verified", Asset.circleCheckGlyph [ class "text-success data-icon-size" ] )
-    , ( "Reference Code", refCode )
-    ]
 
 
 
@@ -160,6 +85,7 @@ type ContributionId
 type Msg
     = GotSession Session
     | LoadContributionsData (Result Http.Error ContributionsData)
+    | SortContributions Contributions.Label
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -179,6 +105,18 @@ update msg model =
                     )
 
                 Err _ ->
+                    ( model, Cmd.none )
+
+        SortContributions label ->
+            case label of
+                Contributions.Record ->
+                    ( { model
+                        | contributions = model.contributions
+                      }
+                    , Cmd.none
+                    )
+
+                _ ->
                     ( model, Cmd.none )
 
 

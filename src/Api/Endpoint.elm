@@ -1,19 +1,22 @@
 module Api.Endpoint exposing
     ( Endpoint
     , articles
+    , contributions
+    , disbursement
+    , disbursements
     , feed
     , follow
     , login
+    , needsReviewDisbursements
     , profiles
     , request
     , tags
     , user
     , users
-    , contributions
-    , disbursements
-    , disbursement
+    , verifyDisbursement
     )
 
+import Api.DisbursementsFilter as DisbursementsFilter exposing (DisbursementsFilter)
 import Http
 import Url.Builder exposing (QueryParameter, string)
 import Username exposing (Username)
@@ -31,7 +34,6 @@ request :
     , withCredentials : Bool
     }
     -> Http.Request a
-
 request config =
     Http.request
         { body = config.body
@@ -62,7 +64,9 @@ unwrap (Endpoint str) =
     str
 
 
+
 -- "https://9wp0a5f6ic.execute-api.us-east-1.amazonaws.com/dev"
+
 
 url : List String -> List QueryParameter -> Endpoint
 url paths queryParams =
@@ -75,19 +79,42 @@ url paths queryParams =
 
 
 
--- ENDPOINTSs
+-- ENDPOINTS
+
+
 contributions : String -> Endpoint
 contributions committeeId =
-    url [ "contributions" ] [string "committeeId" committeeId]
+    url [ "contributions" ] [ string "committeeId" committeeId ]
 
 
-disbursements : String -> Endpoint
-disbursements committeeId =
-    url [ "disbursements" ] [string "committeeId" committeeId]
+disbursements : String -> List DisbursementsFilter -> Endpoint
+disbursements committeeId filters =
+    let
+        filterQueryParams =
+            List.map DisbursementsFilter.toQueryParam filters
+
+        queryParams =
+            [ string "committeeId" committeeId ] ++ filterQueryParams
+    in
+    url [ "disbursements" ] queryParams
+
+
+needsReviewDisbursements : String -> Endpoint
+needsReviewDisbursements committeeId =
+    disbursements committeeId
+        [ DisbursementsFilter.RuleProcessed False
+        , DisbursementsFilter.BankProcessed True
+        ]
+
 
 disbursement : Endpoint
 disbursement =
     url [ "disbursement" ] []
+
+
+verifyDisbursement : Endpoint
+verifyDisbursement =
+    url [ "disbursement", "verify" ] []
 
 
 login : Endpoint
@@ -112,6 +139,7 @@ follow uname =
 
 
 -- ARTICLE ENDPOINTS
+
 
 articles : List QueryParameter -> Endpoint
 articles params =

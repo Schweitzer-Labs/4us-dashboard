@@ -16,16 +16,19 @@ type Route
     | LinkBuilder
     | Disbursements
     | NeedsReview
+    | Transactions
 
 
 parser : Parser (Route -> a) a
 parser =
     oneOf
         [ Parser.map Home Parser.top
+        , Parser.map Transactions (s "transactions")
         , Parser.map LinkBuilder (s "link-builder")
         , Parser.map Disbursements (s "disbursements")
         , Parser.map NeedsReview (s "needs-review")
         ]
+
 
 
 -- PUBLIC HELPERS
@@ -64,9 +67,15 @@ routeToPieces page =
     case page of
         Home ->
             []
+
+        Transactions ->
+            [ "transactions" ]
+
         LinkBuilder ->
-            ["link-builder"]
+            [ "link-builder" ]
+
         Disbursements ->
-            ["disbursements"]
+            [ "disbursements" ]
+
         NeedsReview ->
-            ["needs-review"]
+            [ "needs-review" ]

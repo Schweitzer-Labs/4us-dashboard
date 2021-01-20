@@ -7194,6 +7194,9 @@ a.text-dark:hover, a.text-dark:focus {
 .hover-underline:hover {
   text-decoration: underline; }
 
+.hover-pointer:hover {
+  cursor: pointer; }
+
 .header-info-bank-logo {
   width: 100px; }
 
@@ -7210,7 +7213,7 @@ a.text-dark:hover, a.text-dark:focus {
   height: 50px; }
 
 .tool-glyph {
-  font-size: 30px; }
+  font-size: 38px; }
 
 .stripe-logo {
   width: 50px; }
@@ -7222,4 +7225,12 @@ a.text-dark:hover, a.text-dark:focus {
   min-height: 80px; }
 
 .data-icon-size {
-  font-size: 25px; }
+  font-size: 30px; }
+
+.border-unselected {
+  border: 2px solid rgba(255, 255, 0, 0);
+  border-radius: 5px; }
+
+.border-selected {
+  border: 2px solid #4f53d1;
+  border-radius: 5px; }
