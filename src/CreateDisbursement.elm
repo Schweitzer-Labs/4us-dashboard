@@ -1,5 +1,6 @@
 module CreateDisbursement exposing (Model, Msg(..), init, selectPurpose, update, view)
 
+import Address
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Select as Select
@@ -18,6 +19,11 @@ type alias Model =
     , checkNumber : String
     , checkDate : String
     , purposeCode : Maybe String
+    , address1 : String
+    , address2 : String
+    , city : String
+    , state : String
+    , postalCode : String
     }
 
 
@@ -28,6 +34,11 @@ init =
     , checkNumber = ""
     , checkDate = ""
     , purposeCode = Nothing
+    , address1 = ""
+    , address2 = ""
+    , city = ""
+    , state = ""
+    , postalCode = ""
     }
 
 
@@ -52,53 +63,40 @@ view : Model -> Html Msg
 view model =
     Grid.containerFluid
         []
-        [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
+    <|
+        [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ selectPurpose model ] ]
+        , Grid.row [ Row.attrs [ Spacing.mt2 ] ]
             [ Grid.col
                 []
-                [ Form.label [ for "recipient-name" ] [ text "Recipient Name" ]
+                [ Form.label [ for "recipient-name" ] [ text "Recipient Info" ]
                 , Input.text [ Input.id "recipient-name", Input.onInput CheckRecipientUpdated, Input.placeholder "Enter recipient name" ]
                 ]
             ]
-        , Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ selectPurpose model ] ]
-        , Grid.row []
-            [ Grid.col
-                [ Col.lg4 ]
-                [ Form.label [ for "amount" ] [ text "Amount" ]
-                , Input.text [ Input.id "amount", Input.onInput CheckAmountUpdated, Input.placeholder "Enter amount" ]
-                ]
-            , Grid.col
-                [ Col.lg4 ]
-                [ Form.label [ for "check-number" ] [ text "Check Number" ]
-                , Input.text [ Input.id "check-number", Input.onInput CheckNumberUpdated, Input.placeholder "Enter check number" ]
-                ]
-            , Grid.col
-                [ Col.lg4 ]
-                [ Form.label [ for "date" ] [ text "Date" ]
-                , Input.date [ Input.id "date", Input.onInput CheckDateUpdated ]
-                ]
-            ]
         ]
-
-
-address : Model -> Html Msg
-address mode =
-    Grid.row []
-        [ Grid.col
-            [ Col.lg4 ]
-            [ Form.label [ for "street-address" ] [ text "Street Address" ]
-            , Input.text [ Input.id "amount", Input.onInput CheckAmountUpdated, Input.placeholder "Enter Street address" ]
-            ]
-        , Grid.col
-            [ Col.lg4 ]
-            [ Form.label [ for "check-number" ] [ text "Check Number" ]
-            , Input.text [ Input.id "check-number", Input.onInput CheckNumberUpdated, Input.placeholder "Enter  check number" ]
-            ]
-        , Grid.col
-            [ Col.lg4 ]
-            [ Form.label [ for "date" ] [ text "Date" ]
-            , Input.date [ Input.id "date", Input.onInput CheckDateUpdated ]
-            ]
-        ]
+            ++ Address.row
+                ( model.address1, Address1Updated )
+                ( model.address2, Address2Updated )
+                ( model.city, CityUpdated )
+                ( model.state, StateUpdated )
+                ( model.postalCode, PostalCodeUpdated )
+            ++ [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
+                    [ Grid.col
+                        [ Col.lg4 ]
+                        [ Form.label [ for "amount" ] [ text "Amount" ]
+                        , Input.text [ Input.id "amount", Input.onInput CheckAmountUpdated, Input.placeholder "Enter amount" ]
+                        ]
+                    , Grid.col
+                        [ Col.lg4 ]
+                        [ Form.label [ for "check-number" ] [ text "Check Number" ]
+                        , Input.text [ Input.id "check-number", Input.onInput CheckNumberUpdated, Input.placeholder "Enter check number" ]
+                        ]
+                    , Grid.col
+                        [ Col.lg4 ]
+                        [ Form.label [ for "date" ] [ text "Date" ]
+                        , Input.date [ Input.id "date", Input.onInput CheckDateUpdated ]
+                        ]
+                    ]
+               ]
 
 
 type Msg
@@ -107,6 +105,11 @@ type Msg
     | CheckRecipientUpdated String
     | CheckNumberUpdated String
     | CheckDateUpdated String
+    | Address1Updated String
+    | Address2Updated String
+    | CityUpdated String
+    | StateUpdated String
+    | PostalCodeUpdated String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -126,3 +129,18 @@ update msg model =
 
         CheckDateUpdated str ->
             ( { model | checkDate = str }, Cmd.none )
+
+        Address1Updated str ->
+            ( { model | address1 = str }, Cmd.none )
+
+        Address2Updated str ->
+            ( { model | address2 = str }, Cmd.none )
+
+        CityUpdated str ->
+            ( { model | city = str }, Cmd.none )
+
+        StateUpdated str ->
+            ( { model | state = str }, Cmd.none )
+
+        PostalCodeUpdated str ->
+            ( { model | postalCode = str }, Cmd.none )
