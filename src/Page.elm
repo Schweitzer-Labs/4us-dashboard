@@ -145,14 +145,18 @@ gearButton =
     img [ Asset.src Asset.gearHires, class "nav-icon" ] []
 
 
-navbarLink : Page -> Route -> List (Html msg) -> Html msg
-navbarLink page route linkContent =
-    li [ classList [ ( "nav-item", True ), ( "active", isActive page route ) ] ]
+
+-- TOOLBAR
+
+
+sidebarLink : Page -> Route -> List (Html msg) -> Html msg
+sidebarLink page route linkContent =
+    li [ classList [ ( "nav-item", True ), ( "active", pageIsActive page route ) ] ]
         [ a [ class "nav-link", Route.href route ] linkContent ]
 
 
-isActive : Page -> Route -> Bool
-isActive page route =
+pageIsActive : Page -> Route -> Bool
+pageIsActive page route =
     case ( page, route ) of
         ( Home, Route.Home ) ->
             True
@@ -173,22 +177,26 @@ isActive page route =
             False
 
 
+selected : Page -> Route -> String
+selected page route =
+    if pageIsActive page route then
+        "color-selected"
 
--- TOOLBAR
+    else
+        ""
 
 
 toolBarContainer : Page -> Html msg
 toolBarContainer page =
-    div [ class "tool-bar-container" ] [ toolBarGrid page ]
+    div [ class "tool-bar-container border-right" ] [ toolBarGrid page ]
 
 
 toolBarGrid : Page -> Html msg
 toolBarGrid page =
     Grid.containerFluid
         [ class "text-center mt-2", Spacing.pl0 ]
-        [ h3 [ class "pt-1 pb-1" ] [ text "TOOLS" ]
-        , toolBarLink (Asset.coinsGlyph [ class "tool-glyph" ]) page Route.Transactions "Transactions"
-        , toolBarLink (toolBarAsset Asset.person) page Route.Home "Contributions"
+        [ toolBarLink (Asset.coinsGlyph [ class "tool-glyph" ]) page Route.Transactions "Transactions"
+        , toolBarLink (toolBarAsset <| Asset.genderNeutral <| pageIsActive page Route.Home) page Route.Home "Contributions"
         , toolBarLink (toolBarAsset Asset.house) page Route.Disbursements "Disbursements"
         , toolBarLink (toolBarAsset Asset.binoculars) page Route.NeedsReview "Needs Review"
         , toolBarLink (Asset.linkGlyph [ class "tool-glyph" ]) page Route.LinkBuilder "Link Builder"
@@ -201,33 +209,21 @@ toolBarAsset image =
     img [ Asset.src image, class "tool-asset" ] []
 
 
-selected : Page -> Route -> String
-selected page route =
-    if isActive page route then
-        "border-selected"
-
-    else
-        "border-unselected"
-
-
 toolBarLink : Html msg -> Page -> Route -> String -> Html msg
 toolBarLink glyph page route label =
     Grid.row
-        [ Row.attrs [ class "hover-underline" ] ]
+        [ Row.centerXs, Row.attrs [ class "hover-underline" ] ]
         [ Grid.col
             []
-            [ a [ Route.href route, class "nav-link" ]
+            [ a [ Route.href route, class "hover-black" ]
                 [ Grid.containerFluid
-                    [ Spacing.pt3
-                    , Spacing.pb3
-                    , class <| "text-center " ++ selected page route
+                    [ class <| "text-center " ++ selected page route
                     ]
                     [ Grid.row
                         [ Row.centerXs ]
-                        [ Grid.col [] [ glyph ] ]
-                    , Grid.row
-                        []
-                        [ Grid.col [] [ text label ] ]
+                        [ Grid.col [] [ glyph ]
+                        , Grid.col [] [ text label ]
+                        ]
                     ]
                 ]
             ]

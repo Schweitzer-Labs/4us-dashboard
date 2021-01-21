@@ -6,6 +6,7 @@ $font-family-base: 'EB Garamond', sans-serif;
 $slate-blue: #4f53d1;
 $ruby: #ff0a03;
 
+
 .bg-slate-blue {
   background: $slate-blue;
 }
@@ -20,6 +21,7 @@ $ruby: #ff0a03;
 
 $vertical-offset : 150px;
 $banner-home-height : 65px;
+$nav-horizontal-offset: 185px;
 
 .header {
   position: sticky;
@@ -40,12 +42,15 @@ $banner-home-height : 65px;
 }
 
 .content-container {
-  padding-left: 150px;
+  padding-left: $nav-horizontal-offset;
 }
 
+// @Todo investigate need for extra pixel.
 .tool-bar-container {
   position: fixed;
   top: $banner-home-height + $vertical-offset;
+  width: $nav-horizontal-offset + 2;
+  height: 2000px;
 }
 
 .sticky-th {
@@ -77,18 +82,18 @@ $banner-home-height : 65px;
 }
 
 .tool-asset {
-  height: 50px;
+  height: 16px;
 }
 
 .tool-glyph {
-  font-size: 38px;
+  font-size: 16px;
 }
 
 .stripe-logo {
   width: 50px;
 }
 
-.nav-link:hover, .nav-link {
+.hover-black:hover, .hover-black {
   color: $black;
 }
 
@@ -110,4 +115,7 @@ $banner-home-height : 65px;
   border-radius: 5px;
 }
 
+.color-selected {
+  color: $slate-blue
+}
 

@@ -11,6 +11,7 @@ module Asset exposing
     , eightX
     , error
     , gearHires
+    , genderNeutral
     , house
     , linkGlyph
     , loading
@@ -121,6 +122,15 @@ loading =
 defaultAvatar : Image
 defaultAvatar =
     image "smiley-cyrus.jpg"
+
+
+genderNeutral : Bool -> Image
+genderNeutral selected =
+    if selected then
+        image "gender-neutral-selected.svg"
+
+    else
+        image "gender-neutral.svg"
 
 
 image : String -> Image
