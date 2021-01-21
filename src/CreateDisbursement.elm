@@ -80,6 +80,27 @@ view model =
         ]
 
 
+address : Model -> Html Msg
+address mode =
+    Grid.row []
+        [ Grid.col
+            [ Col.lg4 ]
+            [ Form.label [ for "street-address" ] [ text "Street Address" ]
+            , Input.text [ Input.id "amount", Input.onInput CheckAmountUpdated, Input.placeholder "Enter Street address" ]
+            ]
+        , Grid.col
+            [ Col.lg4 ]
+            [ Form.label [ for "check-number" ] [ text "Check Number" ]
+            , Input.text [ Input.id "check-number", Input.onInput CheckNumberUpdated, Input.placeholder "Enter  check number" ]
+            ]
+        , Grid.col
+            [ Col.lg4 ]
+            [ Form.label [ for "date" ] [ text "Date" ]
+            , Input.date [ Input.id "date", Input.onInput CheckDateUpdated ]
+            ]
+        ]
+
+
 type Msg
     = PurposeUpdated String
     | CheckAmountUpdated String
