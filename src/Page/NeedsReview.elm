@@ -3,7 +3,6 @@ module Page.NeedsReview exposing (Model, Msg, init, subscriptions, toSession, up
 import Aggregations as Aggregations exposing (Aggregations)
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
-import Banner
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
@@ -11,7 +10,6 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
 import Bootstrap.Spinner as Spinner
 import Browser.Dom as Dom
-import Content
 import Delay
 import Disbursement as Disbursement
 import Disbursements
@@ -69,12 +67,8 @@ view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "4US"
     , content =
-        div
-            []
-            [ Banner.container [] [ Aggregations.view model.aggregations ]
-            , Content.container []
-                [ Disbursements.viewInteractive SortDisbursements ShowEnrichDisbursementModal [] model.disbursements
-                ]
+        div []
+            [ Disbursements.viewInteractive SortDisbursements ShowEnrichDisbursementModal [] model.disbursements
             , enrichDisbursementModal model
             ]
     }

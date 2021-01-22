@@ -1,6 +1,7 @@
 module Asset exposing
     ( Image
     , amalgamatedLogo
+    , bellGlyph
     , binoculars
     , blockchainDiamond
     , calendar
@@ -22,6 +23,7 @@ module Asset exposing
     , src
     , stripeLogo
     , usLogo
+    , userGlyph
     , wiseLogo
     )
 
@@ -183,3 +185,13 @@ linkGlyph =
 coinsGlyph : List (Attribute msg) -> Html msg
 coinsGlyph =
     glyph "fal fa-coins"
+
+
+bellGlyph : List (Attribute msg) -> Html msg
+bellGlyph =
+    glyph "fas fa-bell"
+
+
+userGlyph : List (Attribute msg) -> Html msg
+userGlyph =
+    glyph "fas fa-user"

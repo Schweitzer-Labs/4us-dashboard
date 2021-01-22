@@ -3,14 +3,12 @@ module Page.Disbursements exposing (Model, Msg, init, subscriptions, toSession, 
 import Aggregations as Aggregations exposing (Aggregations)
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
-import Banner
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
 import Browser.Dom as Dom
-import Content
 import CreateDisbursement
 import Delay
 import Disbursement as Disbursement
@@ -67,10 +65,8 @@ view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "4US"
     , content =
-        div
-            []
-            [ Banner.container [] [ Aggregations.view model.aggregations ]
-            , Content.container [] [ Disbursements.view SortDisbursements [ createDisbursementModalButton ] model.disbursements ]
+        div []
+            [ Disbursements.view SortDisbursements [ createDisbursementModalButton ] model.disbursements
             , createDisbursementModal model
             ]
     }

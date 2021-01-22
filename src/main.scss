@@ -19,43 +19,47 @@ $ruby: #ff0a03;
   height: inherit;
 }
 
-$vertical-offset : 150px;
-$banner-home-height : 65px;
-$nav-horizontal-offset: 185px;
+$header-vertical-offset : 80px;
+$nav-horizontal-offset: 237px;
 
-.header {
-  position: sticky;
-  top: 0px;
-  background-color: white;
-  z-index: 1000;
-  height: $vertical-offset;
-}
-
-.banner-container {
-  position: sticky;
-  top: $vertical-offset;
-  z-index: 1000;
-}
-
-.banner-home {
-  height: $banner-home-height;
-}
-
-.content-container {
-  padding-left: $nav-horizontal-offset;
+body {
+  background-color: $light;
 }
 
 // @Todo investigate need for extra pixel.
-.tool-bar-container {
+.sidebar-container {
+  background-color: white;
   position: fixed;
-  top: $banner-home-height + $vertical-offset;
-  width: $nav-horizontal-offset + 2;
+  top: 0;
+  left: 0;
+  width: $nav-horizontal-offset;
   height: 2000px;
 }
 
-.sticky-th {
-  top: $banner-home-height + $vertical-offset - 1;
+
+.header-container {
+  background-color: white;
+  position: sticky;
+  top: 0px;
+  left: 0px;
 }
+
+.main-container {
+  padding-left: $nav-horizontal-offset;
+}
+
+.account-control-icon {
+  font-size: 28px;
+  color: $gray-500;
+}
+
+
+
+
+
+//.sticky-th {
+//  top: $banner-home-height + $vertical-offset - 1;
+//}
 
 .hover-underline:hover {
   text-decoration: underline;
@@ -66,15 +70,11 @@ $nav-horizontal-offset: 185px;
 }
 
 .header-info-bank-logo {
-  width: 100px;
+  width: 60px;
 }
 
 .header-logo {
-  width: 200px;
-}
-
-.header-search-box {
-  border-radius: 50px;
+  width: 150px;
 }
 
 .nav-icon {
@@ -82,11 +82,11 @@ $nav-horizontal-offset: 185px;
 }
 
 .tool-asset {
-  height: 16px;
+  height: 30px;
 }
 
 .tool-glyph {
-  font-size: 16px;
+  font-size: 26px;
 }
 
 .stripe-logo {
@@ -105,17 +105,14 @@ $nav-horizontal-offset: 185px;
   font-size: 30px;
 }
 
-.border-unselected {
-  border: 2px solid rgba(255, 255, 0, 0);;
-  border-radius: 5px;
-}
-
-.border-selected {
-  border: 2px solid $slate-blue;
-  border-radius: 5px;
-}
-
 .color-selected {
   color: $slate-blue
 }
 
+.font-size-18 {
+  font-size: 18px;
+}
+
+.border-blue {
+  border-color: $slate-blue
+}

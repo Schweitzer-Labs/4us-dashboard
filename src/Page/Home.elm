@@ -6,10 +6,8 @@ module Page.Home exposing (Model, Msg, init, subscriptions, toSession, update, v
 import Aggregations exposing (Aggregations)
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
-import Banner
 import Bootstrap.Grid as Grid exposing (Column)
 import Browser.Dom as Dom
-import Content
 import Contribution as Contribution
 import Contributions
 import Html exposing (..)
@@ -53,11 +51,7 @@ view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "4US"
     , content =
-        div
-            []
-            [ Banner.container [] [ Aggregations.view model.aggregations ]
-            , Content.container [] [ contributionsContainer model.contributions ]
-            ]
+        div [] [ contributionsContainer model.contributions ]
     }
 
 

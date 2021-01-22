@@ -3,7 +3,6 @@ module Page.LinkBuilder exposing (Model, Msg, init, subscriptions, toSession, up
 {-| The homepage. You can get here via either the / or /#/ routes.
 -}
 
-import Banner
 import Bootstrap.Button as Button
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
@@ -14,7 +13,6 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
-import Content
 import Html exposing (..)
 import Html.Attributes as SvgA exposing (class, for, href, src, style)
 import QRCode
@@ -56,11 +54,7 @@ view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "4US"
     , content =
-        div
-            []
-            [ Banner.container [] [ h2 [ class "text-center p-1" ] [ text "Link Builder" ] ]
-            , Content.container [] [ formRow model ]
-            ]
+        div [] [ formRow model ]
     }
 
 

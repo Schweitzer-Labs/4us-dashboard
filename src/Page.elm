@@ -1,5 +1,6 @@
-module Page exposing (Page(..), view, viewErrors)
+module Page exposing (Page(..), view)
 
+import Aggregations
 import Asset as Asset exposing (Image)
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
@@ -49,56 +50,55 @@ view : Maybe Viewer -> Page -> { title : String, content : Html msg } -> Documen
 view maybeViewer page { title, content } =
     { title = title ++ " - Transactions"
     , body =
-        viewHeader page maybeViewer
-            :: toolBarContainer page
-            :: contentContainer content
-            :: []
+        sidebar page :: mainContainer content :: []
     }
+
+
+mainContainer : Html msg -> Html msg
+mainContainer content =
+    div [ class "main-container" ]
+        [ header
+        , contentContainer content
+        ]
 
 
 contentContainer : Html msg -> Html msg
 contentContainer content =
-    div [] [ content ]
+    div [ Spacing.p5 ] [ content ]
 
 
-viewHeader : Page -> Maybe Viewer -> Html msg
-viewHeader page maybeViewer =
-    div [ class "header" ] [ headerContainer ]
-
-
-headerContainer : Html msg
-headerContainer =
-    Grid.containerFluid [] [ headerRow ]
-
-
-headerRow : Html msg
-headerRow =
-    Grid.row
-        [ Row.attrs [ class "align-items-center" ] ]
-        [ Grid.col [ Col.xs3 ] [ infoContainer ]
-        , Grid.col [ Col.attrs [ class "text-center" ] ] [ logoContent ]
-        , Grid.col [ Col.xs3 ] [ navContainer ]
+header : Html msg
+header =
+    Grid.containerFluid
+        [ Spacing.pt3, Spacing.pb3, class "header-container border-bottom border-blue align-middle" ]
+        [ Grid.row [ Row.attrs [ class "align-middle align-items-center" ] ]
+            [ Grid.col [ Col.xs11 ]
+                [ Aggregations.view Aggregations.init ]
+            , Grid.col [ Col.attrs [ class "text-right" ] ]
+                [ a [ Route.href Route.NeedsReview ] [ Asset.bellGlyph [ class "account-control-icon" ] ]
+                , a [ Route.href Route.NeedsReview, Spacing.ml3 ] [ Asset.userGlyph [ class "account-control-icon" ] ]
+                ]
+            ]
         ]
 
 
-infoContainer : Html msg
-infoContainer =
-    Grid.containerFluid
-        []
-        [ nameInfoRow, ruleInfoRow ]
+
+-- Sidebar
 
 
 nameInfoRow : Html msg
 nameInfoRow =
-    Grid.row [ Row.centerMd, Row.attrs [ class "text-center" ] ] [ Grid.col [] [ h1 [ class "display-4" ] [ text "Annissa" ] ] ]
+    Grid.row
+        [ Row.aroundXs, Row.attrs [ class "text-center" ] ]
+        [ Grid.col [] [ h1 [ class "display-5" ] [ text "Arthur" ] ] ]
 
 
 ruleInfoRow : Html msg
 ruleInfoRow =
     Grid.row
         [ Row.centerXs ]
-        [ Grid.col [ Col.xs4, Col.attrs [ class "border-right", class "text-center" ] ] [ text "City Council" ]
-        , Grid.col [ Col.xs4 ]
+        [ Grid.col [ Col.xs6, Col.attrs [ class "border-right border-blue", class "text-right" ] ] [ text "Mayor" ]
+        , Grid.col [ Col.xs6 ]
             [ img
                 [ Asset.src Asset.wiseLogo, class "header-info-bank-logo" ]
                 []
@@ -106,53 +106,12 @@ ruleInfoRow =
         ]
 
 
-logoContent : Html msg
-logoContent =
-    a [ Route.href Route.Home ]
-        [ img [ Asset.src Asset.usLogo, class "header-logo" ] [] ]
-
-
-zeroSpacing : List (Html.Attribute msg)
-zeroSpacing =
-    [ Spacing.m0, Spacing.p0 ]
-
-
-navContainer : Html msg
-navContainer =
-    Grid.containerFluid
-        []
-        [ Grid.row
-            [ Row.centerXs, Row.attrs [ class "text-center" ] ]
-            [ Grid.col [ Col.xs8 ] [ searchBox ]
-            , Grid.col [ Col.attrs zeroSpacing ] [ searchButton ]
-            , Grid.col [ Col.attrs zeroSpacing ] [ gearButton ]
-            ]
+logo : Html msg
+logo =
+    div [ class "text-center" ]
+        [ a [ Route.href Route.Home ]
+            [ img [ Asset.src Asset.usLogo, class "header-logo" ] [] ]
         ]
-
-
-searchBox : Html msg
-searchBox =
-    Input.text [ Input.attrs [ class "header-search-box" ] ]
-
-
-searchButton : Html msg
-searchButton =
-    img [ Asset.src Asset.search, class "nav-icon" ] []
-
-
-gearButton : Html msg
-gearButton =
-    img [ Asset.src Asset.gearHires, class "nav-icon" ] []
-
-
-
--- TOOLBAR
-
-
-sidebarLink : Page -> Route -> List (Html msg) -> Html msg
-sidebarLink page route linkContent =
-    li [ classList [ ( "nav-item", True ), ( "active", pageIsActive page route ) ] ]
-        [ a [ class "nav-link", Route.href route ] linkContent ]
 
 
 pageIsActive : Page -> Route -> Bool
@@ -186,21 +145,35 @@ selected page route =
         ""
 
 
-toolBarContainer : Page -> Html msg
-toolBarContainer page =
-    div [ class "tool-bar-container border-right" ] [ toolBarGrid page ]
-
-
-toolBarGrid : Page -> Html msg
-toolBarGrid page =
+committeeInfoContainer : Html msg
+committeeInfoContainer =
     Grid.containerFluid
-        [ class "text-center mt-2", Spacing.pl0 ]
-        [ toolBarLink (Asset.coinsGlyph [ class "tool-glyph" ]) page Route.Transactions "Transactions"
-        , toolBarLink (toolBarAsset <| Asset.genderNeutral <| pageIsActive page Route.Home) page Route.Home "Contributions"
-        , toolBarLink (toolBarAsset Asset.house) page Route.Disbursements "Disbursements"
-        , toolBarLink (toolBarAsset Asset.binoculars) page Route.NeedsReview "Needs Review"
-        , toolBarLink (Asset.linkGlyph [ class "tool-glyph" ]) page Route.LinkBuilder "Link Builder"
-        , toolBarItem Asset.documents "Documents"
+        []
+        [ nameInfoRow
+        , ruleInfoRow
+        ]
+
+
+sidebar : Page -> Html msg
+sidebar page =
+    div [ class "sidebar-container border-right border-blue", Spacing.pl0 ]
+        [ committeeInfoContainer
+        , navContainer page
+        , logo
+        ]
+
+
+navContainer : Page -> Html msg
+navContainer page =
+    Grid.containerFluid
+        [ Spacing.mt5 ]
+        [ navRow (Asset.coinsGlyph [ class "tool-glyph" ]) page Route.Transactions "Transactions"
+        , navRow (toolBarAsset <| Asset.genderNeutral <| pageIsActive page Route.Home) page Route.Home "Contributions"
+        , navRow (toolBarAsset Asset.house) page Route.Disbursements "Disbursements"
+        , navRow (toolBarAsset Asset.binoculars) page Route.NeedsReview "Needs Review"
+        , navRow (Asset.linkGlyph [ class "tool-glyph" ]) page Route.LinkBuilder "Link Builder"
+
+        --, navRow (toolBarAsset Asset.documents) page Route. "Documents"
         ]
 
 
@@ -209,62 +182,25 @@ toolBarAsset image =
     img [ Asset.src image, class "tool-asset" ] []
 
 
-toolBarLink : Html msg -> Page -> Route -> String -> Html msg
-toolBarLink glyph page route label =
+navRow : Html msg -> Page -> Route -> String -> Html msg
+navRow glyph page route label =
     Grid.row
-        [ Row.centerXs, Row.attrs [ class "hover-underline" ] ]
+        [ Row.centerXs
+        , Row.attrs [ class "hover-underline hover-black" ]
+        , Row.attrs [ Spacing.mb5 ]
+        ]
         [ Grid.col
             []
             [ a [ Route.href route, class "hover-black" ]
                 [ Grid.containerFluid
-                    [ class <| "text-center " ++ selected page route
+                    [ class <| "" ++ selected page route
                     ]
                     [ Grid.row
-                        [ Row.centerXs ]
-                        [ Grid.col [] [ glyph ]
-                        , Grid.col [] [ text label ]
+                        [ Row.aroundXs ]
+                        [ Grid.col [ Col.xs3, Col.attrs [ class "text-center" ] ] [ glyph ]
+                        , Grid.col [ Col.attrs [ class "font-weight-bolder font-size-18" ] ] [ text label ]
                         ]
                     ]
                 ]
             ]
         ]
-
-
-toolBarItem : Image -> String -> Html msg
-toolBarItem image label =
-    Grid.row
-        [ Row.attrs [ class "mt-3" ] ]
-        [ Grid.col
-            []
-            [ Grid.containerFluid
-                [ class "text-center" ]
-                [ Grid.row
-                    [ Row.centerXs ]
-                    [ Grid.col [] [ img [ Asset.src image, class "tool-asset text-center" ] [] ] ]
-                , Grid.row
-                    []
-                    [ Grid.col [] [ text label ] ]
-                ]
-            ]
-        ]
-
-
-{-| Render dismissable errors. We use this all over the place!
--}
-viewErrors : msg -> List String -> Html msg
-viewErrors dismissErrors errors =
-    if List.isEmpty errors then
-        Html.text ""
-
-    else
-        div
-            [ class "error-messages"
-            , style "position" "fixed"
-            , style "top" "0"
-            , style "background" "rgb(250, 250, 250)"
-            , style "padding" "20px"
-            , style "border" "1px solid"
-            ]
-        <|
-            List.map (\error -> p [] [ text error ]) errors
-                ++ [ button [ onClick dismissErrors ] [ text "Ok" ] ]

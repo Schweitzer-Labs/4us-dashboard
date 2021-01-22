@@ -7166,32 +7166,29 @@ a.text-dark:hover, a.text-dark:focus {
 [data-elm-hot="true"] {
   height: inherit; }
 
-.header {
-  position: sticky;
-  top: 0px;
+body {
+  background-color: #f8f9fa; }
+
+.sidebar-container {
   background-color: white;
-  z-index: 1000;
-  height: 150px; }
-
-.banner-container {
-  position: sticky;
-  top: 150px;
-  z-index: 1000; }
-
-.banner-home {
-  height: 65px; }
-
-.content-container {
-  padding-left: 185px; }
-
-.tool-bar-container {
   position: fixed;
-  top: 215px;
-  width: 187px;
+  top: 0;
+  left: 0;
+  width: 237px;
   height: 2000px; }
 
-.sticky-th {
-  top: 214px; }
+.header-container {
+  background-color: white;
+  position: sticky;
+  top: 0px;
+  left: 0px; }
+
+.main-container {
+  padding-left: 237px; }
+
+.account-control-icon {
+  font-size: 28px;
+  color: #adb5bd; }
 
 .hover-underline:hover {
   text-decoration: underline; }
@@ -7200,22 +7197,19 @@ a.text-dark:hover, a.text-dark:focus {
   cursor: pointer; }
 
 .header-info-bank-logo {
-  width: 100px; }
+  width: 60px; }
 
 .header-logo {
-  width: 200px; }
-
-.header-search-box {
-  border-radius: 50px; }
+  width: 150px; }
 
 .nav-icon {
   width: 35px; }
 
 .tool-asset {
-  height: 16px; }
+  height: 30px; }
 
 .tool-glyph {
-  font-size: 16px; }
+  font-size: 26px; }
 
 .stripe-logo {
   width: 50px; }
@@ -7229,13 +7223,11 @@ a.text-dark:hover, a.text-dark:focus {
 .data-icon-size {
   font-size: 30px; }
 
-.border-unselected {
-  border: 2px solid rgba(255, 255, 0, 0);
-  border-radius: 5px; }
-
-.border-selected {
-  border: 2px solid #4f53d1;
-  border-radius: 5px; }
-
 .color-selected {
   color: #4f53d1; }
+
+.font-size-18 {
+  font-size: 18px; }
+
+.border-blue {
+  border-color: #4f53d1; }

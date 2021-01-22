@@ -21,34 +21,13 @@ type alias Aggregations =
     }
 
 
-view : Aggregations -> Html msg
-view aggregations =
-    Grid.row
-        [ Row.attrs [ class "align-items-center" ] ]
-        [ Grid.col [ Col.xs2 ] [ aggsTitleContainer ]
-        , Grid.col [ Col.attrs [ Spacing.pr0 ] ] [ aggsDataContainer aggregations ]
-        ]
-
-
-aggsTitleContainer : Html msg
-aggsTitleContainer =
-    Grid.containerFluid
-        []
-        [ Grid.row
-            [ Row.centerXs, Row.attrs [ class "text-center text-xl" ] ]
-            [ Grid.col [ Col.xs4, Col.attrs [ class "bg-ruby" ] ] [ text "LIVE" ]
-            , Grid.col [ Col.xs5 ] [ text "Transactions" ]
-            ]
-        ]
-
-
 dollar : String -> String
 dollar str =
     "$" ++ str
 
 
-aggsDataContainer : Aggregations -> Html msg
-aggsDataContainer aggregates =
+view : Aggregations -> Html msg
+view aggregates =
     Grid.containerFluid
         []
         [ Grid.row [] <|
@@ -58,8 +37,6 @@ aggsDataContainer aggregates =
                 , ( "Total raised", dollar aggregates.totalRaised )
                 , ( "Total spent", dollar aggregates.totalSpent )
                 , ( "Total donors", aggregates.totalDonors )
-                , ( "Qualifying donors", aggregates.qualifyingDonors )
-                , ( "Qualifying funds", dollar aggregates.qualifyingFunds )
                 ]
         ]
 
@@ -67,9 +44,9 @@ aggsDataContainer aggregates =
 agg : ( String, String ) -> Column msg
 agg ( name, number ) =
     Grid.col
-        [ Col.attrs [ class "border-left text-center" ] ]
-        [ Grid.row [ Row.attrs [ Spacing.pt1, Spacing.pb1 ] ] [ Grid.col [] [ text name ] ]
-        , Grid.row [ Row.attrs [ class "border-top", Spacing.pt1, Spacing.pb1 ] ] [ Grid.col [] [ text number ] ]
+        [ Col.attrs [ class "text-center" ] ]
+        [ Grid.row [ Row.attrs [ class "font-weight-bold" ] ] [ Grid.col [] [ text name ] ]
+        , Grid.row [ Row.attrs [] ] [ Grid.col [] [ text number ] ]
         ]
 
 
