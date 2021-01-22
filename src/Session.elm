@@ -1,8 +1,9 @@
-module Session exposing (Session, changes, cred, fromViewer, navKey, viewer, committeeId)
+module Session exposing (Session, changes, committeeId, cred, fromViewer, navKey, viewer)
 
 import Api exposing (Cred)
 import Browser.Navigation as Nav
 import Viewer exposing (Viewer)
+
 
 
 -- TYPES
@@ -11,6 +12,7 @@ import Viewer exposing (Viewer)
 type Session
     = LoggedIn Nav.Key Viewer
     | Guest Nav.Key
+
 
 
 -- INFO
@@ -67,5 +69,7 @@ fromViewer key maybeViewer =
         Nothing ->
             Guest key
 
+
 committeeId : String
-committeeId = "93eed840-dc58-4be3-a23c-25f89bd098b3"
+committeeId =
+    "93eed840-dc58-4be3-a23c-25f89bd098b3"

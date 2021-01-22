@@ -7221,13 +7221,16 @@ body {
   min-height: 80px; }
 
 .data-icon-size {
-  font-size: 30px; }
+  font-size: 22px; }
 
 .color-selected {
   color: #4f53d1; }
 
 .font-size-18 {
   font-size: 18px; }
+
+.font-size-24 {
+  font-size: 24px; }
 
 .border-blue {
   border-color: #4f53d1; }

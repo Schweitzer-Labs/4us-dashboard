@@ -1,4 +1,4 @@
-module Aggregations exposing (Aggregations, decoder, init, view)
+module Aggregations exposing (Model, decoder, init, view)
 
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
@@ -9,7 +9,7 @@ import Html.Attributes exposing (class)
 import Json.Decode as Decode
 
 
-type alias Aggregations =
+type alias Model =
     { balance : String
     , totalRaised : String
     , totalSpent : String
@@ -26,7 +26,11 @@ dollar str =
     "$" ++ str
 
 
-view : Aggregations -> Html msg
+type Msg
+    = Got
+
+
+view : Model -> Html msg
 view aggregates =
     Grid.containerFluid
         []
@@ -46,14 +50,14 @@ agg ( name, number ) =
     Grid.col
         [ Col.attrs [ class "text-center" ] ]
         [ Grid.row [ Row.attrs [ class "font-weight-bold" ] ] [ Grid.col [] [ text name ] ]
-        , Grid.row [ Row.attrs [] ] [ Grid.col [] [ text number ] ]
+        , Grid.row [ Row.attrs [ class "font-size-24" ] ] [ Grid.col [] [ text number ] ]
         ]
 
 
-decoder : Decode.Decoder Aggregations
+decoder : Decode.Decoder Model
 decoder =
     Decode.map8
-        Aggregations
+        Model
         (Decode.field "balance" Decode.string)
         (Decode.field "totalRaised" Decode.string)
         (Decode.field "totalSpent" Decode.string)
@@ -64,7 +68,7 @@ decoder =
         (Decode.field "totalInProcessing" Decode.string)
 
 
-init : Aggregations
+init : Model
 init =
     { balance = ""
     , totalRaised = ""

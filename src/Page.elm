@@ -2,7 +2,6 @@ module Page exposing (Page(..), view)
 
 import Aggregations
 import Asset as Asset exposing (Image)
-import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
@@ -46,18 +45,18 @@ isLoading is for determining whether we should show a loading spinner
 in the header. (This comes up during slow page transitions.)
 
 -}
-view : Maybe Viewer -> Page -> { title : String, content : Html msg } -> Document msg
-view maybeViewer page { title, content } =
+view : Maybe Viewer -> Aggregations.Model -> Page -> { title : String, content : Html msg } -> Document msg
+view maybeViewer aggregations page { title, content } =
     { title = title ++ " - Transactions"
     , body =
-        sidebar page :: mainContainer content :: []
+        sidebar page :: mainContainer aggregations content :: []
     }
 
 
-mainContainer : Html msg -> Html msg
-mainContainer content =
+mainContainer : Aggregations.Model -> Html msg -> Html msg
+mainContainer aggregations content =
     div [ class "main-container" ]
-        [ header
+        [ header aggregations
         , contentContainer content
         ]
 
@@ -67,16 +66,16 @@ contentContainer content =
     div [ Spacing.p5 ] [ content ]
 
 
-header : Html msg
-header =
+header : Aggregations.Model -> Html msg
+header aggregations =
     Grid.containerFluid
         [ Spacing.pt3, Spacing.pb3, class "header-container border-bottom border-blue align-middle" ]
         [ Grid.row [ Row.attrs [ class "align-middle align-items-center" ] ]
-            [ Grid.col [ Col.xs11 ]
-                [ Aggregations.view Aggregations.init ]
+            [ Grid.col [ Col.xs10 ]
+                [ Aggregations.view aggregations ]
             , Grid.col [ Col.attrs [ class "text-right" ] ]
                 [ a [ Route.href Route.NeedsReview ] [ Asset.bellGlyph [ class "account-control-icon" ] ]
-                , a [ Route.href Route.NeedsReview, Spacing.ml3 ] [ Asset.userGlyph [ class "account-control-icon" ] ]
+                , a [ Route.href Route.NeedsReview, Spacing.ml4 ] [ Asset.userGlyph [ class "account-control-icon" ] ]
                 ]
             ]
         ]

@@ -1,6 +1,6 @@
 module Page.NeedsReview exposing (Model, Msg, init, subscriptions, toSession, update, view)
 
-import Aggregations as Aggregations exposing (Aggregations)
+import Aggregations
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
 import Bootstrap.Button as Button
@@ -35,7 +35,7 @@ type alias Model =
     , committeeId : String
     , timeZone : Time.Zone
     , disbursements : List Disbursement.Model
-    , aggregations : Aggregations
+    , aggregations : Aggregations.Model
     , enrichDisbursementModalVisibility : Modal.Visibility
     , enrichDisbursementModal : Disbursement.Model
     , currentSort : Disbursements.Label

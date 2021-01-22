@@ -1,5 +1,6 @@
 module Main exposing (Model(..), Msg(..), changeRouteTo, init, main, subscriptions, toSession, update, updateWith, view)
 
+import Aggregations
 import Api
 import Browser exposing (Document)
 import Browser.Navigation as Nav
@@ -36,10 +37,14 @@ type Model
 
 init : Maybe Viewer -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init maybeViewer url navKey =
-    changeRouteTo
-        url
-        (Route.fromUrl url)
-        (Redirect (Session.fromViewer navKey maybeViewer))
+    let
+        ( model, cmdMsg ) =
+            changeRouteTo
+                url
+                (Route.fromUrl url)
+                (Redirect (Session.fromViewer navKey maybeViewer))
+    in
+    ( model, cmdMsg )
 
 
 
@@ -80,6 +85,31 @@ toSession page =
 
         NeedsReview session ->
             NeedsReview.toSession session
+
+
+toAggregations : Model -> Aggregations.Model
+toAggregations page =
+    case page of
+        Redirect session ->
+            Aggregations.init
+
+        NotFound session ->
+            Aggregations.init
+
+        Home home ->
+            home.aggregations
+
+        Transactions transactions ->
+            transactions.aggregations
+
+        LinkBuilder linkBuilder ->
+            linkBuilder.aggregations
+
+        Disbursements disbursement ->
+            disbursement.aggregations
+
+        NeedsReview needsReview ->
+            needsReview.aggregations
 
 
 
@@ -209,10 +239,13 @@ view model =
         viewer =
             Session.viewer (toSession model)
 
+        aggregations =
+            toAggregations model
+
         viewPage page toMsg config =
             let
                 { title, body } =
-                    Page.view viewer page config
+                    Page.view viewer aggregations page config
             in
             { title = title
             , body = List.map (Html.map toMsg) body
@@ -220,10 +253,10 @@ view model =
     in
     case model of
         Redirect _ ->
-            Page.view viewer Page.Other Blank.view
+            Page.view viewer aggregations Page.Other Blank.view
 
         NotFound _ ->
-            Page.view viewer Page.Other NotFound.view
+            Page.view viewer aggregations Page.Other NotFound.view
 
         Home home ->
             viewPage Page.Home GotHomeMsg (Home.view home)

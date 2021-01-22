@@ -1,6 +1,6 @@
 module Page.Disbursements exposing (Model, Msg, init, subscriptions, toSession, update, view)
 
-import Aggregations as Aggregations exposing (Aggregations)
+import Aggregations as Aggregations
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
 import Bootstrap.Button as Button
@@ -34,7 +34,7 @@ type alias Model =
     { session : Session
     , timeZone : Time.Zone
     , disbursements : List Disbursement.Model
-    , aggregations : Aggregations
+    , aggregations : Aggregations.Model
     , createDisbursementModalVisibility : Modal.Visibility
     , createDisbursementModal : CreateDisbursement.Model
     , committeeId : String
@@ -66,7 +66,8 @@ view model =
     { title = "4US"
     , content =
         div []
-            [ Disbursements.view SortDisbursements [ createDisbursementModalButton ] model.disbursements
+            [ createDisbursementModalButton
+            , Disbursements.view SortDisbursements [] model.disbursements
             , createDisbursementModal model
             ]
     }
@@ -118,7 +119,7 @@ exitButton =
 createDisbursementModalButton : Html Msg
 createDisbursementModalButton =
     Button.button
-        [ Button.outlineSuccess, Button.attrs [ onClick <| ShowCreateDisbursementModal ] ]
+        [ Button.outlineSuccess, Button.attrs [ onClick <| ShowCreateDisbursementModal ], Button.attrs [ class "float-right" ] ]
         [ text "Create Disbursement" ]
 
 

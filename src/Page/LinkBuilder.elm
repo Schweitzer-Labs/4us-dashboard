@@ -3,6 +3,9 @@ module Page.LinkBuilder exposing (Model, Msg, init, subscriptions, toSession, up
 {-| The homepage. You can get here via either the / or /#/ routes.
 -}
 
+import Aggregations
+import Api
+import Api.Endpoint as Endpoint
 import Bootstrap.Button as Button
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
@@ -15,9 +18,11 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Html exposing (..)
 import Html.Attributes as SvgA exposing (class, for, href, src, style)
+import Http
 import QRCode
 import Session exposing (Session)
 import Task exposing (Task)
+import Transaction.ContributionsData as ContributionsData exposing (ContributionsData)
 import Url.Builder
 
 
@@ -31,6 +36,7 @@ type alias Model =
     , amount : String
     , url : String
     , committeeId : String
+    , aggregations : Aggregations.Model
     }
 
 
@@ -41,8 +47,9 @@ init session committeeId =
       , amount = ""
       , url = ""
       , committeeId = committeeId
+      , aggregations = Aggregations.init
       }
-    , Cmd.none
+    , getAggregations committeeId
     )
 
 
@@ -115,9 +122,9 @@ linkCard url =
                     [ href url, class "d-block max-height-80", Spacing.mt1, Spacing.mb3, Spacing.p3 ]
                     [ text url ]
                 ]
-            , Block.text [] [ qrCodeView url ]
+            , Block.text [ class "text-center" ] [ qrCodeView url ]
             , Block.custom <|
-                Button.button [ Button.primary ] [ text "Download" ]
+                Button.button [ Button.primary, Button.attrs [ class "float-right" ] ] [ text "Download" ]
             ]
         |> Card.view
 
@@ -146,6 +153,7 @@ type Msg
     = GotSession Session
     | RefCodeUpdated String
     | AmountUpdated String
+    | LoadAggregationsData (Result Http.Error ContributionsData)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -159,6 +167,18 @@ update msg model =
 
         AmountUpdated str ->
             ( { model | amount = str }, Cmd.none )
+
+        LoadAggregationsData res ->
+            case res of
+                Ok data ->
+                    ( { model
+                        | aggregations = data.aggregations
+                      }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( model, Cmd.none )
 
 
 createUrl : String -> String -> String -> String
@@ -182,6 +202,12 @@ createUrl committeeId refCode amount =
                 []
     in
     Url.Builder.crossOrigin "http://localhost:3001" [] <| committeeIdVal ++ refCodeVal ++ amountVal
+
+
+getAggregations : String -> Cmd Msg
+getAggregations committeeId =
+    Http.send LoadAggregationsData <|
+        Api.get (Endpoint.contributions committeeId) Nothing ContributionsData.decode
 
 
 scrollToTop : Task x ()

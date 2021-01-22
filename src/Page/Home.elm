@@ -3,7 +3,7 @@ module Page.Home exposing (Model, Msg, init, subscriptions, toSession, update, v
 {-| The homepage. You can get here via either the / or /#/ routes.
 -}
 
-import Aggregations exposing (Aggregations)
+import Aggregations
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
 import Bootstrap.Grid as Grid exposing (Column)
@@ -26,7 +26,7 @@ type alias Model =
     { session : Session
     , timeZone : Time.Zone
     , contributions : List Contribution.Model
-    , aggregations : Aggregations
+    , aggregations : Aggregations.Model
     , committeeId : String
     }
 
