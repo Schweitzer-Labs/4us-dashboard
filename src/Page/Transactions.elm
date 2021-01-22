@@ -24,8 +24,6 @@ import Session exposing (Session)
 import SubmitButton exposing (submitButton)
 import Task exposing (Task)
 import Time
-import Transaction.ContributionsData as Transactions
-import Transaction.DisbursementsData as DD exposing (DisbursementsData)
 import Transaction.TransactionsData as TransactionsData exposing (TransactionsData)
 import Transactions
 

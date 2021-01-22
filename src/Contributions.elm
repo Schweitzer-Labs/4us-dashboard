@@ -39,13 +39,13 @@ contributionRowMap ( maybeMsg, c ) =
     ( Nothing
     , [ ( "Record", text c.record )
       , ( "Date / Time", text c.datetime )
-      , ( "Rule", text c.rule )
       , ( "Entity name", text c.entityName )
       , ( "Amount", span [ class "text-success font-weight-bold" ] [ text <| dollar c.amount ] )
+      , ( "Rule", text "NY11" )
+      , ( "Verified", Asset.circleCheckGlyph [ class "text-success data-icon-size" ] )
       , ( "Payment Method", text c.paymentMethod )
       , ( "Processor", img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] [] )
       , ( "Status", status )
-      , ( "Verified", Asset.circleCheckGlyph [ class "text-success data-icon-size" ] )
       , ( "Source", refCode )
       ]
     )
@@ -60,13 +60,13 @@ labels : (Label -> msg) -> List ( msg, String )
 labels sortMsg =
     [ ( sortMsg Record, "Record" )
     , ( sortMsg DateTime, "Date / Time" )
-    , ( sortMsg Rule, "Rule" )
     , ( sortMsg EntityName, "Entity name" )
     , ( sortMsg Amount, "Amount" )
+    , ( sortMsg Rule, "Rule" )
+    , ( sortMsg Verified, "Verified" )
     , ( sortMsg PaymentMethod, "Payment Method" )
     , ( sortMsg Processor, "Processor" )
     , ( sortMsg Status, "Status" )
-    , ( sortMsg Verified, "Verified" )
     , ( sortMsg ReferenceCode, "Source" )
     ]
 

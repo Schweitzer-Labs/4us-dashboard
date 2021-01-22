@@ -24,9 +24,9 @@ labels sortMsg =
     , ( sortMsg EntityName, "Entity Name" )
     , ( sortMsg Amount, "Amount" )
     , ( sortMsg Purpose, "Purpose" )
+    , ( sortMsg Verified, "Verified" )
     , ( sortMsg PaymentMethod, "Payment Method" )
     , ( sortMsg Status, "Status" )
-    , ( sortMsg Verified, "Verified" )
     ]
 
 
@@ -87,8 +87,8 @@ disbursementRowMap ( maybeMsg, d ) =
           else
             text d.purposeCode
         )
+      , ( "Verified", verified )
       , ( "Payment Method", span [ class "text-capitalize" ] [ text d.paymentMethod ] )
       , ( "Status", status )
-      , ( "Verified", verified )
       ]
     )

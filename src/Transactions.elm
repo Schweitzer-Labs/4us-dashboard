@@ -21,6 +21,7 @@ type Label
     = DateTime
     | EntityName
     | Amount
+    | Rule
     | PaymentMethod
     | Status
     | Verified
@@ -31,9 +32,10 @@ labels sortMsg =
     [ ( sortMsg DateTime, "Date / Time" )
     , ( sortMsg EntityName, "Entity Name" )
     , ( sortMsg Amount, "Amount" )
+    , ( sortMsg Rule, "Rule" )
+    , ( sortMsg Verified, "Verified" )
     , ( sortMsg PaymentMethod, "Payment Method" )
     , ( sortMsg Status, "Status" )
-    , ( sortMsg Verified, "Verified" )
     ]
 
 
@@ -51,9 +53,10 @@ transactionRowMap ( maybeMsg, transaction ) =
             , [ ( "Date / Time", text contribution.datetime )
               , ( "Entity Name", text <| contribution.firstName ++ " " ++ contribution.lastName )
               , ( "Amount", span [ class "text-failure font-weight-bold" ] [ text <| "$" ++ contribution.amount ] )
+              , ( "Rule", text "NY11" )
+              , ( "Verified", verifiedContent True )
               , ( "Payment Method", text "Credit card" )
               , ( "Status", statusContent <| stringToBool contribution.verified )
-              , ( "Verified", verifiedContent True )
               ]
             )
 
@@ -62,13 +65,14 @@ transactionRowMap ( maybeMsg, transaction ) =
             , [ ( "Date / Time", text disbursement.date )
               , ( "Entity Name", text disbursement.entityName )
               , ( "Amount", span [ class "text-failure font-weight-bold" ] [ text <| "($" ++ disbursement.amount ++ ")" ] )
+              , ( "Rule", text "NYD" )
+              , ( "Verified", verifiedContent <| disbursement.ruleVerified )
               , ( "Payment Method"
                 , span
                     [ class "text-capitalize" ]
                     [ text disbursement.paymentMethod ]
                 )
               , ( "Status", statusContent <| disbursement.bankVerified )
-              , ( "Verified", verifiedContent <| disbursement.ruleVerified )
               ]
             )
 

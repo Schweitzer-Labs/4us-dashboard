@@ -24,7 +24,20 @@ type alias Model =
 
 dollar : String -> String
 dollar str =
-    "$" ++ str
+    let
+        maybeTup =
+            String.uncons str
+    in
+    case maybeTup of
+        Just (( firstChar, rest ) as val) ->
+            if firstChar == '-' then
+                "-" ++ "$" ++ rest
+
+            else
+                "$" ++ str
+
+        Nothing ->
+            "$"
 
 
 type Msg
