@@ -1,6 +1,7 @@
 module Contribution exposing (Model, decoder)
 
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (maybe, string)
+import Json.Decode.Pipeline exposing (optional, required)
 
 
 type alias Model =
@@ -8,22 +9,27 @@ type alias Model =
     , datetime : String
     , rule : String
     , entityName : String
+    , firstName : String
+    , lastName : String
     , amount : String
     , paymentMethod : String
     , verified : String
     , refCode : Maybe String
+    , contributionId : String
     }
 
 
 decoder : Decode.Decoder Model
 decoder =
-    Decode.map8
-        Model
-        (Decode.field "record" Decode.string)
-        (Decode.field "datetime" Decode.string)
-        (Decode.field "rule" Decode.string)
-        (Decode.field "entityName" Decode.string)
-        (Decode.field "amount" Decode.string)
-        (Decode.field "paymentMethod" Decode.string)
-        (Decode.field "verified" Decode.string)
-        (Decode.maybe <| Decode.field "refCode" Decode.string)
+    Decode.succeed Model
+        |> optional "record" string ""
+        |> optional "timestamp" string ""
+        |> optional "rule" string ""
+        |> optional "entityName" string ""
+        |> optional "firstName" string ""
+        |> optional "lastName" string ""
+        |> optional "amount" string ""
+        |> optional "paymentMethod" string ""
+        |> optional "verified" string ""
+        |> optional "refCode" (maybe string) Nothing
+        |> required "contributionId" string

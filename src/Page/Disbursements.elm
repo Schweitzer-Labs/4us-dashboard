@@ -8,6 +8,7 @@ import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
+import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import CreateDisbursement
 import Delay
@@ -119,7 +120,10 @@ exitButton =
 createDisbursementModalButton : Html Msg
 createDisbursementModalButton =
     Button.button
-        [ Button.primary, Button.attrs [ onClick <| ShowCreateDisbursementModal ], Button.attrs [ class "float-right" ] ]
+        [ Button.primary
+        , Button.attrs [ onClick <| ShowCreateDisbursementModal ]
+        , Button.attrs [ class "float-right", Spacing.mb3 ]
+        ]
         [ text "Create Disbursement" ]
 
 
@@ -267,6 +271,11 @@ encodeDisbursement model =
         , ( "purposeCode", Encode.string <| Maybe.withDefault "other" disb.purposeCode )
         , ( "amount", Encode.string disb.checkAmount )
         , ( "date", Encode.string disb.checkDate )
+        , ( "address1", Encode.string disb.address1 )
+        , ( "address2", Encode.string disb.address2 )
+        , ( "city", Encode.string disb.city )
+        , ( "state", Encode.string disb.state )
+        , ( "postalCode", Encode.string disb.postalCode )
         ]
 
 

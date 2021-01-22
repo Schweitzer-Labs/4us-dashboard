@@ -3,7 +3,6 @@ module Aggregations exposing (Model, decoder, init, view)
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
-import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Html, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode exposing (string)

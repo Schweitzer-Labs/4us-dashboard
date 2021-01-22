@@ -1,16 +1,16 @@
-module Transaction exposing (Transaction(..), decoder)
+module Transaction exposing (Model(..), decoder)
 
 import Contribution as Contribution
 import Disbursement as Disbursement
 import Json.Decode as Decode exposing (bool, oneOf, string)
 
 
-type Transaction
+type Model
     = Contribution Contribution.Model
     | Disbursement Disbursement.Model
 
 
-decoder : Decode.Decoder Transaction
+decoder : Decode.Decoder Model
 decoder =
     oneOf
         [ Contribution.decoder |> Decode.map Contribution

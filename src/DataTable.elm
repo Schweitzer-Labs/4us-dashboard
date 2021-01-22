@@ -28,7 +28,7 @@ view :
 view actions labels mapper data =
     Table.table
         { options =
-            [ Table.attr <| class "main-table border-left"
+            [ Table.attr <| class "main-table"
             , Table.striped
             , Table.hover
             ]

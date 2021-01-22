@@ -87,7 +87,7 @@ disbursementRowMap ( maybeMsg, d ) =
           else
             text d.purposeCode
         )
-      , ( "Payment Method", span [ class "text-failure font-weight-bold text-uppercase" ] [ text d.paymentMethod ] )
+      , ( "Payment Method", span [ class "text-capitalize" ] [ text d.paymentMethod ] )
       , ( "Status", status )
       , ( "Verified", verified )
       ]

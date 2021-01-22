@@ -61,7 +61,7 @@ fields =
 decoder : Decode.Decoder Model
 decoder =
     Decode.succeed Model
-        |> optional "disbursementId" string ""
+        |> required "disbursementId" string
         |> optional "committeeId" string ""
         |> optional "vendorId" string ""
         |> optional "timestamp" string ""
@@ -74,7 +74,7 @@ decoder =
         |> optional "postalCode" string ""
         |> optional "recordNumber" string ""
         |> optional "entityName" string ""
-        |> required "bankVerified" bool
-        |> required "ruleVerified" bool
+        |> optional "bankVerified" bool False
+        |> optional "ruleVerified" bool False
         |> optional "paymentMethod" string "Check"
         |> optional "dateProcessed" string ""

@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css?family=EB+Garamond');
+$slate-blue: #4f53d1;
+$ruby: #ff0a03;
 
+$primary: $slate-blue;
+
+$my-warning: #FF5555;
 
 .bg-slate-blue {
   background: #ff0a03;
@@ -22,10 +27,7 @@ $font-family-base: 'EB Garamond', sans-serif;
 
 @import "node_modules/bootstrap/scss/bootstrap";
 
-$slate-blue: #4f53d1;
-$ruby: #ff0a03;
 
-$warning: #FF5555;
 
 
 [data-elm-hot="true"] {
@@ -136,5 +138,5 @@ body {
 }
 
 .warning {
-  color: $warning;
+  color: $my-warning;
 }

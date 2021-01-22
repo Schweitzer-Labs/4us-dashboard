@@ -8,6 +8,7 @@ import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
+import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Delay
 import Disbursement as Disbursement
@@ -22,7 +23,10 @@ import Session exposing (Session)
 import SubmitButton exposing (submitButton)
 import Task exposing (Task)
 import Time
+import Transaction.ContributionsData as Transactions
 import Transaction.DisbursementsData as DD exposing (DisbursementsData)
+import Transaction.TransactionsData as TransactionsData exposing (TransactionsData)
+import Transactions
 
 
 
@@ -33,7 +37,7 @@ type alias Model =
     { session : Session
     , committeeId : String
     , timeZone : Time.Zone
-    , disbursements : List Disbursement.Model
+    , transactions : Transactions.Model
     , aggregations : Aggregations.Model
     , enrichDisbursementModalVisibility : Modal.Visibility
     , enrichDisbursementModal : Disbursement.Model
@@ -47,14 +51,14 @@ init session committeeId =
     ( { session = session
       , committeeId = committeeId
       , timeZone = Time.utc
-      , disbursements = []
+      , transactions = []
       , aggregations = Aggregations.init
       , enrichDisbursementModalVisibility = Modal.hidden
       , enrichDisbursementModal = Disbursement.init
       , currentSort = Disbursements.Record
       , enrichDisbursementSubmitting = False
       }
-    , getDisbursementsData committeeId
+    , getTransactionsData committeeId
     )
 
 
@@ -67,10 +71,26 @@ view model =
     { title = "4US"
     , content =
         div []
-            [ Disbursements.viewInteractive SortDisbursements ShowEnrichDisbursementModal [] model.disbursements
+            [ Transactions.view SortTransactions [] model.transactions
             , enrichDisbursementModal model
             ]
     }
+
+
+exportTransactionsButton : Html Msg
+exportTransactionsButton =
+    Button.button
+        [ Button.outlinePrimary
+        , Button.attrs []
+        , Button.small
+        , Button.attrs
+            [ class "float-right"
+            , Spacing.mb3
+            , Spacing.pl4
+            , Spacing.pr4
+            ]
+        ]
+        [ text "Export" ]
 
 
 enrichDisbursementModal : Model -> Html Msg
@@ -123,7 +143,7 @@ exitButton =
 
 type Msg
     = GotSession Session
-    | LoadDisbursementsData (Result Http.Error DisbursementsData)
+    | LoadTransactionsData (Result Http.Error TransactionsData)
     | HideEnrichDisbursementModal
     | ShowEnrichDisbursementModal Disbursement.Model
     | EnrichDisbursementModalUpdated EnrichDisbursement.Msg
@@ -131,7 +151,7 @@ type Msg
     | GotEnrichDisbursementResponse (Result Http.Error String)
     | SubmitEnrichedDisbursement
     | SubmitEnrichedDisbursementDelay
-    | SortDisbursements Disbursements.Label
+    | SortTransactions Transactions.Label
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -170,24 +190,18 @@ update msg model =
             in
             ( { model | enrichDisbursementModal = subModel }, Cmd.map EnrichDisbursementModalUpdated subCmd )
 
-        SortDisbursements label ->
+        SortTransactions label ->
             case label of
-                Disbursements.Record ->
-                    ( applyFilter label .recordNumber model, Cmd.none )
-
-                Disbursements.EntityName ->
+                Transactions.EntityName ->
                     ( applyFilter label .entityName model, Cmd.none )
 
-                Disbursements.DateTime ->
+                Transactions.DateTime ->
                     ( applyFilter label .dateProcessed model, Cmd.none )
 
-                Disbursements.Amount ->
+                Transactions.Amount ->
                     ( applyFilter label .amount model, Cmd.none )
 
-                Disbursements.Purpose ->
-                    ( applyFilter label .purposeCode model, Cmd.none )
-
-                Disbursements.PaymentMethod ->
+                Transactions.PaymentMethod ->
                     ( applyFilter label .paymentMethod model, Cmd.none )
 
                 _ ->
@@ -206,14 +220,14 @@ update msg model =
                 | enrichDisbursementModalVisibility = Modal.hidden
                 , enrichDisbursementSubmitting = False
               }
-            , getDisbursementsData model.committeeId
+            , getTransactionsData model.committeeId
             )
 
-        LoadDisbursementsData res ->
+        LoadTransactionsData res ->
             case res of
                 Ok data ->
                     ( { model
-                        | disbursements = data.disbursements
+                        | transactions = data.transactions
                         , aggregations = data.aggregations
                       }
                     , Cmd.none
@@ -223,26 +237,19 @@ update msg model =
                     ( model, Cmd.none )
 
 
-applyFilter : Disbursements.Label -> (Disbursement.Model -> String) -> Model -> Model
+applyFilter : Transactions.Label -> (Disbursement.Model -> String) -> Model -> Model
 applyFilter label field model =
-    if model.currentSort == label then
-        { model | disbursements = List.reverse model.disbursements }
-
-    else
-        { model
-            | disbursements = List.sortBy field model.disbursements
-            , currentSort = label
-        }
+    model
 
 
 
 -- HTTP
 
 
-getDisbursementsData : String -> Cmd Msg
-getDisbursementsData committeeId =
-    Http.send LoadDisbursementsData <|
-        Api.get (Endpoint.needsReviewDisbursements committeeId) Nothing DD.decode
+getTransactionsData : String -> Cmd Msg
+getTransactionsData committeeId =
+    Http.send LoadTransactionsData <|
+        Api.get (Endpoint.transactions committeeId) Nothing TransactionsData.decode
 
 
 scrollToTop : Task x ()

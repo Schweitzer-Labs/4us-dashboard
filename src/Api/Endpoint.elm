@@ -11,6 +11,7 @@ module Api.Endpoint exposing
     , profiles
     , request
     , tags
+    , transactions
     , user
     , users
     , verifyDisbursement
@@ -110,6 +111,11 @@ needsReviewDisbursements committeeId =
 disbursement : Endpoint
 disbursement =
     url [ "disbursement" ] []
+
+
+transactions : String -> Endpoint
+transactions committeeId =
+    url [ "transactions" ] [ string "committeeId" committeeId ]
 
 
 verifyDisbursement : Endpoint
