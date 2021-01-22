@@ -81,6 +81,10 @@ header aggregations =
         ]
 
 
+
+-- @ToDo fix decoders to account for or clause
+
+
 warningBell : String -> Html msg
 warningBell str =
     let
