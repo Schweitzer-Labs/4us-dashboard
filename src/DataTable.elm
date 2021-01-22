@@ -26,26 +26,39 @@ view :
     -> List ( Maybe msg, a )
     -> Html msg
 view actions labels mapper data =
-    Table.table
-        { options =
-            [ Table.attr <| class "main-table"
-            , Table.striped
-            , Table.hover
-            ]
-        , thead =
-            Table.thead
-                []
-            <|
-                (if List.isEmpty actions then
-                    []
+    let
+        table =
+            Table.table
+                { options =
+                    [ Table.attr <| class "main-table"
+                    , Table.striped
+                    , Table.hover
+                    ]
+                , thead =
+                    Table.thead
+                        []
+                    <|
+                        (if List.isEmpty actions then
+                            []
 
-                 else
-                    [ actionsRow actions ]
-                )
-                    ++ [ labelRow labels ]
-        , tbody =
-            Table.tbody [] <| List.map dataRow <| List.map mapper data
-        }
+                         else
+                            [ actionsRow actions ]
+                        )
+                            ++ [ labelRow labels ]
+                , tbody =
+                    Table.tbody [] <| List.map dataRow <| List.map mapper data
+                }
+    in
+    if List.length data > 0 then
+        table
+
+    else
+        div [] [ table, emptyText ]
+
+
+emptyText : Html msg
+emptyText =
+    div [ class "text-center", Spacing.mt5 ] [ text "Awaiting Transactions..." ]
 
 
 stickyTh : ( msg, String ) -> Cell msg

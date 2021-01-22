@@ -38,7 +38,7 @@ view aggregates =
         [ Grid.row [] <|
             List.map agg
                 [ ( "Balance", dollar aggregates.balance )
-                , ( "Total pending", dollar aggregates.totalInProcessing )
+                , ( "Pending in", dollar aggregates.totalInProcessing )
                 , ( "Total raised", dollar aggregates.totalRaised )
                 , ( "Total spent", dollar aggregates.totalSpent )
                 , ( "Total donors", aggregates.totalDonors )
@@ -47,11 +47,11 @@ view aggregates =
 
 
 agg : ( String, String ) -> Column msg
-agg ( name, number ) =
+agg ( name, amount ) =
     Grid.col
         [ Col.attrs [ class "text-center" ] ]
         [ Grid.row [ Row.attrs [ class "font-weight-bold" ] ] [ Grid.col [] [ text name ] ]
-        , Grid.row [ Row.attrs [ class "font-size-24" ] ] [ Grid.col [] [ text number ] ]
+        , Grid.row [ Row.attrs [ class "font-size-24" ] ] [ Grid.col [] [ text amount ] ]
         ]
 
 

@@ -14,6 +14,7 @@ import Delay
 import Disbursement as Disbursement
 import Disbursements
 import EnrichDisbursement
+import File.Download as Download
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -71,7 +72,8 @@ view model =
     { title = "4US"
     , content =
         div []
-            [ Transactions.view SortTransactions [] model.transactions
+            [ exportTransactionsButton
+            , Transactions.view SortTransactions [] model.transactions
             , enrichDisbursementModal model
             ]
     }
@@ -82,7 +84,7 @@ exportTransactionsButton =
     Button.button
         [ Button.outlinePrimary
         , Button.attrs []
-        , Button.small
+        , Button.onClick GenerateReport
         , Button.attrs
             [ class "float-right"
             , Spacing.mb3
@@ -90,7 +92,7 @@ exportTransactionsButton =
             , Spacing.pr4
             ]
         ]
-        [ text "Export" ]
+        [ text "Generate Report" ]
 
 
 enrichDisbursementModal : Model -> Html Msg
@@ -152,6 +154,7 @@ type Msg
     | SubmitEnrichedDisbursement
     | SubmitEnrichedDisbursementDelay
     | SortTransactions Transactions.Label
+    | GenerateReport
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -159,6 +162,9 @@ update msg model =
     case msg of
         GotSession session ->
             ( { model | session = session }, Cmd.none )
+
+        GenerateReport ->
+            ( model, generateReport )
 
         ShowEnrichDisbursementModal disbursement ->
             ( { model
@@ -240,6 +246,11 @@ update msg model =
 applyFilter : Transactions.Label -> (Disbursement.Model -> String) -> Model -> Model
 applyFilter label field model =
     model
+
+
+generateReport : Cmd msg
+generateReport =
+    Download.string "2021_Q1.csv" "text/csv" "2021_Q1"
 
 
 
