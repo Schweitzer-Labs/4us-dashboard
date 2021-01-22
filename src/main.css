@@ -7158,7 +7158,7 @@ a.text-dark:hover, a.text-dark:focus {
     border-color: #dee2e6; } }
 
 .bg-slate-blue {
-  background: #4f53d1; }
+  background: #ff0a03; }
 
 .bg-ruby {
   background: #ff0a03; }
@@ -7180,8 +7180,9 @@ body {
 .header-container {
   background-color: white;
   position: sticky;
-  top: 0px;
-  left: 0px; }
+  top: 0;
+  left: 0;
+  z-index: 1000; }
 
 .main-container {
   padding-left: 237px; }
@@ -7234,3 +7235,6 @@ body {
 
 .border-blue {
   border-color: #4f53d1; }
+
+.warning {
+  color: #FF5555; }

@@ -74,9 +74,27 @@ header aggregations =
             [ Grid.col [ Col.xs10 ]
                 [ Aggregations.view aggregations ]
             , Grid.col [ Col.attrs [ class "text-right" ] ]
-                [ a [ Route.href Route.NeedsReview ] [ Asset.bellGlyph [ class "account-control-icon" ] ]
+                [ warningBell aggregations.needReviewCount
                 , a [ Route.href Route.NeedsReview, Spacing.ml4 ] [ Asset.userGlyph [ class "account-control-icon" ] ]
                 ]
+            ]
+        ]
+
+
+warningBell : String -> Html msg
+warningBell str =
+    let
+        shouldWarn =
+            if str == "0" || str == "" then
+                False
+
+            else
+                True
+    in
+    a [ Route.href Route.NeedsReview ]
+        [ Asset.bellGlyph
+            [ classList
+                [ ( "account-control-icon", True ), ( "warning", shouldWarn ) ]
             ]
         ]
 

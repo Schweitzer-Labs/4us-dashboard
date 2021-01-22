@@ -119,7 +119,7 @@ exitButton =
 createDisbursementModalButton : Html Msg
 createDisbursementModalButton =
     Button.button
-        [ Button.outlineSuccess, Button.attrs [ onClick <| ShowCreateDisbursementModal ], Button.attrs [ class "float-right" ] ]
+        [ Button.primary, Button.attrs [ onClick <| ShowCreateDisbursementModal ], Button.attrs [ class "float-right" ] ]
         [ text "Create Disbursement" ]
 
 

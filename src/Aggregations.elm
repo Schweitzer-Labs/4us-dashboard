@@ -6,7 +6,8 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Html, text)
 import Html.Attributes exposing (class)
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (string)
+import Json.Decode.Pipeline exposing (optional)
 
 
 type alias Model =
@@ -18,6 +19,7 @@ type alias Model =
     , qualifyingFunds : String
     , totalTransactions : String
     , totalInProcessing : String
+    , needReviewCount : String
     }
 
 
@@ -56,16 +58,16 @@ agg ( name, number ) =
 
 decoder : Decode.Decoder Model
 decoder =
-    Decode.map8
-        Model
-        (Decode.field "balance" Decode.string)
-        (Decode.field "totalRaised" Decode.string)
-        (Decode.field "totalSpent" Decode.string)
-        (Decode.field "totalDonors" Decode.string)
-        (Decode.field "qualifyingDonors" Decode.string)
-        (Decode.field "qualifyingFunds" Decode.string)
-        (Decode.field "totalTransactions" Decode.string)
-        (Decode.field "totalInProcessing" Decode.string)
+    Decode.succeed Model
+        |> optional "balance" string ""
+        |> optional "totalRaised" string ""
+        |> optional "totalSpent" string ""
+        |> optional "totalDonors" string ""
+        |> optional "qualifyingDonors" string ""
+        |> optional "qualifyingFunds" string ""
+        |> optional "totalTransactions" string ""
+        |> optional "totalInProcessing" string ""
+        |> optional "needsReviewCount" string ""
 
 
 init : Model
@@ -78,4 +80,5 @@ init =
     , qualifyingFunds = ""
     , totalTransactions = ""
     , totalInProcessing = ""
+    , needReviewCount = ""
     }

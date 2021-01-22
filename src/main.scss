@@ -1,19 +1,32 @@
 @import url('https://fonts.googleapis.com/css?family=EB+Garamond');
+
+
+.bg-slate-blue {
+  background: #ff0a03;
+}
+
+.bg-ruby {
+  background: $ruby;
+}
+
+
 $font-family-base: 'EB Garamond', sans-serif;
+
+
+//$theme-colors: (
+//        "primary": $slate-blue
+//);
+
+
+
 
 @import "node_modules/bootstrap/scss/bootstrap";
 
 $slate-blue: #4f53d1;
 $ruby: #ff0a03;
 
+$warning: #FF5555;
 
-.bg-slate-blue {
-  background: $slate-blue;
-}
-
-.bg-ruby {
-  background: $ruby;
-}
 
 [data-elm-hot="true"] {
   height: inherit;
@@ -40,8 +53,9 @@ body {
 .header-container {
   background-color: white;
   position: sticky;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
+  z-index: 1000;
 }
 
 .main-container {
@@ -119,4 +133,8 @@ body {
 
 .border-blue {
   border-color: $slate-blue
+}
+
+.warning {
+  color: $warning;
 }

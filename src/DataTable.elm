@@ -51,7 +51,7 @@ view actions labels mapper data =
 stickyTh : ( msg, String ) -> Cell msg
 stickyTh ( msg, str ) =
     Table.th
-        [ Table.cellAttr <| class "sticky-top sticky-th bg-white shadow-sm hover-underline hover-pointer"
+        [ Table.cellAttr <| class "bg-white shadow-sm hover-underline hover-pointer"
         , Table.cellAttr <| onClick msg
         ]
         [ text str ]
