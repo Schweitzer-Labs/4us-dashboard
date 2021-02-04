@@ -69,10 +69,6 @@ body {
   color: $gray-500;
 }
 
-
-
-
-
 //.sticky-th {
 //  top: $banner-home-height + $vertical-offset - 1;
 //}
@@ -86,11 +82,15 @@ body {
 }
 
 .header-info-bank-logo {
-  width: 60px;
+  width: 70px;
 }
 
 .header-logo {
   width: 150px;
+}
+
+.tbd-logo {
+  width: 70px;
 }
 
 .nav-icon {
@@ -139,4 +139,26 @@ body {
 
 .warning {
   color: $my-warning;
+}
+
+
+.fade-in {
+  opacity: 1;
+  animation-name: fadeIn;
+  animation-iteration-count: 1;
+  animation-timing-function: ease-in;
+  animation-duration: .15s;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.opacity-light {
+  opacity: 0.6;
 }

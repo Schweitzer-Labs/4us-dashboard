@@ -8,7 +8,6 @@ import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
-import Bootstrap.Spinner as Spinner
 import Browser.Dom as Dom
 import Delay
 import Disbursement as Disbursement
@@ -19,6 +18,7 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode
+import Loading
 import Session exposing (Session)
 import SubmitButton exposing (submitButton)
 import Task exposing (Task)
@@ -32,6 +32,7 @@ import Transaction.DisbursementsData as DD exposing (DisbursementsData)
 
 type alias Model =
     { session : Session
+    , loading : Bool
     , committeeId : String
     , timeZone : Time.Zone
     , disbursements : List Disbursement.Model
@@ -43,13 +44,14 @@ type alias Model =
     }
 
 
-init : Session -> String -> ( Model, Cmd Msg )
-init session committeeId =
+init : Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
+init session aggs committeeId =
     ( { session = session
+      , loading = True
       , committeeId = committeeId
       , timeZone = Time.utc
       , disbursements = []
-      , aggregations = Aggregations.init
+      , aggregations = aggs
       , enrichDisbursementModalVisibility = Modal.hidden
       , enrichDisbursementModal = Disbursement.init
       , currentSort = Disbursements.Record
@@ -63,14 +65,23 @@ init session committeeId =
 -- VIEW
 
 
+contentView : Model -> Html Msg
+contentView model =
+    div [ class "fade-in" ]
+        [ Disbursements.viewInteractive SortDisbursements ShowEnrichDisbursementModal [] model.disbursements
+        , enrichDisbursementModal model
+        ]
+
+
 view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "4US"
     , content =
-        div []
-            [ Disbursements.viewInteractive SortDisbursements ShowEnrichDisbursementModal [] model.disbursements
-            , enrichDisbursementModal model
-            ]
+        if model.loading then
+            Loading.view
+
+        else
+            contentView model
     }
 
 
@@ -197,7 +208,7 @@ update msg model =
         GotEnrichDisbursementResponse res ->
             case res of
                 Ok data ->
-                    ( model, Delay.after 2 Delay.Second SubmitEnrichedDisbursementDelay )
+                    ( model, Delay.after 1 Delay.Second SubmitEnrichedDisbursementDelay )
 
                 Err _ ->
                     ( model, Cmd.none )
@@ -216,6 +227,7 @@ update msg model =
                     ( { model
                         | disbursements = data.disbursements
                         , aggregations = data.aggregations
+                        , loading = False
                       }
                     , Cmd.none
                     )

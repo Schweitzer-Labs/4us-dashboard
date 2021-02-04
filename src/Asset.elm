@@ -20,8 +20,11 @@ module Asset exposing
     , person
     , sackDollarGlyph
     , search
+    , searchDollarGlyph
     , src
     , stripeLogo
+    , tbdBankLogo
+    , universityGlyph
     , usLogo
     , userGlyph
     , wiseLogo
@@ -135,6 +138,11 @@ genderNeutral selected =
         image "gender-neutral.svg"
 
 
+tbdBankLogo : Image
+tbdBankLogo =
+    image "tbd-bank-logo.svg"
+
+
 image : String -> Image
 image filename =
     Image ("/assets/images/" ++ filename)
@@ -195,3 +203,13 @@ bellGlyph =
 userGlyph : List (Attribute msg) -> Html msg
 userGlyph =
     glyph "fas fa-user"
+
+
+universityGlyph : List (Attribute msg) -> Html msg
+universityGlyph =
+    glyph "fas fa-store-alt"
+
+
+searchDollarGlyph : List (Attribute msg) -> Html msg
+searchDollarGlyph =
+    glyph "fas fa-search-dollar"

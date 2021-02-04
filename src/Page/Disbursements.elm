@@ -20,6 +20,7 @@ import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode exposing (string)
 import Json.Encode as Encode
+import Loading
 import Session exposing (Session)
 import SubmitButton exposing (submitButton)
 import Task exposing (Task)
@@ -33,6 +34,7 @@ import Transaction.DisbursementsData as DD exposing (DisbursementsData)
 
 type alias Model =
     { session : Session
+    , loading : Bool
     , timeZone : Time.Zone
     , disbursements : List Disbursement.Model
     , aggregations : Aggregations.Model
@@ -43,13 +45,14 @@ type alias Model =
     }
 
 
-init : Session -> String -> ( Model, Cmd Msg )
-init session committeeId =
+init : Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
+init session aggs committeeId =
     ( { session = session
+      , loading = True
       , committeeId = committeeId
       , timeZone = Time.utc
       , disbursements = []
-      , aggregations = Aggregations.init
+      , aggregations = aggs
       , createDisbursementModalVisibility = Modal.hidden
       , createDisbursementModal = CreateDisbursement.init
       , createDisbursementSubmitting = False
@@ -62,15 +65,24 @@ init session committeeId =
 -- VIEW
 
 
+loadedView : Model -> Html Msg
+loadedView model =
+    div [ class "fade-in" ]
+        [ createDisbursementModalButton
+        , Disbursements.view SortDisbursements [] model.disbursements
+        , createDisbursementModal model
+        ]
+
+
 view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "4US"
     , content =
-        div []
-            [ createDisbursementModalButton
-            , Disbursements.view SortDisbursements [] model.disbursements
-            , createDisbursementModal model
-            ]
+        if model.loading then
+            Loading.view
+
+        else
+            loadedView model
     }
 
 
@@ -179,7 +191,7 @@ update msg model =
         GotCreateDisbursementResponse res ->
             case res of
                 Ok data ->
-                    ( model, Delay.after 2 Delay.Second SubmitCreateDisbursementDelay )
+                    ( model, Delay.after 1 Delay.Second SubmitCreateDisbursementDelay )
 
                 Err _ ->
                     ( model, Cmd.none )
@@ -212,6 +224,7 @@ update msg model =
                     ( { model
                         | disbursements = data.disbursements
                         , aggregations = data.aggregations
+                        , loading = False
                       }
                     , Cmd.none
                     )

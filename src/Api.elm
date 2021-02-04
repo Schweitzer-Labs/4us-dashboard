@@ -1,4 +1,21 @@
-port module Api exposing (Cred, addServerError, application, decodeErrors, delete, get, login, logout, post, put, register, settings, storeCredWith, username, viewerChanges)
+port module Api exposing
+    ( Cred
+    , addServerError
+    , application
+    , decodeError
+    , decodeErrors
+    , delete
+    , get
+    , login
+    , logout
+    , post
+    , put
+    , register
+    , settings
+    , storeCredWith
+    , username
+    , viewerChanges
+    )
 
 {-| This module is responsible for communicating to the Conduit API.
 
@@ -145,7 +162,7 @@ application viewerDecoder config =
                         |> Result.andThen (Decode.decodeString (storageDecoder viewerDecoder))
                         |> Result.toMaybe
             in
-                config.init maybeViewer url navKey
+            config.init maybeViewer url navKey
     in
     Browser.application
         { init = init
@@ -229,6 +246,7 @@ delete url cred body decoder =
         , withCredentials = False
         }
 
+
 login : Http.Body -> Decoder (Cred -> a) -> Http.Request a
 login body decoder =
     post Endpoint.login Nothing body (Decode.field "user" (decoderFromCred decoder))
@@ -242,6 +260,7 @@ register body decoder =
 settings : Cred -> Http.Body -> Decoder (Cred -> a) -> Http.Request a
 settings cred body decoder =
     put Endpoint.user cred body (Decode.field "user" (decoderFromCred decoder))
+
 
 decoderFromCred : Decoder (Cred -> a) -> Decoder a
 decoderFromCred decoder =
@@ -282,6 +301,18 @@ errorsDecoder =
 fromPair : ( String, List String ) -> List String
 fromPair ( field, errors ) =
     List.map (\error -> field ++ " " ++ error) errors
+
+
+decodeError : Http.Error -> String
+decodeError error =
+    case error of
+        Http.BadStatus response ->
+            response.body
+                |> decodeString (field "errorMessage" string)
+                |> Result.withDefault "Server error"
+
+        err ->
+            "Server error"
 
 
 

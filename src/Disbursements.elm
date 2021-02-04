@@ -19,8 +19,7 @@ decoder =
 
 labels : (Label -> msg) -> List ( msg, String )
 labels sortMsg =
-    [ ( sortMsg Record, "Record" )
-    , ( sortMsg DateTime, "Date / Time" )
+    [ ( sortMsg DateTime, "Date / Time" )
     , ( sortMsg EntityName, "Entity Name" )
     , ( sortMsg Amount, "Amount" )
     , ( sortMsg Purpose, "Purpose" )
@@ -43,7 +42,7 @@ type Label
 
 view : (Label -> msg) -> List (Html msg) -> List Disbursement.Model -> Html msg
 view sortMsg content disbursements =
-    DataTable.view content (labels sortMsg) disbursementRowMap <|
+    DataTable.view "Awaiting Disbursements." content (labels sortMsg) disbursementRowMap <|
         List.map (\d -> ( Nothing, d )) disbursements
 
 
@@ -54,7 +53,7 @@ viewInteractive :
     -> List Disbursement.Model
     -> Html msg
 viewInteractive sortMsg msg content disbursements =
-    DataTable.view content (labels sortMsg) disbursementRowMap <|
+    DataTable.view "Awaiting Disbursements." content (labels sortMsg) disbursementRowMap <|
         List.map (\d -> ( Just (msg d), d )) disbursements
 
 
@@ -76,10 +75,9 @@ disbursementRowMap ( maybeMsg, d ) =
                 Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
     in
     ( maybeMsg
-    , [ ( "Record", text d.recordNumber )
-      , ( "Date / Time", text d.date )
+    , [ ( "Date / Time", text d.date )
       , ( "Entity Name", text d.entityName )
-      , ( "Amount", span [ class "text-failure font-weight-bold" ] [ text <| "($" ++ d.amount ++ ")" ] )
+      , ( "Amount", span [ class "text-danger font-weight-bold" ] [ text <| "($" ++ d.amount ++ ")" ] )
       , ( "Purpose"
         , if d.purposeCode == "" then
             span [ class "text-danger" ] [ text "Missing" ]

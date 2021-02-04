@@ -121,7 +121,7 @@ ruleInfoRow =
         [ Grid.col [ Col.xs6, Col.attrs [ class "border-right border-blue", class "text-right" ] ] [ text "Mayor" ]
         , Grid.col [ Col.xs6 ]
             [ img
-                [ Asset.src Asset.wiseLogo, class "header-info-bank-logo" ]
+                [ Asset.src Asset.tbdBankLogo, class "header-info-bank-logo" ]
                 []
             ]
         ]
@@ -190,8 +190,8 @@ navContainer page =
         [ Spacing.mt5 ]
         [ navRow (Asset.coinsGlyph [ class "tool-glyph" ]) page Route.Transactions "Transactions"
         , navRow (toolBarAsset <| Asset.genderNeutral <| pageIsActive page Route.Home) page Route.Home "Contributions"
-        , navRow (toolBarAsset Asset.house) page Route.Disbursements "Disbursements"
-        , navRow (toolBarAsset Asset.binoculars) page Route.NeedsReview "Needs Review"
+        , navRow (Asset.universityGlyph [ class "tool-glyph" ]) page Route.Disbursements "Disbursements"
+        , navRow (Asset.searchDollarGlyph [ class "tool-glyph" ]) page Route.NeedsReview "Needs Review"
         , navRow (Asset.linkGlyph [ class "tool-glyph" ]) page Route.LinkBuilder "Link Builder"
 
         --, navRow (toolBarAsset Asset.documents) page Route. "Documents"

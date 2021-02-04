@@ -20,6 +20,7 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode
+import Loading
 import Session exposing (Session)
 import SubmitButton exposing (submitButton)
 import Task exposing (Task)
@@ -34,6 +35,7 @@ import Transactions
 
 type alias Model =
     { session : Session
+    , loading : Bool
     , committeeId : String
     , timeZone : Time.Zone
     , transactions : Transactions.Model
@@ -45,13 +47,14 @@ type alias Model =
     }
 
 
-init : Session -> String -> ( Model, Cmd Msg )
-init session committeeId =
+init : Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
+init session aggs committeeId =
     ( { session = session
+      , loading = True
       , committeeId = committeeId
       , timeZone = Time.utc
       , transactions = []
-      , aggregations = Aggregations.init
+      , aggregations = aggs
       , enrichDisbursementModalVisibility = Modal.hidden
       , enrichDisbursementModal = Disbursement.init
       , currentSort = Disbursements.Record
@@ -65,22 +68,49 @@ init session committeeId =
 -- VIEW
 
 
+loadedView : Model -> Html Msg
+loadedView model =
+    div [ class "fade-in" ]
+        [ exportTransactionsButton
+        , crmExportButton
+        , Transactions.view SortTransactions [] model.transactions
+        , enrichDisbursementModal model
+        ]
+
+
 view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "4US"
     , content =
-        div []
-            [ exportTransactionsButton
-            , Transactions.view SortTransactions [] model.transactions
-            , enrichDisbursementModal model
-            ]
+        if model.loading then
+            Loading.view
+
+        else
+            loadedView model
     }
 
 
 exportTransactionsButton : Html Msg
 exportTransactionsButton =
     Button.button
-        [ Button.outlinePrimary
+        [ Button.primary
+        , Button.attrs []
+        , Button.onClick GenerateReport
+        , Button.attrs
+            [ class "float-right"
+            , Spacing.mb3
+            , Spacing.ml3
+            , Spacing.pl4
+            , Spacing.pr4
+            ]
+        ]
+        [ text "Generate Report" ]
+
+
+crmExportButton : Html Msg
+crmExportButton =
+    Button.button
+        [ Button.primary
         , Button.attrs []
         , Button.onClick GenerateReport
         , Button.attrs
@@ -90,7 +120,7 @@ exportTransactionsButton =
             , Spacing.pr4
             ]
         ]
-        [ text "Generate Report" ]
+        [ text "CRM Export" ]
 
 
 enrichDisbursementModal : Model -> Html Msg
@@ -214,7 +244,7 @@ update msg model =
         GotEnrichDisbursementResponse res ->
             case res of
                 Ok data ->
-                    ( model, Delay.after 2 Delay.Second SubmitEnrichedDisbursementDelay )
+                    ( model, Delay.after 1 Delay.Second SubmitEnrichedDisbursementDelay )
 
                 Err _ ->
                     ( model, Cmd.none )
@@ -233,6 +263,7 @@ update msg model =
                     ( { model
                         | transactions = data.transactions
                         , aggregations = data.aggregations
+                        , loading = False
                       }
                     , Cmd.none
                     )

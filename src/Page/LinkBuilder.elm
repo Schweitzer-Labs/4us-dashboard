@@ -16,6 +16,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
+import Config.Env exposing (env)
 import Html exposing (..)
 import Html.Attributes as SvgA exposing (class, for, href, src, style)
 import Http
@@ -40,14 +41,14 @@ type alias Model =
     }
 
 
-init : Session -> String -> ( Model, Cmd Msg )
-init session committeeId =
+init : Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
+init session aggs committeeId =
     ( { session = session
       , refCode = ""
       , amount = ""
       , url = ""
       , committeeId = committeeId
-      , aggregations = Aggregations.init
+      , aggregations = aggs
       }
     , getAggregations committeeId
     )
@@ -72,7 +73,7 @@ view model =
 formRow : Model -> Html Msg
 formRow model =
     Grid.row
-        [ Row.attrs [ Spacing.mt3 ] ]
+        [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
         [ Grid.col
             [ Col.sm5 ]
             [ Form.group []
@@ -201,7 +202,7 @@ createUrl committeeId refCode amount =
             else
                 []
     in
-    Url.Builder.crossOrigin "http://localhost:3001" [] <| committeeIdVal ++ refCodeVal ++ amountVal
+    Url.Builder.crossOrigin env.donorUrl [] <| committeeIdVal ++ refCodeVal ++ amountVal
 
 
 getAggregations : String -> Cmd Msg

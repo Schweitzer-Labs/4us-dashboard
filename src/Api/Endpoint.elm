@@ -1,6 +1,7 @@
 module Api.Endpoint exposing
     ( Endpoint
     , articles
+    , contribute
     , contributions
     , disbursement
     , disbursements
@@ -18,6 +19,7 @@ module Api.Endpoint exposing
     )
 
 import Api.DisbursementsFilter as DisbursementsFilter exposing (DisbursementsFilter)
+import Config.Env exposing (env)
 import Http
 import Url.Builder exposing (QueryParameter, string)
 import Username exposing (Username)
@@ -73,7 +75,7 @@ url : List String -> List QueryParameter -> Endpoint
 url paths queryParams =
     -- NOTE: Url.Builder takes care of percent-encoding special URL characters.
     -- See https://package.elm-lang.org/packages/elm/url/latest/Url#percentEncode
-    Url.Builder.crossOrigin "http://localhost:5000"
+    Url.Builder.crossOrigin env.apiEndpoint
         paths
         queryParams
         |> Endpoint
@@ -111,6 +113,11 @@ needsReviewDisbursements committeeId =
 disbursement : Endpoint
 disbursement =
     url [ "disbursement" ] []
+
+
+contribute : Endpoint
+contribute =
+    url [ "contribution" ] []
 
 
 transactions : String -> Endpoint

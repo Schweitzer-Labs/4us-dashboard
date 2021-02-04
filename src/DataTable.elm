@@ -20,12 +20,13 @@ type alias DataRow msg =
 
 
 view :
-    Actions msg
+    String
+    -> Actions msg
     -> Labels msg
     -> (( Maybe msg, a ) -> ( Maybe msg, DataRow msg ))
     -> List ( Maybe msg, a )
     -> Html msg
-view actions labels mapper data =
+view emptyCopy actions labels mapper data =
     let
         table =
             Table.table
@@ -53,12 +54,12 @@ view actions labels mapper data =
         table
 
     else
-        div [] [ table, emptyText ]
+        div [] [ table, emptyText emptyCopy ]
 
 
-emptyText : Html msg
-emptyText =
-    div [ class "text-center", Spacing.mt5 ] [ text "Awaiting Transactions..." ]
+emptyText : String -> Html msg
+emptyText copy =
+    div [ class "text-center", Spacing.mt5 ] [ text copy ]
 
 
 stickyTh : ( msg, String ) -> Cell msg

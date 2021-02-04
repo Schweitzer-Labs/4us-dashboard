@@ -6,11 +6,12 @@ import DataTable
 import Html exposing (Html, img, span, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode
+import PaymentMethod
 
 
 view : (Label -> msg) -> List (Html msg) -> List Contribution.Model -> Html msg
 view sortMsg content contributions =
-    DataTable.view content (labels sortMsg) contributionRowMap <|
+    DataTable.view "Awaiting Contributions." content (labels sortMsg) contributionRowMap <|
         List.map (\d -> ( Nothing, d )) contributions
 
 
@@ -34,21 +35,31 @@ contributionRowMap ( maybeMsg, c ) =
                         n
                 )
                 <|
-                    Maybe.withDefault "Home" c.refCode
+                    Maybe.withDefault "dashboard" c.refCode
+
+        --paymentMethod =
     in
     ( Nothing
-    , [ ( "Record", text c.record )
-      , ( "Date / Time", text c.datetime )
+    , [ ( "Date / Time", text c.datetime )
       , ( "Entity name", text c.entityName )
-      , ( "Amount", span [ class "text-success font-weight-bold" ] [ text <| dollar c.amount ] )
-      , ( "Rule", text "NY11" )
+      , ( "Amount", span [ class "font-weight-bold text-success text-right" ] [ text <| dollar c.amount ] )
+      , ( "Rule", text "MA11" )
       , ( "Verified", Asset.circleCheckGlyph [ class "text-success data-icon-size" ] )
-      , ( "Payment Method", text c.paymentMethod )
-      , ( "Processor", img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] [] )
+      , ( "Payment Method", text <| PaymentMethod.toDisplayString c.paymentMethod )
+      , ( "Processor", processor c.paymentMethod )
       , ( "Status", status )
       , ( "Source", refCode )
       ]
     )
+
+
+processor : String -> Html msg
+processor method =
+    if method == "credit" then
+        img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
+
+    else
+        img [ Asset.src Asset.tbdBankLogo, class "tbd-logo" ] []
 
 
 dollar : String -> String
@@ -58,8 +69,7 @@ dollar str =
 
 labels : (Label -> msg) -> List ( msg, String )
 labels sortMsg =
-    [ ( sortMsg Record, "Record" )
-    , ( sortMsg DateTime, "Date / Time" )
+    [ ( sortMsg DateTime, "Date / Time" )
     , ( sortMsg EntityName, "Entity name" )
     , ( sortMsg Amount, "Amount" )
     , ( sortMsg Rule, "Rule" )

@@ -112,10 +112,6 @@ toAggregations page =
             needsReview.aggregations
 
 
-
--- Refactor removed committeeId parsing from URL and move to Session once auth is added.
-
-
 changeRouteTo : Url -> Maybe Route -> Model -> ( Model, Cmd Msg )
 changeRouteTo url maybeRoute model =
     let
@@ -124,6 +120,9 @@ changeRouteTo url maybeRoute model =
 
         committeeId =
             CommitteeId.parse url
+
+        aggregations =
+            toAggregations model
     in
     case maybeRoute of
         Nothing ->
@@ -133,30 +132,35 @@ changeRouteTo url maybeRoute model =
         Just Route.Home ->
             Home.init
                 session
+                aggregations
                 committeeId
                 |> updateWith Home GotHomeMsg model
 
         Just Route.Transactions ->
             Transactions.init
                 session
+                aggregations
                 committeeId
                 |> updateWith Transactions GotTransactionsMsg model
 
         Just Route.LinkBuilder ->
             LinkBuilder.init
                 session
+                aggregations
                 committeeId
                 |> updateWith LinkBuilder GotLinkBuilderMsg model
 
         Just Route.Disbursements ->
             Disbursements.init
                 session
+                aggregations
                 committeeId
                 |> updateWith Disbursements GotDisbursementsMsg model
 
         Just Route.NeedsReview ->
             NeedsReview.init
                 session
+                aggregations
                 committeeId
                 |> updateWith NeedsReview GotNeedsReviewMsg model
 

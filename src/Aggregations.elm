@@ -6,7 +6,7 @@ import Bootstrap.Grid.Row as Row
 import Html exposing (Html, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode exposing (string)
-import Json.Decode.Pipeline exposing (optional)
+import Json.Decode.Pipeline exposing (optional, required)
 
 
 type alias Model =
@@ -17,7 +17,8 @@ type alias Model =
     , qualifyingDonors : String
     , qualifyingFunds : String
     , totalTransactions : String
-    , totalInProcessing : String
+    , totalContributionsInProcessing : String
+    , totalDisbursementsInProcessing : String
     , needReviewCount : String
     }
 
@@ -51,7 +52,8 @@ view aggregates =
         [ Grid.row [] <|
             List.map agg
                 [ ( "Balance", dollar aggregates.balance )
-                , ( "Pending in", dollar aggregates.totalInProcessing )
+                , ( "Pending in", dollar aggregates.totalContributionsInProcessing )
+                , ( "Pending out", dollar aggregates.totalDisbursementsInProcessing )
                 , ( "Total raised", dollar aggregates.totalRaised )
                 , ( "Total spent", dollar aggregates.totalSpent )
                 , ( "Total donors", aggregates.totalDonors )
@@ -71,14 +73,15 @@ agg ( name, amount ) =
 decoder : Decode.Decoder Model
 decoder =
     Decode.succeed Model
-        |> optional "balance" string ""
-        |> optional "totalRaised" string ""
-        |> optional "totalSpent" string ""
-        |> optional "totalDonors" string ""
+        |> required "balance" string
+        |> required "totalRaised" string
+        |> required "totalSpent" string
+        |> required "totalDonors" string
         |> optional "qualifyingDonors" string ""
         |> optional "qualifyingFunds" string ""
         |> optional "totalTransactions" string ""
-        |> optional "totalInProcessing" string ""
+        |> required "totalContributionsInProcessing" string
+        |> required "totalDisbursementsInProcessing" string
         |> optional "needsReviewCount" string ""
 
 
@@ -91,6 +94,7 @@ init =
     , qualifyingDonors = ""
     , qualifyingFunds = ""
     , totalTransactions = ""
-    , totalInProcessing = ""
+    , totalContributionsInProcessing = ""
+    , totalDisbursementsInProcessing = ""
     , needReviewCount = ""
     }
