@@ -55,7 +55,7 @@ view maybeViewer aggregations page { title, content } =
 
 mainContainer : Aggregations.Model -> Html msg -> Html msg
 mainContainer aggregations content =
-    div [ class "main-container" ]
+    div [ class "app-container" ]
         [ header aggregations
         , contentContainer content
         ]

@@ -14,7 +14,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-amplify/auth": "^3.4.20",
     "@fortawesome/fontawesome-free": "^5.15.2",
+    "@okta/okta-signin-widget": "^5.1.5",
     "bootstrap": "^4.5.3"
   }
 }
