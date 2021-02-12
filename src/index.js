@@ -1,39 +1,54 @@
 import './main.css';
 import { Elm } from './Main.elm';
 import * as serviceWorker from './serviceWorker';
-import Auth from '@aws-amplify/auth'
 
-Auth.configure({
+const getTokenFromUrl = (url) => {
+  const firstTrim = url.split('id_token=')
+  if (firstTrim.length > 1) {
+    return firstTrim[1].split('&')[0]
+  } else {
+    throw new Error('token from url not found')
+  }
+}
 
-  // REQUIRED only for Federated Authentication - Amazon Cognito Identity Pool ID
-  identityPoolId: 'us-east-1:8ec0ca2c-4e7d-4f5e-9755-ad27a946f885',
+const getCommitteeIdFromUrlRedirect = (url) => {
+  const firstTrim = url.split('state=')
+  if (firstTrim.length > 1) {
+    return firstTrim[1].split('&')[0]
+  } else {
+    throw new Error('token from url not found')
+  }
+}
 
-  // REQUIRED - Amazon Cognito Region
-  region: 'us-east-1',
-
-  // OPTIONAL - Amazon Cognito Federated Identity Pool Region
-  // Required only if it's different from Amazon Cognito Region
-  identityPoolRegion: 'us-east-1',
-
-  // OPTIONAL - Amazon Cognito User Pool ID
-  userPoolId: 'us-east-1_L04zA9HKx',
-
-  // OPTIONAL - Amazon Cognito Web Client ID (26-char alphanumeric string)
-  userPoolWebClientId: '6bhp15ot1l2tqe849ikq06hvet',
-})
-
-
-
+const getCommitteeIdFromUrlQueryString = (url) => {
+  const firstTrim = url.split('?committeeId=')
+  if (firstTrim.length > 1) {
+    return firstTrim[1]
+  } else {
+    throw new Error('committeeId from url not found')
+  }
+}
 
 async function runApp() {
+  let token;
+  let committeeId;
   try {
-    const user = await Auth.signIn('evan@schweitzerlabs.com', 'Passowrd_123');
-    console.log(user)
-    Elm.Main.init({
-      node: document.getElementById('root')
-    });
-  } catch (error) {
-    console.log('error signing in', error);
+    token = getTokenFromUrl(window.location.href)
+    committeeId = getCommitteeIdFromUrlRedirect(window.location.href)
+    localStorage.setItem('token', token)
+    window.location = `http://localhost:3000?committeeId=${committeeId}`
+  } catch (e) {
+    token = localStorage.getItem('token')
+    committeeId = getCommitteeIdFromUrlQueryString(window.location.href)
+    if (token) {
+      Elm.Main.init({
+        node: document.getElementById('root'),
+        flags: token
+      });
+    } else {
+      window.location =
+        `https://platform-user.auth.us-east-1.amazoncognito.com/login?client_id=6bhp15ot1l2tqe849ikq06hvet&response_type=token&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=http://localhost:3000&state=${committeeId}`
+    }
   }
 }
 
