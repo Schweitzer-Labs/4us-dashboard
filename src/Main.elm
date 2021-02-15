@@ -1,12 +1,11 @@
 module Main exposing (Model(..), Msg(..), changeRouteTo, init, main, subscriptions, toSession, update, updateWith, view)
 
 import Aggregations
-import Api
+import Api exposing (Token)
 import Browser exposing (Document)
 import Browser.Navigation as Nav
 import CommitteeId
 import Html exposing (Html)
-import Json.Decode exposing (Value)
 import Page
 import Page.Blank as Blank
 import Page.Disbursements as Disbursements
@@ -18,7 +17,6 @@ import Page.Transactions as Transactions
 import Route exposing (Route)
 import Session exposing (Session)
 import Url exposing (Url)
-import Viewer exposing (Viewer)
 
 
 
@@ -35,14 +33,15 @@ type Model
     | Transactions Transactions.Model
 
 
-init : Maybe Viewer -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init maybeViewer url navKey =
+init : String -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init token url navKey =
     let
         ( model, cmdMsg ) =
             changeRouteTo
                 url
+                (Api.Token token)
                 (Route.fromUrl url)
-                (Redirect (Session.fromViewer navKey maybeViewer))
+                (Redirect (Session.fromViewer navKey token))
     in
     ( model, cmdMsg )
 
@@ -112,8 +111,33 @@ toAggregations page =
             needsReview.aggregations
 
 
-changeRouteTo : Url -> Maybe Route -> Model -> ( Model, Cmd Msg )
-changeRouteTo url maybeRoute model =
+toToken : Model -> Token
+toToken page =
+    case page of
+        Redirect session ->
+            Api.Token ""
+
+        NotFound session ->
+            Api.Token ""
+
+        Home home ->
+            home.token
+
+        Transactions transactions ->
+            transactions.token
+
+        LinkBuilder linkBuilder ->
+            linkBuilder.token
+
+        Disbursements disbursement ->
+            disbursement.token
+
+        NeedsReview needsReview ->
+            needsReview.token
+
+
+changeRouteTo : Url -> Token -> Maybe Route -> Model -> ( Model, Cmd Msg )
+changeRouteTo url token maybeRoute model =
     let
         session =
             toSession model
@@ -131,6 +155,7 @@ changeRouteTo url maybeRoute model =
         -- rest of the routes
         Just Route.Home ->
             Home.init
+                token
                 session
                 aggregations
                 committeeId
@@ -138,6 +163,7 @@ changeRouteTo url maybeRoute model =
 
         Just Route.Transactions ->
             Transactions.init
+                token
                 session
                 aggregations
                 committeeId
@@ -145,6 +171,7 @@ changeRouteTo url maybeRoute model =
 
         Just Route.LinkBuilder ->
             LinkBuilder.init
+                token
                 session
                 aggregations
                 committeeId
@@ -152,6 +179,7 @@ changeRouteTo url maybeRoute model =
 
         Just Route.Disbursements ->
             Disbursements.init
+                token
                 session
                 aggregations
                 committeeId
@@ -159,6 +187,7 @@ changeRouteTo url maybeRoute model =
 
         Just Route.NeedsReview ->
             NeedsReview.init
+                token
                 session
                 aggregations
                 committeeId
@@ -194,7 +223,7 @@ update msg model =
                     )
 
         ( ChangedUrl url, _ ) ->
-            changeRouteTo url (Route.fromUrl url) model
+            changeRouteTo url (toToken model) (Route.fromUrl url) model
 
         ( GotHomeMsg subMsg, Home home ) ->
             Home.update subMsg home
@@ -285,12 +314,6 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
-        NotFound _ ->
-            Sub.none
-
-        Redirect _ ->
-            Session.changes GotSession (Session.navKey (toSession model))
-
         Home home ->
             Sub.map GotHomeMsg (Home.subscriptions home)
 
@@ -306,10 +329,13 @@ subscriptions model =
         NeedsReview disbursements ->
             Sub.map GotNeedsReviewMsg (NeedsReview.subscriptions disbursements)
 
+        _ ->
+            Sub.none
 
-main : Program Value Model Msg
+
+main : Program String Model Msg
 main =
-    Api.application Viewer.decoder
+    Browser.application
         { init = init
         , onUrlChange = ChangedUrl
         , onUrlRequest = ClickedLink

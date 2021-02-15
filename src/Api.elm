@@ -1,20 +1,14 @@
-port module Api exposing
+module Api exposing
     ( Cred
+    , Token(..)
     , addServerError
-    , application
     , decodeError
     , decodeErrors
     , delete
     , get
-    , login
-    , logout
     , post
     , put
-    , register
-    , settings
-    , storeCredWith
     , username
-    , viewerChanges
     )
 
 {-| This module is responsible for communicating to the Conduit API.
@@ -24,14 +18,8 @@ It exposes an opaque Endpoint type which is guaranteed to point to the correct U
 -}
 
 import Api.Endpoint as Endpoint exposing (Endpoint)
-import Avatar exposing (Avatar)
-import Browser
-import Browser.Navigation as Nav
 import Http exposing (Body, Expect)
 import Json.Decode as Decode exposing (Decoder, Value, decodeString, field, string)
-import Json.Decode.Pipeline as Pipeline exposing (optional, required)
-import Json.Encode as Encode
-import Url exposing (Url)
 import Username exposing (Username)
 
 
@@ -58,218 +46,83 @@ type Cred
     = Cred Username String
 
 
+type Token
+    = Token String
+
+
 username : Cred -> Username
 username (Cred val _) =
     val
 
 
-credHeader : Cred -> Http.Header
-credHeader (Cred _ str) =
-    Http.header "authorization" ("Token " ++ str)
-
-
-{-| It's important that this is never exposed!
-
-We expose `login` and `application` instead, so we can be certain that if anyone
-ever has access to a `Cred` value, it came from either the login API endpoint
-or was passed in via flags.
-
--}
-credDecoder : Decoder Cred
-credDecoder =
-    Decode.succeed Cred
-        |> required "username" Username.decoder
-        |> required "token" Decode.string
+credHeader : Token -> Http.Header
+credHeader (Token token) =
+    Http.header "authorization" ("Bearer " ++ token)
 
 
 
 -- PERSISTENCE
-
-
-decode : Decoder (Cred -> viewer) -> Value -> Result Decode.Error viewer
-decode decoder value =
-    -- It's stored in localStorage as a JSON String;
-    -- first decode the Value as a String, then
-    -- decode that String as JSON.
-    Decode.decodeValue Decode.string value
-        |> Result.andThen (\str -> Decode.decodeString (Decode.field "user" (decoderFromCred decoder)) str)
-
-
-port onStoreChange : (Value -> msg) -> Sub msg
-
-
-viewerChanges : (Maybe viewer -> msg) -> Decoder (Cred -> viewer) -> Sub msg
-viewerChanges toMsg decoder =
-    onStoreChange (\value -> toMsg (decodeFromChange decoder value))
-
-
-decodeFromChange : Decoder (Cred -> viewer) -> Value -> Maybe viewer
-decodeFromChange viewerDecoder val =
-    -- It's stored in localStorage as a JSON String;
-    -- first decode the Value as a String, then
-    -- decode that String as JSON.
-    Decode.decodeValue (storageDecoder viewerDecoder) val
-        |> Result.toMaybe
-
-
-storeCredWith : Cred -> Avatar -> Cmd msg
-storeCredWith (Cred uname token) avatar =
-    let
-        json =
-            Encode.object
-                [ ( "user"
-                  , Encode.object
-                        [ ( "username", Username.encode uname )
-                        , ( "token", Encode.string token )
-                        , ( "image", Avatar.encode avatar )
-                        ]
-                  )
-                ]
-    in
-    storeCache (Just json)
-
-
-logout : Cmd msg
-logout =
-    storeCache Nothing
-
-
-port storeCache : Maybe Value -> Cmd msg
-
-
-
 -- SERIALIZATION
 -- APPLICATION
-
-
-application :
-    Decoder (Cred -> viewer)
-    ->
-        { init : Maybe viewer -> Url -> Nav.Key -> ( model, Cmd msg )
-        , onUrlChange : Url -> msg
-        , onUrlRequest : Browser.UrlRequest -> msg
-        , subscriptions : model -> Sub msg
-        , update : msg -> model -> ( model, Cmd msg )
-        , view : model -> Browser.Document msg
-        }
-    -> Program Value model msg
-application viewerDecoder config =
-    let
-        init flags url navKey =
-            let
-                maybeViewer =
-                    Decode.decodeValue Decode.string flags
-                        |> Result.andThen (Decode.decodeString (storageDecoder viewerDecoder))
-                        |> Result.toMaybe
-            in
-            config.init maybeViewer url navKey
-    in
-    Browser.application
-        { init = init
-        , onUrlChange = config.onUrlChange
-        , onUrlRequest = config.onUrlRequest
-        , subscriptions = config.subscriptions
-        , update = config.update
-        , view = config.view
-        }
-
-
-storageDecoder : Decoder (Cred -> viewer) -> Decoder viewer
-storageDecoder viewerDecoder =
-    Decode.field "user" (decoderFromCred viewerDecoder)
-
-
-
 -- HTTP
 
 
-get : Endpoint -> Maybe Cred -> Decoder a -> Http.Request a
-get url maybeCred decoder =
+get : Endpoint -> Token -> Decoder a -> Http.Request a
+get url token decoder =
     Endpoint.request
         { method = "GET"
         , url = url
         , expect = Http.expectJson decoder
-        , headers =
-            case maybeCred of
-                Just cred ->
-                    [ credHeader cred ]
-
-                Nothing ->
-                    []
+        , headers = [ credHeader token ]
         , body = Http.emptyBody
         , timeout = Nothing
         , withCredentials = False
         }
 
 
-put : Endpoint -> Cred -> Body -> Decoder a -> Http.Request a
-put url cred body decoder =
+put : Endpoint -> Token -> Body -> Decoder a -> Http.Request a
+put url token body decoder =
     Endpoint.request
         { method = "PUT"
         , url = url
         , expect = Http.expectJson decoder
-        , headers = [ credHeader cred ]
+        , headers = [ credHeader token ]
         , body = body
         , timeout = Nothing
         , withCredentials = False
         }
 
 
-post : Endpoint -> Maybe Cred -> Body -> Decoder a -> Http.Request a
-post url maybeCred body decoder =
+post : Endpoint -> Token -> Body -> Decoder a -> Http.Request a
+post url token body decoder =
     Endpoint.request
         { method = "POST"
         , url = url
         , expect = Http.expectJson decoder
-        , headers =
-            case maybeCred of
-                Just cred ->
-                    [ credHeader cred ]
-
-                Nothing ->
-                    []
+        , headers = [ credHeader token ]
         , body = body
         , timeout = Nothing
         , withCredentials = False
         }
 
 
-delete : Endpoint -> Cred -> Body -> Decoder a -> Http.Request a
-delete url cred body decoder =
+delete : Endpoint -> Token -> Body -> Decoder a -> Http.Request a
+delete url token body decoder =
     Endpoint.request
         { method = "DELETE"
         , url = url
         , expect = Http.expectJson decoder
-        , headers = [ credHeader cred ]
+        , headers = [ credHeader token ]
         , body = body
         , timeout = Nothing
         , withCredentials = False
         }
 
 
-login : Http.Body -> Decoder (Cred -> a) -> Http.Request a
-login body decoder =
-    post Endpoint.login Nothing body (Decode.field "user" (decoderFromCred decoder))
 
-
-register : Http.Body -> Decoder (Cred -> a) -> Http.Request a
-register body decoder =
-    post Endpoint.users Nothing body (Decode.field "user" (decoderFromCred decoder))
-
-
-settings : Cred -> Http.Body -> Decoder (Cred -> a) -> Http.Request a
-settings cred body decoder =
-    put Endpoint.user cred body (Decode.field "user" (decoderFromCred decoder))
-
-
-decoderFromCred : Decoder (Cred -> a) -> Decoder a
-decoderFromCred decoder =
-    Decode.map2 (\fromCred cred -> fromCred cred)
-        decoder
-        credDecoder
-
-
-
+--settings : Cred -> Http.Body -> Decoder (Cred -> a) -> Http.Request a
+--settings cred body decoder =
+--    put Endpoint.user cred body (Decode.field "user" (decoderFromCred decoder))
 -- ERRORS
 
 
@@ -313,17 +166,3 @@ decodeError error =
 
         err ->
             "Server error"
-
-
-
--- LOCALSTORAGE KEYS
-
-
-cacheStorageKey : String
-cacheStorageKey =
-    "cache"
-
-
-credStorageKey : String
-credStorageKey =
-    "cred"

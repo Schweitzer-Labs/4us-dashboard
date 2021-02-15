@@ -4,7 +4,7 @@ module Page.Home exposing (Model, Msg, init, subscriptions, toSession, update, v
 -}
 
 import Aggregations
-import Api exposing (Cred)
+import Api exposing (Cred, Token)
 import Api.Endpoint as Endpoint
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid exposing (Column)
@@ -13,6 +13,8 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
+import Browser.Navigation exposing (load)
+import Config.Env exposing (env)
 import Contribution as Contribution
 import Contributions
 import CreateContribution
@@ -45,11 +47,12 @@ type alias Model =
     , createContributionModalVisibility : Modal.Visibility
     , createContributionModal : CreateContribution.Model
     , createContributionSubmitting : Bool
+    , token : Token
     }
 
 
-init : Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
-init session aggs committeeId =
+init : Token -> Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
+init token session aggs committeeId =
     ( { session = session
       , loading = True
       , timeZone = Time.utc
@@ -59,8 +62,9 @@ init session aggs committeeId =
       , createContributionModalVisibility = Modal.hidden
       , createContributionModal = CreateContribution.init
       , createContributionSubmitting = False
+      , token = token
       }
-    , getContributionsData committeeId
+    , getContributionsData token committeeId
     )
 
 
@@ -182,7 +186,7 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    ( model, load <| env.loginUrl model.committeeId )
 
         SortContributions label ->
             case label of
@@ -248,7 +252,7 @@ update msg model =
                 | createContributionModalVisibility = Modal.hidden
                 , createContributionSubmitting = False
               }
-            , getContributionsData model.committeeId
+            , getContributionsData model.token model.committeeId
             )
 
 
@@ -256,10 +260,10 @@ update msg model =
 -- HTTP
 
 
-getContributionsData : String -> Cmd Msg
-getContributionsData committeeId =
+getContributionsData : Token -> String -> Cmd Msg
+getContributionsData token committeeId =
     Http.send LoadContributionsData <|
-        Api.get (Endpoint.contributions committeeId) Nothing ContributionsData.decode
+        Api.get (Endpoint.contributions committeeId) token ContributionsData.decode
 
 
 scrollToTop : Task x ()
@@ -277,8 +281,7 @@ scrollToTop =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Session.changes GotSession (Session.navKey model.session)
-        , Modal.subscriptions model.createContributionModalVisibility AnimateCreateContributionModal
+        [ Modal.subscriptions model.createContributionModalVisibility AnimateCreateContributionModal
         ]
 
 
@@ -324,5 +327,5 @@ createContribution model =
             encodeContribution model |> Http.jsonBody
     in
     Http.send GotCreateContributionResponse <|
-        Api.post Endpoint.contribute Nothing body <|
+        Api.post Endpoint.contribute model.token body <|
             Decode.field "message" string

@@ -1,8 +1,6 @@
-module Session exposing (Session, changes, committeeId, cred, fromViewer, navKey, viewer)
+module Session exposing (Session, fromViewer, navKey, viewer)
 
-import Api exposing (Cred)
 import Browser.Navigation as Nav
-import Viewer exposing (Viewer)
 
 
 
@@ -10,66 +8,27 @@ import Viewer exposing (Viewer)
 
 
 type Session
-    = LoggedIn Nav.Key Viewer
-    | Guest Nav.Key
+    = LoggedIn Nav.Key String
 
 
 
 -- INFO
 
 
-viewer : Session -> Maybe Viewer
-viewer session =
-    case session of
-        LoggedIn _ val ->
-            Just val
-
-        Guest _ ->
-            Nothing
-
-
-cred : Session -> Maybe Cred
-cred session =
-    case session of
-        LoggedIn _ val ->
-            Just (Viewer.cred val)
-
-        Guest _ ->
-            Nothing
+viewer : Session -> String
+viewer (LoggedIn key token) =
+    token
 
 
 navKey : Session -> Nav.Key
-navKey session =
-    case session of
-        LoggedIn key _ ->
-            key
-
-        Guest key ->
-            key
+navKey (LoggedIn key _) =
+    key
 
 
 
 -- CHANGES
 
 
-changes : (Session -> msg) -> Nav.Key -> Sub msg
-changes toMsg key =
-    Api.viewerChanges (\maybeViewer -> toMsg (fromViewer key maybeViewer)) Viewer.decoder
-
-
-fromViewer : Nav.Key -> Maybe Viewer -> Session
-fromViewer key maybeViewer =
-    -- It's stored in localStorage as a JSON String;
-    -- first decode the Value as a String, then
-    -- decode that String as JSON.
-    case maybeViewer of
-        Just viewerVal ->
-            LoggedIn key viewerVal
-
-        Nothing ->
-            Guest key
-
-
-committeeId : String
-committeeId =
-    "93eed840-dc58-4be3-a23c-25f89bd098b3"
+fromViewer : Nav.Key -> String -> Session
+fromViewer key token =
+    LoggedIn key token

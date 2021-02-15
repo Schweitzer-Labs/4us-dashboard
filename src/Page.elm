@@ -45,8 +45,8 @@ isLoading is for determining whether we should show a loading spinner
 in the header. (This comes up during slow page transitions.)
 
 -}
-view : Maybe Viewer -> Aggregations.Model -> Page -> { title : String, content : Html msg } -> Document msg
-view maybeViewer aggregations page { title, content } =
+view : String -> Aggregations.Model -> Page -> { title : String, content : Html msg } -> Document msg
+view token aggregations page { title, content } =
     { title = title ++ " - Transactions"
     , body =
         sidebar page :: mainContainer aggregations content :: []

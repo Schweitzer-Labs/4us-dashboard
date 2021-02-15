@@ -1,7 +1,7 @@
 module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, update, view)
 
 import Aggregations as Aggregations
-import Api exposing (Cred)
+import Api exposing (Cred, Token)
 import Api.Endpoint as Endpoint
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid exposing (Column)
@@ -10,6 +10,8 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
+import Browser.Navigation exposing (load)
+import Config.Env exposing (env)
 import Delay
 import Disbursement as Disbursement
 import Disbursements
@@ -44,11 +46,12 @@ type alias Model =
     , enrichDisbursementModal : Disbursement.Model
     , currentSort : Disbursements.Label
     , enrichDisbursementSubmitting : Bool
+    , token : Token
     }
 
 
-init : Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
-init session aggs committeeId =
+init : Token -> Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
+init token session aggs committeeId =
     ( { session = session
       , loading = True
       , committeeId = committeeId
@@ -59,8 +62,9 @@ init session aggs committeeId =
       , enrichDisbursementModal = Disbursement.init
       , currentSort = Disbursements.Record
       , enrichDisbursementSubmitting = False
+      , token = token
       }
-    , getTransactionsData committeeId
+    , getTransactionsData token committeeId
     )
 
 
@@ -211,7 +215,7 @@ update msg model =
             ( { model
                 | enrichDisbursementSubmitting = True
               }
-            , sendEnrichedDisbursement model.enrichDisbursementModal
+            , sendEnrichedDisbursement model.token model.enrichDisbursementModal
             )
 
         AnimateEnrichDisbursementModal visibility ->
@@ -254,7 +258,7 @@ update msg model =
                 | enrichDisbursementModalVisibility = Modal.hidden
                 , enrichDisbursementSubmitting = False
               }
-            , getTransactionsData model.committeeId
+            , getTransactionsData model.token model.committeeId
             )
 
         LoadTransactionsData res ->
@@ -269,7 +273,7 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    ( model, load <| env.loginUrl model.committeeId )
 
 
 applyFilter : Transactions.Label -> (Disbursement.Model -> String) -> Model -> Model
@@ -286,10 +290,10 @@ generateReport =
 -- HTTP
 
 
-getTransactionsData : String -> Cmd Msg
-getTransactionsData committeeId =
+getTransactionsData : Token -> String -> Cmd Msg
+getTransactionsData token committeeId =
     Http.send LoadTransactionsData <|
-        Api.get (Endpoint.transactions committeeId) Nothing TransactionsData.decode
+        Api.get (Endpoint.transactions committeeId) token TransactionsData.decode
 
 
 scrollToTop : Task x ()
@@ -307,8 +311,7 @@ scrollToTop =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Session.changes GotSession (Session.navKey model.session)
-        , Modal.subscriptions model.enrichDisbursementModalVisibility AnimateEnrichDisbursementModal
+        [ Modal.subscriptions model.enrichDisbursementModalVisibility AnimateEnrichDisbursementModal
         ]
 
 
@@ -321,11 +324,11 @@ toSession model =
     model.session
 
 
-sendEnrichedDisbursement : Disbursement.Model -> Cmd Msg
-sendEnrichedDisbursement disb =
+sendEnrichedDisbursement : Token -> Disbursement.Model -> Cmd Msg
+sendEnrichedDisbursement token disb =
     let
         body =
             EnrichDisbursement.encode disb |> Http.jsonBody
     in
     Http.send GotEnrichDisbursementResponse <|
-        Api.post Endpoint.verifyDisbursement Nothing body (Decode.field "message" Decode.string)
+        Api.post Endpoint.verifyDisbursement token body (Decode.field "message" Decode.string)

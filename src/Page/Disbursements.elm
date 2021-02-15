@@ -1,7 +1,7 @@
 module Page.Disbursements exposing (Model, Msg, init, subscriptions, toSession, update, view)
 
 import Aggregations as Aggregations
-import Api exposing (Cred)
+import Api exposing (Cred, Token)
 import Api.Endpoint as Endpoint
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid exposing (Column)
@@ -10,6 +10,8 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
+import Browser.Navigation exposing (load)
+import Config.Env exposing (env)
 import CreateDisbursement
 import Delay
 import Disbursement as Disbursement
@@ -42,11 +44,12 @@ type alias Model =
     , createDisbursementModal : CreateDisbursement.Model
     , committeeId : String
     , createDisbursementSubmitting : Bool
+    , token : Token
     }
 
 
-init : Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
-init session aggs committeeId =
+init : Token -> Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
+init token session aggs committeeId =
     ( { session = session
       , loading = True
       , committeeId = committeeId
@@ -56,8 +59,9 @@ init session aggs committeeId =
       , createDisbursementModalVisibility = Modal.hidden
       , createDisbursementModal = CreateDisbursement.init
       , createDisbursementSubmitting = False
+      , token = token
       }
-    , getDisbursementsData committeeId
+    , getDisbursementsData token committeeId
     )
 
 
@@ -201,7 +205,7 @@ update msg model =
                 | createDisbursementModalVisibility = Modal.hidden
                 , createDisbursementSubmitting = False
               }
-            , getDisbursementsData model.committeeId
+            , getDisbursementsData model.token model.committeeId
             )
 
         SortDisbursements label ->
@@ -230,17 +234,17 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    ( model, load <| env.loginUrl model.committeeId )
 
 
 
 -- HTTP
 
 
-getDisbursementsData : String -> Cmd Msg
-getDisbursementsData committeeId =
+getDisbursementsData : Token -> String -> Cmd Msg
+getDisbursementsData token committeeId =
     Http.send LoadDisbursementsData <|
-        Api.get (Endpoint.disbursements committeeId []) Nothing DD.decode
+        Api.get (Endpoint.disbursements committeeId []) token DD.decode
 
 
 scrollToTop : Task x ()
@@ -258,8 +262,7 @@ scrollToTop =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Session.changes GotSession (Session.navKey model.session)
-        , Modal.subscriptions model.createDisbursementModalVisibility AnimateCreateDisbursementModal
+        [ Modal.subscriptions model.createDisbursementModalVisibility AnimateCreateDisbursementModal
         ]
 
 
@@ -299,5 +302,5 @@ createDisbursement model =
             encodeDisbursement model |> Http.jsonBody
     in
     Http.send GotCreateDisbursementResponse <|
-        Api.post Endpoint.disbursement Nothing body <|
+        Api.post Endpoint.disbursement model.token body <|
             Decode.field "message" string

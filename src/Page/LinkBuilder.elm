@@ -4,7 +4,7 @@ module Page.LinkBuilder exposing (Model, Msg, init, subscriptions, toSession, up
 -}
 
 import Aggregations
-import Api
+import Api exposing (Token)
 import Api.Endpoint as Endpoint
 import Bootstrap.Button as Button
 import Bootstrap.Card as Card
@@ -16,6 +16,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
+import Browser.Navigation exposing (load)
 import Config.Env exposing (env)
 import Html exposing (..)
 import Html.Attributes as SvgA exposing (class, for, href, src, style)
@@ -38,19 +39,21 @@ type alias Model =
     , url : String
     , committeeId : String
     , aggregations : Aggregations.Model
+    , token : Token
     }
 
 
-init : Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
-init session aggs committeeId =
+init : Token -> Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
+init token session aggs committeeId =
     ( { session = session
       , refCode = ""
       , amount = ""
       , url = ""
       , committeeId = committeeId
       , aggregations = aggs
+      , token = token
       }
-    , getAggregations committeeId
+    , getAggregations token committeeId
     )
 
 
@@ -179,7 +182,7 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    ( model, load <| env.loginUrl model.committeeId )
 
 
 createUrl : String -> String -> String -> String
@@ -205,10 +208,10 @@ createUrl committeeId refCode amount =
     Url.Builder.crossOrigin env.donorUrl [] <| committeeIdVal ++ refCodeVal ++ amountVal
 
 
-getAggregations : String -> Cmd Msg
-getAggregations committeeId =
+getAggregations : Token -> String -> Cmd Msg
+getAggregations token committeeId =
     Http.send LoadAggregationsData <|
-        Api.get (Endpoint.contributions committeeId) Nothing ContributionsData.decode
+        Api.get (Endpoint.contributions committeeId) token ContributionsData.decode
 
 
 scrollToTop : Task x ()
@@ -225,7 +228,7 @@ scrollToTop =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Session.changes GotSession (Session.navKey model.session)
+    Sub.none
 
 
 
