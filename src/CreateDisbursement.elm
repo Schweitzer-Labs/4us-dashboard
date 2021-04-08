@@ -4,11 +4,12 @@ import Address
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Select as Select
-import Bootstrap.Grid as Grid
+import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
-import Html exposing (Html, text)
+import Disbursement.Forms exposing (yesOrNoRows)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (for, value)
 import Purpose
 
@@ -24,6 +25,9 @@ type alias Model =
     , city : String
     , state : String
     , postalCode : String
+    , isSubcontracted : String
+    , isPartialPayment : String
+    , isExistingLiability : String
     }
 
 
@@ -39,6 +43,9 @@ init =
     , city = ""
     , state = ""
     , postalCode = ""
+    , isSubcontracted = ""
+    , isPartialPayment = ""
+    , isExistingLiability = ""
     }
 
 
@@ -64,39 +71,92 @@ view model =
     Grid.containerFluid
         []
     <|
-        [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ selectPurpose model ] ]
-        , Grid.row [ Row.attrs [ Spacing.mt2 ] ]
-            [ Grid.col
-                []
-                [ Form.label [ for "recipient-name" ] [ text "Recipient Info" ]
-                , Input.text [ Input.id "recipient-name", Input.onInput CheckRecipientUpdated, Input.placeholder "Enter recipient name" ]
+        recipientNameRows model
+            ++ addressRows model
+            ++ purposeCodeRows model
+            ++ yesOrNoRows
+                UpdateIsSubcontracted
+                model.isSubcontracted
+                UpdateIsPartialPayment
+                model.isPartialPayment
+                UpdateIsExistingLiability
+                model.isExistingLiability
+                False
+            ++ paymentMethodSelectRows
+            ++ paymentMethodCheckRows model
+
+
+purposeCodeRows : Model -> List (Html Msg)
+purposeCodeRows model =
+    [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ selectPurpose model ] ] ]
+
+
+addressRows : Model -> List (Html Msg)
+addressRows model =
+    Address.row
+        ( model.address1, Address1Updated )
+        ( model.address2, Address2Updated )
+        ( model.city, CityUpdated )
+        ( model.state, StateUpdated )
+        ( model.postalCode, PostalCodeUpdated )
+
+
+recipientNameRows : Model -> List (Html Msg)
+recipientNameRows model =
+    [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
+        [ Grid.col
+            []
+            [ Form.label [ for "recipient-name" ] [ text "Recipient Info" ]
+            , Input.text [ Input.id "recipient-name", Input.onInput CheckRecipientUpdated, Input.placeholder "Enter recipient name" ]
+            ]
+        ]
+    ]
+
+
+paymentMethodSelectRows : List (Html Msg)
+paymentMethodSelectRows =
+    [ Grid.row
+        [ Row.attrs [ Spacing.mt3 ] ]
+        [ Grid.col
+            []
+            [ Form.label [ for "paymentMethodSelect" ] [ text "Select Payment Method" ]
+            , Select.select [ Select.id "paymentMethodSelect" ]
+                [ Select.item [] [ text "-- Payment Method --" ]
+                , Select.item [] [ text "Check" ]
+                , Select.item [] [ text "Credit Card" ]
+                , Select.item [] [ text "Debit Card" ]
+                , Select.item [] [ text "Online Processor" ]
+                , Select.item [] [ text "Wire Transfer" ]
+                , Select.item [] [ text "Cash" ]
+                , Select.item [] [ text "Other" ]
                 ]
             ]
         ]
-            ++ Address.row
-                ( model.address1, Address1Updated )
-                ( model.address2, Address2Updated )
-                ( model.city, CityUpdated )
-                ( model.state, StateUpdated )
-                ( model.postalCode, PostalCodeUpdated )
-            ++ [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
-                    [ Grid.col
-                        [ Col.lg4 ]
-                        [ Form.label [ for "amount" ] [ text "Amount" ]
-                        , Input.text [ Input.id "amount", Input.onInput CheckAmountUpdated, Input.placeholder "Enter amount" ]
-                        ]
-                    , Grid.col
-                        [ Col.lg4 ]
-                        [ Form.label [ for "check-number" ] [ text "Check Number" ]
-                        , Input.text [ Input.id "check-number", Input.onInput CheckNumberUpdated, Input.placeholder "Enter check number" ]
-                        ]
-                    , Grid.col
-                        [ Col.lg4 ]
-                        [ Form.label [ for "date" ] [ text "Date" ]
-                        , Input.date [ Input.id "date", Input.onInput CheckDateUpdated ]
-                        ]
-                    ]
-               ]
+    ]
+
+
+paymentMethodCheckRows : Model -> List (Html Msg)
+paymentMethodCheckRows model =
+    [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
+        [ Grid.col
+            [ Col.lg4 ]
+            [ Form.label [ for "amount" ] [ text "Amount" ]
+            , Input.text [ Input.id "amount", Input.onInput CheckAmountUpdated, Input.placeholder "Enter amount" ]
+            ]
+
+        --, Grid.col
+        --    [ Col.lg4 ]
+        --    [ Form.label [ for "check-number" ] [ text "Check Number" ]
+        --    , Input.text [ Input.id "check-number", Input.onInput CheckNumberUpdated, Input.placeholder "Enter check number" ]
+        --    ]
+        --, Grid.col
+        --    [ Col.lg4 ]
+        --    [ Form.label [ for "date" ] [ text "Date" ]
+        --    , Input.date [ Input.id "date", Input.onInput CheckDateUpdated ]
+        --    ]
+        --]
+        ]
+    ]
 
 
 type Msg
@@ -110,6 +170,9 @@ type Msg
     | CityUpdated String
     | StateUpdated String
     | PostalCodeUpdated String
+    | UpdateIsSubcontracted String
+    | UpdateIsPartialPayment String
+    | UpdateIsExistingLiability String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -144,3 +207,12 @@ update msg model =
 
         PostalCodeUpdated str ->
             ( { model | postalCode = str }, Cmd.none )
+
+        UpdateIsSubcontracted str ->
+            ( { model | isSubcontracted = str }, Cmd.none )
+
+        UpdateIsPartialPayment str ->
+            ( { model | isPartialPayment = str }, Cmd.none )
+
+        UpdateIsExistingLiability str ->
+            ( { model | isExistingLiability = str }, Cmd.none )

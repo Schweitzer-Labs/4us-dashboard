@@ -3,19 +3,21 @@ module Main exposing (Model(..), Msg(..), changeRouteTo, init, main, subscriptio
 import Aggregations
 import Api exposing (Token)
 import Browser exposing (Document)
+import Browser.Dom as Dom
 import Browser.Navigation as Nav
 import CommitteeId
 import Html exposing (Html)
 import Page
 import Page.Blank as Blank
+import Page.Contributions as Contributions
 import Page.Disbursements as Disbursements
-import Page.Home as Home
 import Page.LinkBuilder as LinkBuilder
 import Page.NeedsReview as NeedsReview
 import Page.NotFound as NotFound
 import Page.Transactions as Transactions
 import Route exposing (Route)
 import Session exposing (Session)
+import Task exposing (Task)
 import Url exposing (Url)
 
 
@@ -26,7 +28,7 @@ import Url exposing (Url)
 type Model
     = NotFound Session
     | Redirect Session
-    | Home Home.Model
+    | Contributions Contributions.Model
     | LinkBuilder LinkBuilder.Model
     | Disbursements Disbursements.Model
     | NeedsReview NeedsReview.Model
@@ -53,7 +55,7 @@ init token url navKey =
 type Msg
     = ChangedUrl Url
     | ClickedLink Browser.UrlRequest
-    | GotHomeMsg Home.Msg
+    | GotContributionsMsg Contributions.Msg
     | GotLinkBuilderMsg LinkBuilder.Msg
     | GotDisbursementsMsg Disbursements.Msg
     | GotSession Session
@@ -70,8 +72,8 @@ toSession page =
         NotFound session ->
             session
 
-        Home home ->
-            Home.toSession home
+        Contributions contributions ->
+            Contributions.toSession contributions
 
         Transactions transactions ->
             Transactions.toSession transactions
@@ -95,8 +97,8 @@ toAggregations page =
         NotFound session ->
             Aggregations.init
 
-        Home home ->
-            home.aggregations
+        Contributions contributions ->
+            contributions.aggregations
 
         Transactions transactions ->
             transactions.aggregations
@@ -120,8 +122,8 @@ toToken page =
         NotFound session ->
             Api.Token ""
 
-        Home home ->
-            home.token
+        Contributions contributions ->
+            contributions.token
 
         Transactions transactions ->
             transactions.token
@@ -154,12 +156,12 @@ changeRouteTo url token maybeRoute model =
 
         -- rest of the routes
         Just Route.Home ->
-            Home.init
+            Transactions.init
                 token
                 session
                 aggregations
                 committeeId
-                |> updateWith Home GotHomeMsg model
+                |> updateWith Transactions GotTransactionsMsg model
 
         Just Route.Transactions ->
             Transactions.init
@@ -168,6 +170,14 @@ changeRouteTo url token maybeRoute model =
                 aggregations
                 committeeId
                 |> updateWith Transactions GotTransactionsMsg model
+
+        Just Route.Analytics ->
+            Contributions.init
+                token
+                session
+                aggregations
+                committeeId
+                |> updateWith Contributions GotContributionsMsg model
 
         Just Route.LinkBuilder ->
             LinkBuilder.init
@@ -225,12 +235,8 @@ update msg model =
         ( ChangedUrl url, _ ) ->
             changeRouteTo url (toToken model) (Route.fromUrl url) model
 
-        ( GotHomeMsg subMsg, Home home ) ->
-            Home.update subMsg home
-                |> updateWith Home GotHomeMsg model
-
-        ( GotTransactionsMsg subMsg, Transactions transactions ) ->
-            Transactions.update subMsg transactions
+        ( GotTransactionsMsg subMsg, Transactions home ) ->
+            Transactions.update subMsg home
                 |> updateWith Transactions GotTransactionsMsg model
 
         ( GotLinkBuilderMsg subMsg, LinkBuilder linkBuilder ) ->
@@ -240,6 +246,10 @@ update msg model =
         ( GotDisbursementsMsg subMsg, Disbursements disbursements ) ->
             Disbursements.update subMsg disbursements
                 |> updateWith Disbursements GotDisbursementsMsg model
+
+        ( GotContributionsMsg subMsg, Contributions disbursements ) ->
+            Contributions.update subMsg disbursements
+                |> updateWith Contributions GotContributionsMsg model
 
         ( GotNeedsReviewMsg subMsg, NeedsReview disbursements ) ->
             NeedsReview.update subMsg disbursements
@@ -291,8 +301,8 @@ view model =
         NotFound _ ->
             Page.view viewer aggregations Page.Other NotFound.view
 
-        Home home ->
-            viewPage Page.Home GotHomeMsg (Home.view home)
+        Contributions contributions ->
+            viewPage Page.Analytics GotContributionsMsg (Contributions.view contributions)
 
         Transactions transactions ->
             viewPage Page.Transactions GotTransactionsMsg (Transactions.view transactions)
@@ -314,8 +324,8 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
-        Home home ->
-            Sub.map GotHomeMsg (Home.subscriptions home)
+        Contributions contributions ->
+            Sub.map GotContributionsMsg (Contributions.subscriptions contributions)
 
         Transactions transactions ->
             Sub.map GotTransactionsMsg (Transactions.subscriptions transactions)
@@ -343,3 +353,11 @@ main =
         , update = update
         , view = view
         }
+
+
+scrollToTop : Task x ()
+scrollToTop =
+    Dom.setViewport 0 0
+        -- It's not worth showing the user anything special if scrolling fails.
+        -- If anything, we'd log this to an error recording service.
+        |> Task.onError (\_ -> Task.succeed ())

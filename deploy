@@ -1,1 +1,1 @@
-elm-app build && aws s3 sync build s3://committee.4usdemo.com --acl public-read
+npm run build-css && npm install && elm-app build && aws s3 sync build s3://committee.4usdemo.com

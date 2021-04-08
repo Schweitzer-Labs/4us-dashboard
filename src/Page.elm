@@ -9,10 +9,8 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Browser exposing (Document)
 import Html exposing (Html, a, button, div, footer, h1, h2, h3, i, img, li, nav, p, span, text, ul)
 import Html.Attributes as Attr exposing (class, classList, href, style)
-import Html.Events exposing (onClick)
 import Route exposing (Route)
 import Username exposing (Username)
-import Viewer exposing (Viewer)
 
 
 {-| Determines which navbar link (if any) will be rendered as active.
@@ -29,6 +27,7 @@ type Page
     | Disbursements
     | NeedsReview
     | Transactions
+    | Analytics
     | Login
     | Register
     | Settings
@@ -121,7 +120,7 @@ ruleInfoRow =
         [ Grid.col [ Col.xs6, Col.attrs [ class "border-right border-blue", class "text-right" ] ] [ text "Mayor" ]
         , Grid.col [ Col.xs6 ]
             [ img
-                [ Asset.src Asset.tbdBankLogo, class "header-info-bank-logo" ]
+                [ Asset.src Asset.chaseBankLogo, class "header-info-bank-logo" ]
                 []
             ]
         ]
@@ -151,6 +150,9 @@ pageIsActive page route =
             True
 
         ( Transactions, Route.Transactions ) ->
+            True
+
+        ( Analytics, Route.Analytics ) ->
             True
 
         _ ->
@@ -189,12 +191,11 @@ navContainer page =
     Grid.containerFluid
         [ Spacing.mt5 ]
         [ navRow (Asset.coinsGlyph [ class "tool-glyph" ]) page Route.Transactions "Transactions"
-        , navRow (toolBarAsset <| Asset.genderNeutral <| pageIsActive page Route.Home) page Route.Home "Contributions"
-        , navRow (Asset.universityGlyph [ class "tool-glyph" ]) page Route.Disbursements "Disbursements"
+        , navRow (Asset.chartLineGlyph [ class "tool-glyph" ]) page Route.Analytics "Analytics"
+
+        --, navRow (Asset.universityGlyph [ class "tool-glyph" ]) page Route.Disbursements "Budgeting"
         , navRow (Asset.searchDollarGlyph [ class "tool-glyph" ]) page Route.NeedsReview "Needs Review"
         , navRow (Asset.linkGlyph [ class "tool-glyph" ]) page Route.LinkBuilder "Link Builder"
-
-        --, navRow (toolBarAsset Asset.documents) page Route. "Documents"
         ]
 
 

@@ -1,6 +1,7 @@
 module Disbursements exposing (Label(..), decoder, view, viewInteractive)
 
 import Asset
+import Cents
 import DataTable exposing (DataRow)
 import Disbursement as Disbursement
 import Html exposing (Html, span, text)
@@ -62,14 +63,14 @@ disbursementRowMap ( maybeMsg, d ) =
     let
         status =
             if d.bankVerified then
-                Asset.circleCheckGlyph [ class "text-success data-icon-size" ]
+                Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
 
             else
                 Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
 
         verified =
             if d.ruleVerified then
-                Asset.circleCheckGlyph [ class "text-success data-icon-size" ]
+                Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
 
             else
                 Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
@@ -77,7 +78,7 @@ disbursementRowMap ( maybeMsg, d ) =
     ( maybeMsg
     , [ ( "Date / Time", text d.date )
       , ( "Entity Name", text d.entityName )
-      , ( "Amount", span [ class "text-danger font-weight-bold" ] [ text <| "($" ++ d.amount ++ ")" ] )
+      , ( "Amount", span [ class "text-danger font-weight-bold" ] [ text <| "(" ++ Cents.toDollar d.amount ++ ")" ] )
       , ( "Purpose"
         , if d.purposeCode == "" then
             span [ class "text-danger" ] [ text "Missing" ]

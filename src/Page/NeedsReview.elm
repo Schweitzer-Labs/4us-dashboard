@@ -118,7 +118,7 @@ buttonRow model =
             [ exitButton ]
         , Grid.col
             [ Col.lg3 ]
-            [ submitButton "Verify" SubmitEnrichedDisbursement model.enrichDisbursementSubmitting ]
+            [ submitButton "Verify" SubmitEnrichedDisbursement model.enrichDisbursementSubmitting False ]
         ]
 
 
@@ -297,4 +297,4 @@ sendEnrichedDisbursement token disb =
             EnrichDisbursement.encode disb |> Http.jsonBody
     in
     Http.send GotEnrichDisbursementResponse <|
-        Api.post Endpoint.verifyDisbursement token body (Decode.field "message" Decode.string)
+        Api.post (Endpoint.verifyDisbursement disb.committeeId) token body (Decode.field "message" Decode.string)

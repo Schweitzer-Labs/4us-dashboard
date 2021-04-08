@@ -1,7 +1,5 @@
 module EnrichDisbursement exposing (Msg, encode, update, view)
 
-import Api
-import Api.Endpoint as Endpoint
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input exposing (value)
 import Bootstrap.Form.Select as Select
@@ -9,12 +7,10 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
-import Delay as Delay
 import Disbursement as Disbursement
+import Disbursement.Forms exposing (yesOrNoRows)
 import Html exposing (Html, text)
 import Html.Attributes as Attribute exposing (class, for)
-import Http
-import Json.Decode as Decode
 import Json.Encode as Encode
 import Purpose
 
@@ -29,36 +25,59 @@ errorBorder str =
 
 
 view : Disbursement.Model -> Html Msg
-view d =
+view model =
     Grid.container
         []
-        [ Grid.row
+        ([ recipientNameRow model
+         , addressRow model
+         , cityStateZipRow model
+         , selectPurposeRow model
+         ]
+            ++ questionRows model
+        )
+
+
+recipientNameRow : Disbursement.Model -> Html Msg
+recipientNameRow model =
+    Grid.row
+        []
+        [ Grid.col
             []
-            [ Grid.col
-                []
-                [ Form.label [ for "recipient-name" ] [ text "Recipient Name" ]
-                , Input.text
-                    [ Input.id "recipient-name"
-                    , Input.onInput EntityNameUpdated
-                    , Input.placeholder "Enter recipient name"
-                    , Input.attrs (errorBorder d.entityName)
-                    , value d.entityName
-                    ]
+            [ Form.label [ for "recipient-name" ] [ text "Recipient Info" ]
+            , Input.text
+                [ Input.id "recipient-name"
+                , Input.onInput EntityNameUpdated
+                , Input.placeholder "Enter recipient name"
+                , Input.attrs (errorBorder model.entityName)
+                , value model.entityName
                 ]
             ]
-        , Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ selectPurpose d ] ]
-        , addressRow d
-        , cityStateZipRow d
         ]
+
+
+selectPurposeRow : Disbursement.Model -> Html Msg
+selectPurposeRow model =
+    Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ selectPurpose model ] ]
+
+
+questionRows : Disbursement.Model -> List (Html Msg)
+questionRows model =
+    yesOrNoRows
+        UpdateIsSubcontracted
+        model.isSubcontracted
+        UpdateIsPartialPayment
+        model.isPartialPayment
+        UpdateIsExistingLiability
+        model.isExistingLiability
+        True
 
 
 addressRow : Disbursement.Model -> Html Msg
 addressRow d =
-    Grid.row []
+    Grid.row [ Row.attrs [ Spacing.mt2 ] ]
         [ Grid.col
             [ Col.lg6 ]
-            [ Form.label [ for "addressLine1" ] [ text "Street Address" ]
-            , Input.text
+            [ Input.text
                 [ Input.id "addressLine1"
                 , Input.onInput AddressLine1Updated
                 , Input.placeholder "Enter Street Address"
@@ -68,8 +87,7 @@ addressRow d =
             ]
         , Grid.col
             [ Col.lg6 ]
-            [ Form.label [ for "addressLine2" ] [ text "Address Line 2" ]
-            , Input.text
+            [ Input.text
                 [ Input.id "addressLine2"
                 , Input.onInput AddressLine2Updated
                 , Input.placeholder "Secondary Address"
@@ -84,8 +102,7 @@ cityStateZipRow d =
     Grid.row [ Row.attrs [ Spacing.mt2 ] ]
         [ Grid.col
             [ Col.lg4 ]
-            [ Form.label [ for "City" ] [ text "City" ]
-            , Input.text
+            [ Input.text
                 [ Input.id "city"
                 , Input.onInput CityUpdated
                 , Input.placeholder "Enter city"
@@ -95,8 +112,7 @@ cityStateZipRow d =
             ]
         , Grid.col
             [ Col.lg4 ]
-            [ Form.label [ for "State" ] [ text "State" ]
-            , Input.text
+            [ Input.text
                 [ Input.id "state"
                 , Input.onInput StateUpdated
                 , Input.placeholder "State"
@@ -106,8 +122,7 @@ cityStateZipRow d =
             ]
         , Grid.col
             [ Col.lg4 ]
-            [ Form.label [ for "Zip" ] [ text "Zip" ]
-            , Input.text
+            [ Input.text
                 [ Input.id "postalCode"
                 , Input.onInput PostalCodeUpdated
                 , Input.placeholder "Postal Code"
@@ -157,6 +172,9 @@ type Msg
     | StateUpdated String
     | PostalCodeUpdated String
     | PurposeCodeUpdated String
+    | UpdateIsSubcontracted String
+    | UpdateIsPartialPayment String
+    | UpdateIsExistingLiability String
 
 
 update : Msg -> Disbursement.Model -> ( Disbursement.Model, Cmd Msg )
@@ -182,6 +200,15 @@ update msg model =
 
         PurposeCodeUpdated str ->
             ( { model | purposeCode = str }, Cmd.none )
+
+        UpdateIsSubcontracted str ->
+            ( { model | isSubcontracted = str }, Cmd.none )
+
+        UpdateIsPartialPayment str ->
+            ( { model | isPartialPayment = str }, Cmd.none )
+
+        UpdateIsExistingLiability str ->
+            ( { model | isExistingLiability = str }, Cmd.none )
 
 
 encode : Disbursement.Model -> Encode.Value

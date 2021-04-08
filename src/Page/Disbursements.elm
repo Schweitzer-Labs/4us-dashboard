@@ -42,8 +42,8 @@ type alias Model =
     , aggregations : Aggregations.Model
     , createDisbursementModalVisibility : Modal.Visibility
     , createDisbursementModal : CreateDisbursement.Model
-    , committeeId : String
     , createDisbursementSubmitting : Bool
+    , committeeId : String
     , token : Token
     }
 
@@ -119,7 +119,7 @@ buttonRow model =
             [ exitButton ]
         , Grid.col
             [ Col.lg3 ]
-            [ submitButton "Submit" SubmitCreateDisbursement model.createDisbursementSubmitting ]
+            [ submitButton "Submit" SubmitCreateDisbursement model.createDisbursementSubmitting False ]
         ]
 
 
@@ -302,5 +302,5 @@ createDisbursement model =
             encodeDisbursement model |> Http.jsonBody
     in
     Http.send GotCreateDisbursementResponse <|
-        Api.post Endpoint.disbursement model.token body <|
+        Api.post (Endpoint.disbursement model.committeeId) model.token body <|
             Decode.field "message" string

@@ -1,28 +1,21 @@
 module Api.Endpoint exposing
     ( Endpoint
-    , articles
     , contribute
     , contributions
     , disbursement
     , disbursements
-    , feed
-    , follow
-    , login
     , needsReviewDisbursements
-    , profiles
     , request
-    , tags
     , transactions
     , user
-    , users
     , verifyDisbursement
     )
 
 import Api.DisbursementsFilter as DisbursementsFilter exposing (DisbursementsFilter)
 import Config.Env exposing (env)
+import Direction exposing (Direction)
 import Http
 import Url.Builder exposing (QueryParameter, string)
-import Username exposing (Username)
 
 
 {-| Http.request, except it takes an Endpoint instead of a Url.
@@ -87,19 +80,16 @@ url paths queryParams =
 
 contributions : String -> Endpoint
 contributions committeeId =
-    url [ "contributions" ] [ string "committeeId" committeeId ]
+    url [ "contributions", committeeId ] []
 
 
 disbursements : String -> List DisbursementsFilter -> Endpoint
 disbursements committeeId filters =
     let
-        filterQueryParams =
-            List.map DisbursementsFilter.toQueryParam filters
-
         queryParams =
-            [ string "committeeId" committeeId ] ++ filterQueryParams
+            List.map DisbursementsFilter.toQueryParam filters
     in
-    url [ "disbursements" ] queryParams
+    url [ "disbursements", committeeId ] queryParams
 
 
 needsReviewDisbursements : String -> Endpoint
@@ -110,9 +100,9 @@ needsReviewDisbursements committeeId =
         ]
 
 
-disbursement : Endpoint
-disbursement =
-    url [ "disbursement" ] []
+disbursement : String -> Endpoint
+disbursement committeeId =
+    url [ "disbursement", committeeId ] []
 
 
 contribute : Endpoint
@@ -120,55 +110,25 @@ contribute =
     url [ "contribution" ] []
 
 
-transactions : String -> Endpoint
-transactions committeeId =
-    url [ "transactions" ] [ string "committeeId" committeeId ]
+transactions : String -> Maybe Direction -> Endpoint
+transactions committeeId maybeDirection =
+    let
+        query =
+            case maybeDirection of
+                Just direction ->
+                    [ string "direction" <| Direction.toString direction ]
+
+                Nothing ->
+                    []
+    in
+    url [ "transactions", committeeId ] query
 
 
-verifyDisbursement : Endpoint
-verifyDisbursement =
-    url [ "disbursement", "verify" ] []
-
-
-login : Endpoint
-login =
-    url [ "users", "login" ] []
+verifyDisbursement : String -> Endpoint
+verifyDisbursement committeeId =
+    url [ "disbursement", "verify", committeeId ] []
 
 
 user : Endpoint
 user =
     url [ "user" ] []
-
-
-users : Endpoint
-users =
-    url [ "users" ] []
-
-
-follow : Username -> Endpoint
-follow uname =
-    url [ "profiles", Username.toString uname, "follow" ] []
-
-
-
--- ARTICLE ENDPOINTS
-
-
-articles : List QueryParameter -> Endpoint
-articles params =
-    url [ "articles" ] params
-
-
-profiles : Username -> Endpoint
-profiles uname =
-    url [ "profiles", Username.toString uname ] []
-
-
-feed : List QueryParameter -> Endpoint
-feed params =
-    url [ "articles", "feed" ] params
-
-
-tags : Endpoint
-tags =
-    url [ "tags" ] []

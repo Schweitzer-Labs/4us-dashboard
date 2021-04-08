@@ -6,6 +6,26 @@ $primary: $slate-blue;
 
 $my-warning: #FF5555;
 
+
+
+
+$gold: #C3924A;
+$ruby: #ff0a03;
+$grey: #BFBFBF;
+$grey2: #989797;
+$grey3: #AAAAAA;
+
+$transparent-gold: rgba(187,160,99,0.9);
+
+
+$primary: $slate-blue;
+
+$my-warning: #FF5555;
+
+
+$slate-blue: #5053D0;
+$gold: #C3924A;
+
 .bg-slate-blue {
   background: #ff0a03;
 }
@@ -18,12 +38,32 @@ $my-warning: #FF5555;
 $font-family-base: 'EB Garamond', sans-serif;
 
 
-//$theme-colors: (
-//        "primary": $slate-blue
-//);
+
+$gold: #C3924A;
+$ruby: #ff0a03;
+//$grey: #BFBFBF;
+//$grey2: #989797;
+//$grey3: #AAAAAA;
+
+$primary: $slate-blue;
+
+$my-warning: #FF5555;
 
 
+$light: #EBEBEB;
+$danger: #BD0000;
 
+$theme-colors: (
+        "primary": $slate-blue,
+        "success": $slate-blue,
+        "danger": $danger,
+);
+
+$green : #28a745;
+
+.text-green {
+  color: #28a745;
+}
 
 @import "node_modules/bootstrap/scss/bootstrap";
 
@@ -86,7 +126,7 @@ body {
 }
 
 .header-logo {
-  width: 150px;
+  width: 75%;
 }
 
 .tbd-logo {
@@ -161,4 +201,12 @@ body {
 
 .opacity-light {
   opacity: 0.6;
+}
+
+.dropdown-menu {
+  left: -63px;
+}
+
+.font-size-22 {
+  font-size: 22px;
 }

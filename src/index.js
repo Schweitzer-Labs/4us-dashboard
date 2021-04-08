@@ -2,6 +2,9 @@ import './main.css';
 import { Elm } from './Main.elm';
 import * as serviceWorker from './serviceWorker';
 
+const userPoolAppClientId = "5edttkv3teplb003a5ljhqe4lv"
+const userPoolUrl = "https://4us-demo-committee-api-user.auth.us-east-1.amazoncognito.com"
+
 const getTokenFromUrl = (url) => {
   const firstTrim = url.split('id_token=')
   if (firstTrim.length > 1) {
@@ -25,21 +28,22 @@ const getCommitteeIdFromUrlQueryString = (url) => {
   if (firstTrim.length > 1) {
     return firstTrim[1]
   } else {
-    throw new Error('committeeId from url not found')
+    throw new Error('committeeId from url not found.')
   }
 }
 
 async function runApp() {
   let token;
   let committeeId;
+  const host = window.location
   try {
-    token = getTokenFromUrl(window.location.href)
-    committeeId = getCommitteeIdFromUrlRedirect(window.location.href)
+    token = getTokenFromUrl(host.href)
+    committeeId = getCommitteeIdFromUrlRedirect(host.href)
     localStorage.setItem('token', token)
-    window.location = `http://localhost:3000?committeeId=${committeeId}`
+    window.location = `${host.origin}?committeeId=${committeeId}`
   } catch (e) {
     token = localStorage.getItem('token')
-    committeeId = getCommitteeIdFromUrlQueryString(window.location.href)
+    committeeId = getCommitteeIdFromUrlQueryString(host.href)
     if (token) {
       Elm.Main.init({
         node: document.getElementById('root'),
@@ -47,7 +51,7 @@ async function runApp() {
       });
     } else {
       window.location =
-        `https://platform-user.auth.us-east-1.amazoncognito.com/login?client_id=6bhp15ot1l2tqe849ikq06hvet&response_type=token&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=http://localhost:3000&state=${committeeId}`
+        `${userPoolUrl}/login?client_id=${userPoolAppClientId}&response_type=token&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=${host.origin}&state=${committeeId}`
     }
   }
 }

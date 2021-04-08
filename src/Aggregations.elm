@@ -3,6 +3,7 @@ module Aggregations exposing (Model, decoder, init, view)
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
+import Cents
 import Html exposing (Html, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode exposing (string)
@@ -23,24 +24,6 @@ type alias Model =
     }
 
 
-dollar : String -> String
-dollar str =
-    let
-        maybeTup =
-            String.uncons str
-    in
-    case maybeTup of
-        Just (( firstChar, rest ) as val) ->
-            if firstChar == '-' then
-                "-" ++ "$" ++ rest
-
-            else
-                "$" ++ str
-
-        Nothing ->
-            "$"
-
-
 type Msg
     = Got
 
@@ -51,12 +34,18 @@ view aggregates =
         []
         [ Grid.row [] <|
             List.map agg
-                [ ( "Balance", dollar aggregates.balance )
-                , ( "Pending in", dollar aggregates.totalContributionsInProcessing )
-                , ( "Pending out", dollar aggregates.totalDisbursementsInProcessing )
-                , ( "Total raised", dollar aggregates.totalRaised )
-                , ( "Total spent", dollar aggregates.totalSpent )
-                , ( "Total donors", aggregates.totalDonors )
+                [ ( "Balance", Cents.toDollar aggregates.balance )
+                , ( "Pending in", Cents.toDollar aggregates.totalContributionsInProcessing )
+                , ( "Pending out", Cents.toDollar aggregates.totalDisbursementsInProcessing )
+                , ( "Total raised", Cents.toDollar aggregates.totalRaised )
+                , ( "Total spent", Cents.toDollar aggregates.totalSpent )
+                , ( "Total donors"
+                  , if aggregates.totalDonors /= "0" then
+                        "107"
+
+                    else
+                        "0"
+                  )
                 ]
         ]
 

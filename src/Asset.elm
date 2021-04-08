@@ -5,18 +5,24 @@ module Asset exposing
     , binoculars
     , blockchainDiamond
     , calendar
+    , chartLineGlyph
+    , chaseBankLogo
     , circleCheckGlyph
     , coinsGlyph
+    , contributionsByRefcodeChart
     , defaultAvatar
     , documents
+    , donorByRefcodeChart
     , eightX
     , error
+    , exclamationCircleGlyph
     , gearHires
     , genderNeutral
     , house
     , linkGlyph
     , loading
     , minusCircleGlyph
+    , monthlyContributionsByReferenceCode
     , person
     , sackDollarGlyph
     , search
@@ -66,7 +72,7 @@ wiseLogo =
 
 usLogo : Image
 usLogo =
-    image "logo-hires.png"
+    image "logo-hires-wing.png"
 
 
 blockchainDiamond : Image
@@ -129,6 +135,11 @@ defaultAvatar =
     image "smiley-cyrus.jpg"
 
 
+chaseBankLogo : Image
+chaseBankLogo =
+    image "chase_logo.png"
+
+
 genderNeutral : Bool -> Image
 genderNeutral selected =
     if selected then
@@ -146,6 +157,21 @@ tbdBankLogo =
 image : String -> Image
 image filename =
     Image ("/assets/images/" ++ filename)
+
+
+contributionsByRefcodeChart : Image
+contributionsByRefcodeChart =
+    image "contributions-by-refcode.svg"
+
+
+monthlyContributionsByReferenceCode : Image
+monthlyContributionsByReferenceCode =
+    image "monthly-contributions-by-reference-code.svg"
+
+
+donorByRefcodeChart : Image
+donorByRefcodeChart =
+    image "donor-by-ref-code.svg"
 
 
 
@@ -167,7 +193,7 @@ type Glyph
 
 glyph : String -> List (Attribute msg) -> Html msg
 glyph name more =
-    i ([ class "fa", class name ] ++ more) []
+    i ([ class "align-middle fa", class name ] ++ more) []
 
 
 circleCheckGlyph : List (Attribute msg) -> Html msg
@@ -213,3 +239,13 @@ universityGlyph =
 searchDollarGlyph : List (Attribute msg) -> Html msg
 searchDollarGlyph =
     glyph "fas fa-search-dollar"
+
+
+chartLineGlyph : List (Attribute msg) -> Html msg
+chartLineGlyph =
+    glyph "fas fa-chart-bar"
+
+
+exclamationCircleGlyph : List (Attribute msg) -> Html msg
+exclamationCircleGlyph =
+    glyph "fas fa-exclamation-circle"

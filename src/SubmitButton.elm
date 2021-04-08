@@ -6,12 +6,13 @@ import Html exposing (Html, text)
 import Html.Events exposing (onClick)
 
 
-submitButton : String -> msg -> Bool -> Html msg
-submitButton label submitMsg loading =
+submitButton : String -> msg -> Bool -> Bool -> Html msg
+submitButton label submitMsg loading disabled =
     Button.button
-        [ Button.primary
+        [ Button.success
         , Button.block
         , Button.attrs [ onClick submitMsg ]
+        , Button.disabled disabled
         ]
         [ if loading then
             spinner

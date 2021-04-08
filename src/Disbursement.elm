@@ -22,6 +22,10 @@ type alias Model =
     , ruleVerified : Bool
     , paymentMethod : String
     , dateProcessed : String
+    , rule : String
+    , isSubcontracted : String
+    , isPartialPayment : String
+    , isExistingLiability : String
     }
 
 
@@ -44,6 +48,10 @@ init =
     , ruleVerified = False
     , paymentMethod = ""
     , dateProcessed = ""
+    , rule = ""
+    , isSubcontracted = ""
+    , isPartialPayment = ""
+    , isExistingLiability = ""
     }
 
 
@@ -78,3 +86,7 @@ decoder =
         |> optional "ruleVerified" bool False
         |> optional "paymentMethod" string "Check"
         |> optional "dateProcessed" string ""
+        |> optional "rule" string ""
+        |> optional "isSubcontracted" string ""
+        |> optional "isPartialPayment" string ""
+        |> optional "isExistingLiability" string ""

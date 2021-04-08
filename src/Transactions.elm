@@ -1,12 +1,14 @@
 module Transactions exposing (Label(..), Model, decoder, labels, statusContent, stringToBool, transactionRowMap, verifiedContent, view)
 
 import Asset
+import Cents
+import ContributorType
 import DataTable exposing (DataRow)
 import Html exposing (Html, img, span, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode
 import PaymentMethod
-import Transaction exposing (Model(..))
+import Transaction
 
 
 type alias Model =
@@ -22,6 +24,7 @@ type Label
     = DateTime
     | EntityName
     | Amount
+    | Context
     | Rule
     | PaymentMethod
     | Status
@@ -32,8 +35,9 @@ labels : (Label -> msg) -> List ( msg, String )
 labels sortMsg =
     [ ( sortMsg DateTime, "Date / Time" )
     , ( sortMsg EntityName, "Entity Name" )
+    , ( sortMsg Context, "Entity Type" )
+    , ( sortMsg Context, "Context" )
     , ( sortMsg Amount, "Amount" )
-    , ( sortMsg Rule, "Rule" )
     , ( sortMsg Verified, "Verified" )
     , ( sortMsg PaymentMethod, "Payment Method" )
     , ( sortMsg PaymentMethod, "Processor" )
@@ -49,51 +53,126 @@ view sortMsg content disbursements =
 
 processor : String -> Html msg
 processor method =
-    if method == "credit" then
-        img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
+    case method of
+        "credit" ->
+            img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
 
-    else
-        img [ Asset.src Asset.tbdBankLogo, class "tbd-logo" ] []
+        "debit" ->
+            img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
+
+        "ach" ->
+            img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
+
+        "check" ->
+            img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
+
+        _ ->
+            text "N/A"
+
+
+getEntityName : Transaction.Model -> String
+getEntityName transaction =
+    let
+        personName =
+            transaction.firstName ++ " " ++ transaction.lastName
+    in
+    case ( transaction.direction, transaction.contributorType ) of
+        ( "out", _ ) ->
+            transaction.entityName
+
+        ( "in", "ind" ) ->
+            personName
+
+        ( "in", "fam" ) ->
+            personName
+
+        _ ->
+            transaction.companyName
+
+
+getEntityType : Transaction.Model -> String
+getEntityType transaction =
+    Maybe.withDefault "LLC"
+        (Maybe.map ContributorType.toGridString (ContributorType.fromString transaction.contributorType))
+
+
+getContext : Transaction.Model -> Html msg
+getContext transaction =
+    case transaction.direction of
+        "out" ->
+            if transaction.purposeCode == "" then
+                span [ class "text-danger" ] [ text "Missing" ]
+
+            else
+                text transaction.purposeCode
+
+        _ ->
+            text <| Maybe.withDefault "Home" transaction.refCode
+
+
+getAmount : Transaction.Model -> Html msg
+getAmount transaction =
+    case transaction.direction of
+        "out" ->
+            span [ class "text-danger font-weight-bold" ] [ text <| "(" ++ Cents.toDollar transaction.amount ++ ")" ]
+
+        _ ->
+            span [ class "text-green font-weight-bold" ] [ text <| Cents.toDollar transaction.amount ]
+
+
+getPaymentMethod : Transaction.Model -> String
+getPaymentMethod transaction =
+    case transaction.direction of
+        "out" ->
+            "check"
+
+        _ ->
+            Maybe.withDefault "Home" transaction.refCode
 
 
 transactionRowMap : ( Maybe msg, Transaction.Model ) -> ( Maybe msg, DataRow msg )
 transactionRowMap ( maybeMsg, transaction ) =
-    case transaction of
-        Contribution contribution ->
-            ( maybeMsg
-            , [ ( "Date / Time", text contribution.datetime )
-              , ( "Entity Name", text <| contribution.firstName ++ " " ++ contribution.lastName )
-              , ( "Amount", span [ class "text-success font-weight-bold" ] [ text <| "$" ++ contribution.amount ] )
-              , ( "Rule", text "MA11" )
-              , ( "Verified", verifiedContent True )
-              , ( "Payment Method", text <| PaymentMethod.toDisplayString contribution.paymentMethod )
-              , ( "Processor", processor contribution.paymentMethod )
-              , ( "Status", statusContent <| stringToBool contribution.verified )
-              ]
-            )
+    let
+        name =
+            getEntityName transaction
 
-        Disbursement disbursement ->
-            ( maybeMsg
-            , [ ( "Date / Time", text disbursement.date )
-              , ( "Entity Name", text disbursement.entityName )
-              , ( "Amount", span [ class "text-danger font-weight-bold" ] [ text <| "($" ++ disbursement.amount ++ ")" ] )
-              , ( "Rule", text "MAD" )
-              , ( "Verified", verifiedContent <| disbursement.ruleVerified )
-              , ( "Payment Method"
-                , span
-                    [ class "text-capitalize" ]
-                    [ text disbursement.paymentMethod ]
-                )
-              , ( "Processor", processor disbursement.paymentMethod )
-              , ( "Status", statusContent <| disbursement.bankVerified )
-              ]
-            )
+        context =
+            getContext transaction
+
+        amount =
+            getAmount transaction
+
+        entityType =
+            getEntityType transaction
+    in
+    ( maybeMsg
+    , [ ( "Date / Time", text transaction.timestamp )
+      , ( "Entity Name", text <| name )
+      , ( "Context", text entityType )
+      , ( "Context", context )
+      , ( "Amount", amount )
+      , ( "Verified", verifiedContent <| transaction.ruleVerified )
+      , ( "Payment Method", text <| PaymentMethod.toDisplayString transaction.paymentMethod )
+      , ( "Processor", processor transaction.paymentMethod )
+      , ( "Status", getStatus transaction )
+      ]
+    )
+
+
+getStatus : Transaction.Model -> Html msg
+getStatus model =
+    case model.paymentMethod of
+        "in-kind" ->
+            Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
+
+        _ ->
+            statusContent model.bankVerified
 
 
 statusContent : Bool -> Html msg
 statusContent val =
     if val then
-        Asset.circleCheckGlyph [ class "text-success data-icon-size" ]
+        Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
 
     else
         Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
@@ -102,7 +181,7 @@ statusContent val =
 verifiedContent : Bool -> Html msg
 verifiedContent val =
     if val then
-        Asset.circleCheckGlyph [ class "text-success data-icon-size" ]
+        Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
 
     else
         Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]

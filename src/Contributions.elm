@@ -1,6 +1,7 @@
 module Contributions exposing (Label(..), decoder, view)
 
 import Asset
+import Cents
 import Contribution as Contribution
 import DataTable
 import Html exposing (Html, img, span, text)
@@ -18,8 +19,15 @@ view sortMsg content contributions =
 contributionRowMap : ( Maybe msg, Contribution.Model ) -> ( Maybe msg, List ( String, Html msg ) )
 contributionRowMap ( maybeMsg, c ) =
     let
-        status =
-            if stringToBool c.verified then
+        ruleVerified =
+            if c.ruleVerified then
+                Asset.circleCheckGlyph [ class "text-success data-icon-size" ]
+
+            else
+                Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
+
+        bankVerified =
+            if c.bankVerified then
                 Asset.circleCheckGlyph [ class "text-success data-icon-size" ]
 
             else
@@ -36,18 +44,16 @@ contributionRowMap ( maybeMsg, c ) =
                 )
                 <|
                     Maybe.withDefault "dashboard" c.refCode
-
-        --paymentMethod =
     in
     ( Nothing
     , [ ( "Date / Time", text c.datetime )
       , ( "Entity name", text c.entityName )
-      , ( "Amount", span [ class "font-weight-bold text-success text-right" ] [ text <| dollar c.amount ] )
-      , ( "Rule", text "MA11" )
-      , ( "Verified", Asset.circleCheckGlyph [ class "text-success data-icon-size" ] )
+      , ( "Amount", span [ class "font-weight-bold text-success text-right" ] [ text <| Cents.toDollar c.amount ] )
+      , ( "Rule", text c.rule )
+      , ( "Verified", ruleVerified )
       , ( "Payment Method", text <| PaymentMethod.toDisplayString c.paymentMethod )
       , ( "Processor", processor c.paymentMethod )
-      , ( "Status", status )
+      , ( "Status", bankVerified )
       , ( "Source", refCode )
       ]
     )
@@ -59,12 +65,7 @@ processor method =
         img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
 
     else
-        img [ Asset.src Asset.tbdBankLogo, class "tbd-logo" ] []
-
-
-dollar : String -> String
-dollar str =
-    "$" ++ str
+        img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
 
 
 labels : (Label -> msg) -> List ( msg, String )
