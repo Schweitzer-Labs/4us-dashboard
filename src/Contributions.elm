@@ -48,7 +48,7 @@ contributionRowMap ( maybeMsg, c ) =
     ( Nothing
     , [ ( "Date / Time", text c.datetime )
       , ( "Entity name", text c.entityName )
-      , ( "Amount", span [ class "font-weight-bold text-success text-right" ] [ text <| Cents.toDollar c.amount ] )
+      , ( "Amount", span [ class "text-success text-right" ] [ text <| Cents.toDollar c.amount ] )
       , ( "Rule", text c.rule )
       , ( "Verified", ruleVerified )
       , ( "Payment Method", text <| PaymentMethod.toDisplayString c.paymentMethod )

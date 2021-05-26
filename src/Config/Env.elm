@@ -16,5 +16,5 @@ env : Config
 env =
     { apiEndpoint = "http://localhost:5000"
     , donorUrl = "http://localhost:3001"
-    , loginUrl = \committeeId -> "https://4us-demo-committee-api-user.auth.us-east-1.amazoncognito.com/login?client_id=5edttkv3teplb003a5ljhqe4lv&response_type=token&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=http://localhost:3000&state=" ++ committeeId
+    , loginUrl = \committeeId -> "https://4us-platform-user.auth.us-east-1.amazoncognito.com/login?client_id=n0dogl1k8vu2gqi4vj9k7gniv&response_type=token&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=http://localhost:3000&state=" ++ committeeId
     }

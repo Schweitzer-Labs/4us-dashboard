@@ -41,7 +41,7 @@ view aggregates =
                 , ( "Total spent", Cents.toDollar aggregates.totalSpent )
                 , ( "Total donors"
                   , if aggregates.totalDonors /= "0" then
-                        "107"
+                        "108"
 
                     else
                         "0"

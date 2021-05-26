@@ -161,7 +161,7 @@ image filename =
 
 contributionsByRefcodeChart : Image
 contributionsByRefcodeChart =
-    image "contributions-by-refcode.svg"
+    image "contributions-by-ref-code.svg"
 
 
 monthlyContributionsByReferenceCode : Image

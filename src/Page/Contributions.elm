@@ -7,19 +7,15 @@ import Aggregations
 import Api exposing (Cred, Token)
 import Api.Endpoint as Endpoint
 import Asset
-import BarChart
 import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
-import Bootstrap.Modal as Modal
 import Browser.Dom as Dom
-import Contribution as Contribution
-import CreateContribution
+import Charts exposing (contributionsByRefCode, donorByRefCode, monthlyContributionsByReferenceCode)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Http
 import Loading
-import PieChart
 import Session exposing (Session)
+import Svg exposing (use)
 import Task exposing (Task)
 import Time
 import Transaction.TransactionsData as TransactionsData exposing (TransactionsData)
@@ -69,18 +65,18 @@ contentView model =
                 [ Grid.col
                     []
                     [ h3 [] [ text "Monthly Contributions by Ref Code" ]
-                    , img [ Asset.src Asset.monthlyContributionsByReferenceCode ] []
+                    , monthlyContributionsByReferenceCode []
                     ]
                 ]
             , Grid.row
                 []
                 [ Grid.col
                     []
-                    [ img [ Asset.src Asset.contributionsByRefcodeChart ] []
+                    [ contributionsByRefCode []
                     ]
                 , Grid.col
                     []
-                    [ img [ Asset.src Asset.donorByRefcodeChart ] []
+                    [ donorByRefCode []
                     ]
                 ]
             ]

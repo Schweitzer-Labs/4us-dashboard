@@ -220,7 +220,7 @@ navRow glyph page route label =
                     [ Grid.row
                         [ Row.aroundXs ]
                         [ Grid.col [ Col.xs3, Col.attrs [ class "text-center" ] ] [ glyph ]
-                        , Grid.col [ Col.attrs [ class "font-weight-bolder font-size-18" ] ] [ text label ]
+                        , Grid.col [ Col.attrs [ class "font-size-18" ] ] [ text label ]
                         ]
                     ]
                 ]

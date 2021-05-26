@@ -114,10 +114,10 @@ getAmount : Transaction.Model -> Html msg
 getAmount transaction =
     case transaction.direction of
         "out" ->
-            span [ class "text-danger font-weight-bold" ] [ text <| "(" ++ Cents.toDollar transaction.amount ++ ")" ]
+            span [ class "text-danger" ] [ text <| "(" ++ Cents.toDollar transaction.amount ++ ")" ]
 
         _ ->
-            span [ class "text-green font-weight-bold" ] [ text <| Cents.toDollar transaction.amount ]
+            span [ class "text-green" ] [ text <| Cents.toDollar transaction.amount ]
 
 
 getPaymentMethod : Transaction.Model -> String

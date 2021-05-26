@@ -1,4 +1,22 @@
 @import url('https://fonts.googleapis.com/css?family=EB+Garamond');
+
+@font-face {
+  font-family: 'gilroy-light';
+  src: url('../public/fonts/gilroy-light/gilroy-light-webfont.woff2') format('woff2'),
+  url('../public/fonts/gilroy-light/gilroy-light-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'gilroy-light';
+  src: url('../public/fonts/gilroy-bold/gilroy-extrabold-webfont.woff2') format('woff2'),
+  url('../public/fonts/gilroy-bold/gilroy-extrabold-webfont.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+}
+
+
 $slate-blue: #4f53d1;
 $ruby: #ff0a03;
 
@@ -35,7 +53,7 @@ $gold: #C3924A;
 }
 
 
-$font-family-base: 'EB Garamond', sans-serif;
+$font-family-base: 'gilroy-light', sans-serif;
 
 
 
@@ -89,6 +107,7 @@ body {
   left: 0;
   width: $nav-horizontal-offset;
   height: 2000px;
+  z-index: 1000;
 }
 
 
@@ -102,6 +121,7 @@ body {
 
 .app-container {
   padding-left: $nav-horizontal-offset;
+  z-index: 500;
 }
 
 .account-control-icon {
@@ -210,3 +230,9 @@ body {
 .font-size-22 {
   font-size: 22px;
 }
+
+//body {
+//  min-width: 800px;
+//}
+
+

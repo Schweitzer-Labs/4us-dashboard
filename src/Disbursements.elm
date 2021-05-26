@@ -78,7 +78,7 @@ disbursementRowMap ( maybeMsg, d ) =
     ( maybeMsg
     , [ ( "Date / Time", text d.date )
       , ( "Entity Name", text d.entityName )
-      , ( "Amount", span [ class "text-danger font-weight-bold" ] [ text <| "(" ++ Cents.toDollar d.amount ++ ")" ] )
+      , ( "Amount", span [ class "text-danger" ] [ text <| "(" ++ Cents.toDollar d.amount ++ ")" ] )
       , ( "Purpose"
         , if d.purposeCode == "" then
             span [ class "text-danger" ] [ text "Missing" ]
