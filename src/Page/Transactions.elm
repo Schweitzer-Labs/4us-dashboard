@@ -394,8 +394,9 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| env.loginUrl model.committeeId )
+                    ( model, Cmd.none )
 
+        --( model, load <| env.loginUrl model.committeeId )
         ShowCreateContributionModal ->
             ( { model
                 | createContributionModalVisibility = Modal.shown
