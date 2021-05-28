@@ -1,11 +1,32 @@
-module Cents exposing (fromDollars, toDollar)
+module Cents exposing (fromDollars, stringToDollar, toDollar)
 
 import FormatNumber exposing (format)
 import FormatNumber.Locales as FormatNumber
 
 
-toDollar : String -> String
-toDollar str =
+toDollar : Int -> String
+toDollar num =
+    let
+        numStr =
+            String.fromInt num
+
+        maybeTup =
+            String.uncons <| numStr
+    in
+    case maybeTup of
+        Just (( firstChar, rest ) as val) ->
+            if firstChar == '-' then
+                "-" ++ "$" ++ toUnsignedDollar rest
+
+            else
+                "$" ++ toUnsignedDollar numStr
+
+        Nothing ->
+            "$"
+
+
+stringToDollar : String -> String
+stringToDollar str =
     let
         maybeTup =
             String.uncons str

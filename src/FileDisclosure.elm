@@ -52,20 +52,20 @@ successRows =
 
 warningRows : Aggregations.Model -> List (Html msg)
 warningRows aggs =
-    if aggs.needReviewCount == "0" then
+    if aggs.needsReviewCount == 0 then
         []
 
     else
         let
             transactionsAre =
-                if aggs.needReviewCount == "1" then
+                if aggs.needsReviewCount == 1 then
                     " transaction is "
 
                 else
                     " transactions are "
 
             errorMessage =
-                aggs.needReviewCount ++ transactionsAre ++ " missing required disclosure fields"
+                String.fromInt aggs.needsReviewCount ++ transactionsAre ++ " missing required disclosure fields"
         in
         [ Grid.row
             [ Row.attrs [] ]
@@ -92,13 +92,13 @@ aggregateRows : Aggregations.Model -> List (Html msg)
 aggregateRows aggs =
     [ Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
-        [ aggregateCol "Beginning Cash Balance" (Cents.toDollar "0")
-        , aggregateCol "Ending Cash Balance" (Cents.toDollar aggs.balance)
+        [ aggregateCol "Beginning Cash Balance" (Cents.stringToDollar "0")
+        , aggregateCol "Ending Cash Balance" (Cents.stringToDollar (String.fromInt aggs.balance))
         ]
     , Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
-        [ aggregateCol "Total Contributions Received" (Cents.toDollar aggs.totalRaised)
-        , aggregateCol "Total Expenditures" (Cents.toDollar aggs.totalSpent)
+        [ aggregateCol "Total Contributions Received" (Cents.stringToDollar (String.fromInt aggs.totalRaised))
+        , aggregateCol "Total Expenditures" (Cents.stringToDollar (String.fromInt aggs.totalSpent))
         ]
     ]
 

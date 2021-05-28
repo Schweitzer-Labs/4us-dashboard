@@ -6,21 +6,19 @@ import Bootstrap.Grid.Row as Row
 import Cents
 import Html exposing (Html, text)
 import Html.Attributes exposing (class)
-import Json.Decode as Decode exposing (string)
+import Json.Decode as Decode exposing (int, string)
 import Json.Decode.Pipeline exposing (optional, required)
 
 
 type alias Model =
-    { balance : String
-    , totalRaised : String
-    , totalSpent : String
-    , totalDonors : String
-    , qualifyingDonors : String
-    , qualifyingFunds : String
-    , totalTransactions : String
-    , totalContributionsInProcessing : String
-    , totalDisbursementsInProcessing : String
-    , needReviewCount : String
+    { balance : Int
+    , totalRaised : Int
+    , totalSpent : Int
+    , totalDonors : Int
+    , totalTransactions : Int
+    , totalContributionsInProcessing : Int
+    , totalDisbursementsInProcessing : Int
+    , needsReviewCount : Int
     }
 
 
@@ -39,13 +37,7 @@ view aggregates =
                 , ( "Pending out", Cents.toDollar aggregates.totalDisbursementsInProcessing )
                 , ( "Total raised", Cents.toDollar aggregates.totalRaised )
                 , ( "Total spent", Cents.toDollar aggregates.totalSpent )
-                , ( "Total donors"
-                  , if aggregates.totalDonors /= "0" then
-                        "108"
-
-                    else
-                        "0"
-                  )
+                , ( "Total donors", String.fromInt aggregates.totalDonors )
                 ]
         ]
 
@@ -62,28 +54,24 @@ agg ( name, amount ) =
 decoder : Decode.Decoder Model
 decoder =
     Decode.succeed Model
-        |> required "balance" string
-        |> required "totalRaised" string
-        |> required "totalSpent" string
-        |> required "totalDonors" string
-        |> optional "qualifyingDonors" string ""
-        |> optional "qualifyingFunds" string ""
-        |> optional "totalTransactions" string ""
-        |> required "totalContributionsInProcessing" string
-        |> required "totalDisbursementsInProcessing" string
-        |> optional "needsReviewCount" string ""
+        |> required "balance" int
+        |> required "totalRaised" int
+        |> required "totalSpent" int
+        |> required "totalDonors" int
+        |> required "totalTransactions" int
+        |> required "totalContributionsInProcessing" int
+        |> required "totalDisbursementsInProcessing" int
+        |> required "needsReviewCount" int
 
 
 init : Model
 init =
-    { balance = ""
-    , totalRaised = ""
-    , totalSpent = ""
-    , totalDonors = ""
-    , qualifyingDonors = ""
-    , qualifyingFunds = ""
-    , totalTransactions = ""
-    , totalContributionsInProcessing = ""
-    , totalDisbursementsInProcessing = ""
-    , needReviewCount = ""
+    { balance = 0
+    , totalRaised = 0
+    , totalSpent = 0
+    , totalDonors = 0
+    , totalTransactions = 0
+    , totalContributionsInProcessing = 0
+    , totalDisbursementsInProcessing = 0
+    , needsReviewCount = 0
     }

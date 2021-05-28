@@ -1,15 +1,16 @@
 module Transaction exposing (Model, decoder)
 
-import Json.Decode as Decode exposing (bool, maybe, oneOf, string)
+import Json.Decode as Decode exposing (bool, int, maybe, oneOf, string)
 import Json.Decode.Pipeline exposing (optional, required)
 
 
 type alias Model =
-    { timestamp : String
+    { id : String
+    , timestamp : String
     , contributionId : String
     , donorId : String
     , committeeId : String
-    , amount : String
+    , amount : Int
     , stripeTxnId : String
     , firstName : String
     , lastName : String
@@ -20,7 +21,7 @@ type alias Model =
     , city : String
     , state : String
     , paymentMethod : String
-    , contributorType : String
+    , entityType : String
     , companyName : String
     , ruleVerified : Bool
     , bankVerified : Bool
@@ -35,11 +36,12 @@ type alias Model =
 decoder : Decode.Decoder Model
 decoder =
     Decode.succeed Model
+        |> required "id" string
         |> optional "timestamp" string ""
         |> optional "contributionId" string ""
         |> optional "donorId" string ""
         |> optional "committeeId" string ""
-        |> optional "amount" string ""
+        |> required "amount" int
         |> optional "stripeTxnId" string ""
         |> optional "firstName" string ""
         |> optional "lastName" string ""
@@ -50,7 +52,7 @@ decoder =
         |> optional "city" string ""
         |> optional "state" string ""
         |> optional "paymentMethod" string ""
-        |> optional "contributorType" string ""
+        |> optional "entityType" string ""
         |> optional "companyName" string ""
         |> optional "ruleVerified" bool False
         |> optional "bankVerified" bool False

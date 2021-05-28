@@ -7,6 +7,7 @@ import Browser.Dom as Dom
 import Browser.Navigation as Nav
 import CommitteeId
 import Html exposing (Html)
+import Http
 import Page
 import Page.Blank as Blank
 import Page.Contributions as Contributions

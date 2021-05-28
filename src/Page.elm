@@ -73,7 +73,7 @@ header aggregations =
             [ Grid.col [ Col.xs10 ]
                 [ Aggregations.view aggregations ]
             , Grid.col [ Col.attrs [ class "text-right" ] ]
-                [ warningBell aggregations.needReviewCount
+                [ warningBell (String.fromInt aggregations.needsReviewCount)
                 , a [ Route.href Route.NeedsReview, Spacing.ml4 ] [ Asset.userGlyph [ class "account-control-icon" ] ]
                 ]
             ]

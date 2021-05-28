@@ -4,6 +4,7 @@ module Api.Endpoint exposing
     , contributions
     , disbursement
     , disbursements
+    , graphql
     , needsReviewDisbursements
     , request
     , transactions
@@ -108,6 +109,11 @@ disbursement committeeId =
 contribute : Endpoint
 contribute =
     url [ "contribution" ] []
+
+
+graphql : Endpoint
+graphql =
+    url [] []
 
 
 transactions : String -> Maybe Direction -> Endpoint

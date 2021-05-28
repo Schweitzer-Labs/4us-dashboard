@@ -117,10 +117,10 @@ update msg model =
 
         LoadTransactionsData res ->
             case res of
-                Ok data ->
+                Ok body ->
                     ( { model
-                        | transactions = data.transactions
-                        , aggregations = data.aggregations
+                        | transactions = body.data.transactions
+                        , aggregations = body.data.aggregations
                         , loading = False
                       }
                     , Cmd.none

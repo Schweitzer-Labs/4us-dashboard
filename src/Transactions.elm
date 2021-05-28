@@ -2,8 +2,8 @@ module Transactions exposing (Label(..), Model, decoder, labels, statusContent, 
 
 import Asset
 import Cents
-import ContributorType
 import DataTable exposing (DataRow)
+import EntityType
 import Html exposing (Html, img, span, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode
@@ -76,7 +76,7 @@ getEntityName transaction =
         personName =
             transaction.firstName ++ " " ++ transaction.lastName
     in
-    case ( transaction.direction, transaction.contributorType ) of
+    case ( transaction.direction, transaction.entityType ) of
         ( "out", _ ) ->
             transaction.entityName
 
@@ -93,7 +93,7 @@ getEntityName transaction =
 getEntityType : Transaction.Model -> String
 getEntityType transaction =
     Maybe.withDefault "LLC"
-        (Maybe.map ContributorType.toGridString (ContributorType.fromString transaction.contributorType))
+        (Maybe.map EntityType.toGridString (EntityType.fromString transaction.entityType))
 
 
 getContext : Transaction.Model -> Html msg

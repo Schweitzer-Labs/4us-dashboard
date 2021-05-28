@@ -17,4 +17,4 @@ decode =
     Decode.map2
         ContributionsData
         (Decode.field "transactions" Contributions.decoder)
-        (Decode.field "aggregates" Aggregations.decoder)
+        (Decode.field "aggregations" Aggregations.decoder)

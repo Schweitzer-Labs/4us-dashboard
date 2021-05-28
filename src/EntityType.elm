@@ -1,4 +1,4 @@
-module ContributorType exposing (ContributorType, familyRadioList, fromString, isLLC, llc, orgView, toDataString, toDisplayString, toGridString)
+module EntityType exposing (EntityType, familyRadioList, fromString, isLLC, llc, orgView, toDataString, toDisplayString, toGridString)
 
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Form.Select as Select exposing (Item)
@@ -6,7 +6,7 @@ import Html exposing (Html, text)
 import Html.Attributes exposing (class, selected, value)
 
 
-type ContributorType
+type EntityType
     = Family
     | Individual
     | SoleProprietorship
@@ -21,9 +21,9 @@ type ContributorType
     | Other
 
 
-toDataString : ContributorType -> String
-toDataString contributorType =
-    case contributorType of
+toDataString : EntityType -> String
+toDataString entityType =
+    case entityType of
         Family ->
             "fam"
 
@@ -61,7 +61,7 @@ toDataString contributorType =
             "oth"
 
 
-fromString : String -> Maybe ContributorType
+fromString : String -> Maybe EntityType
 fromString str =
     case str of
         "fam" ->
@@ -104,9 +104,9 @@ fromString str =
             Nothing
 
 
-toDisplayString : ContributorType -> String
-toDisplayString contributorType =
-    case contributorType of
+toDisplayString : EntityType -> String
+toDisplayString entityType =
+    case entityType of
         Family ->
             "Family"
 
@@ -144,9 +144,9 @@ toDisplayString contributorType =
             "Other"
 
 
-toGridString : ContributorType -> String
-toGridString contributorType =
-    case contributorType of
+toGridString : EntityType -> String
+toGridString entityType =
+    case entityType of
         Family ->
             "Family"
 
@@ -184,10 +184,10 @@ toGridString contributorType =
             "Other"
 
 
-orgView : (Maybe ContributorType -> msg) -> Maybe ContributorType -> Html msg
+orgView : (Maybe EntityType -> msg) -> Maybe EntityType -> Html msg
 orgView msg currentValue =
     Select.select
-        [ Select.id "contributorType"
+        [ Select.id "entityType"
         , Select.onChange (fromString >> msg)
         ]
         [ Select.item [ value "" ] [ text "-- Organization Classification --" ]
@@ -204,16 +204,16 @@ orgView msg currentValue =
         ]
 
 
-orgSelect : ContributorType -> Maybe ContributorType -> Item msg
-orgSelect contributorType currentValue =
+orgSelect : EntityType -> Maybe EntityType -> Item msg
+orgSelect entityType currentValue =
     Select.item
-        [ value <| toDataString contributorType
-        , selected <| Just contributorType == currentValue
+        [ value <| toDataString entityType
+        , selected <| Just entityType == currentValue
         ]
-        [ text <| toDisplayString contributorType ]
+        [ text <| toDisplayString entityType ]
 
 
-familyRadioList : (ContributorType -> msg) -> Maybe ContributorType -> List (Html msg)
+familyRadioList : (EntityType -> msg) -> Maybe EntityType -> List (Html msg)
 familyRadioList msg currentValue =
     Radio.radioList "familyOfCandidate"
         [ Radio.createCustom
@@ -233,11 +233,11 @@ familyRadioList msg currentValue =
         ]
 
 
-isLLC : ContributorType -> Bool
+isLLC : EntityType -> Bool
 isLLC contributorType =
     contributorType == LimitedLiabilityCompany
 
 
-llc : ContributorType
+llc : EntityType
 llc =
     LimitedLiabilityCompany

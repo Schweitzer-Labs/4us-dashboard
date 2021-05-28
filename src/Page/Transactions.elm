@@ -28,7 +28,7 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode exposing (string)
-import Json.Encode as Encode
+import Json.Encode as Encode exposing (Value)
 import Loading
 import Session exposing (Session)
 import SubmitButton exposing (submitButton)
@@ -91,7 +91,7 @@ init token session aggs committeeId =
       , createDisbursementModal = CreateDisbursement.init
       , createDisbursementSubmitting = False
       }
-    , getTransactionsData token committeeId Nothing
+    , getTransactions token
     )
 
 
@@ -384,10 +384,10 @@ update msg model =
 
         LoadTransactionsData res ->
             case res of
-                Ok data ->
+                Ok body ->
                     ( { model
-                        | transactions = data.transactions
-                        , aggregations = data.aggregations
+                        | transactions = body.data.transactions
+                        , aggregations = body.data.aggregations
                         , loading = False
                       }
                     , Cmd.none
@@ -622,7 +622,7 @@ encodeContribution model =
         , ( "state", Encode.string contrib.state )
         , ( "postalCode", Encode.string contrib.postalCode )
         , ( "paymentMethod", Encode.string contrib.paymentMethod )
-        , ( "contributorType", Encode.string "ind" )
+        , ( "entityType", Encode.string "ind" )
 
         --, ( "creditCardNumber", Encode.string contrib.cardNumber )
         --, ( "expirationMonth", Encode.int contrib.cardMonth )
@@ -671,3 +671,49 @@ createDisbursement model =
     Http.send GotCreateDisbursementResponse <|
         Api.post (Endpoint.disbursement model.committeeId) model.token body <|
             Decode.field "message" string
+
+
+getTransactionsQuery : String
+getTransactionsQuery =
+    """
+      query {
+        aggregations(committeeId: "pat-miller"){
+          balance
+          totalSpent
+          totalRaised
+          totalDonors
+          needsReviewCount
+          totalTransactions
+          totalContributionsInProcessing
+          totalDisbursementsInProcessing
+        }
+        transactions(committeeId: "pat-miller"){
+          id,
+          amount,
+          initiatedTimestamp,
+          firstName,
+          lastName,
+          entityType,
+          direction,
+          paymentMethod
+        }
+      }
+    """
+
+
+getTransactions : Token -> Cmd Msg
+getTransactions token =
+    let
+        body =
+            encodeGraphQL getTransactionsQuery |> Http.jsonBody
+    in
+    Http.send LoadTransactionsData <|
+        Api.post Endpoint.graphql token body <|
+            TransactionsData.decode
+
+
+encodeGraphQL : String -> Value
+encodeGraphQL query =
+    Encode.object
+        [ ( "query", Encode.string query )
+        ]

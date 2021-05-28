@@ -10,7 +10,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Table as Table
 import Bootstrap.Utilities.Spacing as Spacing
-import ContributorType exposing (ContributorType)
+import EntityType exposing (EntityType)
 import Html exposing (Html, h3, h5, span, text)
 import Html.Attributes exposing (class, for, value)
 import OrgOrInd exposing (OrgOrInd(..))
@@ -42,7 +42,7 @@ type alias Model =
     , occupation : String
     , entityName : String
     , maybeOrgOrInd : Maybe OrgOrInd
-    , maybeContributorType : Maybe ContributorType
+    , maybeEntityType : Maybe EntityType
     , cardNumber : String
     , expirationMonth : String
     , expirationYear : String
@@ -75,7 +75,7 @@ init =
     , employer = ""
     , occupation = ""
     , entityName = ""
-    , maybeContributorType = Nothing
+    , maybeEntityType = Nothing
     , maybeOrgOrInd = Nothing
     , cardNumber = ""
     , expirationMonth = ""
@@ -361,7 +361,7 @@ manageOwnerRows model =
 
 isLLCDonor : Model -> Bool
 isLLCDonor model =
-    Maybe.withDefault False (Maybe.map ContributorType.isLLC model.maybeContributorType)
+    Maybe.withDefault False (Maybe.map EntityType.isLLC model.maybeEntityType)
 
 
 orgRows : Model -> List (Html Msg)
@@ -378,7 +378,7 @@ orgRows model =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ ContributorType.orgView UpdateOrganizationClassification model.maybeContributorType ]
+            [ EntityType.orgView UpdateOrganizationClassification model.maybeEntityType ]
         ]
     ]
         ++ llcRow
@@ -456,7 +456,7 @@ familyRow model =
         [ Grid.col
             []
           <|
-            ContributorType.familyRadioList UpdateFamilyOrIndividual model.maybeContributorType
+            EntityType.familyRadioList UpdateFamilyOrIndividual model.maybeEntityType
         ]
     ]
 
@@ -533,8 +533,8 @@ type Msg
     | UpdateEmployer String
     | UpdateOccupation String
     | UpdateOrganizationName String
-    | UpdateOrganizationClassification (Maybe ContributorType)
-    | UpdateFamilyOrIndividual ContributorType
+    | UpdateOrganizationClassification (Maybe EntityType)
+    | UpdateFamilyOrIndividual EntityType
     | AddOwner
     | UpdateOwnerName String
     | UpdateOwnerOwnership String
@@ -557,13 +557,13 @@ update msg model =
 
         -- Donor Info
         ChooseOrgOrInd maybeOrgOrInd ->
-            ( { model | maybeOrgOrInd = maybeOrgOrInd, maybeContributorType = Nothing, errors = [] }, Cmd.none )
+            ( { model | maybeOrgOrInd = maybeOrgOrInd, maybeEntityType = Nothing, errors = [] }, Cmd.none )
 
         UpdateOrganizationName entityName ->
             ( { model | entityName = entityName }, Cmd.none )
 
-        UpdateOrganizationClassification maybeContributorType ->
-            ( { model | maybeContributorType = maybeContributorType }, Cmd.none )
+        UpdateOrganizationClassification maybeEntityType ->
+            ( { model | maybeEntityType = maybeEntityType }, Cmd.none )
 
         AddOwner ->
             let
@@ -605,8 +605,8 @@ update msg model =
         UpdateState str ->
             ( { model | state = str }, Cmd.none )
 
-        UpdateFamilyOrIndividual contributorType ->
-            ( { model | maybeContributorType = Just contributorType }, Cmd.none )
+        UpdateFamilyOrIndividual entityType ->
+            ( { model | maybeEntityType = Just entityType }, Cmd.none )
 
         UpdateEmploymentStatus str ->
             ( { model | employmentStatus = str }, Cmd.none )

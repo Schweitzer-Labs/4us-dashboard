@@ -17,4 +17,4 @@ decode =
     Decode.map2
         DisbursementsData
         (Decode.field "disbursements" Disbursements.decoder)
-        (Decode.field "aggregates" Aggregations.decoder)
+        (Decode.field "aggregations" Aggregations.decoder)
