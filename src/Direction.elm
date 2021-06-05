@@ -1,4 +1,6 @@
-module Direction exposing (Direction(..), fromString, toDisplayTitle, toString)
+module Direction exposing (Direction(..), decoder, fromString, toDisplayTitle, toString)
+
+import Json.Decode as Decode exposing (Decoder)
 
 
 type Direction
@@ -36,3 +38,20 @@ toDisplayTitle direction =
 
         Out ->
             "Disbursements"
+
+
+decoder : Decoder Direction
+decoder =
+    Decode.string
+        |> Decode.andThen
+            (\str ->
+                case str of
+                    "in" ->
+                        Decode.succeed In
+
+                    "out" ->
+                        Decode.succeed Out
+
+                    badVal ->
+                        Decode.fail <| "Unknown direction: " ++ badVal
+            )

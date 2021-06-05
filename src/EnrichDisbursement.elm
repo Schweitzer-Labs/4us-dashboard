@@ -12,7 +12,7 @@ import Disbursement.Forms exposing (yesOrNoRows)
 import Html exposing (Html, text)
 import Html.Attributes as Attribute exposing (class, for)
 import Json.Encode as Encode
-import Purpose
+import PurposeCode
 
 
 errorBorder : String -> List (Html.Attribute Msg)
@@ -160,7 +160,7 @@ selectPurpose d =
                             ]
                             [ text <| purposeText ]
                     )
-                    Purpose.purposeText
+                    PurposeCode.purposeCodeText
         ]
 
 

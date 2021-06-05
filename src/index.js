@@ -2,8 +2,8 @@ import './main.css';
 import { Elm } from './Main.elm';
 import * as serviceWorker from './serviceWorker';
 
-const userPoolAppClientId = "7m2eek97td4smg2svd15mvq96j"
-const userPoolUrl = "https://platform-user.auth.us-west-2.amazoncognito.com"
+const userPoolAppClientId = "6lu9jttlb740s8abf2683583b"
+const userPoolUrl = "https://platform-user-p2-qa.auth.us-west-2.amazoncognito.com"
 
 const getTokenFromUrl = (url) => {
   const firstTrim = url.split('id_token=')

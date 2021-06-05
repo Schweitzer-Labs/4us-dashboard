@@ -1,63 +1,104 @@
 module Transaction exposing (Model, decoder)
 
-import Json.Decode as Decode exposing (bool, int, maybe, oneOf, string)
+import Direction exposing (Direction)
+import EntityType exposing (EntityType)
+import Json.Decode as Decode exposing (Decoder, bool, int, maybe, oneOf, string)
 import Json.Decode.Pipeline exposing (optional, required)
+import PaymentMethod exposing (PaymentMethod)
+import PurposeCode exposing (PurposeCode)
+import TransactionType exposing (TransactionType)
 
 
 type alias Model =
     { id : String
-    , timestamp : String
-    , contributionId : String
-    , donorId : String
     , committeeId : String
+    , direction : Direction
     , amount : Int
-    , stripeTxnId : String
-    , firstName : String
-    , lastName : String
-    , employer : String
-    , addressLine1 : String
-    , addressLine2 : String
-    , postalCode : String
-    , city : String
-    , state : String
-    , paymentMethod : String
-    , entityType : String
-    , companyName : String
-    , ruleVerified : Bool
+    , paymentMethod : PaymentMethod
     , bankVerified : Bool
-    , transactionType : String
-    , direction : String
+    , ruleVerified : Bool
+    , initiatedTimestamp : Int
+    , bankVerifiedTimestamp : Maybe Int
+    , ruleVerifiedTimestamp : Maybe Int
+    , purposeCode : Maybe PurposeCode
     , refCode : Maybe String
-    , purposeCode : String
-    , entityName : String
+    , firstName : Maybe String
+    , middleName : Maybe String
+    , lastName : Maybe String
+    , addressLine1 : Maybe String
+    , addressLine2 : Maybe String
+    , city : Maybe String
+    , state : Maybe String
+    , postalCode : Maybe String
+    , employer : Maybe String
+    , occupation : Maybe String
+    , entityType : Maybe EntityType
+    , companyName : Maybe String
+    , phoneNumber : Maybe String
+    , emailAddress : Maybe String
+    , transactionType : Maybe TransactionType
+    , attestsToBeingAnAdultCitizen : Maybe Bool
+    , stripePaymentIntentId : Maybe String
+    , cardNumberLastFourDigits : Maybe String
+    , entityName : Maybe String
     }
+
+
+maybeString name =
+    optional name (Decode.map Just string) Nothing
+
+
+maybeInt name =
+    optional name (Decode.map Just int) Nothing
+
+
+maybeBool name =
+    optional name (Decode.map Just bool) Nothing
+
+
+maybePurposeCode name =
+    optional name (Decode.map PurposeCode.fromString string) Nothing
+
+
+maybeEntityType name =
+    optional name (Decode.map EntityType.fromString string) Nothing
+
+
+maybeTransactionType name =
+    optional name (Decode.map TransactionType.fromString string) Nothing
 
 
 decoder : Decode.Decoder Model
 decoder =
     Decode.succeed Model
         |> required "id" string
-        |> optional "timestamp" string ""
-        |> optional "contributionId" string ""
-        |> optional "donorId" string ""
-        |> optional "committeeId" string ""
+        |> required "committeeId" string
+        |> required "direction" Direction.decoder
         |> required "amount" int
-        |> optional "stripeTxnId" string ""
-        |> optional "firstName" string ""
-        |> optional "lastName" string ""
-        |> optional "employer" string ""
-        |> optional "addressLine1" string ""
-        |> optional "addressLine2" string ""
-        |> optional "postalCode" string ""
-        |> optional "city" string ""
-        |> optional "state" string ""
-        |> optional "paymentMethod" string ""
-        |> optional "entityType" string ""
-        |> optional "companyName" string ""
-        |> optional "ruleVerified" bool False
-        |> optional "bankVerified" bool False
-        |> optional "transactionType" string ""
-        |> optional "direction" string ""
-        |> optional "refCode" (maybe string) Nothing
-        |> optional "purposeCode" string ""
-        |> optional "entityName" string ""
+        |> required "paymentMethod" PaymentMethod.decoder
+        |> required "bankVerified" bool
+        |> required "ruleVerified" bool
+        |> required "initiatedTimestamp" int
+        |> maybeInt "bankVerifiedTimestamp"
+        |> maybeInt "ruleVerifiedTimestamp"
+        |> maybePurposeCode "purposeCode"
+        |> maybeString "refCode"
+        |> maybeString "firstName"
+        |> maybeString "middleName"
+        |> maybeString "lastName"
+        |> maybeString "addressLine1"
+        |> maybeString "addressLine2"
+        |> maybeString "city"
+        |> maybeString "state"
+        |> maybeString "postalCode"
+        |> maybeString "employer"
+        |> maybeString "occupation"
+        |> maybeEntityType "entityType"
+        |> maybeString "companyName"
+        |> maybeString "phoneNumber"
+        |> maybeString "emailAddress"
+        |> maybeTransactionType "transactionType"
+        |> maybeBool "attestsToBeingAnAdultCitizen"
+        |> maybeString "stripePaymentIntentId"
+        |> maybeString "cardNumberLastFourDigits"
+        |> maybeString "entityName"

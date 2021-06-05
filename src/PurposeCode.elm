@@ -1,7 +1,7 @@
-module Purpose exposing (Purpose(..), purposeText, purposeToString)
+module PurposeCode exposing (PurposeCode(..), fromString, purposeCodeText, toString)
 
 
-type Purpose
+type PurposeCode
     = CMAIL
     | CONSL
     | CONSV
@@ -49,9 +49,8 @@ type Purpose
     | NPD
 
 
-
-purposeText : List ( Purpose, String, String )
-purposeText =
+purposeCodeText : List ( PurposeCode, String, String )
+purposeCodeText =
     [ ( CMAIL, "CMAIL", "Campaign Mailings" )
     , ( CONSL, "CONSL", "Campaign Consultant" )
     , ( CONSV, "CONSV", "Constituent Services" )
@@ -100,12 +99,27 @@ purposeText =
     ]
 
 
-purposeToString : Purpose -> String
-purposeToString purpose =
+fromString : String -> Maybe PurposeCode
+fromString str =
     let
         maybePurpose =
             List.head <|
-                List.filter (\( p, _, _ ) -> p == purpose) purposeText
+                List.filter (\( _, p, _ ) -> p == str) purposeCodeText
+    in
+    case maybePurpose of
+        Just ( val, _, _ ) ->
+            Just val
+
+        Nothing ->
+            Nothing
+
+
+toString : PurposeCode -> String
+toString purpose =
+    let
+        maybePurpose =
+            List.head <|
+                List.filter (\( p, _, _ ) -> p == purpose) purposeCodeText
     in
     case maybePurpose of
         Just ( _, val, _ ) ->

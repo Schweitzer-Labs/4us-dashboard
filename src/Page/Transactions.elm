@@ -11,9 +11,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
-import Browser.Navigation exposing (load)
 import Cents
-import Config.Env exposing (env)
 import CreateContribution
 import CreateDisbursement
 import Delay
@@ -35,6 +33,7 @@ import SubmitButton exposing (submitButton)
 import Task exposing (Task)
 import Time
 import Transaction.TransactionsData as TransactionsData exposing (TransactionsData)
+import TransactionType exposing (TransactionType(..))
 import Transactions
 
 
@@ -58,7 +57,7 @@ type alias Model =
     , token : Token
     , actionsDropdown : Dropdown.State
     , filtersDropdown : Dropdown.State
-    , filterDirection : Maybe Direction
+    , filterTransactionType : Maybe TransactionType
     , disclosureSubmitting : Bool
     , disclosureSubmitted : Bool
     , createDisbursementModalVisibility : Modal.Visibility
@@ -84,14 +83,14 @@ init token session aggs committeeId =
       , actionsDropdown = Dropdown.initialState
       , filtersDropdown = Dropdown.initialState
       , generateDisclosureModalDownloadDropdownState = Dropdown.initialState
-      , filterDirection = Nothing
+      , filterTransactionType = Nothing
       , disclosureSubmitting = False
       , disclosureSubmitted = False
       , createDisbursementModalVisibility = Modal.hidden
       , createDisbursementModal = CreateDisbursement.init
       , createDisbursementSubmitting = False
       }
-    , getTransactions token
+    , getTransactions token committeeId Nothing
     )
 
 
@@ -160,7 +159,7 @@ dropdowns model =
                     []
                     [ text <|
                         Maybe.withDefault "All Transactions" <|
-                            Maybe.map Direction.toDisplayTitle model.filterDirection
+                            Maybe.map TransactionType.toDisplayString model.filterTransactionType
                     ]
                 ]
             , Grid.col
@@ -463,7 +462,7 @@ update msg model =
                 | createContributionModalVisibility = Modal.hidden
                 , createContributionSubmitting = False
               }
-            , getTransactionsData model.token model.committeeId model.filterDirection
+            , getTransactions model.token model.committeeId model.filterTransactionType
             )
 
         ToggleActionsDropdown state ->
@@ -476,17 +475,17 @@ update msg model =
             ( { model | generateDisclosureModalDownloadDropdownState = state }, Cmd.none )
 
         FilterByContributions ->
-            ( { model | filterDirection = Just Direction.In }
-            , getTransactionsData model.token model.committeeId (Just Direction.In)
+            ( { model | filterTransactionType = Just TransactionType.Contribution }
+            , getTransactions model.token model.committeeId (Just TransactionType.Contribution)
             )
 
         FilterByDisbursements ->
-            ( { model | filterDirection = Just Direction.Out }
-            , getTransactionsData model.token model.committeeId (Just Direction.Out)
+            ( { model | filterTransactionType = Just TransactionType.Disbursement }
+            , getTransactions model.token model.committeeId (Just TransactionType.Disbursement)
             )
 
         FilterAll ->
-            ( { model | filterDirection = Nothing }
+            ( { model | filterTransactionType = Nothing }
             , getTransactionsData model.token model.committeeId Nothing
             )
 
@@ -623,10 +622,6 @@ encodeContribution model =
         , ( "postalCode", Encode.string contrib.postalCode )
         , ( "paymentMethod", Encode.string contrib.paymentMethod )
         , ( "entityType", Encode.string "ind" )
-
-        --, ( "creditCardNumber", Encode.string contrib.cardNumber )
-        --, ( "expirationMonth", Encode.int contrib.cardMonth )
-        --, ( "expirationYear", Encode.string contrib.cardYear )
         ]
 
 
@@ -673,11 +668,11 @@ createDisbursement model =
             Decode.field "message" string
 
 
-getTransactionsQuery : String
-getTransactionsQuery =
+committeeQuery : String
+committeeQuery =
     """
-      query {
-        aggregations(committeeId: "pat-miller"){
+      query CommitteeQuery($committeeId: String!, $transactionType: String) {
+        aggregations(committeeId: $committeeId) {
           balance
           totalSpent
           totalRaised
@@ -687,33 +682,73 @@ getTransactionsQuery =
           totalContributionsInProcessing
           totalDisbursementsInProcessing
         }
-        transactions(committeeId: "pat-miller"){
-          id,
-          amount,
-          initiatedTimestamp,
-          firstName,
-          lastName,
-          entityType,
-          direction,
+        transactions(committeeId: $committeeId, transactionType: $transactionType) {
+          id
+          committeeId
+          direction
+          amount
           paymentMethod
+          bankVerified
+          ruleVerified
+          initiatedTimestamp
+          purposeCode
+          refCode
+          firstName
+          middleName
+          lastName
+          addressLine1
+          addressLine2
+          city
+          state
+          postalCode
+          employer
+          occupation
+          entityType
+          companyName
+          phoneNumber
+          emailAddress
+          transactionType
+          attestsToBeingAnAdultCitizen
+          stripePaymentIntentId
+          cardNumberLastFourDigits
         }
       }
+
     """
 
 
-getTransactions : Token -> Cmd Msg
-getTransactions token =
+getTransactions :
+    Token
+    -> String
+    -> Maybe TransactionType
+    -> Cmd Msg
+getTransactions token committeeId maybeTxnType =
     let
         body =
-            encodeGraphQL getTransactionsQuery |> Http.jsonBody
+            encodeGraphQL committeeQuery committeeId maybeTxnType |> Http.jsonBody
     in
     Http.send LoadTransactionsData <|
         Api.post Endpoint.graphql token body <|
             TransactionsData.decode
 
 
-encodeGraphQL : String -> Value
-encodeGraphQL query =
+encodeGraphQL : String -> String -> Maybe TransactionType -> Value
+encodeGraphQL query committeeId maybeTxnType =
+    let
+        txnTypeFilter =
+            case maybeTxnType of
+                Just txnType ->
+                    [ ( "transactionType", Encode.string <| TransactionType.toString txnType ) ]
+
+                Nothing ->
+                    []
+    in
     Encode.object
         [ ( "query", Encode.string query )
+        , ( "variables"
+          , Encode.object <|
+                [ ( "committeeId", Encode.string committeeId )
+                ]
+                    ++ txnTypeFilter
+          )
         ]

@@ -7,7 +7,6 @@ import DataTable
 import Html exposing (Html, img, span, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode
-import PaymentMethod
 
 
 view : (Label -> msg) -> List (Html msg) -> List Contribution.Model -> Html msg
@@ -51,7 +50,7 @@ contributionRowMap ( maybeMsg, c ) =
       , ( "Amount", span [ class "text-success text-right" ] [ text <| Cents.stringToDollar c.amount ] )
       , ( "Rule", text c.rule )
       , ( "Verified", ruleVerified )
-      , ( "Payment Method", text <| PaymentMethod.toDisplayString c.paymentMethod )
+      , ( "Payment Method", text <| c.paymentMethod )
       , ( "Processor", processor c.paymentMethod )
       , ( "Status", bankVerified )
       , ( "Source", refCode )

@@ -11,7 +11,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Disbursement.Forms exposing (yesOrNoRows)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (for, value)
-import Purpose
+import PurposeCode
 
 
 type alias Model =
@@ -62,7 +62,7 @@ selectPurpose model =
             (++) [ Select.item [] [ text "---" ] ] <|
                 List.map
                     (\( _, codeText, purposeText ) -> Select.item [ value codeText ] [ text <| purposeText ])
-                    Purpose.purposeText
+                    PurposeCode.purposeCodeText
         ]
 
 

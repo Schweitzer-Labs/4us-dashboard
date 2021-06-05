@@ -3,11 +3,15 @@ module Transactions exposing (Label(..), Model, decoder, labels, statusContent, 
 import Asset
 import Cents
 import DataTable exposing (DataRow)
-import EntityType
+import Direction
+import EntityType exposing (EntityType(..))
 import Html exposing (Html, img, span, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode
-import PaymentMethod
+import PaymentMethod exposing (PaymentMethod)
+import PurposeCode
+import TimeZone exposing (america__new_york)
+import Timestamp
 import Transaction
 
 
@@ -51,60 +55,63 @@ view sortMsg content disbursements =
         List.map (\d -> ( Nothing, d )) disbursements
 
 
-processor : String -> Html msg
+processor : PaymentMethod -> Html msg
 processor method =
     case method of
-        "credit" ->
+        PaymentMethod.Credit ->
             img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
 
-        "debit" ->
+        PaymentMethod.Debit ->
             img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
 
-        "ach" ->
+        PaymentMethod.ACH ->
             img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
 
-        "check" ->
+        PaymentMethod.Check ->
             img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
 
         _ ->
             text "N/A"
 
 
-getEntityName : Transaction.Model -> String
+getEntityName : Transaction.Model -> Maybe String
 getEntityName transaction =
     let
         personName =
-            transaction.firstName ++ " " ++ transaction.lastName
+            Maybe.map2 (\a b -> a ++ " " ++ b) transaction.firstName transaction.lastName
     in
     case ( transaction.direction, transaction.entityType ) of
-        ( "out", _ ) ->
+        ( Direction.Out, _ ) ->
             transaction.entityName
 
-        ( "in", "ind" ) ->
+        ( Direction.In, Just EntityType.Individual ) ->
             personName
 
-        ( "in", "fam" ) ->
+        ( Direction.In, Just EntityType.Family ) ->
             personName
 
         _ ->
             transaction.companyName
 
 
-getEntityType : Transaction.Model -> String
+getEntityType : Transaction.Model -> Html msg
 getEntityType transaction =
-    Maybe.withDefault "LLC"
-        (Maybe.map EntityType.toGridString (EntityType.fromString transaction.entityType))
+    Maybe.withDefault missingContent <|
+        Maybe.map (text << EntityType.toGridString) transaction.entityType
+
+
+missingContent : Html msg
+missingContent =
+    span [ class "text-danger" ] [ text "Missing" ]
 
 
 getContext : Transaction.Model -> Html msg
 getContext transaction =
     case transaction.direction of
-        "out" ->
-            if transaction.purposeCode == "" then
-                span [ class "text-danger" ] [ text "Missing" ]
-
-            else
-                text transaction.purposeCode
+        Direction.Out ->
+            Maybe.withDefault
+                missingContent
+                (Maybe.map (text << PurposeCode.toString) transaction.purposeCode)
 
         _ ->
             text <| Maybe.withDefault "Home" transaction.refCode
@@ -113,28 +120,23 @@ getContext transaction =
 getAmount : Transaction.Model -> Html msg
 getAmount transaction =
     case transaction.direction of
-        "out" ->
+        Direction.Out ->
             span [ class "text-danger" ] [ text <| "(" ++ Cents.toDollar transaction.amount ++ ")" ]
 
         _ ->
             span [ class "text-green" ] [ text <| Cents.toDollar transaction.amount ]
 
 
-getPaymentMethod : Transaction.Model -> String
-getPaymentMethod transaction =
-    case transaction.direction of
-        "out" ->
-            "check"
-
-        _ ->
-            Maybe.withDefault "Home" transaction.refCode
+uppercaseText : String -> Html msg
+uppercaseText str =
+    span [ class "text-capitalize" ] [ text str ]
 
 
 transactionRowMap : ( Maybe msg, Transaction.Model ) -> ( Maybe msg, DataRow msg )
 transactionRowMap ( maybeMsg, transaction ) =
     let
         name =
-            getEntityName transaction
+            Maybe.withDefault missingContent (Maybe.map uppercaseText <| getEntityName transaction)
 
         context =
             getContext transaction
@@ -146,9 +148,9 @@ transactionRowMap ( maybeMsg, transaction ) =
             getEntityType transaction
     in
     ( maybeMsg
-    , [ ( "Date / Time", text transaction.timestamp )
-      , ( "Entity Name", text <| name )
-      , ( "Context", text entityType )
+    , [ ( "Date / Time", text <| Timestamp.format (america__new_york ()) transaction.initiatedTimestamp )
+      , ( "Entity Name", name )
+      , ( "Context", entityType )
       , ( "Context", context )
       , ( "Amount", amount )
       , ( "Verified", verifiedContent <| transaction.ruleVerified )
@@ -161,12 +163,7 @@ transactionRowMap ( maybeMsg, transaction ) =
 
 getStatus : Transaction.Model -> Html msg
 getStatus model =
-    case model.paymentMethod of
-        "in-kind" ->
-            Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
-
-        _ ->
-            statusContent model.bankVerified
+    statusContent model.bankVerified
 
 
 statusContent : Bool -> Html msg

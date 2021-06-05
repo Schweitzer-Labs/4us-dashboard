@@ -1,8 +1,9 @@
-module Tests exposing (..)
+module Tests exposing (all)
 
-import Test exposing (..)
 import Expect
-import Purpose as Purpose
+import PurposeCode as PurposeCode exposing (PurposeCode)
+import Test exposing (..)
+
 
 
 -- Check out https://package.elm-lang.org/packages/elm-explorations/test/latest to learn more about testing in Elm!
@@ -13,5 +14,5 @@ all =
     describe "A Test Suite"
         [ test "Purpose " <|
             \_ ->
-                Expect.equal "TVADS" (Purpose.purposeToString Purpose.TVADS)
+                Expect.equal "TVADS" (PurposeCode.purposeToString PurposeCode.TVADS)
         ]

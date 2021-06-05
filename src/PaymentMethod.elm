@@ -1,6 +1,6 @@
-module PaymentMethod exposing (PaymentMethod(..), toDataString, toDisplayString)
+module PaymentMethod exposing (PaymentMethod(..), decoder, toDataString, toDisplayString)
 
-import Html exposing (Html, div, text)
+import Json.Decode as Decode exposing (Decoder)
 
 
 type PaymentMethod
@@ -9,6 +9,8 @@ type PaymentMethod
     | Check
     | Credit
     | InKind
+    | Debit
+    | Transfer
 
 
 toDataString : PaymentMethod -> String
@@ -23,39 +25,74 @@ toDataString method =
         Check ->
             "check"
 
+        Debit ->
+            "debit"
+
         Credit ->
             "credit"
 
         InKind ->
             "in-kind"
 
+        Transfer ->
+            "transfer"
 
-toDisplayString : String -> String
+
+decoder : Decoder PaymentMethod
+decoder =
+    Decode.string
+        |> Decode.andThen
+            (\str ->
+                case str of
+                    "ach" ->
+                        Decode.succeed ACH
+
+                    "wire" ->
+                        Decode.succeed Wire
+
+                    "check" ->
+                        Decode.succeed Check
+
+                    "credit" ->
+                        Decode.succeed Credit
+
+                    "debit" ->
+                        Decode.succeed Debit
+
+                    "in-kind" ->
+                        Decode.succeed InKind
+
+                    "transfer" ->
+                        Decode.succeed Transfer
+
+                    badVal ->
+                        Decode.fail <| "Unknown payment method: " ++ badVal
+            )
+
+
+toDisplayString : PaymentMethod -> String
 toDisplayString src =
     case src of
-        "ach" ->
+        ACH ->
             "ACH"
 
-        "wire" ->
+        Wire ->
             "Wire"
 
-        "check" ->
+        Check ->
             "Check"
 
-        "credit" ->
+        Credit ->
             "Credit"
 
-        "debit" ->
+        Debit ->
             "Debit"
 
-        "transfer" ->
+        Transfer ->
             "Transfer"
 
-        "in-kind" ->
+        InKind ->
             "In-kind"
-
-        _ ->
-            ""
 
 
 type AccountType

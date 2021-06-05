@@ -10,7 +10,7 @@ import Time exposing (Month(..))
 -- VIEW
 
 
-view : Time.Zone -> Time.Posix -> Html msg
+view : Time.Zone -> Int -> Html msg
 view timeZone timestamp =
     span [ class "date" ] [ text (format timeZone timestamp) ]
 
@@ -27,11 +27,14 @@ For more complex date formatting scenarios, here's a nice package:
 <https://package.elm-lang.org/packages/ryannhg/date-format/latest/>
 
 -}
-format : Time.Zone -> Time.Posix -> String
+format : Time.Zone -> Int -> String
 format zone time =
     let
+        timePosix =
+            Time.millisToPosix time
+
         month =
-            case Time.toMonth zone time of
+            case Time.toMonth zone timePosix of
                 Jan ->
                     "January"
 
@@ -69,9 +72,9 @@ format zone time =
                     "December"
 
         day =
-            String.fromInt (Time.toDay zone time)
+            String.fromInt (Time.toDay zone timePosix)
 
         year =
-            String.fromInt (Time.toYear zone time)
+            String.fromInt (Time.toYear zone timePosix)
     in
     month ++ " " ++ day ++ ", " ++ year

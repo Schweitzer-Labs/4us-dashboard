@@ -191,8 +191,8 @@ navContainer page =
     Grid.containerFluid
         [ Spacing.mt5 ]
         [ navRow (Asset.coinsGlyph [ class "tool-glyph" ]) page Route.Transactions "Transactions"
-        , navRow (Asset.chartLineGlyph [ class "tool-glyph" ]) page Route.Analytics "Analytics"
 
+        --, navRow (Asset.chartLineGlyph [ class "tool-glyph" ]) page Route.Analytics "Analytics"
         --, navRow (Asset.universityGlyph [ class "tool-glyph" ]) page Route.Disbursements "Budgeting"
         , navRow (Asset.searchDollarGlyph [ class "tool-glyph" ]) page Route.NeedsReview "Needs Review"
         , navRow (Asset.linkGlyph [ class "tool-glyph" ]) page Route.LinkBuilder "Link Builder"

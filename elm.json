@@ -6,7 +6,6 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
-            "Chadtech/elm-money": "4.1.0",
             "NoRedInk/elm-json-decode-pipeline": "1.0.0",
             "andrewMacmurray/elm-delay": "3.0.0",
             "avh4/elm-color": "1.0.0",
@@ -26,6 +25,8 @@
             "elm-community/typed-svg": "7.0.0",
             "folkertdev/one-true-path-experiment": "5.0.2",
             "gampleman/elm-visualization": "2.1.2",
+            "jamesmacaulay/elm-graphql": "2.0.0",
+            "justinmimbs/timezone-data": "4.0.2",
             "jxxcarlson/elm-stat": "3.0.0",
             "pablohirafuji/elm-qrcode": "4.0.1",
             "rundis/elm-bootstrap": "5.2.0",

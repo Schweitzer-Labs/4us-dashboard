@@ -23,9 +23,18 @@ getTransactionsQuery =
         balance
       }
       transactions(committeeId: "pat-miller"){
-        amount,
-        initiatedTimestamp,
-        firstName,
+        amount
+        initiatedTimestamp
+        firstName
+        lastName
+        entityType
+        direction
+        paymentMethod
+        initiatedTimestamp
+        ruleVerified
+        bankVerified
+        id
+        committeeId
       }
     """
 

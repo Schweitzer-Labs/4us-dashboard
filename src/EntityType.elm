@@ -1,4 +1,4 @@
-module EntityType exposing (EntityType, familyRadioList, fromString, isLLC, llc, orgView, toDataString, toDisplayString, toGridString)
+module EntityType exposing (EntityType(..), familyRadioList, fromString, isLLC, llc, orgView, toDataString, toDisplayString, toGridString)
 
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Form.Select as Select exposing (Item)

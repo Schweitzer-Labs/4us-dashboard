@@ -10,7 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-css": "node-sass-chokidar src/ -o src/",
     "watch-css": "npm run build-css && node-sass-chokidar src/ -o src/ --watch --recursive",
-    "start": "PORT=3000 elm-app start"
+    "start": "PORT=3000 elm-app start",
+    "proxy-qa": "lcp --proxyUrl https://donate-qa.purplepay.us/api/graphql"
   },
   "author": "",
   "license": "ISC",
@@ -21,5 +22,8 @@
     "aws-amplify": "^3.3.17",
     "bootstrap": "^4.5.3",
     "string-extra": "github:elm-community/string-extra"
+  },
+  "devDependencies": {
+    "@dillonkearns/elm-graphql": "^4.2.1"
   }
 }
