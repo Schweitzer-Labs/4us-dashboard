@@ -1,0 +1,3 @@
+CloudFrontCertificate:
+  Type: AWS::SSM::Parameter::Value<String>
+  Default: /{{ RUNENV }}/{{ PRODUCT }}/acm/certificate/cloudfront/us-east-1

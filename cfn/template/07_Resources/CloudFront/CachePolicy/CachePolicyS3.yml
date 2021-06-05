@@ -1,0 +1,17 @@
+CachePolicyS3:
+  Type: AWS::CloudFront::CachePolicy
+  Properties:
+    CachePolicyConfig:
+      DefaultTTL: 3600
+      MinTTL: 0
+      MaxTTL: 31536000
+      Name: !Sub ${RunEnvironment}-${Product}-${SubDomain}-CachePolicy-S3
+      ParametersInCacheKeyAndForwardedToOrigin:
+        EnableAcceptEncodingBrotli: true
+        EnableAcceptEncodingGzip: true
+        QueryStringsConfig:
+          QueryStringBehavior: all
+        HeadersConfig:
+          HeaderBehavior: none
+        CookiesConfig:
+          CookieBehavior: all
