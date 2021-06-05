@@ -32,7 +32,7 @@ const getCommitteeIdFromUrlQueryString = (url) => {
   }
 }
 
-async function runApp() {
+function runApp() {
   let token;
   let committeeId;
   const host = window.location
@@ -55,6 +55,8 @@ async function runApp() {
     }
   }
 }
+
+console.log('deployed test')
 
 runApp();
 
