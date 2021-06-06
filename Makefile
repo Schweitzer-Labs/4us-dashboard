@@ -95,6 +95,8 @@ clean:
 
 realclean: clean
 	@rm -rf $(BUILD_DIR)
+	@rm -rf build
+	@rm -rf node_modules
 
 package: build
 	@$(MAKE) -C $(CFN_SRC_DIR) package
