@@ -2,7 +2,7 @@ CachePolicyS3:
   Type: AWS::CloudFront::CachePolicy
   Properties:
     CachePolicyConfig:
-      DefaultTTL: 3600
+      DefaultTTL: 0
       MinTTL: 0
       MaxTTL: 31536000
       Name: !Sub ${RunEnvironment}-${Product}-${SubDomain}-CachePolicy-S3
