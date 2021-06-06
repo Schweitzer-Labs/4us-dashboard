@@ -11,7 +11,7 @@ import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
-import Config.Env exposing (env)
+import Config.Env exposing (loginUrl)
 import CreateDisbursement
 import Delay
 import Disbursement as Disbursement
@@ -234,7 +234,7 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| env.loginUrl model.committeeId )
+                    ( model, load <| loginUrl model.committeeId )
 
 
 

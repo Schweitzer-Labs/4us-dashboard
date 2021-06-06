@@ -13,7 +13,7 @@ module Api.Endpoint exposing
     )
 
 import Api.DisbursementsFilter as DisbursementsFilter exposing (DisbursementsFilter)
-import Config.Env exposing (env)
+import Config.Env exposing (apiEndpoint)
 import Direction exposing (Direction)
 import Http
 import Url.Builder exposing (QueryParameter, string)
@@ -69,7 +69,7 @@ url : List String -> List QueryParameter -> Endpoint
 url paths queryParams =
     -- NOTE: Url.Builder takes care of percent-encoding special URL characters.
     -- See https://package.elm-lang.org/packages/elm/url/latest/Url#percentEncode
-    Url.Builder.crossOrigin env.apiEndpoint
+    Url.Builder.crossOrigin apiEndpoint
         paths
         queryParams
         |> Endpoint

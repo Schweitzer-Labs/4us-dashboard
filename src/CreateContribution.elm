@@ -1,10 +1,8 @@
 module CreateContribution exposing (Model, Msg(..), init, setError, update, view)
 
-import Address
 import AppInput exposing (inputEmail, inputText)
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
-import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
@@ -13,11 +11,13 @@ import Bootstrap.Utilities.Spacing as Spacing
 import EntityType exposing (EntityType)
 import Html exposing (Html, h3, h5, span, text)
 import Html.Attributes exposing (class, for, value)
+import MonthSelector
 import OrgOrInd exposing (OrgOrInd(..))
 import Owners exposing (Owners)
 import SelectRadio
 import State
 import SubmitButton exposing (submitButton)
+import YearSelector
 
 
 type alias Model =
@@ -196,44 +196,10 @@ creditRow model =
                 ]
             ]
         , Grid.col []
-            [ Select.select
-                [ Select.id "card-month"
-                , Select.onChange CardMonthUpdated
-                ]
-                [ Select.item [ value "" ] [ text "Select month" ]
-                , Select.item [ value "1" ] [ text "1 - Jan" ]
-                , Select.item [ value "2" ] [ text "2 - Feb" ]
-                , Select.item [ value "3" ] [ text "3 - Mar" ]
-                , Select.item [ value "4" ] [ text "4 - Apr" ]
-                , Select.item [ value "5" ] [ text "5 - May" ]
-                , Select.item [ value "6" ] [ text "6 - Jun" ]
-                , Select.item [ value "7" ] [ text "7 - Jul" ]
-                , Select.item [ value "8" ] [ text "8 - Aug" ]
-                , Select.item [ value "9" ] [ text "9 - Sept" ]
-                , Select.item [ value "10" ] [ text "10 - Oct" ]
-                , Select.item [ value "11" ] [ text "11 - Nov" ]
-                , Select.item [ value "12" ] [ text "12 - Dec" ]
-                ]
+            [ MonthSelector.view CardMonthUpdated
             ]
         , Grid.col []
-            [ Select.select
-                [ Select.id "card-year"
-                , Select.onChange CardYearUpdated
-                ]
-                [ Select.item [ value "" ] [ text "Select year" ]
-                , Select.item [ value "2020" ] [ text "2020" ]
-                , Select.item [ value "2021" ] [ text "2021" ]
-                , Select.item [ value "2022" ] [ text "2022" ]
-                , Select.item [ value "2023" ] [ text "2023" ]
-                , Select.item [ value "2024" ] [ text "2024" ]
-                , Select.item [ value "2025" ] [ text "2025" ]
-                , Select.item [ value "2026" ] [ text "2026" ]
-                , Select.item [ value "2027" ] [ text "2027" ]
-                , Select.item [ value "2028" ] [ text "2028" ]
-                , Select.item [ value "2029" ] [ text "2029" ]
-                , Select.item [ value "2030" ] [ text "2030" ]
-                ]
-            ]
+            [ YearSelector.view CardYearUpdated ]
         ]
     ]
 
@@ -450,6 +416,24 @@ familyRow model =
         [ Grid.col
             []
             [ text "Is the donor a family member of the candidate that will receive this contribution?" ]
+        ]
+    , Grid.row
+        [ Row.attrs [ Spacing.mt3 ] ]
+        [ Grid.col
+            []
+          <|
+            EntityType.familyRadioList UpdateFamilyOrIndividual model.maybeEntityType
+        ]
+    ]
+
+
+attestsToBeingAnAdultCitizenRow : Model -> List (Html Msg)
+attestsToBeingAnAdultCitizenRow model =
+    [ Grid.row
+        [ Row.attrs [ Spacing.mt3 ] ]
+        [ Grid.col
+            []
+            [ text "Is the donor an American citizen and at least eighteen years of age?" ]
         ]
     , Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]

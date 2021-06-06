@@ -17,7 +17,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
-import Config.Env exposing (env)
+import Config.Env exposing (donorUrl, loginUrl)
 import Html exposing (..)
 import Html.Attributes as SvgA exposing (class, for, href, src, style)
 import Http
@@ -182,7 +182,7 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| env.loginUrl model.committeeId )
+                    ( model, load <| loginUrl model.committeeId )
 
 
 createUrl : String -> String -> String -> String
@@ -205,7 +205,7 @@ createUrl committeeId refCode amount =
             else
                 []
     in
-    Url.Builder.crossOrigin env.donorUrl [] <| committeeIdVal ++ refCodeVal ++ amountVal
+    Url.Builder.crossOrigin donorUrl [] <| committeeIdVal ++ refCodeVal ++ amountVal
 
 
 getAggregations : Token -> String -> Cmd Msg

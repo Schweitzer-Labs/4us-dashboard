@@ -11,7 +11,7 @@
     "build-css": "node-sass-chokidar src/ -o src/",
     "watch-css": "npm run build-css && node-sass-chokidar src/ -o src/ --watch --recursive",
     "start": "PORT=3000 elm-app start",
-    "proxy-qa": "lcp --proxyUrl https://donate-qa.purplepay.us/api/graphql"
+    "proxy-qa": "lcp --proxyUrl https://committee-qa.purplepay.us/api/committee/graphql"
   },
   "author": "",
   "license": "ISC",

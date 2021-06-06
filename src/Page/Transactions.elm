@@ -3,6 +3,7 @@ module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, u
 import Aggregations as Aggregations
 import Api exposing (Cred, Token)
 import Api.Endpoint as Endpoint
+import Api.GraphQL exposing (contributionMutation, encodeQuery, encodeTransactionQuery, transactionQuery)
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Grid as Grid exposing (Column)
@@ -11,7 +12,9 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
+import Browser.Navigation exposing (load)
 import Cents
+import Config.Env exposing (loginUrl)
 import CreateContribution
 import CreateDisbursement
 import Delay
@@ -393,9 +396,9 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    ( model, load <| loginUrl model.committeeId )
 
-        --( model, load <| env.loginUrl model.committeeId )
+        --( model, Cmd.none )
         ShowCreateContributionModal ->
             ( { model
                 | createContributionModalVisibility = Modal.shown
@@ -541,10 +544,6 @@ update msg model =
             )
 
 
-
--- load <| env.loginUrl model.committeeId )
-
-
 applyFilter : Transactions.Label -> (Disbursement.Model -> String) -> Model -> Model
 applyFilter label field model =
     model
@@ -608,21 +607,24 @@ encodeContribution model =
     let
         contrib =
             model.createContributionModal
+
+        variables =
+            Encode.object
+                [ ( "committeeId", Encode.string model.committeeId )
+                , ( "firstName", Encode.string contrib.firstName )
+                , ( "lastName", Encode.string contrib.lastName )
+                , ( "amount", Encode.int <| Cents.fromDollars contrib.checkAmount )
+                , ( "date", Encode.string contrib.checkDate )
+                , ( "addressLine1", Encode.string contrib.address1 )
+                , ( "addressLine2", Encode.string contrib.address2 )
+                , ( "city", Encode.string contrib.city )
+                , ( "state", Encode.string contrib.state )
+                , ( "postalCode", Encode.string contrib.postalCode )
+                , ( "paymentMethod", Encode.string contrib.paymentMethod )
+                , ( "entityType", Encode.string "IND" )
+                ]
     in
-    Encode.object
-        [ ( "committeeId", Encode.string model.committeeId )
-        , ( "firstName", Encode.string contrib.firstName )
-        , ( "lastName", Encode.string contrib.lastName )
-        , ( "amount", Encode.int <| Cents.fromDollars contrib.checkAmount )
-        , ( "date", Encode.string contrib.checkDate )
-        , ( "addressLine1", Encode.string contrib.address1 )
-        , ( "addressLine2", Encode.string contrib.address2 )
-        , ( "city", Encode.string contrib.city )
-        , ( "state", Encode.string contrib.state )
-        , ( "postalCode", Encode.string contrib.postalCode )
-        , ( "paymentMethod", Encode.string contrib.paymentMethod )
-        , ( "entityType", Encode.string "ind" )
-        ]
+    encodeQuery contributionMutation variables
 
 
 createContribution : Model -> Cmd Msg
@@ -664,57 +666,8 @@ createDisbursement model =
             encodeDisbursement model |> Http.jsonBody
     in
     Http.send GotCreateDisbursementResponse <|
-        Api.post (Endpoint.disbursement model.committeeId) model.token body <|
+        Api.post Endpoint.graphql model.token body <|
             Decode.field "message" string
-
-
-committeeQuery : String
-committeeQuery =
-    """
-      query CommitteeQuery($committeeId: String!, $transactionType: String) {
-        aggregations(committeeId: $committeeId) {
-          balance
-          totalSpent
-          totalRaised
-          totalDonors
-          needsReviewCount
-          totalTransactions
-          totalContributionsInProcessing
-          totalDisbursementsInProcessing
-        }
-        transactions(committeeId: $committeeId, transactionType: $transactionType) {
-          id
-          committeeId
-          direction
-          amount
-          paymentMethod
-          bankVerified
-          ruleVerified
-          initiatedTimestamp
-          purposeCode
-          refCode
-          firstName
-          middleName
-          lastName
-          addressLine1
-          addressLine2
-          city
-          state
-          postalCode
-          employer
-          occupation
-          entityType
-          companyName
-          phoneNumber
-          emailAddress
-          transactionType
-          attestsToBeingAnAdultCitizen
-          stripePaymentIntentId
-          cardNumberLastFourDigits
-        }
-      }
-
-    """
 
 
 getTransactions :
@@ -725,30 +678,8 @@ getTransactions :
 getTransactions token committeeId maybeTxnType =
     let
         body =
-            encodeGraphQL committeeQuery committeeId maybeTxnType |> Http.jsonBody
+            encodeTransactionQuery transactionQuery committeeId maybeTxnType |> Http.jsonBody
     in
     Http.send LoadTransactionsData <|
         Api.post Endpoint.graphql token body <|
             TransactionsData.decode
-
-
-encodeGraphQL : String -> String -> Maybe TransactionType -> Value
-encodeGraphQL query committeeId maybeTxnType =
-    let
-        txnTypeFilter =
-            case maybeTxnType of
-                Just txnType ->
-                    [ ( "transactionType", Encode.string <| TransactionType.toString txnType ) ]
-
-                Nothing ->
-                    []
-    in
-    Encode.object
-        [ ( "query", Encode.string query )
-        , ( "variables"
-          , Encode.object <|
-                [ ( "committeeId", Encode.string committeeId )
-                ]
-                    ++ txnTypeFilter
-          )
-        ]

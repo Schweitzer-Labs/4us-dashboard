@@ -10,7 +10,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
-import Config.Env exposing (env)
+import Config.Env exposing (loginUrl)
 import Delay
 import Disbursement as Disbursement
 import Disbursements
@@ -237,7 +237,7 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| env.loginUrl model.committeeId )
+                    ( model, load <| loginUrl model.committeeId )
 
 
 applyFilter : Disbursements.Label -> (Disbursement.Model -> String) -> Model -> Model

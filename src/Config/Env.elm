@@ -1,46 +1,31 @@
-module Config.Env exposing (env)
-
-import Config exposing (Config)
+module Config.Env exposing (apiEndpoint, cognitoClientId, cognitoDomain, donorUrl, loginUrl, redirectUri)
 
 
-
---env : Config
---env =
---    { apiEndpoint = "https://api.4usdemo.com"
---    , donorUrl = "https://donor.4usdemo.com"
---    , loginUrl = \committeeId -> "https://platform-user.auth.us-east-1.amazoncognito.com/login?client_id=28rfo8p9m1qkocimbnsm3ilhrs&response_type=token&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=https://committee.4usdemo.com&state=" ++ committeeId
---    }
+cognitoDomain : String
+cognitoDomain =
+    "https://platform-user-p2-qa.auth.us-west-2.amazoncognito.com"
 
 
-clientId =
-    "278u1u3mahq6psc3bi877iac4d"
+cognitoClientId : String
+cognitoClientId =
+    "6lu9jttlb740s8abf2683583b"
 
 
-loginBaseUrl =
-    "https://platform-user.auth.us-west-2.amazoncognito.com/login"
-
-
-appUrl =
+redirectUri : String
+redirectUri =
     "http://localhost:3000"
 
 
-env : Config
-env =
-    { apiEndpoint = "http://localhost:8010/proxy"
-    , donorUrl = "http://localhost:3001"
-    , loginUrl = \committeeId -> "https://platform-user.auth.us-west-2.amazoncognito.com/login?client_id=6lu9jttlb740s8abf2683583b&response_type=token&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=http://localhost:3000&state=" ++ committeeId
-    }
+donorUrl : String
+donorUrl =
+    "http://localhost:3001"
 
 
+loginUrl : String -> String
+loginUrl =
+    \committeeId -> cognitoDomain ++ "/login?client_id=" ++ cognitoClientId ++ "&response_type=token&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=" ++ redirectUri ++ "&state=" ++ committeeId
 
---fn =
---    \committeeId ->
---        loginBaseUrls
---            ++ "?client_id="
---            ++ clientId
---            ++ "&response_type=token"
---            ++ "&scope=email+openid+phone+profile"
---            ++ "&redirect_uri="
---            ++ appUrl
---            ++ "&state="
---            ++ committeeId
+
+apiEndpoint : String
+apiEndpoint =
+    "http://localhost:8010/proxy"
