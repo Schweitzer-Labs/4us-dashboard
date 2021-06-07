@@ -1,19 +1,11 @@
 module Api.Endpoint exposing
-    ( Endpoint
-    , contribute
-    , contributions
-    , disbursement
-    , disbursements
-    , graphql
-    , needsReviewDisbursements
+    ( Endpoint(..)
+    , fromString
     , request
     , transactions
-    , user
     , verifyDisbursement
     )
 
-import Api.DisbursementsFilter as DisbursementsFilter exposing (DisbursementsFilter)
-import Config.Env exposing (apiEndpoint)
 import Direction exposing (Direction)
 import Http
 import Url.Builder exposing (QueryParameter, string)
@@ -43,6 +35,11 @@ request config =
         }
 
 
+fromString : String -> Endpoint
+fromString str =
+    Endpoint str
+
+
 
 -- TYPES
 
@@ -61,15 +58,11 @@ unwrap (Endpoint str) =
     str
 
 
-
--- "https://9wp0a5f6ic.execute-api.us-east-1.amazonaws.com/dev"
-
-
-url : List String -> List QueryParameter -> Endpoint
-url paths queryParams =
+url : String -> List String -> List QueryParameter -> Endpoint
+url endpoint paths queryParams =
     -- NOTE: Url.Builder takes care of percent-encoding special URL characters.
     -- See https://package.elm-lang.org/packages/elm/url/latest/Url#percentEncode
-    Url.Builder.crossOrigin apiEndpoint
+    Url.Builder.crossOrigin endpoint
         paths
         queryParams
         |> Endpoint
@@ -79,45 +72,8 @@ url paths queryParams =
 -- ENDPOINTS
 
 
-contributions : String -> Endpoint
-contributions committeeId =
-    url [ "contributions", committeeId ] []
-
-
-disbursements : String -> List DisbursementsFilter -> Endpoint
-disbursements committeeId filters =
-    let
-        queryParams =
-            List.map DisbursementsFilter.toQueryParam filters
-    in
-    url [ "disbursements", committeeId ] queryParams
-
-
-needsReviewDisbursements : String -> Endpoint
-needsReviewDisbursements committeeId =
-    disbursements committeeId
-        [ DisbursementsFilter.RuleProcessed False
-        , DisbursementsFilter.BankProcessed True
-        ]
-
-
-disbursement : String -> Endpoint
-disbursement committeeId =
-    url [ "disbursement", committeeId ] []
-
-
-contribute : Endpoint
-contribute =
-    url [ "contribution" ] []
-
-
-graphql : Endpoint
-graphql =
-    url [] []
-
-
-transactions : String -> Maybe Direction -> Endpoint
-transactions committeeId maybeDirection =
+transactions : String -> String -> Maybe Direction -> Endpoint
+transactions endpoint committeeId maybeDirection =
     let
         query =
             case maybeDirection of
@@ -127,14 +83,9 @@ transactions committeeId maybeDirection =
                 Nothing ->
                     []
     in
-    url [ "transactions", committeeId ] query
+    url endpoint [ "transactions", committeeId ] query
 
 
-verifyDisbursement : String -> Endpoint
-verifyDisbursement committeeId =
-    url [ "disbursement", "verify", committeeId ] []
-
-
-user : Endpoint
-user =
-    url [ "user" ] []
+verifyDisbursement : String -> String -> Endpoint
+verifyDisbursement endpoint committeeId =
+    url endpoint [ "disbursement", "verify", committeeId ] []

@@ -6,12 +6,10 @@ import Browser exposing (Document)
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
 import CommitteeId
+import Config exposing (Config)
 import Html exposing (Html)
-import Http
 import Page
 import Page.Blank as Blank
-import Page.Contributions as Contributions
-import Page.Disbursements as Disbursements
 import Page.LinkBuilder as LinkBuilder
 import Page.NeedsReview as NeedsReview
 import Page.NotFound as NotFound
@@ -29,22 +27,20 @@ import Url exposing (Url)
 type Model
     = NotFound Session
     | Redirect Session
-    | Contributions Contributions.Model
     | LinkBuilder LinkBuilder.Model
-    | Disbursements Disbursements.Model
     | NeedsReview NeedsReview.Model
     | Transactions Transactions.Model
 
 
-init : String -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init token url navKey =
+init : Config -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init config url navKey =
     let
         ( model, cmdMsg ) =
             changeRouteTo
                 url
-                (Api.Token token)
+                config
                 (Route.fromUrl url)
-                (Redirect (Session.fromViewer navKey token))
+                (Redirect (Session.fromViewer navKey config.token))
     in
     ( model, cmdMsg )
 
@@ -56,9 +52,7 @@ init token url navKey =
 type Msg
     = ChangedUrl Url
     | ClickedLink Browser.UrlRequest
-    | GotContributionsMsg Contributions.Msg
     | GotLinkBuilderMsg LinkBuilder.Msg
-    | GotDisbursementsMsg Disbursements.Msg
     | GotSession Session
     | GotNeedsReviewMsg NeedsReview.Msg
     | GotTransactionsMsg Transactions.Msg
@@ -73,17 +67,11 @@ toSession page =
         NotFound session ->
             session
 
-        Contributions contributions ->
-            Contributions.toSession contributions
-
         Transactions transactions ->
             Transactions.toSession transactions
 
         LinkBuilder session ->
             LinkBuilder.toSession session
-
-        Disbursements session ->
-            Disbursements.toSession session
 
         NeedsReview session ->
             NeedsReview.toSession session
@@ -98,17 +86,11 @@ toAggregations page =
         NotFound session ->
             Aggregations.init
 
-        Contributions contributions ->
-            contributions.aggregations
-
         Transactions transactions ->
             transactions.aggregations
 
         LinkBuilder linkBuilder ->
             linkBuilder.aggregations
-
-        Disbursements disbursement ->
-            disbursement.aggregations
 
         NeedsReview needsReview ->
             needsReview.aggregations
@@ -123,24 +105,49 @@ toToken page =
         NotFound session ->
             Api.Token ""
 
-        Contributions contributions ->
-            contributions.token
-
         Transactions transactions ->
-            transactions.token
+            Api.Token transactions.config.token
 
         LinkBuilder linkBuilder ->
-            linkBuilder.token
-
-        Disbursements disbursement ->
-            disbursement.token
+            Api.Token linkBuilder.config.token
 
         NeedsReview needsReview ->
-            needsReview.token
+            Api.Token needsReview.config.token
 
 
-changeRouteTo : Url -> Token -> Maybe Route -> Model -> ( Model, Cmd Msg )
-changeRouteTo url token maybeRoute model =
+toConfig : Model -> Config
+toConfig page =
+    case page of
+        Redirect session ->
+            { apiEndpoint = ""
+            , cognitoClientId = ""
+            , redirectUri = ""
+            , donorUrl = ""
+            , token = ""
+            , cognitoDomain = ""
+            }
+
+        NotFound session ->
+            { apiEndpoint = ""
+            , cognitoClientId = ""
+            , redirectUri = ""
+            , donorUrl = ""
+            , token = ""
+            , cognitoDomain = ""
+            }
+
+        Transactions transactions ->
+            transactions.config
+
+        LinkBuilder linkBuilder ->
+            linkBuilder.config
+
+        NeedsReview needsReview ->
+            needsReview.config
+
+
+changeRouteTo : Url -> Config -> Maybe Route -> Model -> ( Model, Cmd Msg )
+changeRouteTo url config maybeRoute model =
     let
         session =
             toSession model
@@ -158,7 +165,7 @@ changeRouteTo url token maybeRoute model =
         -- rest of the routes
         Just Route.Home ->
             Transactions.init
-                token
+                config
                 session
                 aggregations
                 committeeId
@@ -166,39 +173,23 @@ changeRouteTo url token maybeRoute model =
 
         Just Route.Transactions ->
             Transactions.init
-                token
+                config
                 session
                 aggregations
                 committeeId
                 |> updateWith Transactions GotTransactionsMsg model
 
-        Just Route.Analytics ->
-            Contributions.init
-                token
-                session
-                aggregations
-                committeeId
-                |> updateWith Contributions GotContributionsMsg model
-
         Just Route.LinkBuilder ->
             LinkBuilder.init
-                token
+                config
                 session
                 aggregations
                 committeeId
                 |> updateWith LinkBuilder GotLinkBuilderMsg model
 
-        Just Route.Disbursements ->
-            Disbursements.init
-                token
-                session
-                aggregations
-                committeeId
-                |> updateWith Disbursements GotDisbursementsMsg model
-
         Just Route.NeedsReview ->
             NeedsReview.init
-                token
+                config
                 session
                 aggregations
                 committeeId
@@ -234,7 +225,7 @@ update msg model =
                     )
 
         ( ChangedUrl url, _ ) ->
-            changeRouteTo url (toToken model) (Route.fromUrl url) model
+            changeRouteTo url (toConfig model) (Route.fromUrl url) model
 
         ( GotTransactionsMsg subMsg, Transactions home ) ->
             Transactions.update subMsg home
@@ -243,14 +234,6 @@ update msg model =
         ( GotLinkBuilderMsg subMsg, LinkBuilder linkBuilder ) ->
             LinkBuilder.update subMsg linkBuilder
                 |> updateWith LinkBuilder GotLinkBuilderMsg model
-
-        ( GotDisbursementsMsg subMsg, Disbursements disbursements ) ->
-            Disbursements.update subMsg disbursements
-                |> updateWith Disbursements GotDisbursementsMsg model
-
-        ( GotContributionsMsg subMsg, Contributions disbursements ) ->
-            Contributions.update subMsg disbursements
-                |> updateWith Contributions GotContributionsMsg model
 
         ( GotNeedsReviewMsg subMsg, NeedsReview disbursements ) ->
             NeedsReview.update subMsg disbursements
@@ -286,10 +269,13 @@ view model =
         aggregations =
             toAggregations model
 
-        viewPage page toMsg config =
+        config =
+            toConfig model
+
+        viewPage page toMsg conf =
             let
                 { title, body } =
-                    Page.view viewer aggregations page config
+                    Page.view config aggregations page conf
             in
             { title = title
             , body = List.map (Html.map toMsg) body
@@ -297,22 +283,16 @@ view model =
     in
     case model of
         Redirect _ ->
-            Page.view viewer aggregations Page.Other Blank.view
+            Page.view config aggregations Page.Other Blank.view
 
         NotFound _ ->
-            Page.view viewer aggregations Page.Other NotFound.view
-
-        Contributions contributions ->
-            viewPage Page.Analytics GotContributionsMsg (Contributions.view contributions)
+            Page.view config aggregations Page.Other NotFound.view
 
         Transactions transactions ->
             viewPage Page.Transactions GotTransactionsMsg (Transactions.view transactions)
 
         LinkBuilder linkBuilder ->
             viewPage Page.LinkBuilder GotLinkBuilderMsg (LinkBuilder.view linkBuilder)
-
-        Disbursements disbursements ->
-            viewPage Page.Disbursements GotDisbursementsMsg (Disbursements.view disbursements)
 
         NeedsReview disbursements ->
             viewPage Page.NeedsReview GotNeedsReviewMsg (NeedsReview.view disbursements)
@@ -325,17 +305,11 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
-        Contributions contributions ->
-            Sub.map GotContributionsMsg (Contributions.subscriptions contributions)
-
         Transactions transactions ->
             Sub.map GotTransactionsMsg (Transactions.subscriptions transactions)
 
         LinkBuilder linkBuilder ->
             Sub.map GotLinkBuilderMsg (LinkBuilder.subscriptions linkBuilder)
-
-        Disbursements disbursements ->
-            Sub.map GotDisbursementsMsg (Disbursements.subscriptions disbursements)
 
         NeedsReview disbursements ->
             Sub.map GotNeedsReviewMsg (NeedsReview.subscriptions disbursements)
@@ -344,7 +318,7 @@ subscriptions model =
             Sub.none
 
 
-main : Program String Model Msg
+main : Program Config Model Msg
 main =
     Browser.application
         { init = init

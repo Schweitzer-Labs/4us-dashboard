@@ -14,10 +14,8 @@ import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
 type Route
     = Home
     | LinkBuilder
-    | Disbursements
     | NeedsReview
     | Transactions
-    | Analytics
 
 
 parser : Parser (Route -> a) a
@@ -25,9 +23,7 @@ parser =
     oneOf
         [ Parser.map Home Parser.top
         , Parser.map Transactions (s "transactions")
-        , Parser.map Analytics (s "analytics")
         , Parser.map LinkBuilder (s "link-builder")
-        , Parser.map Disbursements (s "disbursements")
         , Parser.map NeedsReview (s "needs-review")
         ]
 
@@ -76,11 +72,5 @@ routeToPieces page =
         LinkBuilder ->
             [ "link-builder" ]
 
-        Disbursements ->
-            [ "disbursements" ]
-
         NeedsReview ->
             [ "needs-review" ]
-
-        Analytics ->
-            [ "analytics" ]

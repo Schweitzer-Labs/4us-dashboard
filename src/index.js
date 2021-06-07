@@ -2,8 +2,13 @@ import './main.css';
 import { Elm } from './Main.elm';
 import * as serviceWorker from './serviceWorker';
 
-const userPoolAppClientId = "6lu9jttlb740s8abf2683583b"
-const userPoolUrl = "https://platform-user-p2-qa.auth.us-west-2.amazoncognito.com"
+const cognitoDomain = process.env.ELM_APP_COGNITO_DOMAIN
+const cognitoClientId = process.env.ELM_APP_COGNITO_CLIENT_ID
+const redirectUri = process.env.ELM_APP_COGNITO_REDIRECT_URI
+const donorUrl = process.env.ELM_APP_DONOR_URL
+const apiEndpoint = process.env.ELM_APP_API_ENDPOINT
+
+console.log(process.env)
 
 const getTokenFromUrl = (url) => {
   const firstTrim = url.split('id_token=')
@@ -47,11 +52,18 @@ function runApp() {
     if (token) {
       Elm.Main.init({
         node: document.getElementById('root'),
-        flags: token
+        flags: {
+          token,
+          cognitoDomain,
+          cognitoClientId,
+          redirectUri,
+          donorUrl,
+          apiEndpoint
+        }
       });
     } else {
       window.location =
-        `${userPoolUrl}/login?client_id=${userPoolAppClientId}&response_type=token&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=${host.origin}&state=${committeeId}`
+        `${cognitoDomain}/login?client_id=${cognitoClientId}&response_type=token&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=${host.origin}&state=${committeeId}`
     }
   }
 }
