@@ -1,6 +1,6 @@
 SHELL			:= bash
 export CREPES		:= $(PWD)/cfn/bin/crepes.py
-export SUBDOMAIN	:= committee
+export SUBDOMAIN	:= dashboard
 
 ifeq ($(RUNENV), )
        export RUNENV	:= qa
