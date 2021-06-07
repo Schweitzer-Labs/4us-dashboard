@@ -3,7 +3,7 @@ module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, u
 import Aggregations as Aggregations
 import Api exposing (Cred, Token)
 import Api.Endpoint as Endpoint
-import Api.GraphQL exposing (contributionMutation, encodeQuery, encodeTransactionQuery, transactionQuery)
+import Api.GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, encodeTransactionQuery, graphQLErrorDecoder, transactionQuery)
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Grid as Grid exposing (Column)
@@ -17,10 +17,14 @@ import Cents
 import Config.Env exposing (loginUrl)
 import CreateContribution
 import CreateDisbursement
+import Date
+import DateFormat
+import DateTime
 import Delay
 import Direction exposing (Direction)
 import Disbursement as Disbursement
 import Disbursements
+import EntityType
 import File.Download as Download
 import FileDisclosure
 import FileFormat exposing (FileFormat)
@@ -29,12 +33,17 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode exposing (string)
+import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode exposing (Value)
 import Loading
+import PaymentMethod
+import PurposeCode
 import Session exposing (Session)
 import SubmitButton exposing (submitButton)
 import Task exposing (Task)
 import Time
+import TimeZone exposing (america__new_york)
+import Timestamp exposing (dateStringToMillis)
 import Transaction.TransactionsData as TransactionsData exposing (TransactionsData)
 import TransactionType exposing (TransactionType(..))
 import Transactions
@@ -329,7 +338,8 @@ type Msg
     | AnimateGenerateDisclosureModal Modal.Visibility
     | CreateContributionModalUpdated CreateContribution.Msg
     | AnimateCreateContributionModal Modal.Visibility
-    | GotCreateContributionResponse (Result Http.Error String)
+    | GotCreateContributionResponse (Result Http.Error MutationResponse)
+    | GotCreateDisbursementResponse (Result Http.Error MutationResponse)
     | SubmitCreateContribution
     | SubmitCreateContributionDelay
     | ToggleActionsDropdown Dropdown.State
@@ -345,7 +355,6 @@ type Msg
     | ShowCreateDisbursementModal
     | CreateDisbursementModalUpdated CreateDisbursement.Msg
     | AnimateCreateDisbursementModal Modal.Visibility
-    | GotCreateDisbursementResponse (Result Http.Error String)
     | SubmitCreateDisbursement
     | SubmitCreateDisbursementDelay
 
@@ -396,9 +405,9 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| loginUrl model.committeeId )
+                    ( model, Cmd.none )
 
-        --( model, Cmd.none )
+        --( model, load <| loginUrl model.committeeId )
         ShowCreateContributionModal ->
             ( { model
                 | createContributionModalVisibility = Modal.shown
@@ -447,8 +456,49 @@ update msg model =
 
         GotCreateContributionResponse res ->
             case res of
-                Ok data ->
-                    ( model, Delay.after 2 Delay.Second SubmitCreateContributionDelay )
+                Ok createContribResp ->
+                    case createContribResp of
+                        Success id ->
+                            ( model, Delay.after 2 Delay.Second SubmitCreateContributionDelay )
+
+                        ValidationFailure errList ->
+                            ( { model
+                                | createContributionModal =
+                                    CreateContribution.setError model.createContributionModal <|
+                                        Maybe.withDefault "Unexplained error" <|
+                                            List.head errList
+                                , createContributionSubmitting = False
+                              }
+                            , Cmd.none
+                            )
+
+                Err err ->
+                    ( { model
+                        | createContributionModal =
+                            CreateContribution.setError model.createContributionModal <|
+                                Api.decodeError err
+                        , createContributionSubmitting = False
+                      }
+                    , Cmd.none
+                    )
+
+        GotCreateDisbursementResponse res ->
+            case res of
+                Ok createDisbResp ->
+                    case createDisbResp of
+                        Success id ->
+                            ( model, Delay.after 2 Delay.Second SubmitCreateContributionDelay )
+
+                        ValidationFailure errList ->
+                            ( { model
+                                | createDisbursementModal =
+                                    CreateDisbursement.setError model.createDisbursementModal <|
+                                        Maybe.withDefault "Unexplained error" <|
+                                            List.head errList
+                                , createContributionSubmitting = False
+                              }
+                            , Cmd.none
+                            )
 
                 Err err ->
                     ( { model
@@ -526,14 +576,6 @@ update msg model =
             in
             ( { model | createDisbursementModal = subModel }, Cmd.map CreateDisbursementModalUpdated subCmd )
 
-        GotCreateDisbursementResponse res ->
-            case res of
-                Ok data ->
-                    ( model, Delay.after 2 Delay.Second SubmitCreateDisbursementDelay )
-
-                Err _ ->
-                    ( model, Cmd.none )
-
         SubmitCreateDisbursementDelay ->
             ( { model
                 | createDisbursementModalVisibility = Modal.hidden
@@ -597,9 +639,31 @@ toSession model =
     model.session
 
 
-amountToInt : String -> Int
-amountToInt str =
-    Maybe.withDefault 0 <| String.toInt str
+optionalFieldString : String -> String -> List ( String, Value )
+optionalFieldString key val =
+    if val == "" then
+        []
+
+    else
+        [ ( key, Encode.string val ) ]
+
+
+optionalFieldStringInt : String -> String -> List ( String, Value )
+optionalFieldStringInt key val =
+    if val == "" then
+        []
+
+    else
+        [ ( key, Encode.int <| Maybe.withDefault 1 <| String.toInt val ) ]
+
+
+optionalFieldNotZero : String -> Int -> List ( String, Value )
+optionalFieldNotZero key val =
+    if val > 0 then
+        [ ( key, Encode.int val ) ]
+
+    else
+        []
 
 
 encodeContribution : Model -> Encode.Value
@@ -609,20 +673,32 @@ encodeContribution model =
             model.createContributionModal
 
         variables =
-            Encode.object
+            Encode.object <|
                 [ ( "committeeId", Encode.string model.committeeId )
+                , ( "amount", Encode.int <| Cents.fromDollars contrib.checkAmount )
+                , ( "paymentMethod", Encode.string contrib.paymentMethod )
                 , ( "firstName", Encode.string contrib.firstName )
                 , ( "lastName", Encode.string contrib.lastName )
-                , ( "amount", Encode.int <| Cents.fromDollars contrib.checkAmount )
-                , ( "date", Encode.string contrib.checkDate )
                 , ( "addressLine1", Encode.string contrib.address1 )
-                , ( "addressLine2", Encode.string contrib.address2 )
                 , ( "city", Encode.string contrib.city )
                 , ( "state", Encode.string contrib.state )
                 , ( "postalCode", Encode.string contrib.postalCode )
-                , ( "paymentMethod", Encode.string contrib.paymentMethod )
-                , ( "entityType", Encode.string "IND" )
+                , ( "entityType", Encode.string <| EntityType.fromMaybeToStringWithDefaultInd contrib.maybeEntityType )
                 ]
+                    ++ optionalFieldString "emailAddress" contrib.emailAddress
+                    ++ optionalFieldNotZero "paymentDate" (dateStringToMillis contrib.checkDate)
+                    ++ optionalFieldString "cardNumber" contrib.cardNumber
+                    ++ optionalFieldStringInt "cardExpirationMonth" contrib.expirationMonth
+                    ++ optionalFieldStringInt "cardExpirationYear" contrib.expirationYear
+                    ++ optionalFieldString "cardCVC" contrib.cvv
+                    ++ optionalFieldString "checkNumber" contrib.checkNumber
+                    ++ optionalFieldString "entityName" contrib.entityName
+                    ++ optionalFieldString "employer" contrib.employer
+                    ++ optionalFieldString "occupation" contrib.occupation
+                    ++ optionalFieldString "middleName" contrib.middleName
+                    ++ optionalFieldString "addressLine2" contrib.address2
+                    ++ optionalFieldString "occupation" contrib.occupation
+                    ++ optionalFieldString "phoneNumber" contrib.phoneNumber
     in
     encodeQuery contributionMutation variables
 
@@ -634,40 +710,27 @@ createContribution model =
             encodeContribution model |> Http.jsonBody
     in
     Http.send GotCreateContributionResponse <|
-        Api.post Endpoint.contribute model.token body <|
-            Decode.field "message" string
-
-
-encodeDisbursement : Model -> Encode.Value
-encodeDisbursement model =
-    let
-        disb =
-            model.createDisbursementModal
-    in
-    Encode.object
-        [ ( "committeeId", Encode.string model.committeeId )
-        , ( "entityName", Encode.string disb.checkRecipient )
-        , ( "purposeCode", Encode.string <| Maybe.withDefault "other" disb.purposeCode )
-        , ( "amount", Encode.string <| String.fromInt <| Cents.fromDollars disb.checkAmount )
-        , ( "date", Encode.string "2021-04-07" )
-        , ( "address1", Encode.string disb.address1 )
-        , ( "address2", Encode.string disb.address2 )
-        , ( "city", Encode.string disb.city )
-        , ( "state", Encode.string disb.state )
-        , ( "postalCode", Encode.string disb.postalCode )
-        , ( "paymentMethod", Encode.string "credit" )
-        ]
-
-
-createDisbursement : Model -> Cmd Msg
-createDisbursement model =
-    let
-        body =
-            encodeDisbursement model |> Http.jsonBody
-    in
-    Http.send GotCreateDisbursementResponse <|
         Api.post Endpoint.graphql model.token body <|
-            Decode.field "message" string
+            createContributionDecoder
+
+
+createContributionDecoder : Decode.Decoder MutationResponse
+createContributionDecoder =
+    Decode.oneOf [ createContributionSuccessDecoder, mutationValidationFailureDecoder ]
+
+
+createContributionSuccessDecoder : Decode.Decoder MutationResponse
+createContributionSuccessDecoder =
+    Decode.map Success <|
+        Decode.field "data" <|
+            Decode.field "createContribution" <|
+                Decode.field "id" <|
+                    Decode.string
+
+
+mutationValidationFailureDecoder : Decode.Decoder MutationResponse
+mutationValidationFailureDecoder =
+    Decode.map ValidationFailure graphQLErrorDecoder
 
 
 getTransactions :
@@ -683,3 +746,57 @@ getTransactions token committeeId maybeTxnType =
     Http.send LoadTransactionsData <|
         Api.post Endpoint.graphql token body <|
             TransactionsData.decode
+
+
+encodeDisbursement : Model -> Encode.Value
+encodeDisbursement model =
+    let
+        d =
+            model.createDisbursementModal
+
+        variables =
+            Encode.object <|
+                [ ( "committeeId", Encode.string model.committeeId )
+                , ( "amount", Encode.int <| Cents.fromDollars d.checkAmount )
+                , ( "paymentMethod", Encode.string <| Maybe.withDefault (PaymentMethod.toDataString PaymentMethod.Debit) d.paymentMethod )
+                , ( "entityName", Encode.string d.checkRecipient )
+                , ( "addressLine1", Encode.string d.address1 )
+                , ( "addressLine2", Encode.string d.address2 )
+                , ( "city", Encode.string d.city )
+                , ( "state", Encode.string d.state )
+                , ( "postalCode", Encode.string d.postalCode )
+                , ( "isSubcontracted", Encode.bool <| d.isSubcontracted == "yes" )
+                , ( "isPartialPayment", Encode.bool <| d.isPartialPayment == "yes" )
+                , ( "isExistingLiability", Encode.bool <| d.isExistingLiability == "yes" )
+                , ( "purposeCode", Encode.string <| Maybe.withDefault (PurposeCode.toString PurposeCode.OTHER) d.purposeCode )
+                , ( "paymentDate", Encode.int <| dateStringToMillis d.checkDate )
+                ]
+                    ++ optionalFieldString "checkNumber" d.checkNumber
+                    ++ optionalFieldString "addressLine2" d.address2
+    in
+    encodeQuery createDisbursementMutation variables
+
+
+createDisbursement : Model -> Cmd Msg
+createDisbursement model =
+    let
+        body =
+            encodeDisbursement model |> Http.jsonBody
+    in
+    Http.send GotCreateDisbursementResponse <|
+        Api.post Endpoint.graphql model.token body <|
+            createDisbursementDecoder
+
+
+createDisbursementDecoder : Decode.Decoder MutationResponse
+createDisbursementDecoder =
+    Decode.oneOf [ createDisbursementSuccessDecoder, mutationValidationFailureDecoder ]
+
+
+createDisbursementSuccessDecoder : Decode.Decoder MutationResponse
+createDisbursementSuccessDecoder =
+    Decode.map Success <|
+        Decode.field "data" <|
+            Decode.field "createContribution" <|
+                Decode.field "id" <|
+                    Decode.string

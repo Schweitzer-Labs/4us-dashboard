@@ -3,8 +3,6 @@ module Disbursement.Forms exposing (yesOrNoCol, yesOrNoRows)
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
-import Bootstrap.Grid.Row as Row
-import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 

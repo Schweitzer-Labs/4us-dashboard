@@ -64,7 +64,7 @@ processor method =
         PaymentMethod.Debit ->
             img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
 
-        PaymentMethod.ACH ->
+        PaymentMethod.Ach ->
             img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
 
         PaymentMethod.Check ->
@@ -91,12 +91,20 @@ getEntityName transaction =
             personName
 
         _ ->
-            transaction.companyName
+            transaction.entityName
 
 
 getEntityType : Transaction.Model -> Html msg
 getEntityType transaction =
-    Maybe.withDefault missingContent <|
+    let
+        missingText =
+            if transaction.direction == Direction.Out then
+                text "N/A"
+
+            else
+                missingContent
+    in
+    Maybe.withDefault missingText <|
         Maybe.map (text << EntityType.toGridString) transaction.entityType
 
 

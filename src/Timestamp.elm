@@ -1,9 +1,12 @@
-module Timestamp exposing (format, view)
+module Timestamp exposing (dateStringToMillis, format, view)
 
+import Date
+import DateTime
 import Html exposing (Html, span, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode exposing (Decoder, fail, succeed)
 import Time exposing (Month(..))
+import TimeZone exposing (america__new_york)
 
 
 
@@ -78,3 +81,45 @@ format zone time =
             String.fromInt (Time.toYear zone timePosix)
     in
     month ++ " " ++ day ++ ", " ++ year
+
+
+dateStringToMillis : String -> Int
+dateStringToMillis val =
+    if val == "" then
+        0
+
+    else
+        case Date.fromIsoString val of
+            Ok date ->
+                let
+                    y =
+                        Date.year date
+
+                    m =
+                        Date.month date
+
+                    d =
+                        Date.day date
+                in
+                case DateTime.fromRawParts { day = d, month = m, year = y } { hours = 0, milliseconds = 0, seconds = 0, minutes = 0 } of
+                    Just datetime ->
+                        let
+                            dPosix =
+                                DateTime.toPosix datetime
+
+                            offset =
+                                DateTime.getTimezoneOffset (america__new_york ()) dPosix
+
+                            dMillis =
+                                DateTime.toMillis datetime
+
+                            res =
+                                dMillis + offset
+                        in
+                        res
+
+                    Nothing ->
+                        0
+
+            Err a ->
+                0

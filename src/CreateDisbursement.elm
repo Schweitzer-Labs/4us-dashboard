@@ -1,4 +1,4 @@
-module CreateDisbursement exposing (Model, Msg(..), init, selectPurpose, update, view)
+module CreateDisbursement exposing (Model, Msg(..), init, setError, update, view)
 
 import Address
 import Bootstrap.Form as Form
@@ -11,6 +11,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Disbursement.Forms exposing (yesOrNoRows)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (for, value)
+import PaymentMethod
 import PurposeCode
 
 
@@ -20,6 +21,7 @@ type alias Model =
     , checkNumber : String
     , checkDate : String
     , purposeCode : Maybe String
+    , paymentMethod : Maybe String
     , address1 : String
     , address2 : String
     , city : String
@@ -28,6 +30,7 @@ type alias Model =
     , isSubcontracted : String
     , isPartialPayment : String
     , isExistingLiability : String
+    , error : String
     }
 
 
@@ -38,6 +41,7 @@ init =
     , checkNumber = ""
     , checkDate = ""
     , purposeCode = Nothing
+    , paymentMethod = Nothing
     , address1 = ""
     , address2 = ""
     , city = ""
@@ -46,24 +50,13 @@ init =
     , isSubcontracted = ""
     , isPartialPayment = ""
     , isExistingLiability = ""
+    , error = ""
     }
 
 
-selectPurpose : Model -> Html Msg
-selectPurpose model =
-    Form.group
-        []
-        [ Form.label [ for "purpose" ] [ text "Purpose" ]
-        , Select.select
-            [ Select.id "purpose"
-            , Select.onChange PurposeUpdated
-            ]
-          <|
-            (++) [ Select.item [] [ text "---" ] ] <|
-                List.map
-                    (\( _, codeText, purposeText ) -> Select.item [ value codeText ] [ text <| purposeText ])
-                    PurposeCode.purposeCodeText
-        ]
+setError : Model -> String -> Model
+setError model str =
+    { model | error = str }
 
 
 view : Model -> Html Msg
@@ -88,7 +81,7 @@ view model =
 
 purposeCodeRows : Model -> List (Html Msg)
 purposeCodeRows model =
-    [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ selectPurpose model ] ] ]
+    [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ PurposeCode.select PurposeUpdated ] ] ]
 
 
 addressRows : Model -> List (Html Msg)
@@ -119,17 +112,7 @@ paymentMethodSelectRows =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ Form.label [ for "paymentMethodSelect" ] [ text "Select Payment Method" ]
-            , Select.select [ Select.id "paymentMethodSelect" ]
-                [ Select.item [] [ text "-- Payment Method --" ]
-                , Select.item [] [ text "Check" ]
-                , Select.item [] [ text "Credit Card" ]
-                , Select.item [] [ text "Debit Card" ]
-                , Select.item [] [ text "Online Processor" ]
-                , Select.item [] [ text "Wire Transfer" ]
-                , Select.item [] [ text "Cash" ]
-                , Select.item [] [ text "Other" ]
-                ]
+            [ PaymentMethod.dropdown UpdatePaymentMethod
             ]
         ]
     ]
@@ -143,18 +126,16 @@ paymentMethodCheckRows model =
             [ Form.label [ for "amount" ] [ text "Amount" ]
             , Input.text [ Input.id "amount", Input.onInput CheckAmountUpdated, Input.placeholder "Enter amount" ]
             ]
-
-        --, Grid.col
-        --    [ Col.lg4 ]
-        --    [ Form.label [ for "check-number" ] [ text "Check Number" ]
-        --    , Input.text [ Input.id "check-number", Input.onInput CheckNumberUpdated, Input.placeholder "Enter check number" ]
-        --    ]
-        --, Grid.col
-        --    [ Col.lg4 ]
-        --    [ Form.label [ for "date" ] [ text "Date" ]
-        --    , Input.date [ Input.id "date", Input.onInput CheckDateUpdated ]
-        --    ]
-        --]
+        , Grid.col
+            [ Col.lg4 ]
+            [ Form.label [ for "check-number" ] [ text "Check Number" ]
+            , Input.text [ Input.id "check-number", Input.onInput CheckNumberUpdated, Input.placeholder "Enter check number" ]
+            ]
+        , Grid.col
+            [ Col.lg4 ]
+            [ Form.label [ for "date" ] [ text "Date" ]
+            , Input.date [ Input.id "date", Input.onInput CheckDateUpdated ]
+            ]
         ]
     ]
 
@@ -173,6 +154,7 @@ type Msg
     | UpdateIsSubcontracted String
     | UpdateIsPartialPayment String
     | UpdateIsExistingLiability String
+    | UpdatePaymentMethod String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -180,6 +162,9 @@ update msg model =
     case msg of
         PurposeUpdated str ->
             ( { model | purposeCode = Just str }, Cmd.none )
+
+        UpdatePaymentMethod str ->
+            ( { model | paymentMethod = Just str }, Cmd.none )
 
         CheckAmountUpdated str ->
             ( { model | checkAmount = str }, Cmd.none )

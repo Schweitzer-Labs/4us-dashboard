@@ -1,10 +1,16 @@
-module PaymentMethod exposing (PaymentMethod(..), decoder, toDataString, toDisplayString)
+module PaymentMethod exposing (PaymentMethod(..), decoder, dropdown, select, toDataString, toDisplayString)
 
+import Bootstrap.Form as Form
+import Bootstrap.Form.Radio as Radio
+import Bootstrap.Form.Select as Select
+import Html exposing (Html, text)
+import Html.Attributes exposing (for, value)
 import Json.Decode as Decode exposing (Decoder)
+import SelectRadio
 
 
 type PaymentMethod
-    = ACH
+    = Ach
     | Wire
     | Check
     | Credit
@@ -16,26 +22,26 @@ type PaymentMethod
 toDataString : PaymentMethod -> String
 toDataString method =
     case method of
-        ACH ->
-            "ach"
+        Ach ->
+            "Ach"
 
         Wire ->
-            "wire"
+            "Wire"
 
         Check ->
-            "check"
+            "Check"
 
         Debit ->
-            "debit"
+            "Debit"
 
         Credit ->
-            "credit"
+            "Credit"
 
         InKind ->
-            "in-kind"
+            "InKind"
 
         Transfer ->
-            "transfer"
+            "Transfer"
 
 
 decoder : Decoder PaymentMethod
@@ -44,25 +50,25 @@ decoder =
         |> Decode.andThen
             (\str ->
                 case str of
-                    "ach" ->
-                        Decode.succeed ACH
+                    "Ach" ->
+                        Decode.succeed Ach
 
-                    "wire" ->
+                    "Wire" ->
                         Decode.succeed Wire
 
-                    "check" ->
+                    "Check" ->
                         Decode.succeed Check
 
-                    "credit" ->
+                    "Credit" ->
                         Decode.succeed Credit
 
-                    "debit" ->
+                    "Debit" ->
                         Decode.succeed Debit
 
-                    "in-kind" ->
+                    "InKind" ->
                         Decode.succeed InKind
 
-                    "transfer" ->
+                    "Transfer" ->
                         Decode.succeed Transfer
 
                     badVal ->
@@ -70,10 +76,22 @@ decoder =
             )
 
 
+paymentMethods : List PaymentMethod
+paymentMethods =
+    [ Ach
+    , Wire
+    , Check
+    , Credit
+    , Debit
+    , InKind
+    , Transfer
+    ]
+
+
 toDisplayString : PaymentMethod -> String
 toDisplayString src =
     case src of
-        ACH ->
+        Ach ->
             "ACH"
 
         Wire ->
@@ -98,3 +116,30 @@ toDisplayString src =
 type AccountType
     = Checking
     | Saving
+
+
+select : (String -> msg) -> String -> List (Html msg)
+select updateMsg paymentMethodString =
+    Radio.radioList
+        "Payment Method"
+        [ SelectRadio.view updateMsg (toDataString Check) "Check" paymentMethodString
+        , SelectRadio.view updateMsg (toDataString Credit) "Credit" paymentMethodString
+        , SelectRadio.view updateMsg (toDataString InKind) "In-Kind" paymentMethodString
+        ]
+
+
+dropdown : (String -> msg) -> Html msg
+dropdown updateMsg =
+    Form.group
+        []
+        [ Form.label [ for "payment-method" ] [ text "Payment Method" ]
+        , Select.select
+            [ Select.id "payment-method"
+            , Select.onChange updateMsg
+            ]
+          <|
+            (++) [ Select.item [] [ text "---" ] ] <|
+                List.map
+                    (\paymentMethod -> Select.item [ value (toDataString paymentMethod) ] [ text (toDisplayString paymentMethod) ])
+                    paymentMethods
+        ]

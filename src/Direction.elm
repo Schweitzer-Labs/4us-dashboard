@@ -11,19 +11,19 @@ type Direction
 toString : Direction -> String
 toString direction =
     if direction == In then
-        "in"
+        "In"
 
     else
-        "out"
+        "Out"
 
 
 fromString : String -> Maybe Direction
 fromString str =
     case str of
-        "in" ->
+        "In" ->
             Just In
 
-        "out" ->
+        "Out" ->
             Just Out
 
         _ ->
@@ -46,10 +46,10 @@ decoder =
         |> Decode.andThen
             (\str ->
                 case str of
-                    "in" ->
+                    "In" ->
                         Decode.succeed In
 
-                    "out" ->
+                    "Out" ->
                         Decode.succeed Out
 
                     badVal ->

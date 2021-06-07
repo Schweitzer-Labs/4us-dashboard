@@ -14,6 +14,7 @@ import Html.Attributes exposing (class, for, value)
 import MonthSelector
 import OrgOrInd exposing (OrgOrInd(..))
 import Owners exposing (Owners)
+import PaymentMethod
 import SelectRadio
 import State
 import SubmitButton exposing (submitButton)
@@ -31,6 +32,7 @@ type alias Model =
     , emailAddress : String
     , phoneNumber : String
     , firstName : String
+    , middleName : String
     , lastName : String
     , address1 : String
     , address2 : String
@@ -65,6 +67,7 @@ init =
     , emailAddress = ""
     , phoneNumber = ""
     , firstName = ""
+    , middleName = ""
     , lastName = ""
     , address1 = ""
     , address2 = ""
@@ -136,16 +139,6 @@ amountDateRow model =
     ]
 
 
-paymentMethodRow : Model -> List (Html Msg)
-paymentMethodRow model =
-    Radio.radioList
-        "Payment Method"
-        [ SelectRadio.view UpdatePaymentMethod "check" "Check" model.paymentMethod
-        , SelectRadio.view UpdatePaymentMethod "credit" "Credit" model.paymentMethod
-        , SelectRadio.view UpdatePaymentMethod "in-kind" "In Kind" model.paymentMethod
-        ]
-
-
 checkRow : Model -> List (Html Msg)
 checkRow model =
     [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
@@ -158,14 +151,6 @@ checkRow model =
                 , Input.placeholder "Enter check number"
                 ]
             ]
-        , Grid.col
-            []
-            [ Input.text [ Input.id "amount", Input.onInput NoOp, Input.placeholder "Account number" ]
-            ]
-        , Grid.col
-            []
-            [ Input.text [ Input.id "check-number", Input.onInput NoOp, Input.placeholder "Routing number" ]
-            ]
         ]
     ]
 
@@ -173,10 +158,10 @@ checkRow model =
 processingRow : Model -> List (Html Msg)
 processingRow model =
     case model.paymentMethod of
-        "check" ->
+        "Check" ->
             checkRow model
 
-        "credit" ->
+        "Credit" ->
             creditRow model
 
         _ ->
@@ -200,6 +185,14 @@ creditRow model =
             ]
         , Grid.col []
             [ YearSelector.view CardYearUpdated ]
+        , Grid.col []
+            [ Input.text
+                [ Input.id "cvv"
+                , Input.onInput CVVUpdated
+                , Input.value model.cvv
+                , Input.placeholder "CVV"
+                ]
+            ]
         ]
     ]
 
@@ -216,7 +209,7 @@ view model =
             ++ labelRow "Donor Info"
             ++ donorInfoRows model
             ++ labelRow "Processing Info"
-            ++ paymentMethodRow model
+            ++ PaymentMethod.select UpdatePaymentMethod model.paymentMethod
             ++ processingRow model
 
 
@@ -451,7 +444,7 @@ orgOrIndRow model =
         [ Row.attrs [ Spacing.mt2 ] ]
         [ Grid.col
             []
-            [ text "Will you be donating as an individual or on behalf of an organization?" ]
+            [ text "Will the donor be contributing as an individual or on behalf of an organization?" ]
         ]
     , Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
@@ -481,7 +474,7 @@ employmentStatusRows model =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ text "What is your employment status?" ]
+            [ text "What is the donor's employment status?" ]
         ]
     , Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
@@ -528,6 +521,7 @@ type Msg
     | CardNumberUpdated String
     | NoOp String
     | UpdatePaymentMethod String
+    | CVVUpdated String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -613,6 +607,9 @@ update msg model =
 
         CardNumberUpdated str ->
             ( { model | cardNumber = str }, Cmd.none )
+
+        CVVUpdated str ->
+            ( { model | cvv = str }, Cmd.none )
 
         CardYearUpdated str ->
             ( { model | expirationYear = str }, Cmd.none )

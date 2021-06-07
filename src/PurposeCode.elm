@@ -1,13 +1,13 @@
-module PurposeCode exposing (PurposeCode(..), fromString, purposeCodeText, toString)
+module PurposeCode exposing (PurposeCode(..), fromString, purposeCodeText, select, toString)
+
+import Bootstrap.Form as Form
+import Bootstrap.Form.Select as Select
+import Html exposing (Html, text)
+import Html.Attributes exposing (for, value)
 
 
 type PurposeCode
-    = CMAIL
-    | CONSL
-    | CONSV
-    | CNTRB
-    | FUNDR
-    | LITER
+    = LITER
     | OFFICE
     | OTHER
     | PETIT
@@ -25,6 +25,11 @@ type PurposeCode
     | WAGES
     | BKFEE
     | LWNSN
+    | CMAIL
+    | CONSL
+    | CONSV
+    | CNTRB
+    | FUNDR
     | UTILS
     | PAYRL
     | MAILS
@@ -127,3 +132,20 @@ toString purpose =
 
         Nothing ->
             ""
+
+
+select : (String -> msg) -> Html msg
+select updateMsg =
+    Form.group
+        []
+        [ Form.label [ for "purpose" ] [ text "Purpose" ]
+        , Select.select
+            [ Select.id "purpose"
+            , Select.onChange updateMsg
+            ]
+          <|
+            (++) [ Select.item [] [ text "---" ] ] <|
+                List.map
+                    (\( _, codeText, purposeText ) -> Select.item [ value codeText ] [ text <| purposeText ])
+                    purposeCodeText
+        ]
