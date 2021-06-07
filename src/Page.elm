@@ -7,6 +7,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser exposing (Document)
+import Config exposing (Config)
 import Html exposing (Html, a, button, div, footer, h1, h2, h3, i, img, li, nav, p, span, text, ul)
 import Html.Attributes as Attr exposing (class, classList, href, style)
 import Route exposing (Route)
@@ -24,15 +25,8 @@ type Page
     = Other
     | Home
     | LinkBuilder
-    | Disbursements
     | NeedsReview
     | Transactions
-    | Analytics
-    | Login
-    | Register
-    | Settings
-    | Profile Username
-    | NewArticle
 
 
 {-| Take a page's Html and frames it with a header and footer.
@@ -44,8 +38,8 @@ isLoading is for determining whether we should show a loading spinner
 in the header. (This comes up during slow page transitions.)
 
 -}
-view : String -> Aggregations.Model -> Page -> { title : String, content : Html msg } -> Document msg
-view token aggregations page { title, content } =
+view : Config -> Aggregations.Model -> Page -> { title : String, content : Html msg } -> Document msg
+view config aggregations page { title, content } =
     { title = title ++ " - Transactions"
     , body =
         sidebar page :: mainContainer aggregations content :: []
@@ -110,14 +104,14 @@ nameInfoRow : Html msg
 nameInfoRow =
     Grid.row
         [ Row.aroundXs, Row.attrs [ class "text-center" ] ]
-        [ Grid.col [] [ h1 [ class "display-5" ] [ text "Arthur" ] ] ]
+        [ Grid.col [] [ h1 [ class "display-5" ] [ text "Safford" ] ] ]
 
 
 ruleInfoRow : Html msg
 ruleInfoRow =
     Grid.row
         [ Row.centerXs ]
-        [ Grid.col [ Col.xs6, Col.attrs [ class "border-right border-blue", class "text-right" ] ] [ text "Mayor" ]
+        [ Grid.col [ Col.xs6, Col.attrs [ class "border-right border-blue", class "text-right" ] ] [ text "Supervisor" ]
         , Grid.col [ Col.xs6 ]
             [ img
                 [ Asset.src Asset.chaseBankLogo, class "header-info-bank-logo" ]
@@ -140,9 +134,6 @@ pageIsActive page route =
         ( Home, Route.Home ) ->
             True
 
-        ( Disbursements, Route.Disbursements ) ->
-            True
-
         ( NeedsReview, Route.NeedsReview ) ->
             True
 
@@ -150,9 +141,6 @@ pageIsActive page route =
             True
 
         ( Transactions, Route.Transactions ) ->
-            True
-
-        ( Analytics, Route.Analytics ) ->
             True
 
         _ ->

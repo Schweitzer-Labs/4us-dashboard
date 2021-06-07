@@ -10,13 +10,13 @@ type TransactionType
 fromString : String -> Maybe TransactionType
 fromString str =
     case str of
-        "contribution" ->
+        "Contribution" ->
             Just Contribution
 
-        "disbursement" ->
+        "Disbursement" ->
             Just Disbursement
 
-        "deposit" ->
+        "Deposit" ->
             Just Deposit
 
         _ ->
@@ -27,13 +27,13 @@ toString : TransactionType -> String
 toString txnType =
     case txnType of
         Contribution ->
-            "contribution"
+            "Contribution"
 
         Disbursement ->
-            "disbursement"
+            "Disbursement"
 
         Deposit ->
-            "deposit"
+            "Deposit"
 
 
 toDisplayString : TransactionType -> String

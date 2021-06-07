@@ -2,7 +2,10 @@ module Config exposing (Config)
 
 
 type alias Config =
-    { apiEndpoint : String
+    { cognitoDomain : String
+    , cognitoClientId : String
+    , redirectUri : String
     , donorUrl : String
-    , loginUrl : String -> String
+    , apiEndpoint : String
+    , token : String
     }

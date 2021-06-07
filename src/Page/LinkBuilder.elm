@@ -5,7 +5,7 @@ module Page.LinkBuilder exposing (Model, Msg, init, subscriptions, toSession, up
 
 import Aggregations
 import Api exposing (Token)
-import Api.Endpoint as Endpoint
+import Api.Endpoint exposing (Endpoint(..))
 import Bootstrap.Button as Button
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
@@ -17,7 +17,8 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
-import Config.Env exposing (donorUrl, loginUrl)
+import Config exposing (Config)
+import Config.Env exposing (loginUrl)
 import Html exposing (..)
 import Html.Attributes as SvgA exposing (class, for, href, src, style)
 import Http
@@ -39,21 +40,21 @@ type alias Model =
     , url : String
     , committeeId : String
     , aggregations : Aggregations.Model
-    , token : Token
+    , config : Config
     }
 
 
-init : Token -> Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
-init token session aggs committeeId =
+init : Config -> Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
+init config session aggs committeeId =
     ( { session = session
       , refCode = ""
       , amount = ""
       , url = ""
       , committeeId = committeeId
       , aggregations = aggs
-      , token = token
+      , config = config
       }
-    , getAggregations token committeeId
+    , getAggregations config committeeId
     )
 
 
@@ -105,7 +106,7 @@ linkRow : Model -> Html msg
 linkRow model =
     let
         url =
-            createUrl model.committeeId model.refCode model.amount
+            createUrl model.config.donorUrl model.committeeId model.refCode model.amount
     in
     Grid.row
         []
@@ -182,11 +183,15 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| loginUrl model.committeeId )
+                    let
+                        { cognitoDomain, cognitoClientId, redirectUri } =
+                            model.config
+                    in
+                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
 
 
-createUrl : String -> String -> String -> String
-createUrl committeeId refCode amount =
+createUrl : String -> String -> String -> String -> String
+createUrl donorUrl committeeId refCode amount =
     let
         committeeIdVal =
             [ Url.Builder.string "committeeId" committeeId ]
@@ -208,10 +213,10 @@ createUrl committeeId refCode amount =
     Url.Builder.crossOrigin donorUrl [] <| committeeIdVal ++ refCodeVal ++ amountVal
 
 
-getAggregations : Token -> String -> Cmd Msg
-getAggregations token committeeId =
+getAggregations : Config -> String -> Cmd Msg
+getAggregations config committeeId =
     Http.send LoadAggregationsData <|
-        Api.get (Endpoint.contributions committeeId) token ContributionsData.decode
+        Api.get (Endpoint config.apiEndpoint) (Api.Token config.token) ContributionsData.decode
 
 
 scrollToTop : Task x ()
