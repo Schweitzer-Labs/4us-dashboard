@@ -1,3 +1,12 @@
 CloudFrontCertificate:
   Type: AWS::SSM::Parameter::Value<String>
   Default: /{{ RUNENV }}/{{ PRODUCT }}/acm/certificate/cloudfront/us-east-1
+CachePolicyS3:
+  Type: AWS::SSM::Parameter::Value<String>
+  Default: /{{ REGION }}/cloudfront/cachepolicy/s3
+CachePolicyApiGw:
+  Type: AWS::SSM::Parameter::Value<String>
+  Default: /{{ REGION }}/cloudfront/cachepolicy/apigw
+DirectoryIndexFunction:
+  Type: AWS::SSM::Parameter::Value<String>
+  Default: /{{ REGION }}/cloudfront/function/directoryindex
