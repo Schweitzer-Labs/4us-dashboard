@@ -9,7 +9,7 @@ Distribution:
       DefaultRootObject: index.html
       IPV6Enabled: true
       Aliases:
-        - !Sub ${SubDomain}-${RunEnvironment}.${Domain}.${TLD}
+        - !Sub ${SubDomain}.${Domain}.${TLD}
       Origins:
         - Id: WebsiteBucket
           DomainName: !Sub ${WebsiteBucket.DomainName}
@@ -32,7 +32,7 @@ Distribution:
         ViewerProtocolPolicy: redirect-to-https
         FunctionAssociations:
           - EventType: viewer-request
-            FunctionARN: !GetAtt DirectoryIndexFunction.FunctionMetadata.FunctionARN
+            FunctionARN: !Ref DirectoryIndexFunction
           - EventType: viewer-response
             FunctionARN: !GetAtt SecureHeadersFunction.FunctionMetadata.FunctionARN
       CacheBehaviors:
