@@ -65,6 +65,15 @@ export WEB_BUCKET	:= $(SUBDOMAIN)-$(RUNENV).$(DOMAIN).$(TLD)-$(REGION)
 export CREPES_PARAMS	:= --region $(REGION)
 export CREPES_PARAMS	+= --subdomain $(SUBDOMAIN) --domain $(DOMAIN) --tld $(TLD) --runenv $(RUNENV) --product $(PRODUCT)
 
+
+COGNITO_DOMAIN	:= https://platform-user-$(PRODUCT)-$(RUNENV).auth.$(REGION).amazoncognito.com
+COGNITO_REDIRECT_URI	:= https://$(SUBDOMAIN).$(DOMAIN).$(TLD)
+DONOR_URL		:= https://donor.$(DOMAIN).$(TLD)
+API_ENDPOINT		:= https://$(SUBDOMAIN).$(DOMAIN).$(TLD)/api/committee/graphql
+
+COGNITO_USER_POOL	:= $(shell aws cognito-idp list-user-pools --max-results 4 --query 'UserPools[?starts_with(Name, `PlatformUserPool`)].Id' --output text)
+COGNITO_CLIENT_ID	:= $(shell aws cognito-idp list-user-pool-clients --user-pool-id $(COGNITO_USER_POOL) --query 'UserPoolClients[*].ClientId' --output text)
+
 .PHONY: all dep build build-web check import package deploy deploy-web clean realclean
 
 # Make targets
@@ -84,8 +93,15 @@ check: build
 
 
 build-web: build
+	@echo $(COGNITO_CLIENT_ID)
 	@npm install
-	@elm-app build
+	@npm \
+		--domain=$(COGNITO_DOMAIN) \
+		--redirect=$(COGNITO_REDIRECT_URI) \
+		--apiendpoint=$(API_ENDPOINT) \
+		--donorurl=$(DONOR_URL) \
+		--clientid=$(COGNITO_CLIENT_ID) \
+		run build
 
 deploy-web: build-web
 	aws s3 sync build/ s3://$(WEB_BUCKET)/
