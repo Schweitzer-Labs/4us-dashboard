@@ -11,7 +11,6 @@ import Config exposing (Config)
 import Html exposing (Html, a, button, div, footer, h1, h2, h3, i, img, li, nav, p, span, text, ul)
 import Html.Attributes as Attr exposing (class, classList, href, style)
 import Route exposing (Route)
-import Username exposing (Username)
 
 
 {-| Determines which navbar link (if any) will be rendered as active.
@@ -178,12 +177,9 @@ navContainer : Page -> Html msg
 navContainer page =
     Grid.containerFluid
         [ Spacing.mt5 ]
-        [ navRow (Asset.coinsGlyph [ class "tool-glyph" ]) page Route.Transactions "Transactions"
-
-        --, navRow (Asset.chartLineGlyph [ class "tool-glyph" ]) page Route.Analytics "Analytics"
-        --, navRow (Asset.universityGlyph [ class "tool-glyph" ]) page Route.Disbursements "Budgeting"
-        , navRow (Asset.searchDollarGlyph [ class "tool-glyph" ]) page Route.NeedsReview "Needs Review"
-        , navRow (Asset.linkGlyph [ class "tool-glyph" ]) page Route.LinkBuilder "Link Builder"
+        [ navRow True (Asset.coinsGlyph [ class "tool-glyph" ]) page Route.Transactions "Transactions"
+        , navRow False (Asset.searchDollarGlyph [ class "tool-glyph" ]) page Route.NeedsReview "Needs Review"
+        , navRow False (Asset.linkGlyph [ class "tool-glyph" ]) page Route.LinkBuilder "Link Builder"
         ]
 
 
@@ -192,8 +188,8 @@ toolBarAsset image =
     img [ Asset.src image, class "tool-asset" ] []
 
 
-navRow : Html msg -> Page -> Route -> String -> Html msg
-navRow glyph page route label =
+navRow : Bool -> Html msg -> Page -> Route -> String -> Html msg
+navRow enabled glyph page route label =
     Grid.row
         [ Row.centerXs
         , Row.attrs [ class "hover-underline hover-black" ]
@@ -201,7 +197,7 @@ navRow glyph page route label =
         ]
         [ Grid.col
             []
-            [ a [ Route.href route, class "hover-black" ]
+            [ a [ class "hover-black text-muted" ]
                 [ Grid.containerFluid
                     [ class <| "" ++ selected page route
                     ]

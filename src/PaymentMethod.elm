@@ -17,6 +17,7 @@ type PaymentMethod
     | InKind
     | Debit
     | Transfer
+    | Other
 
 
 toDataString : PaymentMethod -> String
@@ -42,6 +43,9 @@ toDataString method =
 
         Transfer ->
             "Transfer"
+
+        Other ->
+            "Other"
 
 
 decoder : Decoder PaymentMethod
@@ -70,6 +74,9 @@ decoder =
 
                     "Transfer" ->
                         Decode.succeed Transfer
+
+                    "Other" ->
+                        Decode.succeed Other
 
                     badVal ->
                         Decode.fail <| "Unknown payment method: " ++ badVal
@@ -111,6 +118,9 @@ toDisplayString src =
 
         InKind ->
             "In-kind"
+
+        Other ->
+            "Other"
 
 
 type AccountType
