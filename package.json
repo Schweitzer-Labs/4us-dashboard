@@ -11,7 +11,8 @@
     "build-css": "node-sass-chokidar src/ -o src/",
     "watch-css": "npm run build-css && node-sass-chokidar src/ -o src/ --watch --recursive",
     "start": "PORT=3000 ELM_APP_COGNITO_DOMAIN=https://platform-user-4us-qa.auth.us-west-2.amazoncognito.com ELM_APP_COGNITO_CLIENT_ID=30knht1q778i0qls8n0v8prsfm ELM_APP_COGNITO_REDIRECT_URI=http://localhost:3000 ELM_APP_DONOR_URL=http://localhost:3001 ELM_APP_API_ENDPOINT=http://localhost:8010/proxy elm-app start",
-    "proxy-qa": "lcp --proxyUrl https://dashboard.build4.us/api/committee/graphql"
+    "proxy-qa": "lcp --proxyUrl https://dashboard.build4.us/api/committee/graphql",
+    "build": "ELM_APP_COGNITO_DOMAIN=$npm_config_domain ELM_APP_COGNITO_CLIENT_ID=$npm_config_clientid ELM_APP_COGNITO_REDIRECT_URI=$npm_config_redirect ELM_APP_DONOR_URL=$npm_config_donorurl ELM_APP_API_ENDPOINT=$npm_config_apiendpoint elm-app build"
   },
   "author": "",
   "license": "ISC",

@@ -1,7 +1,7 @@
 RecordSet:
   Type: AWS::Route53::RecordSet
   Properties:
-    Name: !Sub ${SubDomain}{% if RUNENV != 'prod' %}-{{ RUNENV }}{% endif %}.${Domain}.${TLD}
+    Name: !Sub ${SubDomain}.${Domain}.${TLD}
     Type: A
     AliasTarget:
       # This hostedzoneid is universal for alias records to cloudfront
