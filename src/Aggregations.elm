@@ -37,7 +37,7 @@ view aggregates =
                 , ( "Pending out", Cents.toDollar aggregates.totalDisbursementsInProcessing )
                 , ( "Total raised", Cents.toDollar aggregates.totalRaised )
                 , ( "Total spent", Cents.toDollar aggregates.totalSpent )
-                , ( "Total donors", String.fromInt aggregates.totalDonors )
+                , ( "Total donors", String.fromInt 0 )
                 ]
         ]
 

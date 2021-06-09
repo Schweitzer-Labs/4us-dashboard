@@ -99,16 +99,29 @@ body {
   background-color: $light;
 }
 
-// @Todo investigate need for extra pixel.
-.sidebar-container {
-  background-color: white;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: $nav-horizontal-offset;
-  height: 2000px;
-  z-index: 1000;
+@include media-breakpoint-up(sm) {
+  .sidebar-container {
+    display: none;
+  }
 }
+
+@include media-breakpoint-up(lg) {
+  .sidebar-container {
+    display: block;
+    background-color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: $nav-horizontal-offset;
+    height: 2000px;
+    z-index: 1000;
+  }
+  .app-container {
+    padding-left: $nav-horizontal-offset;
+    z-index: 500;
+  }
+}
+
 
 
 .header-container {
@@ -117,11 +130,6 @@ body {
   top: 0;
   left: 0;
   z-index: 1000;
-}
-
-.app-container {
-  padding-left: $nav-horizontal-offset;
-  z-index: 500;
 }
 
 .account-control-icon {

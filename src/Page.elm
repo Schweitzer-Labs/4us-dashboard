@@ -67,7 +67,7 @@ header aggregations =
                 [ Aggregations.view aggregations ]
             , Grid.col [ Col.attrs [ class "text-right" ] ]
                 [ warningBell (String.fromInt aggregations.needsReviewCount)
-                , a [ Route.href Route.NeedsReview, Spacing.ml4 ] [ Asset.userGlyph [ class "account-control-icon" ] ]
+                , a [ Spacing.ml4 ] [ Asset.userGlyph [ class "account-control-icon" ] ]
                 ]
             ]
         ]
@@ -87,7 +87,7 @@ warningBell str =
             else
                 True
     in
-    a [ Route.href Route.NeedsReview ]
+    a []
         [ Asset.bellGlyph
             [ classList
                 [ ( "account-control-icon", True ), ( "warning", shouldWarn ) ]

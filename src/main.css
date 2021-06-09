@@ -7184,14 +7184,23 @@ a.text-dark:hover, a.text-dark:focus {
 body {
   background-color: #EBEBEB; }
 
-.sidebar-container {
-  background-color: white;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 237px;
-  height: 2000px;
-  z-index: 1000; }
+@media (min-width: 576px) {
+  .sidebar-container {
+    display: none; } }
+
+@media (min-width: 992px) {
+  .sidebar-container {
+    display: block;
+    background-color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 237px;
+    height: 2000px;
+    z-index: 1000; }
+  .app-container {
+    padding-left: 237px;
+    z-index: 500; } }
 
 .header-container {
   background-color: white;
@@ -7199,10 +7208,6 @@ body {
   top: 0;
   left: 0;
   z-index: 1000; }
-
-.app-container {
-  padding-left: 237px;
-  z-index: 500; }
 
 .account-control-icon {
   font-size: 28px;

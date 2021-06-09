@@ -8,6 +8,7 @@ import EntityType exposing (EntityType(..))
 import Html exposing (Html, img, span, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode
+import List exposing (sortBy)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode
 import TimeZone exposing (america__new_york)
@@ -40,7 +41,6 @@ labels sortMsg =
     [ ( sortMsg DateTime, "Date / Time" )
     , ( sortMsg EntityName, "Entity Name" )
     , ( sortMsg Context, "Entity Type" )
-    , ( sortMsg Context, "Context" )
     , ( sortMsg Amount, "Amount" )
     , ( sortMsg Verified, "Verified" )
     , ( sortMsg PaymentMethod, "Payment Method" )
@@ -50,19 +50,20 @@ labels sortMsg =
 
 
 view : (Label -> msg) -> List (Html msg) -> List Transaction.Model -> Html msg
-view sortMsg content disbursements =
+view sortMsg content txns =
     DataTable.view "Awaiting Transactions." content (labels sortMsg) transactionRowMap <|
-        List.map (\d -> ( Nothing, d )) disbursements
+        List.map (\d -> ( Nothing, d )) <|
+            List.reverse (sortBy .initiatedTimestamp txns)
 
 
 processor : PaymentMethod -> Html msg
 processor method =
     case method of
         PaymentMethod.Credit ->
-            img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
+            img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
 
         PaymentMethod.Debit ->
-            img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
+            img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
 
         PaymentMethod.Ach ->
             img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
@@ -159,7 +160,6 @@ transactionRowMap ( maybeMsg, transaction ) =
     , [ ( "Date / Time", text <| Timestamp.format (america__new_york ()) transaction.initiatedTimestamp )
       , ( "Entity Name", name )
       , ( "Context", entityType )
-      , ( "Context", context )
       , ( "Amount", amount )
       , ( "Verified", verifiedContent <| transaction.ruleVerified )
       , ( "Payment Method", text <| PaymentMethod.toDisplayString transaction.paymentMethod )
