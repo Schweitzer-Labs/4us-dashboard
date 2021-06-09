@@ -34,7 +34,7 @@ else ifeq ($(RUNENV), demo)
 	export DOMAIN   := 4usdemo
 	export TLD      := com
 	export PRODUCT	:= 4us
-else # demo
+else #extra
         export REGION   := us-east-2
         export DOMAIN   := 4us
         export TLD      := com
@@ -71,7 +71,7 @@ COGNITO_REDIRECT_URI	:= https://$(SUBDOMAIN).$(DOMAIN).$(TLD)
 DONOR_URL		:= https://donor.$(DOMAIN).$(TLD)
 API_ENDPOINT		:= https://$(SUBDOMAIN).$(DOMAIN).$(TLD)/api/committee/graphql
 
-COGNITO_USER_POOL	:= $(shell aws cognito-idp list-user-pools --region $(REGION) --max-results 4 --query 'UserPools[?starts_with(Name, `PlatformUserPool`)].Id' --output text)
+COGNITO_USER_POOL	:= $(shell aws cognito-idp list-user-pools --region $(REGION) --max-results 10 --query 'UserPools[?starts_with(Name, `PlatformUserPool`)].Id' --output text)
 COGNITO_CLIENT_ID	:= $(shell aws cognito-idp list-user-pool-clients --region $(REGION) --user-pool-id $(COGNITO_USER_POOL) --query 'UserPoolClients[*].ClientId' --output text)
 
 .PHONY: all dep build build-web check import package deploy deploy-web clean realclean
