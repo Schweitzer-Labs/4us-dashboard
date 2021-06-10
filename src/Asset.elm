@@ -1,5 +1,6 @@
 module Asset exposing
     ( Image
+    , adirondackTrustCompanyLogo
     , amalgamatedLogo
     , bellGlyph
     , binoculars
@@ -7,6 +8,7 @@ module Asset exposing
     , calendar
     , chartLineGlyph
     , chaseBankLogo
+    , chaseSquare
     , circleCheckGlyph
     , coinsGlyph
     , contributionsByRefcodeChart
@@ -130,6 +132,11 @@ loading =
     image "loading.svg"
 
 
+adirondackTrustCompanyLogo : Image
+adirondackTrustCompanyLogo =
+    image "adirondack-trust-company.png"
+
+
 defaultAvatar : Image
 defaultAvatar =
     image "smiley-cyrus.jpg"
@@ -137,7 +144,7 @@ defaultAvatar =
 
 chaseBankLogo : Image
 chaseBankLogo =
-    image "chase_logo.png"
+    image "chase-logo-header.png"
 
 
 genderNeutral : Bool -> Image
@@ -147,6 +154,11 @@ genderNeutral selected =
 
     else
         image "gender-neutral.svg"
+
+
+chaseSquare : Image
+chaseSquare =
+    image "chase-square.png"
 
 
 tbdBankLogo : Image

@@ -10,6 +10,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
+import Committee
 import Config exposing (Config)
 import Config.Env exposing (loginUrl)
 import Delay
@@ -40,6 +41,7 @@ type alias Model =
     , timeZone : Time.Zone
     , disbursements : List Disbursement.Model
     , aggregations : Aggregations.Model
+    , committee : Committee.Model
     , enrichDisbursementModalVisibility : Modal.Visibility
     , enrichDisbursementModal : Disbursement.Model
     , currentSort : Disbursements.Label
@@ -48,14 +50,15 @@ type alias Model =
     }
 
 
-init : Config -> Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
-init config session aggs committeeId =
+init : Config -> Session -> Aggregations.Model -> Committee.Model -> String -> ( Model, Cmd Msg )
+init config session aggs committee committeeId =
     ( { session = session
       , loading = True
       , committeeId = committeeId
       , timeZone = Time.utc
       , disbursements = []
       , aggregations = aggs
+      , committee = committee
       , enrichDisbursementModalVisibility = Modal.hidden
       , enrichDisbursementModal = Disbursement.init
       , currentSort = Disbursements.Record

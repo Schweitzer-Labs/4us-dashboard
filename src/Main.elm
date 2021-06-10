@@ -5,6 +5,7 @@ import Api exposing (Token)
 import Browser exposing (Document)
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
+import Committee
 import CommitteeId
 import Config exposing (Config)
 import Html exposing (Html)
@@ -96,6 +97,25 @@ toAggregations page =
             needsReview.aggregations
 
 
+toCommittee : Model -> Committee.Model
+toCommittee page =
+    case page of
+        Redirect session ->
+            Committee.init
+
+        NotFound session ->
+            Committee.init
+
+        Transactions transactions ->
+            transactions.committee
+
+        LinkBuilder linkBuilder ->
+            linkBuilder.committee
+
+        NeedsReview needsReview ->
+            needsReview.committee
+
+
 toToken : Model -> Token
 toToken page =
     case page of
@@ -157,6 +177,9 @@ changeRouteTo url config maybeRoute model =
 
         aggregations =
             toAggregations model
+
+        committee =
+            toCommittee model
     in
     case maybeRoute of
         Nothing ->
@@ -168,6 +191,7 @@ changeRouteTo url config maybeRoute model =
                 config
                 session
                 aggregations
+                committee
                 committeeId
                 |> updateWith Transactions GotTransactionsMsg model
 
@@ -176,6 +200,7 @@ changeRouteTo url config maybeRoute model =
                 config
                 session
                 aggregations
+                committee
                 committeeId
                 |> updateWith Transactions GotTransactionsMsg model
 
@@ -184,6 +209,7 @@ changeRouteTo url config maybeRoute model =
                 config
                 session
                 aggregations
+                committee
                 committeeId
                 |> updateWith LinkBuilder GotLinkBuilderMsg model
 
@@ -192,6 +218,7 @@ changeRouteTo url config maybeRoute model =
                 config
                 session
                 aggregations
+                committee
                 committeeId
                 |> updateWith NeedsReview GotNeedsReviewMsg model
 
@@ -269,13 +296,16 @@ view model =
         aggregations =
             toAggregations model
 
+        committee =
+            toCommittee model
+
         config =
             toConfig model
 
         viewPage page toMsg conf =
             let
                 { title, body } =
-                    Page.view config aggregations page conf
+                    Page.view config aggregations committee page conf
             in
             { title = title
             , body = List.map (Html.map toMsg) body
@@ -283,10 +313,10 @@ view model =
     in
     case model of
         Redirect _ ->
-            Page.view config aggregations Page.Other Blank.view
+            Page.view config aggregations committee Page.Other Blank.view
 
         NotFound _ ->
-            Page.view config aggregations Page.Other NotFound.view
+            Page.view config aggregations committee Page.Other NotFound.view
 
         Transactions transactions ->
             viewPage Page.Transactions GotTransactionsMsg (Transactions.view transactions)

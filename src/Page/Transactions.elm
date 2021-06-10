@@ -2,7 +2,7 @@ module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, u
 
 import Aggregations as Aggregations
 import Api exposing (Cred, Token)
-import Api.Endpoint as Endpoint exposing (Endpoint(..))
+import Api.Endpoint exposing (Endpoint(..))
 import Api.GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, encodeTransactionQuery, getTransactions, graphQLErrorDecoder, transactionQuery)
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
@@ -14,6 +14,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
 import Cents
+import Committee
 import Config exposing (Config)
 import Config.Env exposing (loginUrl)
 import CreateContribution
@@ -55,6 +56,7 @@ type alias Model =
     , timeZone : Time.Zone
     , transactions : Transactions.Model
     , aggregations : Aggregations.Model
+    , committee : Committee.Model
     , currentSort : Disbursements.Label
     , createContributionModalVisibility : Modal.Visibility
     , createContributionModal : CreateContribution.Model
@@ -73,14 +75,15 @@ type alias Model =
     }
 
 
-init : Config -> Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
-init config session aggs committeeId =
+init : Config -> Session -> Aggregations.Model -> Committee.Model -> String -> ( Model, Cmd Msg )
+init config session aggs committee committeeId =
     ( { session = session
       , loading = True
       , committeeId = committeeId
       , timeZone = Time.utc
       , transactions = []
       , aggregations = aggs
+      , committee = committee
       , currentSort = Disbursements.Record
       , createContributionModalVisibility = Modal.hidden
       , createContributionModal = CreateContribution.init
@@ -109,7 +112,7 @@ loadedView : Model -> Html Msg
 loadedView model =
     div [ class "fade-in" ]
         [ dropdowns model
-        , Transactions.view SortTransactions [] model.transactions
+        , Transactions.view model.committee SortTransactions [] model.transactions
         , createContributionModal model
         , generateDisclosureModal model
         , createDisbursementModal model
@@ -395,6 +398,7 @@ update msg model =
                     ( { model
                         | transactions = body.data.transactions
                         , aggregations = body.data.aggregations
+                        , committee = body.data.committee
                         , loading = False
                       }
                     , Cmd.none
@@ -405,7 +409,7 @@ update msg model =
                         { cognitoDomain, cognitoClientId, redirectUri } =
                             model.config
                     in
-                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                    ( model, Cmd.none )
 
         --( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
         ShowCreateContributionModal ->

@@ -2,11 +2,13 @@ module Page exposing (Page(..), view)
 
 import Aggregations
 import Asset as Asset exposing (Image)
+import Bank
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser exposing (Document)
+import Committee
 import Config exposing (Config)
 import Html exposing (Html, a, div, h1, img, text, ul)
 import Html.Attributes as Attr exposing (class, classList)
@@ -37,11 +39,11 @@ isLoading is for determining whether we should show a loading spinner
 in the header. (This comes up during slow page transitions.)
 
 -}
-view : Config -> Aggregations.Model -> Page -> { title : String, content : Html msg } -> Document msg
-view config aggregations page { title, content } =
+view : Config -> Aggregations.Model -> Committee.Model -> Page -> { title : String, content : Html msg } -> Document msg
+view config aggregations committee page { title, content } =
     { title = title ++ " - Transactions"
     , body =
-        sidebar page :: mainContainer aggregations content :: []
+        sidebar page committee :: mainContainer aggregations content :: []
     }
 
 
@@ -99,22 +101,20 @@ warningBell str =
 -- Sidebar
 
 
-nameInfoRow : Html msg
-nameInfoRow =
+nameInfoRow : String -> Html msg
+nameInfoRow name =
     Grid.row
         [ Row.aroundXs, Row.attrs [ class "text-center" ] ]
-        [ Grid.col [] [ h1 [ class "display-5" ] [ text "Safford" ] ] ]
+        [ Grid.col [] [ h1 [ class "display-5" ] [ text name ] ] ]
 
 
-ruleInfoRow : Html msg
-ruleInfoRow =
+ruleInfoRow : Committee.Model -> Html msg
+ruleInfoRow committee =
     Grid.row
         [ Row.centerXs ]
-        [ Grid.col [ Col.xs6, Col.attrs [ class "border-right border-blue", class "text-right" ] ] [ text "Supervisor" ]
+        [ Grid.col [ Col.xs6, Col.attrs [ class "border-right border-blue", class "text-right text-capitalize" ] ] [ text committee.officeType ]
         , Grid.col [ Col.xs6 ]
-            [ img
-                [ Asset.src Asset.chaseBankLogo, class "header-info-bank-logo" ]
-                []
+            [ Bank.stringToLogo committee.bankName
             ]
         ]
 
@@ -155,19 +155,19 @@ selected page route =
         ""
 
 
-committeeInfoContainer : Html msg
-committeeInfoContainer =
+committeeInfoContainer : Committee.Model -> Html msg
+committeeInfoContainer committee =
     Grid.containerFluid
         []
-        [ nameInfoRow
-        , ruleInfoRow
+        [ nameInfoRow committee.candidateLastName
+        , ruleInfoRow committee
         ]
 
 
-sidebar : Page -> Html msg
-sidebar page =
+sidebar : Page -> Committee.Model -> Html msg
+sidebar page committee =
     div [ class "sidebar-container border-right border-blue", Spacing.pl0 ]
-        [ committeeInfoContainer
+        [ committeeInfoContainer committee
         , navContainer page
         , logo
         ]

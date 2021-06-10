@@ -24,6 +24,11 @@ committeeQuery =
               totalContributionsInProcessing
               totalDisbursementsInProcessing
             }
+            committee(committeeId: $committeeId) {
+              candidateLastName
+              officeType
+              bankName
+            }
     """
 
 

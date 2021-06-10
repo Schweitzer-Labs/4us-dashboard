@@ -1,7 +1,9 @@
 module Transactions exposing (Label(..), Model, decoder, labels, statusContent, stringToBool, transactionRowMap, verifiedContent, view)
 
 import Asset
+import Bank
 import Cents
+import Committee
 import DataTable exposing (DataRow)
 import Direction
 import EntityType exposing (EntityType(..))
@@ -49,31 +51,31 @@ labels sortMsg =
     ]
 
 
-view : (Label -> msg) -> List (Html msg) -> List Transaction.Model -> Html msg
-view sortMsg content txns =
-    DataTable.view "Awaiting Transactions." content (labels sortMsg) transactionRowMap <|
+view : Committee.Model -> (Label -> msg) -> List (Html msg) -> List Transaction.Model -> Html msg
+view committee sortMsg content txns =
+    DataTable.view "Awaiting Transactions." content (labels sortMsg) (transactionRowMap committee) <|
         List.map (\d -> ( Nothing, d )) <|
             List.reverse (sortBy .initiatedTimestamp txns)
 
 
-processor : Transaction.Model -> Html msg
-processor model =
+processor : Committee.Model -> Transaction.Model -> Html msg
+processor committee model =
     case model.paymentMethod of
         PaymentMethod.Credit ->
             if model.stripePaymentIntentId /= Nothing then
                 img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
 
             else
-                img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
+                Bank.stringToLogo committee.bankName
 
         PaymentMethod.Debit ->
-            img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
+            Bank.stringToLogo committee.bankName
 
         PaymentMethod.Ach ->
-            img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
+            Bank.stringToLogo committee.bankName
 
         PaymentMethod.Check ->
-            img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
+            Bank.stringToLogo committee.bankName
 
         _ ->
             text "N/A"
@@ -145,8 +147,8 @@ uppercaseText str =
     span [ class "text-capitalize" ] [ text str ]
 
 
-transactionRowMap : ( Maybe msg, Transaction.Model ) -> ( Maybe msg, DataRow msg )
-transactionRowMap ( maybeMsg, transaction ) =
+transactionRowMap : Committee.Model -> ( Maybe msg, Transaction.Model ) -> ( Maybe msg, DataRow msg )
+transactionRowMap committee ( maybeMsg, transaction ) =
     let
         name =
             Maybe.withDefault missingContent (Maybe.map uppercaseText <| getEntityName transaction)
@@ -167,7 +169,7 @@ transactionRowMap ( maybeMsg, transaction ) =
       , ( "Amount", amount )
       , ( "Verified", verifiedContent <| transaction.ruleVerified )
       , ( "Payment Method", text <| PaymentMethod.toDisplayString transaction.paymentMethod )
-      , ( "Processor", processor transaction )
+      , ( "Processor", processor committee transaction )
       , ( "Status", getStatus transaction )
       ]
     )

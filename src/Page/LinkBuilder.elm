@@ -18,6 +18,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
+import Committee
 import Config exposing (Config)
 import Config.Env exposing (loginUrl)
 import Html exposing (..)
@@ -42,18 +43,20 @@ type alias Model =
     , url : String
     , committeeId : String
     , aggregations : Aggregations.Model
+    , committee : Committee.Model
     , config : Config
     }
 
 
-init : Config -> Session -> Aggregations.Model -> String -> ( Model, Cmd Msg )
-init config session aggs committeeId =
+init : Config -> Session -> Aggregations.Model -> Committee.Model -> String -> ( Model, Cmd Msg )
+init config session aggs committee committeeId =
     ( { session = session
       , refCode = ""
       , amount = ""
       , url = ""
       , committeeId = committeeId
       , aggregations = aggs
+      , committee = committee
       , config = config
       }
     , getTransactions config committeeId LoadAggregationsData Nothing
@@ -180,6 +183,7 @@ update msg model =
                 Ok body ->
                     ( { model
                         | aggregations = body.data.aggregations
+                        , committee = body.data.committee
                       }
                     , Cmd.none
                     )
