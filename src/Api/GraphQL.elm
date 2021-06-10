@@ -1,7 +1,12 @@
-module Api.GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, encodeTransactionQuery, graphQLErrorDecoder, transactionQuery)
+module Api.GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, encodeTransactionQuery, getTransactions, graphQLErrorDecoder, transactionQuery)
 
+import Api
+import Api.Endpoint exposing (Endpoint(..))
+import Config exposing (Config)
+import Http
 import Json.Decode as Decode
 import Json.Encode as Encode exposing (Value)
+import Transaction.TransactionsData as TransactionsData exposing (TransactionsData)
 import TransactionType exposing (TransactionType)
 
 
@@ -202,3 +207,19 @@ graphQLErrorDecoder =
 type MutationResponse
     = Success String
     | ValidationFailure (List String)
+
+
+getTransactions :
+    Config
+    -> String
+    -> (Result Http.Error TransactionsData -> msg)
+    -> Maybe TransactionType
+    -> Cmd msg
+getTransactions config committeeId updateMsg maybeTxnType =
+    let
+        body =
+            encodeTransactionQuery transactionQuery committeeId maybeTxnType |> Http.jsonBody
+    in
+    Http.send updateMsg <|
+        Api.post (Endpoint config.apiEndpoint) (Api.Token config.token) body <|
+            TransactionsData.decode

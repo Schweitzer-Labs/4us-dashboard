@@ -56,11 +56,15 @@ view sortMsg content txns =
             List.reverse (sortBy .initiatedTimestamp txns)
 
 
-processor : PaymentMethod -> Html msg
-processor method =
-    case method of
+processor : Transaction.Model -> Html msg
+processor model =
+    case model.paymentMethod of
         PaymentMethod.Credit ->
-            img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
+            if model.stripePaymentIntentId /= Nothing then
+                img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
+
+            else
+                img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
 
         PaymentMethod.Debit ->
             img [ Asset.src Asset.chaseBankLogo, class "tbd-logo" ] []
@@ -163,7 +167,7 @@ transactionRowMap ( maybeMsg, transaction ) =
       , ( "Amount", amount )
       , ( "Verified", verifiedContent <| transaction.ruleVerified )
       , ( "Payment Method", text <| PaymentMethod.toDisplayString transaction.paymentMethod )
-      , ( "Processor", processor transaction.paymentMethod )
+      , ( "Processor", processor transaction )
       , ( "Status", getStatus transaction )
       ]
     )

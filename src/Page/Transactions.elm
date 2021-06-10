@@ -3,7 +3,7 @@ module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, u
 import Aggregations as Aggregations
 import Api exposing (Cred, Token)
 import Api.Endpoint as Endpoint exposing (Endpoint(..))
-import Api.GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, encodeTransactionQuery, graphQLErrorDecoder, transactionQuery)
+import Api.GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, encodeTransactionQuery, getTransactions, graphQLErrorDecoder, transactionQuery)
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Grid as Grid exposing (Column)
@@ -97,7 +97,7 @@ init config session aggs committeeId =
       , createDisbursementSubmitting = False
       , config = config
       }
-    , getTransactions config committeeId Nothing
+    , getTransactions config committeeId LoadTransactionsData Nothing
     )
 
 
@@ -407,6 +407,7 @@ update msg model =
                     in
                     ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
 
+        --( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
         ShowCreateContributionModal ->
             ( { model
                 | createContributionModalVisibility = Modal.shown
@@ -514,7 +515,7 @@ update msg model =
                 | createContributionModalVisibility = Modal.hidden
                 , createContributionSubmitting = False
               }
-            , getTransactions model.config model.committeeId model.filterTransactionType
+            , getTransactions model.config model.committeeId LoadTransactionsData model.filterTransactionType
             )
 
         ToggleActionsDropdown state ->
@@ -528,17 +529,17 @@ update msg model =
 
         FilterByContributions ->
             ( { model | filterTransactionType = Just TransactionType.Contribution }
-            , getTransactions model.config model.committeeId (Just TransactionType.Contribution)
+            , getTransactions model.config model.committeeId LoadTransactionsData (Just TransactionType.Contribution)
             )
 
         FilterByDisbursements ->
             ( { model | filterTransactionType = Just TransactionType.Disbursement }
-            , getTransactions model.config model.committeeId (Just TransactionType.Disbursement)
+            , getTransactions model.config model.committeeId LoadTransactionsData (Just TransactionType.Disbursement)
             )
 
         FilterAll ->
             ( { model | filterTransactionType = Nothing }
-            , getTransactions model.config model.committeeId Nothing
+            , getTransactions model.config model.committeeId LoadTransactionsData Nothing
             )
 
         FileDisclosure ->
@@ -581,7 +582,7 @@ update msg model =
                 , createDisbursementSubmitting = False
                 , createDisbursementModal = CreateDisbursement.init
               }
-            , getTransactions model.config model.committeeId Nothing
+            , getTransactions model.config model.committeeId LoadTransactionsData Nothing
             )
 
 
@@ -725,21 +726,6 @@ createContributionSuccessDecoder =
 mutationValidationFailureDecoder : Decode.Decoder MutationResponse
 mutationValidationFailureDecoder =
     Decode.map ValidationFailure graphQLErrorDecoder
-
-
-getTransactions :
-    Config
-    -> String
-    -> Maybe TransactionType
-    -> Cmd Msg
-getTransactions config committeeId maybeTxnType =
-    let
-        body =
-            encodeTransactionQuery transactionQuery committeeId maybeTxnType |> Http.jsonBody
-    in
-    Http.send LoadTransactionsData <|
-        Api.post (Endpoint config.apiEndpoint) (Api.Token config.token) body <|
-            TransactionsData.decode
 
 
 encodeDisbursement : Model -> Encode.Value

@@ -6,6 +6,7 @@ module Page.LinkBuilder exposing (Model, Msg, init, subscriptions, toSession, up
 import Aggregations
 import Api exposing (Token)
 import Api.Endpoint exposing (Endpoint(..))
+import Api.GraphQL exposing (getTransactions)
 import Bootstrap.Button as Button
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
@@ -26,6 +27,7 @@ import QRCode
 import Session exposing (Session)
 import Task exposing (Task)
 import Transaction.ContributionsData as ContributionsData exposing (ContributionsData)
+import Transaction.TransactionsData exposing (TransactionsData)
 import Url.Builder
 
 
@@ -54,7 +56,7 @@ init config session aggs committeeId =
       , aggregations = aggs
       , config = config
       }
-    , getAggregations config committeeId
+    , getTransactions config committeeId LoadAggregationsData Nothing
     )
 
 
@@ -158,7 +160,7 @@ type Msg
     = GotSession Session
     | RefCodeUpdated String
     | AmountUpdated String
-    | LoadAggregationsData (Result Http.Error ContributionsData)
+    | LoadAggregationsData (Result Http.Error TransactionsData)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -175,9 +177,9 @@ update msg model =
 
         LoadAggregationsData res ->
             case res of
-                Ok data ->
+                Ok body ->
                     ( { model
-                        | aggregations = data.aggregations
+                        | aggregations = body.data.aggregations
                       }
                     , Cmd.none
                     )
@@ -211,12 +213,6 @@ createUrl donorUrl committeeId refCode amount =
                 []
     in
     Url.Builder.crossOrigin donorUrl [] <| committeeIdVal ++ refCodeVal ++ amountVal
-
-
-getAggregations : Config -> String -> Cmd Msg
-getAggregations config committeeId =
-    Http.send LoadAggregationsData <|
-        Api.get (Endpoint config.apiEndpoint) (Api.Token config.token) ContributionsData.decode
 
 
 scrollToTop : Task x ()

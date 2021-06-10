@@ -8,8 +8,8 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser exposing (Document)
 import Config exposing (Config)
-import Html exposing (Html, a, button, div, footer, h1, h2, h3, i, img, li, nav, p, span, text, ul)
-import Html.Attributes as Attr exposing (class, classList, href, style)
+import Html exposing (Html, a, div, h1, img, text, ul)
+import Html.Attributes as Attr exposing (class, classList)
 import Route exposing (Route)
 
 
@@ -134,7 +134,7 @@ pageIsActive page route =
             True
 
         ( NeedsReview, Route.NeedsReview ) ->
-            True
+            False
 
         ( LinkBuilder, Route.LinkBuilder ) ->
             True
@@ -179,7 +179,7 @@ navContainer page =
         [ Spacing.mt5 ]
         [ navRow True (Asset.coinsGlyph [ class "tool-glyph" ]) page Route.Transactions "Transactions"
         , navRow False (Asset.searchDollarGlyph [ class "tool-glyph" ]) page Route.NeedsReview "Needs Review"
-        , navRow False (Asset.linkGlyph [ class "tool-glyph" ]) page Route.LinkBuilder "Link Builder"
+        , navRow True (Asset.linkGlyph [ class "tool-glyph" ]) page Route.LinkBuilder "Link Builder"
         ]
 
 
@@ -190,6 +190,21 @@ toolBarAsset image =
 
 navRow : Bool -> Html msg -> Page -> Route -> String -> Html msg
 navRow enabled glyph page route label =
+    let
+        activeText =
+            if enabled then
+                ""
+
+            else
+                "text-muted"
+
+        activeRoute =
+            if enabled then
+                [ Route.href route ]
+
+            else
+                []
+    in
     Grid.row
         [ Row.centerXs
         , Row.attrs [ class "hover-underline hover-black" ]
@@ -197,7 +212,7 @@ navRow enabled glyph page route label =
         ]
         [ Grid.col
             []
-            [ a [ class "hover-black text-muted" ]
+            [ a ([ class <| "hover-black " ++ activeText ] ++ activeRoute)
                 [ Grid.containerFluid
                     [ class <| "" ++ selected page route
                     ]

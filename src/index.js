@@ -4,11 +4,9 @@ import * as serviceWorker from './serviceWorker';
 
 const cognitoDomain = process.env.ELM_APP_COGNITO_DOMAIN
 const cognitoClientId = process.env.ELM_APP_COGNITO_CLIENT_ID
-const redirectUri = process.env.ELM_APP_COGNITO_REDIRECT_URI
+const redirectUri = window.location.origin
 const donorUrl = process.env.ELM_APP_DONOR_URL
 const apiEndpoint = process.env.ELM_APP_API_ENDPOINT
-
-console.log(process.env)
 
 const getTokenFromUrl = (url) => {
   const firstTrim = url.split('id_token=')
