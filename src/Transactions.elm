@@ -1,4 +1,4 @@
-module Transactions exposing (Label(..), Model, decoder, labels, statusContent, stringToBool, transactionRowMap, verifiedContent, view)
+module Transactions exposing (Label(..), Model, decoder, labels, statusContent, stringToBool, transactionRowMap, verifiedContent, view, viewInteractive)
 
 import Asset
 import Bank
@@ -55,6 +55,13 @@ view : Committee.Model -> (Label -> msg) -> List (Html msg) -> List Transaction.
 view committee sortMsg content txns =
     DataTable.view "Awaiting Transactions." content (labels sortMsg) (transactionRowMap committee) <|
         List.map (\d -> ( Nothing, d )) <|
+            List.reverse (sortBy .initiatedTimestamp txns)
+
+
+viewInteractive : Committee.Model -> (Label -> msg) -> (Transaction.Model -> msg) -> List (Html msg) -> List Transaction.Model -> Html msg
+viewInteractive committee sortMsg selectMsg content txns =
+    DataTable.view "Awaiting Transactions." content (labels sortMsg) (transactionRowMap committee) <|
+        List.map (\t -> ( Just <| selectMsg t, t )) <|
             List.reverse (sortBy .initiatedTimestamp txns)
 
 

@@ -22,6 +22,7 @@ import CreateDisbursement
 import Delay
 import Disbursement as Disbursement
 import Disbursements
+import EnrichTransaction
 import EntityType
 import File.Download as Download
 import FileDisclosure
@@ -40,6 +41,7 @@ import SubmitButton exposing (submitButton)
 import Task exposing (Task)
 import Time
 import Timestamp exposing (dateStringToMillis)
+import Transaction
 import Transaction.TransactionsData as TransactionsData exposing (TransactionsData)
 import TransactionType exposing (TransactionType(..))
 import Transactions
@@ -71,6 +73,9 @@ type alias Model =
     , createDisbursementModalVisibility : Modal.Visibility
     , createDisbursementModal : CreateDisbursement.Model
     , createDisbursementSubmitting : Bool
+    , enrichTransactionModalVisibility : Modal.Visibility
+    , enrichTransactionModal : Transaction.Model
+    , enrichTransactionSubmitting : Bool
     , config : Config
     }
 
@@ -98,6 +103,9 @@ init config session aggs committee committeeId =
       , createDisbursementModalVisibility = Modal.hidden
       , createDisbursementModal = CreateDisbursement.init
       , createDisbursementSubmitting = False
+      , enrichTransactionModalVisibility = Modal.hidden
+      , enrichTransactionModal = Transaction.init
+      , enrichTransactionSubmitting = False
       , config = config
       }
     , getTransactions config committeeId LoadTransactionsData Nothing
@@ -112,11 +120,32 @@ loadedView : Model -> Html Msg
 loadedView model =
     div [ class "fade-in" ]
         [ dropdowns model
-        , Transactions.view model.committee SortTransactions [] model.transactions
+        , Transactions.viewInteractive model.committee SortTransactions ShowEnrichTransactionModal [] model.transactions
         , createContributionModal model
         , generateDisclosureModal model
         , createDisbursementModal model
+        , enrichTransactionModal model
         ]
+
+
+enrichTransactionModal : Model -> Html Msg
+enrichTransactionModal model =
+    Modal.config HideEnrichTransactionModal
+        |> Modal.withAnimation AnimateEnrichTransactionModal
+        |> Modal.large
+        |> Modal.hideOnBackdropClick True
+        |> Modal.h3 [] [ text "Complete Disbursement" ]
+        |> Modal.body
+            []
+            [ Html.map EnrichTransactionModalUpdated <|
+                EnrichTransaction.view model.enrichTransactionModal
+            ]
+        |> Modal.footer []
+            [ Grid.containerFluid
+                []
+                [ buttonRow "Verify" SubmitEnrichedDisbursement model.enrichTransactionSubmitting True model.enrichTransactionSubmitting ]
+            ]
+        |> Modal.view model.enrichTransactionModalVisibility
 
 
 createDisbursementModal : Model -> Html Msg
@@ -356,6 +385,13 @@ type Msg
     | AnimateCreateDisbursementModal Modal.Visibility
     | SubmitCreateDisbursement
     | SubmitCreateDisbursementDelay
+    | HideEnrichTransactionModal
+    | ShowEnrichTransactionModal Transaction.Model
+    | EnrichTransactionModalUpdated EnrichTransaction.Msg
+    | AnimateEnrichTransactionModal Modal.Visibility
+    | GotEnrichTransactionResponse (Result Http.Error String)
+    | SubmitEnrichedDisbursement
+    | SubmitEnrichedDisbursementDelay
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -589,6 +625,43 @@ update msg model =
             , getTransactions model.config model.committeeId LoadTransactionsData Nothing
             )
 
+        ShowEnrichTransactionModal transaction ->
+            ( { model
+                | enrichTransactionModalVisibility = Modal.shown
+                , enrichTransactionModal = transaction
+              }
+            , Cmd.none
+            )
+
+        HideEnrichTransactionModal ->
+            ( { model | enrichTransactionModalVisibility = Modal.hidden }
+            , Cmd.none
+            )
+
+        GotEnrichTransactionResponse res ->
+            case res of
+                Ok data ->
+                    ( model, Delay.after 1 Delay.Second SubmitEnrichedDisbursementDelay )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        SubmitEnrichedDisbursement ->
+            ( model, Cmd.none )
+
+        SubmitEnrichedDisbursementDelay ->
+            ( model, Cmd.none )
+
+        EnrichTransactionModalUpdated subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    EnrichTransaction.update subMsg model.enrichTransactionModal
+            in
+            ( { model | enrichTransactionModal = subModel }, Cmd.map EnrichTransactionModalUpdated subCmd )
+
+        AnimateEnrichTransactionModal visibility ->
+            ( { model | enrichTransactionModalVisibility = visibility }, Cmd.none )
+
 
 applyFilter : Transactions.Label -> (Disbursement.Model -> String) -> Model -> Model
 applyFilter label field model =
@@ -625,6 +698,7 @@ subscriptions model =
         , Dropdown.subscriptions model.filtersDropdown ToggleFiltersDropdown
         , Dropdown.subscriptions model.generateDisclosureModalDownloadDropdownState ToggleGenerateDisclosureModalDownloadDropdown
         , Modal.subscriptions model.createDisbursementModalVisibility AnimateCreateDisbursementModal
+        , Modal.subscriptions model.enrichTransactionModalVisibility AnimateEnrichTransactionModal
         ]
 
 

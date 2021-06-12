@@ -1,4 +1,4 @@
-module PurposeCode exposing (PurposeCode(..), fromString, purposeCodeText, select, toString)
+module PurposeCode exposing (PurposeCode(..), fromMaybeToString, fromString, purposeCodeText, select, toString)
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Select as Select
@@ -132,6 +132,11 @@ toString purpose =
 
         Nothing ->
             ""
+
+
+fromMaybeToString : Maybe PurposeCode -> String
+fromMaybeToString =
+    Maybe.withDefault "" << Maybe.map toString
 
 
 select : (String -> msg) -> Html msg

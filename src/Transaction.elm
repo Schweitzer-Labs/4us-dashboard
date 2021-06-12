@@ -1,4 +1,4 @@
-module Transaction exposing (Model, decoder)
+module Transaction exposing (Model, decoder, init)
 
 import Direction exposing (Direction)
 import EntityType exposing (EntityType)
@@ -41,6 +41,48 @@ type alias Model =
     , stripePaymentIntentId : Maybe String
     , cardNumberLastFourDigits : Maybe String
     , entityName : Maybe String
+    , isSubcontracted : Maybe Bool
+    , isPartialPayment : Maybe Bool
+    , isExistingLiability : Maybe Bool
+    }
+
+
+init : Model
+init =
+    { id = ""
+    , committeeId = ""
+    , direction = Direction.Out
+    , amount = 0
+    , paymentMethod = PaymentMethod.Other
+    , bankVerified = False
+    , ruleVerified = False
+    , initiatedTimestamp = 0
+    , bankVerifiedTimestamp = Nothing
+    , ruleVerifiedTimestamp = Nothing
+    , purposeCode = Nothing
+    , refCode = Nothing
+    , firstName = Nothing
+    , middleName = Nothing
+    , lastName = Nothing
+    , addressLine1 = Nothing
+    , addressLine2 = Nothing
+    , city = Nothing
+    , state = Nothing
+    , postalCode = Nothing
+    , employer = Nothing
+    , occupation = Nothing
+    , entityType = Nothing
+    , companyName = Nothing
+    , phoneNumber = Nothing
+    , emailAddress = Nothing
+    , transactionType = Nothing
+    , attestsToBeingAnAdultCitizen = Nothing
+    , stripePaymentIntentId = Nothing
+    , cardNumberLastFourDigits = Nothing
+    , entityName = Nothing
+    , isSubcontracted = Nothing
+    , isPartialPayment = Nothing
+    , isExistingLiability = Nothing
     }
 
 
@@ -102,3 +144,6 @@ decoder =
         |> maybeString "stripePaymentIntentId"
         |> maybeString "cardNumberLastFourDigits"
         |> maybeString "entityName"
+        |> maybeBool "isSubcontracted"
+        |> maybeBool "isPartialPayment"
+        |> maybeBool "isExistingLiability"

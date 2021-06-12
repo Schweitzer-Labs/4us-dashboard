@@ -44,8 +44,8 @@ type alias Model =
     , committee : Committee.Model
     , enrichDisbursementModalVisibility : Modal.Visibility
     , enrichDisbursementModal : Disbursement.Model
-    , currentSort : Disbursements.Label
     , enrichDisbursementSubmitting : Bool
+    , currentSort : Disbursements.Label
     , config : Config
     }
 
@@ -61,9 +61,9 @@ init config session aggs committee committeeId =
       , committee = committee
       , enrichDisbursementModalVisibility = Modal.hidden
       , enrichDisbursementModal = Disbursement.init
-      , currentSort = Disbursements.Record
       , enrichDisbursementSubmitting = False
       , config = config
+      , currentSort = Disbursements.Record
       }
       --, getDisbursementsData token committeeId
     , Cmd.none
@@ -174,6 +174,20 @@ update msg model =
             , Cmd.none
             )
 
+        GotEnrichDisbursementResponse res ->
+            case res of
+                Ok data ->
+                    ( model, Delay.after 1 Delay.Second SubmitEnrichedDisbursementDelay )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        SubmitEnrichedDisbursement ->
+            ( model, Cmd.none )
+
+        SubmitEnrichedDisbursementDelay ->
+            ( model, Cmd.none )
+
         --SubmitEnrichedDisbursement ->
         --    ( { model
         --        | enrichDisbursementSubmitting = True
@@ -212,20 +226,6 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
-
-        GotEnrichDisbursementResponse res ->
-            case res of
-                Ok data ->
-                    ( model, Delay.after 1 Delay.Second SubmitEnrichedDisbursementDelay )
-
-                Err _ ->
-                    ( model, Cmd.none )
-
-        SubmitEnrichedDisbursement ->
-            ( model, Cmd.none )
-
-        SubmitEnrichedDisbursementDelay ->
-            ( model, Cmd.none )
 
 
 
