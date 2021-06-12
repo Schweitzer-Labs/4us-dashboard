@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-css": "node-sass-chokidar src/ -o src/",
     "watch-css": "npm run build-css && node-sass-chokidar src/ -o src/ --watch --recursive",
-    "start": "PORT=3000 ELM_APP_COGNITO_DOMAIN=https://platform-user-4us-qa.auth.us-west-2.amazoncognito.com ELM_APP_COGNITO_CLIENT_ID=30knht1q778i0qls8n0v8prsfm ELM_APP_COGNITO_REDIRECT_URI=http://localhost:3000 ELM_APP_DONOR_URL=https://donate.build4.us ELM_APP_API_ENDPOINT=http://localhost:8011/proxy elm-app start",
+    "start": "PORT=3000 ELM_APP_COGNITO_DOMAIN=localhost:3030 ELM_APP_COGNITO_CLIENT_ID=30knht1q778i0qls8n0v8prsfm ELM_APP_COGNITO_REDIRECT_URI=http://localhost:3000 ELM_APP_DONOR_URL=http://localhost:3001 ELM_APP_API_ENDPOINT=http://localhost:4000 elm-app start",
     "proxy-qa": "lcp --proxyUrl=https://dashboard.build4.us/api/committee/graphql --port=8011",
     "build": "ELM_APP_COGNITO_DOMAIN=$npm_config_domain ELM_APP_COGNITO_CLIENT_ID=$npm_config_clientid ELM_APP_COGNITO_REDIRECT_URI=$npm_config_redirect ELM_APP_DONOR_URL=$npm_config_donorurl ELM_APP_API_ENDPOINT=$npm_config_apiendpoint elm-app build"
   },
@@ -21,5 +21,9 @@
     "bootstrap": "^4.5.3",
     "dotenv": "^10.0.0",
     "string-extra": "github:elm-community/string-extra"
+  },
+  "devDependencies": {
+    "express": "^4.17.1",
+    "query-string": "^7.0.0"
   }
 }
