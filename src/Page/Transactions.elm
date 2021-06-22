@@ -445,9 +445,8 @@ update msg model =
                         { cognitoDomain, cognitoClientId, redirectUri } =
                             model.config
                     in
-                    ( model, Cmd.none )
+                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
 
-        --( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
         ShowCreateContributionModal ->
             ( { model
                 | createContributionModalVisibility = Modal.shown
