@@ -7,7 +7,7 @@ ifeq ($(RUNENV), )
 endif
 
 ifeq ($(PRODUCT), )
-	export PRODUCT	:= p2
+	export PRODUCT	:= 4us
 endif
 
 # Deduce the Domain related parameters based on the RUNENV and PRODUCT params
