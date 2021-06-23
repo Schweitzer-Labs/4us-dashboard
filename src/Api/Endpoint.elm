@@ -1,6 +1,5 @@
 module Api.Endpoint exposing
     ( Endpoint(..)
-    , fromString
     , request
     )
 
@@ -31,11 +30,6 @@ request config =
         , url = unwrap config.url
         , withCredentials = config.withCredentials
         }
-
-
-fromString : String -> Endpoint
-fromString str =
-    Endpoint str
 
 
 
