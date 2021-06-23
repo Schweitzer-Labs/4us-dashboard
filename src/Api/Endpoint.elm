@@ -3,9 +3,8 @@ module Api.Endpoint exposing
     , request
     )
 
-import Direction exposing (Direction)
 import Http
-import Url.Builder exposing (QueryParameter, string)
+import Url.Builder exposing (QueryParameter)
 
 
 {-| Http.request, except it takes an Endpoint instead of a Url.
