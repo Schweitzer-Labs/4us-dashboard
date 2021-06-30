@@ -1,14 +1,10 @@
 module Api.Endpoint exposing
     ( Endpoint(..)
-    , fromString
     , request
-    , transactions
-    , verifyDisbursement
     )
 
-import Direction exposing (Direction)
 import Http
-import Url.Builder exposing (QueryParameter, string)
+import Url.Builder exposing (QueryParameter)
 
 
 {-| Http.request, except it takes an Endpoint instead of a Url.
@@ -33,11 +29,6 @@ request config =
         , url = unwrap config.url
         , withCredentials = config.withCredentials
         }
-
-
-fromString : String -> Endpoint
-fromString str =
-    Endpoint str
 
 
 
@@ -66,26 +57,3 @@ url endpoint paths queryParams =
         paths
         queryParams
         |> Endpoint
-
-
-
--- ENDPOINTS
-
-
-transactions : String -> String -> Maybe Direction -> Endpoint
-transactions endpoint committeeId maybeDirection =
-    let
-        query =
-            case maybeDirection of
-                Just direction ->
-                    [ string "direction" <| Direction.toString direction ]
-
-                Nothing ->
-                    []
-    in
-    url endpoint [ "transactions", committeeId ] query
-
-
-verifyDisbursement : String -> String -> Endpoint
-verifyDisbursement endpoint committeeId =
-    url endpoint [ "disbursement", "verify", committeeId ] []

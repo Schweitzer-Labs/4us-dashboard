@@ -9,10 +9,15 @@ IMPORTED_RESOURCES := ImportedResources.yml
 
 ENDPOINT 	:= https://cloudformation-fips.$(REGION).amazonaws.com
 
-STACK_PARAMS	:= ParameterKey=RunEnvironment,ParameterValue=$(RUNENV)
-STACK_PARAMS	+= ParameterKey=Domain,ParameterValue=$(DOMAIN)
-STACK_PARAMS	+= ParameterKey=SubDomain,ParameterValue=$(SUBDOMAIN)
-STACK_PARAMS	+= ParameterKey=TLD,ParameterValue=$(TLD)
+STACK_IMPORT_PARAMS	:= ParameterKey=RunEnvironment,ParameterValue=$(RUNENV)
+STACK_IMPORT_PARAMS	+= ParameterKey=Domain,ParameterValue=$(DOMAIN)
+STACK_IMPORT_PARAMS	+= ParameterKey=SubDomain,ParameterValue=$(SUBDOMAIN)
+STACK_IMPORT_PARAMS	+= ParameterKey=TLD,ParameterValue=$(TLD)
+
+STACK_PARAMS += RunEnvironment=$(RUNENV)
+STACK_PARAMS += Domain=$(DOMAIN)
+STACK_PARAMS += SubDomain=$(SUBDOMAIN)
+STACK_PARAMS += TLD=$(TLD)
 
 CREPES_PARAMS	:= --region $(REGION)
 CREPES_PARAMS	+= --subdomain $(SUBDOMAIN) --domain $(DOMAIN) --tld $(TLD) --runenv $(RUNENV) --product $(PRODUCT)
@@ -68,7 +73,7 @@ import: $(IMPORTS) buildimports
 		--capabilities \
 			CAPABILITY_NAMED_IAM \
 		--parameters \
-			$(STACK_PARAMS)
+			$(STACK_IMPORT_PARAMS)
 	@aws cloudformation describe-change-set \
 		--region=$(REGION) \
 		--endpoint-url $(ENDPOINT) \
@@ -116,4 +121,4 @@ deploy: package
 			CAPABILITY_NAMED_IAM \
 			CAPABILITY_AUTO_EXPAND \
 		--parameter-overrides \
-		$(STACK_PARAMS)
+			$(STACK_PARAMS)
