@@ -23,5 +23,5 @@ Run SCSS file watch
 ```npm run watch-css```
 
 
-
-
+## Deploy
+```make clean deploy```

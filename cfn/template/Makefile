@@ -9,7 +9,7 @@ IMPORTED_RESOURCES := ImportedResources.yml
 
 ENDPOINT 	:= https://cloudformation-fips.$(REGION).amazonaws.com
 
-STACK_IMPORT_PARAMS	:= ParameterKey=RunEnvironment,ParameterValue=$(RUNENV)
+STACK_IMPORT_PARAMS	+= ParameterKey=RunEnvironment,ParameterValue=$(RUNENV)
 STACK_IMPORT_PARAMS	+= ParameterKey=Domain,ParameterValue=$(DOMAIN)
 STACK_IMPORT_PARAMS	+= ParameterKey=SubDomain,ParameterValue=$(SUBDOMAIN)
 STACK_IMPORT_PARAMS	+= ParameterKey=TLD,ParameterValue=$(TLD)
