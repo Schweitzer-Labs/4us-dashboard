@@ -220,7 +220,7 @@ actionsDropdown model =
             { options = []
             , toggleMsg = ToggleActionsDropdown
             , toggleButton =
-                Dropdown.toggle [ Button.success, Button.disabled True, Button.attrs [ Spacing.pl3, Spacing.pr3 ] ] [ text "Actions" ]
+                Dropdown.toggle [ Button.success, Button.disabled False, Button.attrs [ Spacing.pl3, Spacing.pr3 ] ] [ text "Actions" ]
             , items =
                 [ Dropdown.buttonItem [ onClick ShowCreateContributionModal ] [ text "Create Contribution" ]
                 , Dropdown.buttonItem [ onClick ShowCreateDisbursementModal ] [ text "Create Disbursement" ]
