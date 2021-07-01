@@ -118,8 +118,10 @@ realclean: clean
 package: build
 	@$(MAKE) -C $(CFN_SRC_DIR) package
 
-deploy: package
+deploy-infra: package
 	@$(MAKE) -C $(CFN_SRC_DIR) deploy
+
+deploy: deploy-infra deploy-web
 
 buildimports: $(BUILD_DIR)
 	@$(MAKE) -C $(CFN_SRC_DIR) buildimports
