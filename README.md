@@ -24,4 +24,5 @@ Run SCSS file watch
 
 
 
-
+## Deploy
+```make clean deploy{,-web}```
