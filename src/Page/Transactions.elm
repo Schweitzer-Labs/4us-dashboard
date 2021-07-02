@@ -35,6 +35,7 @@ import Json.Decode as Decode exposing (string)
 import Json.Encode as Encode exposing (Value)
 import Loading
 import PaymentMethod
+import PlatformModal
 import PurposeCode
 import Session exposing (Session)
 import SubmitButton exposing (submitButton)
@@ -130,43 +131,34 @@ loadedView model =
 
 enrichTransactionModal : Model -> Html Msg
 enrichTransactionModal model =
-    Modal.config HideEnrichTransactionModal
-        |> Modal.withAnimation AnimateEnrichTransactionModal
-        |> Modal.large
-        |> Modal.hideOnBackdropClick True
-        |> Modal.h3 [] [ text "Complete Disbursement" ]
-        |> Modal.body
-            []
-            [ Html.map EnrichTransactionModalUpdated <|
-                EnrichTransaction.view model.enrichTransactionModal
-            ]
-        |> Modal.footer []
-            [ Grid.containerFluid
-                []
-                [ buttonRow "Verify" SubmitEnrichedDisbursement model.enrichTransactionSubmitting True model.enrichTransactionSubmitting ]
-            ]
-        |> Modal.view model.enrichTransactionModalVisibility
+    PlatformModal.view
+        { hideMsg = HideEnrichTransactionModal
+        , animateMsg = AnimateEnrichTransactionModal
+        , title = "Complete Disbursement"
+        , updateMsg = EnrichTransactionModalUpdated
+        , subModel = model.enrichTransactionModal
+        , subView = EnrichTransaction.view
+        , submitMsg = SubmitEnrichedDisbursement
+        , submitText = "Verify"
+        , isSubmitting = model.enrichTransactionSubmitting
+        , visibility = model.enrichTransactionModalVisibility
+        }
 
 
 createDisbursementModal : Model -> Html Msg
 createDisbursementModal model =
-    Modal.config HideCreateDisbursementModal
-        |> Modal.withAnimation AnimateCreateDisbursementModal
-        |> Modal.large
-        |> Modal.scrollableBody True
-        |> Modal.hideOnBackdropClick True
-        |> Modal.h3 [] [ text "Create Disbursement" ]
-        |> Modal.body
-            []
-            [ Html.map CreateDisbursementModalUpdated <|
-                CreateDisbursement.view model.createDisbursementModal
-            ]
-        |> Modal.footer []
-            [ Grid.containerFluid
-                []
-                [ buttonRow "Create Disbursement" SubmitCreateDisbursement model.createDisbursementSubmitting True model.createDisbursementSubmitting ]
-            ]
-        |> Modal.view model.createDisbursementModalVisibility
+    PlatformModal.view
+        { hideMsg = HideCreateDisbursementModal
+        , animateMsg = AnimateCreateDisbursementModal
+        , title = "Create Disbursement"
+        , updateMsg = CreateDisbursementModalUpdated
+        , subModel = model.createDisbursementModal
+        , subView = CreateDisbursement.view
+        , submitMsg = SubmitCreateDisbursement
+        , submitText = "Create Disbursement"
+        , isSubmitting = model.createDisbursementSubmitting
+        , visibility = model.createDisbursementModalVisibility
+        }
 
 
 view : Model -> { title : String, content : Html Msg }

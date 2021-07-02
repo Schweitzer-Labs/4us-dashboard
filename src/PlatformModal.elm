@@ -1,4 +1,4 @@
-module PlatformModal exposing (MakeModalConfig, makeModal)
+module PlatformModal exposing (MakeModalConfig, view)
 
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
@@ -25,8 +25,8 @@ type alias MakeModalConfig msg subMsg subModel =
     }
 
 
-makeModal : MakeModalConfig msg subMsg model -> Html msg
-makeModal config =
+view : MakeModalConfig msg subMsg model -> Html msg
+view config =
     Modal.config config.hideMsg
         |> Modal.withAnimation config.animateMsg
         |> Modal.large
