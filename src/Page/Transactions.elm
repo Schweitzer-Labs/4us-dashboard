@@ -161,6 +161,22 @@ createDisbursementModal model =
         }
 
 
+createContributionModal : Model -> Html Msg
+createContributionModal model =
+    PlatformModal.view
+        { hideMsg = HideCreateContributionModal
+        , animateMsg = AnimateCreateContributionModal
+        , title = "Create Contribution"
+        , updateMsg = CreateContributionModalUpdated
+        , subModel = model.createContributionModal
+        , subView = CreateContribution.view
+        , submitMsg = SubmitCreateContribution
+        , submitText = "Submit"
+        , isSubmitting = model.createContributionSubmitting
+        , visibility = model.createContributionModalVisibility
+        }
+
+
 view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "4US"
@@ -267,50 +283,6 @@ generateDisclosureModal model =
                 [ buttonRow "File" FileDisclosure model.disclosureSubmitting False model.disclosureSubmitted ]
             ]
         |> Modal.view model.generateDisclosureModalVisibility
-
-
-createContributionModal : Model -> Html Msg
-createContributionModal model =
-    Modal.config HideCreateContributionModal
-        |> Modal.withAnimation AnimateCreateContributionModal
-        |> Modal.large
-        |> Modal.hideOnBackdropClick True
-        |> Modal.scrollableBody True
-        |> Modal.h3 [] [ text "Create Contribution" ]
-        |> Modal.body
-            []
-            [ Html.map CreateContributionModalUpdated <|
-                CreateContribution.view model.createContributionModal
-            ]
-        |> Modal.footer []
-            [ Grid.containerFluid
-                []
-                [ createContributionButtonRow model ]
-            ]
-        |> Modal.view model.createContributionModalVisibility
-
-
-createContributionButtonRow : Model -> Html Msg
-createContributionButtonRow model =
-    Grid.row
-        [ Row.betweenXs ]
-        [ Grid.col
-            [ Col.lg3, Col.attrs [ class "text-left" ] ]
-            [ createContributionExitButton ]
-        , Grid.col
-            [ Col.lg3 ]
-            [ submitButton "Submit" SubmitCreateContribution model.createContributionSubmitting False ]
-        ]
-
-
-createContributionExitButton : Html Msg
-createContributionExitButton =
-    Button.button
-        [ Button.outlineSuccess
-        , Button.block
-        , Button.attrs [ onClick HideCreateContributionModal ]
-        ]
-        [ text "Exit" ]
 
 
 buttonRow : String -> Msg -> Bool -> Bool -> Bool -> Html Msg
