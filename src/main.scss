@@ -78,10 +78,12 @@ $theme-colors: (
 );
 
 $green : #28a745;
+$black: #212529;
 
 .text-green {
   color: #28a745;
 }
+
 
 @import "node_modules/bootstrap/scss/bootstrap";
 
@@ -239,6 +241,19 @@ body {
   font-size: 22px;
 }
 
+.data-label {
+  font-weight: bold;
+  color: $black;
+  font-family: "gilroy-light", sans-serif;
+  font-size: medium;
+}
+
+.data-text {
+  font-weight: normal;
+  color: $black;
+  font-family: "gilroy-light", sans-serif;
+  font-size: large;
+}
 //body {
 //  min-width: 800px;
 //}
