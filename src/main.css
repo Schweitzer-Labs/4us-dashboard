@@ -7297,3 +7297,10 @@ body {
   color: #212529;
   font-family: "gilroy-light", sans-serif;
   font-size: large; }
+
+.bank-data-header {
+  font-weight: bold;
+  color: #5053D0;
+  font-family: "gilroy-light", sans-serif;
+  font-size: medium;
+  text-decoration: underline; }
