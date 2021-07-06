@@ -84,9 +84,7 @@ type alias Model =
 init : Config -> Session -> Aggregations.Model -> Committee.Model -> String -> ( Model, Cmd Msg )
 init config session aggs committee committeeId =
     ( { session = session
-
-      --, loading = True
-      , loading = False
+      , loading = True
       , committeeId = committeeId
       , timeZone = Time.utc
       , transactions = []
@@ -111,8 +109,7 @@ init config session aggs committee committeeId =
       , enrichTransactionSubmitting = False
       , config = config
       }
-    , Cmd.none
-      --, getTransactions config committeeId LoadTransactionsData Nothing
+    , getTransactions config committeeId LoadTransactionsData Nothing
     )
 
 
