@@ -1,7 +1,6 @@
 module BankIdHeader exposing (MakeBankIdHeaderConfig, view)
 
----- MODEL ----
-
+import Asset
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Html exposing (Attribute, Html, div, h4, text)
@@ -40,10 +39,19 @@ labelWithData ( label, data ) =
         ]
 
 
-headerRow : String -> msg -> List (Html msg)
-headerRow id msg =
+angleIcon : Bool -> Html msg
+angleIcon val =
+    if val then
+        Asset.angleDown [ class "text-slate-blue" ]
+
+    else
+        Asset.angleUp [ class "text-slate-blue" ]
+
+
+headerRow : String -> msg -> Bool -> List (Html msg)
+headerRow id msg val =
     [ Grid.row []
-        [ Grid.col [] [ h4 [ class "bank-data-header", onClick msg ] [ text <| "Bank Data: " ++ id ] ] ]
+        [ Grid.col [] [ h4 [ class "bank-data-header", onClick msg ] [ text <| "Bank Data: " ++ id, angleIcon val ] ] ]
     ]
 
 
@@ -72,5 +80,5 @@ view model id toggleMsg =
         []
     <|
         []
-            ++ headerRow id toggleMsg
+            ++ headerRow id toggleMsg model.displayBankData
             ++ infoRow model

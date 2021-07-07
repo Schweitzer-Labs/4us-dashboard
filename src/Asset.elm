@@ -2,6 +2,8 @@ module Asset exposing
     ( Image
     , adirondackTrustCompanyLogo
     , amalgamatedLogo
+    , angleDown
+    , angleUp
     , bellGlyph
     , binoculars
     , blockchainDiamond
@@ -261,3 +263,13 @@ chartLineGlyph =
 exclamationCircleGlyph : List (Attribute msg) -> Html msg
 exclamationCircleGlyph =
     glyph "fas fa-exclamation-circle"
+
+
+angleDown : List (Attribute msg) -> Html msg
+angleDown =
+    glyph "fas fa-angle-down"
+
+
+angleUp : List (Attribute msg) -> Html msg
+angleUp =
+    glyph "fas fa-angle-down"
