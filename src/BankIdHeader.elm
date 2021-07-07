@@ -1,4 +1,4 @@
-module BankIdHeader exposing (MakeBankIdHeaderConfig, view)
+module BankIdHeader exposing (BankData, MakeBankIdHeaderConfig, infoRow, view)
 
 import Asset
 import Bootstrap.Grid as Grid
@@ -6,6 +6,7 @@ import Bootstrap.Grid.Col as Col
 import Html exposing (Attribute, Html, div, h4, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
+import LabelWithData exposing (labelWithData)
 
 
 type alias BankData =
@@ -19,24 +20,6 @@ type alias MakeBankIdHeaderConfig =
     { data : BankData
     , displayBankData : Bool
     }
-
-
-dataLabel : String -> Html msg
-dataLabel label =
-    h4 [ class "data-label" ] [ text label ]
-
-
-dataText : String -> Html msg
-dataText data =
-    h4 [ class "data-text" ] [ text data ]
-
-
-labelWithData : ( String, String ) -> Html msg
-labelWithData ( label, data ) =
-    div []
-        [ dataLabel label
-        , dataText data
-        ]
 
 
 angleIcon : Bool -> Html msg

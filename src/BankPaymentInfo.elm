@@ -5,6 +5,7 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Html exposing (Html, div, h4, h5, text)
 import Html.Attributes exposing (class)
+import LabelWithData exposing (labelWithData)
 import PaymentMethod exposing (PaymentMethod)
 
 
@@ -76,14 +77,6 @@ dataText data =
 
 
 --- Todo refactor branching logic here
-
-
-labelWithData : ( String, String ) -> Html msg
-labelWithData ( label, data ) =
-    div []
-        [ dataLabel label
-        , dataText data
-        ]
 
 
 labelWithPaymentMethodData : ( String, PaymentMethod ) -> Html msg
