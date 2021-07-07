@@ -60,9 +60,11 @@ statusContent val =
         Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
 
 
-formLabel : String -> Html msg
-formLabel str =
-    h5 [] [ text str ]
+formLabelRow : String -> List (Html msg)
+formLabelRow str =
+    [ Grid.row []
+        [ Grid.col [ Col.md4 ] [ h5 [] [ text str ] ] ]
+    ]
 
 
 dataLabel : String -> Html msg
@@ -127,5 +129,6 @@ view model =
         []
     <|
         []
+            ++ formLabelRow "Payment Info"
             ++ paymentInfoRow model
             ++ verificationInfoRow model

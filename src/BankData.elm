@@ -24,6 +24,13 @@ type alias MakeBankDataConfig =
     }
 
 
+headerRow : String -> msg -> Bool -> List (Html msg)
+headerRow id msg val =
+    [ Grid.row []
+        [ Grid.col [] [ h5 [ class "bank-data-header", onClick msg ] [ text <| "Bank Data: " ++ id, angleIcon val ] ] ]
+    ]
+
+
 bankInfoRow : BankData -> List (Html msg)
 bankInfoRow data =
     [ Grid.row []
