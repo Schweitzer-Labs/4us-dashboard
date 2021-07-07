@@ -10,6 +10,7 @@ module Asset exposing
     , chaseBankLogo
     , chaseSquare
     , circleCheckGlyph
+    , citizensBankLogo
     , coinsGlyph
     , contributionsByRefcodeChart
     , defaultAvatar
@@ -145,6 +146,11 @@ defaultAvatar =
 chaseBankLogo : Image
 chaseBankLogo =
     image "chase-logo-header.png"
+
+
+citizensBankLogo : Image
+citizensBankLogo =
+    image "citizens-bank-logo.png"
 
 
 genderNeutral : Bool -> Image

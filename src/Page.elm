@@ -112,7 +112,7 @@ ruleInfoRow : Committee.Model -> Html msg
 ruleInfoRow committee =
     Grid.row
         [ Row.centerXs ]
-        [ Grid.col [ Col.xs6, Col.attrs [ class "border-right border-blue", class "text-right text-capitalize" ] ] [ text committee.officeType ]
+        [ Grid.col [ Col.xs6, Col.attrs [ class "border-right border-blue text-center align-self-center", class "text-right text-capitalize" ] ] [ text committee.officeType ]
         , Grid.col [ Col.xs6 ]
             [ Bank.stringToLogo committee.bankName
             ]

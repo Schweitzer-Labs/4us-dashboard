@@ -18,6 +18,11 @@ stringToLogo bank =
                 [ Asset.src Asset.adirondackTrustCompanyLogo, class "header-info-bank-logo" ]
                 []
 
+        "citizens banks" ->
+            img
+                [ Asset.src Asset.citizensBankLogo, class "header-info-bank-logo" ]
+                []
+
         _ ->
             span
                 []
