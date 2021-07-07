@@ -1,10 +1,10 @@
 module BankData exposing (MakeBankDataConfig, view)
 
+import AppLabelWithData exposing (dataLabel, dataText, labelWithData, labelWithDescriptionData)
 import BankIdHeader exposing (BankData)
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Html exposing (Html, div, h5, text)
-import LabelWithData exposing (dataLabel, dataText, labelWithData)
 import PaymentMethod exposing (PaymentMethod, toDataString)
 
 
@@ -46,7 +46,7 @@ bankInfoRow data =
         , Grid.col [ Col.md4, Col.offsetMd3 ] [ labelWithData data.analyzedCategory ]
         ]
     , Grid.row []
-        [ Grid.col [ Col.md4 ] [ labelWithData data.description ] ]
+        [ Grid.col [ Col.md4 ] [ labelWithDescriptionData data.description ] ]
     ]
 
 

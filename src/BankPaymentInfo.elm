@@ -1,11 +1,11 @@
 module BankPaymentInfo exposing (MakeBankPaymentInfoConfig, view)
 
+import AppLabelWithData exposing (dataLabel, dataText, labelWithData)
 import Asset
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Html exposing (Html, div, h4, h5, text)
 import Html.Attributes exposing (class)
-import LabelWithData exposing (dataLabel, dataText, labelWithData)
 import PaymentMethod exposing (PaymentMethod)
 
 

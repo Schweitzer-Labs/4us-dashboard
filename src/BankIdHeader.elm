@@ -1,12 +1,12 @@
 module BankIdHeader exposing (BankData, MakeBankIdHeaderConfig, infoRow, view)
 
+import AppLabelWithData exposing (labelWithData, labelWithDescriptionData)
 import Asset
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Html exposing (Attribute, Html, div, h4, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import LabelWithData exposing (labelWithData)
 
 
 type alias BankData =
@@ -46,7 +46,7 @@ infoRow model =
             , Grid.col [ Col.md4, Col.offsetMd3 ] [ labelWithData model.data.analyzedCategory ]
             ]
         , Grid.row []
-            [ Grid.col [ Col.md4 ] [ labelWithData model.data.description ] ]
+            [ Grid.col [ Col.md4 ] [ labelWithDescriptionData model.data.description ] ]
         ]
 
     else
