@@ -1,4 +1,4 @@
-module LabelWithData exposing (labelWithData)
+module LabelWithData exposing (dataLabel, dataText, labelWithData)
 
 import Html exposing (Html, div, h4, text)
 import Html.Attributes exposing (class)

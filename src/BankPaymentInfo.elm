@@ -5,7 +5,7 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Html exposing (Html, div, h4, h5, text)
 import Html.Attributes exposing (class)
-import LabelWithData exposing (labelWithData)
+import LabelWithData exposing (dataLabel, dataText, labelWithData)
 import PaymentMethod exposing (PaymentMethod)
 
 
@@ -67,24 +67,12 @@ formLabelRow str =
     ]
 
 
-dataLabel : String -> Html msg
-dataLabel label =
-    h4 [ class "data-label" ] [ text label ]
-
-
-dataText : String -> Html msg
-dataText data =
-    h4 [ class "data-text" ] [ text data ]
-
-
 
 --- Todo refactor branching logic here
 
 
 labelWithPaymentMethodData : ( String, PaymentMethod ) -> Html msg
-
-
-labelWithPaymentData ( label, paymentMethod ) =
+labelWithPaymentMethodData ( label, paymentMethod ) =
     div []
         [ dataLabel label
         , dataText <| toDataString paymentMethod
@@ -114,7 +102,7 @@ paymentInfoRow model =
     [ Grid.row []
         [ Grid.col [ Col.md4 ] [ labelWithData model.amount ]
         , Grid.col [ Col.md4 ] [ labelWithData model.date ]
-        , Grid.col [ Col.md4 ] [ labelWithPaymentData model.paymentType ]
+        , Grid.col [ Col.md4 ] [ labelWithPaymentMethodData model.paymentType ]
         ]
     ]
 
