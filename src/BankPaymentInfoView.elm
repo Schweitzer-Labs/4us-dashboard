@@ -1,4 +1,4 @@
-module BankPaymentInfo exposing (MakeBankPaymentInfoConfig, view)
+module BankPaymentInfoView exposing (MakeBankPaymentInfoConfig, view)
 
 import AppLabelWithData exposing (dataLabel, dataText, labelWithData)
 import Asset
@@ -6,7 +6,7 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Html exposing (Html, div, h4, h5, text)
 import Html.Attributes exposing (class)
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod exposing (PaymentMethod, toDataString)
 
 
 
@@ -21,34 +21,6 @@ type alias MakeBankPaymentInfoConfig =
     , bankVerified : ( String, Bool )
     , verificationScore : ( String, String )
     }
-
-
-toDataString : PaymentMethod -> String
-toDataString method =
-    case method of
-        PaymentMethod.Ach ->
-            "Ach"
-
-        PaymentMethod.Wire ->
-            "Wire"
-
-        PaymentMethod.Check ->
-            "Check"
-
-        PaymentMethod.Debit ->
-            "Debit"
-
-        PaymentMethod.Credit ->
-            "Credit"
-
-        PaymentMethod.InKind ->
-            "InKind"
-
-        PaymentMethod.Transfer ->
-            "Transfer"
-
-        PaymentMethod.Other ->
-            "Other"
 
 
 statusContent : Bool -> Html msg
@@ -108,7 +80,7 @@ paymentInfoRow model =
 
 
 
----- View
+---- VIEW
 
 
 view : MakeBankPaymentInfoConfig -> Html msg

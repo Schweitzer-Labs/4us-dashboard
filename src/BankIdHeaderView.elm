@@ -1,4 +1,4 @@
-module BankIdHeader exposing (BankData, MakeBankIdHeaderConfig, infoRow, view)
+module BankIdHeaderView exposing (BankData, MakeBankIdHeaderConfig, infoRow, view)
 
 import AppLabelWithData exposing (labelWithData, labelWithDescriptionData)
 import Asset
@@ -25,10 +25,10 @@ type alias MakeBankIdHeaderConfig =
 angleIcon : Bool -> Html msg
 angleIcon val =
     if val then
-        Asset.angleDown [ class "text-slate-blue" ]
+        Asset.angleDownGlyph [ class "text-slate-blue" ]
 
     else
-        Asset.angleUp [ class "text-slate-blue" ]
+        Asset.angleUpGlyph [ class "text-slate-blue" ]
 
 
 headerRow : String -> msg -> Bool -> List (Html msg)

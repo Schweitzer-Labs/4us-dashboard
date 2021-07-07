@@ -1,7 +1,7 @@
-module BankData exposing (MakeBankDataConfig, view)
+module BankDataView exposing (MakeBankDataConfig, view)
 
 import AppLabelWithData exposing (dataLabel, dataText, labelWithData, labelWithDescriptionData)
-import BankIdHeader exposing (BankData)
+import BankIdHeaderView exposing (BankData)
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Html exposing (Html, div, h5, text)
