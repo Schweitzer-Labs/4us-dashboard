@@ -3,7 +3,7 @@ module BankData exposing (Model, view)
 import BankIdHeader exposing (BankData)
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
-import Html exposing (Html, div, h5, text)
+import Html exposing (Html, h5, text)
 import LabelWithData exposing (labelWithData, labelWithDescriptionData)
 import PaymentMethod exposing (PaymentMethod)
 
@@ -35,10 +35,14 @@ bankInfoRows : BankData -> List (Html msg)
 bankInfoRows data =
     [ Grid.row []
         [ Grid.col [ Col.md4 ] [ labelWithData "Analyzed Payee Name" data.analyzedPayeeName ]
-        , Grid.col [ Col.md4, Col.offsetMd3 ] [ labelWithData "Analyzed Category" data.analyzedCategory ]
+        , Grid.col [ Col.md4 ] [ labelWithData "Analyzed Category" data.analyzedCategory ]
         ]
     , Grid.row []
         [ Grid.col [ Col.md4 ] [ labelWithDescriptionData "Description" data.description ] ]
+    , Grid.row []
+        [ Grid.col [ Col.md4 ] [ labelWithData "Analyzed Created Date" data.analyzedCreatedDate ]
+        , Grid.col [ Col.md4 ] [ labelWithData "Analyzed Posted Date" data.analyzedPostedDate ]
+        ]
     ]
 
 

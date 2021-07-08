@@ -12,6 +12,8 @@ import LabelWithData exposing (labelWithData, labelWithDescriptionData)
 type alias BankData =
     { analyzedPayeeName : String
     , analyzedCategory : String
+    , analyzedPostedDate : String
+    , analyzedCreatedDate : String
     , description : String
     }
 
