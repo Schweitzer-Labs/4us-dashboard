@@ -1,4 +1,4 @@
-module BankIdHeaderView exposing (BankData, MakeBankIdHeaderConfig, infoRows, view)
+module BankIdHeader exposing (BankData, MakeBankIdHeaderConfig, infoRows, view)
 
 import Asset
 import Bootstrap.Grid as Grid
@@ -18,7 +18,7 @@ type alias BankData =
 
 type alias MakeBankIdHeaderConfig =
     { data : BankData
-    , displayBankData : Bool
+    , dataIsVisible : Bool
     }
 
 
@@ -40,7 +40,7 @@ headerRow id msg val =
 
 infoRows : MakeBankIdHeaderConfig -> List (Html msg)
 infoRows model =
-    if model.displayBankData then
+    if model.dataIsVisible then
         [ Grid.row []
             [ Grid.col [ Col.md4 ] [ labelWithData model.data.analyzedPayeeName ]
             , Grid.col [ Col.md4, Col.offsetMd3 ] [ labelWithData model.data.analyzedCategory ]
@@ -63,5 +63,5 @@ view model id toggleMsg =
         []
     <|
         []
-            ++ headerRow id toggleMsg model.displayBankData
+            ++ headerRow id toggleMsg model.dataIsVisible
             ++ infoRows model

@@ -1,4 +1,4 @@
-module ReconcileItemsView exposing (MakeReconcileItemsViewConfig, view)
+module ReconcileItems exposing (MakeReconcileItemsViewConfig, view)
 
 -- MODEL
 

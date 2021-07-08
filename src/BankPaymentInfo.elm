@@ -1,4 +1,4 @@
-module BankPaymentInfoView exposing (MakeBankPaymentInfoConfig, view)
+module BankPaymentInfo exposing (MakeBankPaymentInfoConfig, view)
 
 import Asset
 import Bootstrap.Grid as Grid
