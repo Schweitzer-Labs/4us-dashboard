@@ -39,8 +39,8 @@ labelWithPaymentMethodData ( label, paymentMethod ) =
         ]
 
 
-bankInfoRow : BankData -> List (Html msg)
-bankInfoRow data =
+bankInfoRows : BankData -> List (Html msg)
+bankInfoRows data =
     [ Grid.row []
         [ Grid.col [ Col.md4 ] [ labelWithData data.analyzedPayeeName ]
         , Grid.col [ Col.md4, Col.offsetMd3 ] [ labelWithData data.analyzedCategory ]
@@ -66,5 +66,5 @@ view model =
     <|
         []
             ++ formLabelRow "Payment Info"
-            ++ bankInfoRow model.bankData
+            ++ bankInfoRows model.bankData
             ++ paymentInfoRow model.paymentData
