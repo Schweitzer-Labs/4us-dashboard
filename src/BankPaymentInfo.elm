@@ -1,4 +1,4 @@
-module BankPaymentInfo exposing (MakeBankPaymentInfoConfig, view)
+module BankPaymentInfo exposing (Model, view)
 
 import Asset
 import Bootstrap.Grid as Grid
@@ -13,13 +13,13 @@ import PaymentMethod exposing (PaymentMethod, toDataString)
 --- MODEL
 
 
-type alias MakeBankPaymentInfoConfig =
-    { amount : ( String, String )
-    , date : ( String, String )
-    , paymentType : ( String, PaymentMethod )
-    , ruleVerified : ( String, Bool )
-    , bankVerified : ( String, Bool )
-    , verificationScore : ( String, String )
+type alias Model =
+    { amount : String
+    , date : String
+    , paymentType : PaymentMethod
+    , ruleVerified : Bool
+    , bankVerified : Bool
+    , verificationScore : String
     }
 
 
@@ -43,38 +43,38 @@ formLabelRow str =
 --- Todo refactor branching logic here
 
 
-labelWithPaymentMethodData : ( String, PaymentMethod ) -> Html msg
-labelWithPaymentMethodData ( label, paymentMethod ) =
+labelWithPaymentMethodData : String -> PaymentMethod -> Html msg
+labelWithPaymentMethodData label paymentMethod =
     div []
         [ dataLabel label
         , dataText <| toDataString paymentMethod
         ]
 
 
-labelWithBankVerificationIcon : ( String, Bool ) -> Html msg
-labelWithBankVerificationIcon ( label, verificationStatus ) =
+labelWithBankVerificationIcon : String -> Bool -> Html msg
+labelWithBankVerificationIcon label verificationStatus =
     div []
         [ dataLabel label
         , statusContent verificationStatus
         ]
 
 
-verificationInfoRow : MakeBankPaymentInfoConfig -> List (Html msg)
+verificationInfoRow : Model -> List (Html msg)
 verificationInfoRow model =
     [ Grid.row []
-        [ Grid.col [ Col.md4 ] [ labelWithBankVerificationIcon model.ruleVerified ]
-        , Grid.col [ Col.md4 ] [ labelWithBankVerificationIcon model.bankVerified ]
-        , Grid.col [ Col.md4 ] [ labelWithData model.verificationScore ]
+        [ Grid.col [ Col.md4 ] [ labelWithBankVerificationIcon "Rule Verified" model.ruleVerified ]
+        , Grid.col [ Col.md4 ] [ labelWithBankVerificationIcon "Bank Verified" model.bankVerified ]
+        , Grid.col [ Col.md4 ] [ labelWithData "Verification Score" model.verificationScore ]
         ]
     ]
 
 
-paymentInfoRow : MakeBankPaymentInfoConfig -> List (Html msg)
+paymentInfoRow : Model -> List (Html msg)
 paymentInfoRow model =
     [ Grid.row []
-        [ Grid.col [ Col.md4 ] [ labelWithData model.amount ]
-        , Grid.col [ Col.md4 ] [ labelWithData model.date ]
-        , Grid.col [ Col.md4 ] [ labelWithPaymentMethodData model.paymentType ]
+        [ Grid.col [ Col.md4 ] [ labelWithData "Amount" model.amount ]
+        , Grid.col [ Col.md4 ] [ labelWithData "Date" model.date ]
+        , Grid.col [ Col.md4 ] [ labelWithPaymentMethodData "Payment Type" model.paymentType ]
         ]
     ]
 
@@ -83,7 +83,7 @@ paymentInfoRow model =
 ---- VIEW
 
 
-view : MakeBankPaymentInfoConfig -> Html msg
+view : Model -> Html msg
 view model =
     Grid.containerFluid
         []

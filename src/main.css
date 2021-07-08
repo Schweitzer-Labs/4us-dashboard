@@ -7289,18 +7289,6 @@ body {
 .font-size-22 {
   font-size: 22px; }
 
-.data-label {
-  font-weight: bold;
-  color: #000;
-  font-family: "gilroy-light", sans-serif;
-  font-size: medium; }
-
-.data-text {
-  font-weight: normal;
-  color: #000;
-  font-family: "gilroy-light", sans-serif;
-  font-size: large; }
-
 .bank-data-header {
   font-weight: bold;
   color: #5053D0;

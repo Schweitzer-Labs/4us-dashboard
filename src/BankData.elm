@@ -1,4 +1,4 @@
-module BankData exposing (MakeBankDataConfig, view)
+module BankData exposing (Model, view)
 
 import BankIdHeader exposing (BankData)
 import Bootstrap.Grid as Grid
@@ -13,12 +13,12 @@ import PaymentMethod exposing (PaymentMethod, toDataString)
 
 
 type alias PaymentData =
-    { postedDate : ( String, String )
-    , paymentType : ( String, PaymentMethod )
+    { postedDate : String
+    , paymentType : PaymentMethod
     }
 
 
-type alias MakeBankDataConfig =
+type alias Model =
     { bankData : BankData
     , paymentData : PaymentData
     }
@@ -31,8 +31,8 @@ formLabelRow str =
     ]
 
 
-labelWithPaymentMethodData : ( String, PaymentMethod ) -> Html msg
-labelWithPaymentMethodData ( label, paymentMethod ) =
+labelWithPaymentMethodData : String -> PaymentMethod -> Html msg
+labelWithPaymentMethodData label paymentMethod =
     div []
         [ dataLabel label
         , dataText <| toDataString paymentMethod
@@ -42,24 +42,24 @@ labelWithPaymentMethodData ( label, paymentMethod ) =
 bankInfoRows : BankData -> List (Html msg)
 bankInfoRows data =
     [ Grid.row []
-        [ Grid.col [ Col.md4 ] [ labelWithData data.analyzedPayeeName ]
-        , Grid.col [ Col.md4, Col.offsetMd3 ] [ labelWithData data.analyzedCategory ]
+        [ Grid.col [ Col.md4 ] [ labelWithData "Analyzed Payee Name" data.analyzedPayeeName ]
+        , Grid.col [ Col.md4, Col.offsetMd3 ] [ labelWithData "Analyzed Category" data.analyzedCategory ]
         ]
     , Grid.row []
-        [ Grid.col [ Col.md4 ] [ labelWithDescriptionData data.description ] ]
+        [ Grid.col [ Col.md4 ] [ labelWithDescriptionData "Description" data.description ] ]
     ]
 
 
 paymentInfoRow : PaymentData -> List (Html msg)
 paymentInfoRow data =
     [ Grid.row []
-        [ Grid.col [ Col.md4 ] [ labelWithData data.postedDate ]
-        , Grid.col [ Col.md4 ] [ labelWithPaymentMethodData data.paymentType ]
+        [ Grid.col [ Col.md4 ] [ labelWithData "Posted Date" data.postedDate ]
+        , Grid.col [ Col.md4 ] [ labelWithPaymentMethodData "Payment Type" data.paymentType ]
         ]
     ]
 
 
-view : MakeBankDataConfig -> Html msg
+view : Model -> Html msg
 view model =
     Grid.containerFluid
         []

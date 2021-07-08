@@ -1,4 +1,4 @@
-module ReconcileItems exposing (MakeReconcileItemsViewConfig, view)
+module ReconcileItems exposing (Model, view)
 
 -- MODEL
 
@@ -12,10 +12,10 @@ import LabelWithData exposing (dataLabel, labelWithData)
 import String as String
 
 
-type alias MakeReconcileItemsViewConfig =
-    { amount : ( String, Int )
-    , totalSelected : ( String, Int )
-    , matches : ( String, Bool )
+type alias Model =
+    { amount : Int
+    , totalSelected : Int
+    , matches : Bool
     }
 
 
@@ -24,11 +24,6 @@ formLabelRow str =
     [ Grid.row []
         [ Grid.col [ Col.md4 ] [ h5 [] [ text str ] ] ]
     ]
-
-
-toStringData : ( String, Int ) -> ( String, String )
-toStringData ( label, data ) =
-    ( label, String.fromInt data )
 
 
 matchesIcon : Bool -> Html msg
@@ -40,20 +35,20 @@ matchesIcon val =
         Asset.circleCheckGlyph [ class "text-slate-blue" ]
 
 
-labelWithBankVerificationIcon : ( String, Bool ) -> Html msg
-labelWithBankVerificationIcon ( label, matchesStatus ) =
+labelWithBankVerificationIcon : String -> Bool -> Html msg
+labelWithBankVerificationIcon label matchesStatus =
     div []
         [ dataLabel label
         , matchesIcon matchesStatus
         ]
 
 
-reconcileInfoRow : MakeReconcileItemsViewConfig -> List (Html msg)
+reconcileInfoRow : Model -> List (Html msg)
 reconcileInfoRow model =
     [ Grid.row []
-        [ Grid.col [ Col.md4 ] [ labelWithData <| toStringData model.amount ]
-        , Grid.col [ Col.md4 ] [ labelWithData <| toStringData model.totalSelected ]
-        , Grid.col [ Col.md4 ] [ labelWithBankVerificationIcon model.matches ]
+        [ Grid.col [ Col.md4 ] [ labelWithData "Amount" <| String.fromInt model.amount ]
+        , Grid.col [ Col.md4 ] [ labelWithData "Total Selected" <| String.fromInt model.totalSelected ]
+        , Grid.col [ Col.md4 ] [ labelWithBankVerificationIcon "Matches" model.matches ]
         ]
     ]
 
@@ -76,7 +71,7 @@ addDisbursementButton msg =
 --- VIEW
 
 
-view : MakeReconcileItemsViewConfig -> msg -> Html msg
+view : Model -> msg -> Html msg
 view model msg =
     Grid.containerFluid
         []

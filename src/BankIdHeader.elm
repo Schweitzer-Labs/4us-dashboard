@@ -1,4 +1,4 @@
-module BankIdHeader exposing (BankData, MakeBankIdHeaderConfig, infoRows, view)
+module BankIdHeader exposing (BankData, Model, infoRows, view)
 
 import Asset
 import Bootstrap.Grid as Grid
@@ -10,13 +10,13 @@ import LabelWithData exposing (labelWithData, labelWithDescriptionData)
 
 
 type alias BankData =
-    { analyzedPayeeName : ( String, String )
-    , analyzedCategory : ( String, String )
-    , description : ( String, String )
+    { analyzedPayeeName : String
+    , analyzedCategory : String
+    , description : String
     }
 
 
-type alias MakeBankIdHeaderConfig =
+type alias Model =
     { data : BankData
     , dataIsVisible : Bool
     }
@@ -31,22 +31,27 @@ angleIcon val =
         Asset.angleUpGlyph [ class "text-slate-blue" ]
 
 
+bankHeaderStyle : Attribute msg
+bankHeaderStyle =
+    class "font-weight-bold text-decoration-underline"
+
+
 headerRow : String -> msg -> Bool -> List (Html msg)
 headerRow id msg val =
     [ Grid.row []
-        [ Grid.col [] [ h4 [ class "bank-data-header", onClick msg ] [ text <| "Bank Data: " ++ id, angleIcon val ] ] ]
+        [ Grid.col [] [ h4 [ bankHeaderStyle, onClick msg ] [ text <| "Bank Data: " ++ id, angleIcon val ] ] ]
     ]
 
 
-infoRows : MakeBankIdHeaderConfig -> List (Html msg)
+infoRows : Model -> List (Html msg)
 infoRows model =
     if model.dataIsVisible then
         [ Grid.row []
-            [ Grid.col [ Col.md4 ] [ labelWithData model.data.analyzedPayeeName ]
-            , Grid.col [ Col.md4, Col.offsetMd3 ] [ labelWithData model.data.analyzedCategory ]
+            [ Grid.col [ Col.md4 ] [ labelWithData "Analyzed Payee Name" model.data.analyzedPayeeName ]
+            , Grid.col [ Col.md4, Col.offsetMd3 ] [ labelWithData "Analyzed Category" model.data.analyzedCategory ]
             ]
         , Grid.row []
-            [ Grid.col [ Col.md4 ] [ labelWithDescriptionData model.data.description ] ]
+            [ Grid.col [ Col.md4 ] [ labelWithDescriptionData "Description" model.data.description ] ]
         ]
 
     else
@@ -57,7 +62,7 @@ infoRows model =
 ---- VIEW ----
 
 
-view : MakeBankIdHeaderConfig -> String -> msg -> Html msg
+view : Model -> String -> msg -> Html msg
 view model id toggleMsg =
     Grid.containerFluid
         []
