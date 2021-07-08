@@ -1,4 +1,4 @@
-module Transactions exposing (Label(..), Model, decoder, labels, statusContent, stringToBool, transactionRowMap, verifiedContent, view, viewInteractive)
+module Transactions exposing (Label(..), Model, decoder, getAmount, getEntityName, getStatus, labels, missingContent, statusContent, stringToBool, transactionRowMap, uppercaseText, verifiedContent, view, viewInteractive)
 
 import Asset
 import Bank

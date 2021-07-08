@@ -2,6 +2,8 @@ module Asset exposing
     ( Image
     , adirondackTrustCompanyLogo
     , amalgamatedLogo
+    , angleDownGlyph
+    , angleUpGlyph
     , bellGlyph
     , binoculars
     , blockchainDiamond
@@ -26,12 +28,14 @@ module Asset exposing
     , minusCircleGlyph
     , monthlyContributionsByReferenceCode
     , person
+    , plusCircleGlyph
     , sackDollarGlyph
     , search
     , searchDollarGlyph
     , src
     , stripeLogo
     , tbdBankLogo
+    , timesGlyph
     , universityGlyph
     , usLogo
     , userGlyph
@@ -261,3 +265,23 @@ chartLineGlyph =
 exclamationCircleGlyph : List (Attribute msg) -> Html msg
 exclamationCircleGlyph =
     glyph "fas fa-exclamation-circle"
+
+
+angleDownGlyph : List (Attribute msg) -> Html msg
+angleDownGlyph =
+    glyph "fas fa-angle-down"
+
+
+angleUpGlyph : List (Attribute msg) -> Html msg
+angleUpGlyph =
+    glyph "fas fa-angle-down"
+
+
+timesGlyph : List (Attribute msg) -> Html msg
+timesGlyph =
+    glyph "fas fa-times"
+
+
+plusCircleGlyph : List (Attribute msg) -> Html msg
+plusCircleGlyph =
+    glyph "fa fa-plus-circle"
