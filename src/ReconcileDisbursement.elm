@@ -1,6 +1,4 @@
-module ReconcileItems exposing (Model, view)
-
--- MODEL
+module ReconcileDisbursement exposing (Model, view)
 
 import Asset
 import Bootstrap.Grid as Grid
@@ -67,7 +65,6 @@ addDisbursementButton msg =
 
 
 
---- TODO add data table for element
 --- VIEW
 
 

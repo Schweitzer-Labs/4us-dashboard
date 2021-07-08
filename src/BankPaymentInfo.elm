@@ -43,14 +43,6 @@ formLabelRow str =
 --- Todo refactor branching logic here
 
 
-labelWithPaymentMethodData : String -> PaymentMethod -> Html msg
-labelWithPaymentMethodData label paymentMethod =
-    div []
-        [ dataLabel label
-        , dataText <| toDataString paymentMethod
-        ]
-
-
 labelWithBankVerificationIcon : String -> Bool -> Html msg
 labelWithBankVerificationIcon label verificationStatus =
     div []
@@ -74,7 +66,7 @@ paymentInfoRow model =
     [ Grid.row []
         [ Grid.col [ Col.md4 ] [ labelWithData "Amount" model.amount ]
         , Grid.col [ Col.md4 ] [ labelWithData "Date" model.date ]
-        , Grid.col [ Col.md4 ] [ labelWithPaymentMethodData "Payment Type" model.paymentType ]
+        , Grid.col [ Col.md4 ] [ labelWithData "Payment Type" <| PaymentMethod.toDisplayString model.paymentType ]
         ]
     ]
 

@@ -4,8 +4,8 @@ import BankIdHeader exposing (BankData)
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Html exposing (Html, div, h5, text)
-import LabelWithData exposing (dataLabel, dataText, labelWithData, labelWithDescriptionData)
-import PaymentMethod exposing (PaymentMethod, toDataString)
+import LabelWithData exposing (labelWithData, labelWithDescriptionData)
+import PaymentMethod exposing (PaymentMethod)
 
 
 
@@ -31,14 +31,6 @@ formLabelRow str =
     ]
 
 
-labelWithPaymentMethodData : String -> PaymentMethod -> Html msg
-labelWithPaymentMethodData label paymentMethod =
-    div []
-        [ dataLabel label
-        , dataText <| toDataString paymentMethod
-        ]
-
-
 bankInfoRows : BankData -> List (Html msg)
 bankInfoRows data =
     [ Grid.row []
@@ -54,7 +46,7 @@ paymentInfoRow : PaymentData -> List (Html msg)
 paymentInfoRow data =
     [ Grid.row []
         [ Grid.col [ Col.md4 ] [ labelWithData "Posted Date" data.postedDate ]
-        , Grid.col [ Col.md4 ] [ labelWithPaymentMethodData "Payment Type" data.paymentType ]
+        , Grid.col [ Col.md4 ] [ labelWithData "Payment Type" <| PaymentMethod.toDisplayString data.paymentType ]
         ]
     ]
 
