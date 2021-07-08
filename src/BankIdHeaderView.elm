@@ -1,12 +1,12 @@
 module BankIdHeaderView exposing (BankData, MakeBankIdHeaderConfig, infoRow, view)
 
-import AppLabelWithData exposing (labelWithData, labelWithDescriptionData)
 import Asset
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Html exposing (Attribute, Html, div, h4, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
+import LabelWithData exposing (labelWithData, labelWithDescriptionData)
 
 
 type alias BankData =

@@ -2,13 +2,13 @@ module ReconcileItemsView exposing (MakeReconcileItemsViewConfig, view)
 
 -- MODEL
 
-import AppLabelWithData exposing (dataLabel, labelWithData)
 import Asset
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Html exposing (Html, div, h5, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
+import LabelWithData exposing (dataLabel, labelWithData)
 import String as String
 
 

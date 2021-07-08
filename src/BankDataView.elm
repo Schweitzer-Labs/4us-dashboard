@@ -1,10 +1,10 @@
 module BankDataView exposing (MakeBankDataConfig, view)
 
-import AppLabelWithData exposing (dataLabel, dataText, labelWithData, labelWithDescriptionData)
 import BankIdHeaderView exposing (BankData)
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Html exposing (Html, div, h5, text)
+import LabelWithData exposing (dataLabel, dataText, labelWithData, labelWithDescriptionData)
 import PaymentMethod exposing (PaymentMethod, toDataString)
 
 
