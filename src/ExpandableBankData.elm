@@ -1,74 +1,53 @@
-module ExapandableBankData exposing (BankData, Model, infoRows, view)
+module ExpandableBankData exposing (view)
 
 import Asset
+import BankData
 import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
-import Html exposing (Attribute, Html, div, h4, text)
+import Bootstrap.Grid.Row as Row
+import Bootstrap.Utilities.Spacing as Spacing
+import Html exposing (Attribute, Html, text, u)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import LabelWithData exposing (labelWithData)
-
-
-type alias BankData =
-    { analyzedPayeeName : String
-    , analyzedCategory : String
-    , analyzedTransactionDate : String
-    , description : String
-    , id : String
-    }
-
-
-type alias Model =
-    { data : BankData
-    , dataIsVisible : Bool
-    }
+import Transaction
 
 
 angleIcon : Bool -> Html msg
 angleIcon val =
-    if val then
-        Asset.angleDownGlyph [ class "text-slate-blue" ]
+    case val of
+        True ->
+            Asset.angleUpGlyph [ class "text-slate-blue ml-2" ]
 
-    else
-        Asset.angleUpGlyph [ class "text-slate-blue" ]
+        False ->
+            Asset.angleDownGlyph [ class "text-slate-blue ml-2" ]
 
 
 bankHeaderStyle : Attribute msg
 bankHeaderStyle =
-    class "font-weight-bold text-decoration-underline"
+    class "font-weight-bold text-decoration-underline text-slate-blue"
 
 
 headerRow : String -> msg -> Bool -> List (Html msg)
 headerRow id msg val =
-    [ Grid.row []
-        [ Grid.col [] [ h4 [ bankHeaderStyle, onClick msg ] [ text <| "Bank Data: " ++ id, angleIcon val ] ] ]
+    [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
+        [ Grid.col [] [ u [ bankHeaderStyle, onClick msg ] [ text <| "Bank Data: " ++ id, angleIcon val ] ] ]
     ]
-
-
-infoRows : Model -> List (Html msg)
-infoRows model =
-    if model.dataIsVisible then
-        [ Grid.row []
-            [ Grid.col [ Col.md4 ] [ labelWithData "Analyzed Payee Name" model.data.analyzedPayeeName ]
-            , Grid.col [ Col.md4, Col.offsetMd3 ] [ labelWithData "Analyzed Category" model.data.analyzedCategory ]
-            ]
-        , Grid.row []
-            [ Grid.col [ Col.md4 ] [ labelWithData "Description" model.data.description ] ]
-        ]
-
-    else
-        []
 
 
 
 ---- VIEW ----
 
 
-view : Model -> msg -> Html msg
-view model toggleMsg =
+view : Bool -> Transaction.Model -> msg -> Html msg
+view dataIsVisible txn toggleMsg =
     Grid.containerFluid
         []
     <|
-        []
-            ++ headerRow model.data.id toggleMsg model.dataIsVisible
-            ++ infoRows model
+        ([]
+            ++ headerRow txn.id toggleMsg dataIsVisible
+            ++ (if dataIsVisible then
+                    [ BankData.view txn ]
+
+                else
+                    []
+               )
+        )

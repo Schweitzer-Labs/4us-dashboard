@@ -15,7 +15,6 @@ module TxnForm.DisbRuleUnverified exposing
     , view
     )
 
-import BankData as BankData
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input exposing (value)
 import Bootstrap.Form.Select as Select

@@ -18,11 +18,16 @@ type alias Model =
     Transaction.Model
 
 
-formLabelRow : String -> List (Html msg)
-formLabelRow str =
-    [ Grid.row []
-        [ Grid.col [ Col.md4 ] [ h6 [] [ text str ] ] ]
-    ]
+formLabelRow : Bool -> String -> List (Html msg)
+formLabelRow showHeading str =
+    case showHeading of
+        True ->
+            [ Grid.row []
+                [ Grid.col [ Col.md4 ] [ h6 [] [ text str ] ] ]
+            ]
+
+        False ->
+            []
 
 
 bankDataRows : Model -> List (Html msg)

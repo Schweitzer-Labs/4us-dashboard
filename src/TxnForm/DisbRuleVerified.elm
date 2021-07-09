@@ -24,6 +24,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Disbursement as Disbursement
 import Disbursement.Forms exposing (yesOrNoRows)
+import ExpandableBankData
 import Html exposing (Html, div, text)
 import Html.Attributes as Attribute exposing (class, for)
 import Json.Encode as Encode
@@ -52,6 +53,7 @@ type alias Model =
     , formIsSubcontracted : Maybe Bool
     , formIsPartialPayment : Maybe Bool
     , formIsExistingLiability : Maybe Bool
+    , showBankData : Bool
     }
 
 
@@ -68,6 +70,7 @@ init txn =
     , formIsSubcontracted = Nothing
     , formIsPartialPayment = Nothing
     , formIsExistingLiability = Nothing
+    , showBankData = False
     }
 
 
@@ -77,7 +80,7 @@ view model =
         []
         ([ div [] [ text "Payment Info goes up here" ] ]
             ++ createDisbursementForm model
-            ++ [ div [] [ text "And bank data might go down here if the txn is bank verified" ] ]
+            ++ [ ExpandableBankData.view model.showBankData model.txn <| ToggleBankData ]
         )
 
 
@@ -242,6 +245,7 @@ type Msg
     | UpdateIsSubcontracted Bool
     | UpdateIsPartialPayment Bool
     | UpdateIsExistingLiability Bool
+    | ToggleBankData
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -276,6 +280,9 @@ update msg model =
 
         UpdateIsExistingLiability bool ->
             ( { model | formIsExistingLiability = Just bool }, Cmd.none )
+
+        ToggleBankData ->
+            ( { model | showBankData = not model.showBankData }, Cmd.none )
 
 
 encode : Disbursement.Model -> Encode.Value
