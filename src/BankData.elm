@@ -61,6 +61,6 @@ view model =
         []
     <|
         []
-            ++ formLabelRow "Payment Info"
+            ++ formLabelRow "Bank Data"
             ++ bankInfoRows model.bankData
             ++ paymentInfoRow model.paymentData
