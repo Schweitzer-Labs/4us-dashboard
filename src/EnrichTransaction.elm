@@ -75,6 +75,7 @@ questionRows model =
         UpdateIsExistingLiability
         model.isExistingLiability
         True
+        False
 
 
 maybeWithBlank : Maybe String -> String

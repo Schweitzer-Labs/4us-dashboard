@@ -17,6 +17,7 @@ module Asset exposing
     , defaultAvatar
     , documents
     , donorByRefcodeChart
+    , editGlyph
     , eightX
     , error
     , exclamationCircleGlyph
@@ -220,6 +221,11 @@ circleCheckGlyph =
 sackDollarGlyph : List (Attribute msg) -> Html msg
 sackDollarGlyph =
     glyph "fa-sack-dollar"
+
+
+editGlyph : List (Attribute msg) -> Html msg
+editGlyph =
+    glyph "fas fa-edit"
 
 
 minusCircleGlyph : List (Attribute msg) -> Html msg

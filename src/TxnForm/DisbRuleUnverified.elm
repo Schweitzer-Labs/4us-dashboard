@@ -129,6 +129,7 @@ questionRows model =
         UpdateIsExistingLiability
         model.formIsExistingLiability
         True
+        True
 
 
 maybeWithBlank : Maybe String -> String

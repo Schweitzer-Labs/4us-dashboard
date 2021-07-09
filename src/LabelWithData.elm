@@ -2,6 +2,7 @@ module LabelWithData exposing
     ( dataLabel
     , dataLongText
     , dataText
+    , labelWithContent
     , labelWithData
     , labelWithMaybeData
     , labelWithMaybeLongData
@@ -9,6 +10,7 @@ module LabelWithData exposing
     , labelWithTimeData
     )
 
+import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Attribute, Html, div, h4, h5, h6, span, text)
 import Html.Attributes exposing (class)
 import TimeZone exposing (america__new_york)
@@ -72,6 +74,14 @@ labelWithData label data =
     div []
         [ dataLabel label
         , dataText data
+        ]
+
+
+labelWithContent : String -> Html msg -> Html msg
+labelWithContent label content =
+    div []
+        [ dataLabel label
+        , div [ Spacing.mt2 ] [ content ]
         ]
 
 

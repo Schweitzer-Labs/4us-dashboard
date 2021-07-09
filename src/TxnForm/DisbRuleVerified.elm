@@ -15,6 +15,7 @@ module TxnForm.DisbRuleVerified exposing
     , view
     )
 
+import Asset
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input exposing (value)
 import Bootstrap.Form.Select as Select
@@ -25,9 +26,10 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Disbursement as Disbursement
 import Disbursement.Forms exposing (yesOrNoRows)
 import ExpandableBankData
-import Html exposing (Html, div, text)
+import Html exposing (Html, div, span, text)
 import Html.Attributes as Attribute exposing (class, for)
 import Json.Encode as Encode
+import PaymentInfo
 import PurposeCode exposing (PurposeCode)
 import Transaction
 
@@ -35,7 +37,7 @@ import Transaction
 errorBorder : String -> List (Html.Attribute Msg)
 errorBorder str =
     if String.length str < 2 then
-        [ class "border-danger" ]
+        [ class "" ]
 
     else
         []
@@ -78,9 +80,9 @@ view : Model -> Html Msg
 view model =
     Grid.container
         []
-        ([ div [] [ text "Payment Info goes up here" ] ]
+        ([ PaymentInfo.view model.txn ]
             ++ createDisbursementForm model
-            ++ [ ExpandableBankData.view model.showBankData model.txn <| ToggleBankData ]
+         --++ [ ExpandableBankData.view model.showBankData model.txn <| ToggleBankData ]
         )
 
 
@@ -101,16 +103,17 @@ recipientNameRow model =
             Maybe.withDefault "" model.formEntityName
     in
     Grid.row
-        []
+        [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ Form.label [ for "recipient-name" ] [ text "Recipient Info" ]
+            [ Form.label [ for "recipient-name" ] [ span [ class "align-middle" ] [ span [ class "align-middle" ] [ text "Recipient Info" ], Asset.editGlyph [ Spacing.ml2, class "align-middle" ] ] ]
             , Input.text
                 [ Input.id "recipient-name"
                 , Input.onInput EntityNameUpdated
                 , Input.placeholder "Enter recipient name"
                 , Input.attrs (errorBorder entityNameOrBlank)
                 , value entityNameOrBlank
+                , Input.disabled True
                 ]
             ]
         ]
@@ -131,6 +134,7 @@ questionRows model =
         UpdateIsExistingLiability
         model.formIsExistingLiability
         True
+        True
 
 
 maybeWithBlank : Maybe String -> String
@@ -149,6 +153,7 @@ addressRow { txn } =
                 , Input.placeholder "Enter Street Address"
                 , Input.attrs (errorBorder <| maybeWithBlank txn.addressLine1)
                 , Input.value <| maybeWithBlank txn.addressLine1
+                , Input.disabled True
                 ]
             ]
         , Grid.col
@@ -158,6 +163,7 @@ addressRow { txn } =
                 , Input.onInput AddressLine2Updated
                 , Input.placeholder "Secondary Address"
                 , Input.value <| maybeWithBlank txn.addressLine2
+                , Input.disabled True
                 ]
             ]
         ]
@@ -174,6 +180,7 @@ cityStateZipRow model =
                 , Input.placeholder "Enter city"
                 , Input.attrs (errorBorder <| maybeWithBlank model.formCity)
                 , Input.value <| maybeWithBlank model.formCity
+                , Input.disabled True
                 ]
             ]
         , Grid.col
@@ -184,6 +191,7 @@ cityStateZipRow model =
                 , Input.placeholder "State"
                 , Input.attrs (errorBorder <| maybeWithBlank model.formState)
                 , Input.value <| maybeWithBlank model.formState
+                , Input.disabled True
                 ]
             ]
         , Grid.col
@@ -194,6 +202,7 @@ cityStateZipRow model =
                 , Input.placeholder "Postal Code"
                 , Input.attrs (errorBorder <| maybeWithBlank model.formPostalCode)
                 , Input.value <| maybeWithBlank model.formPostalCode
+                , Input.disabled True
                 ]
             ]
         ]
@@ -212,6 +221,7 @@ selectPurpose model =
             [ Select.id "purpose"
             , Select.onChange PurposeCodeUpdated
             , Select.attrs <| [ Attribute.value <| purpleCodeOrBlank ] ++ errorBorder purpleCodeOrBlank
+            , Select.disabled True
             ]
           <|
             (++)

@@ -7,8 +7,8 @@ import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 
 
-yesOrNoCol : String -> (Bool -> msg) -> Maybe Bool -> Column msg
-yesOrNoCol question msg maybeState =
+yesOrNoCol : String -> (Bool -> msg) -> Maybe Bool -> Bool -> Column msg
+yesOrNoCol question msg maybeState disabled =
     let
         state =
             Maybe.withDefault "" <|
@@ -33,6 +33,7 @@ yesOrNoCol question msg maybeState =
                     , Radio.onClick (msg True)
                     , Radio.checked (state == "yes")
                     , Radio.danger
+                    , Radio.disabled disabled
                     ]
                     "Yes"
                 , Radio.createCustom
@@ -41,6 +42,7 @@ yesOrNoCol question msg maybeState =
                     , Radio.onClick (msg False)
                     , Radio.checked (state == "no")
                     , Radio.danger
+                    , Radio.disabled disabled
                     ]
                     "No"
                 ]
@@ -54,27 +56,20 @@ yesOrNoRows :
     -> (Bool -> msg)
     -> Maybe Bool
     -> Bool
+    -> Bool
     -> List (Html msg)
-yesOrNoRows updateIsSubcontractedMsg updateIsSubcontractedState updateIsPartialPaymentMsg updateIsPartialPaymentState updateIsExistingLiabilityMsg updateIsExistingLiabilityState submitted =
+yesOrNoRows updateIsSubcontractedMsg updateIsSubcontractedState updateIsPartialPaymentMsg updateIsPartialPaymentState updateIsExistingLiabilityMsg updateIsExistingLiabilityState submitted disabled =
     let
         anyBlank =
             updateIsSubcontractedState == Nothing || updateIsPartialPaymentState == Nothing || updateIsExistingLiabilityState == Nothing
-
-        errorRowsOrBlank =
-            if anyBlank && submitted then
-                errorRows "Please answer the following questions:"
-
-            else
-                errorRows ""
     in
-    errorRowsOrBlank
-        ++ [ Grid.row
-                []
-                [ yesOrNoCol "Is expenditure subcontracted?" updateIsSubcontractedMsg updateIsSubcontractedState
-                , yesOrNoCol "Is expenditure a partial payment?" updateIsPartialPaymentMsg updateIsPartialPaymentState
-                , yesOrNoCol "Is this an existing Liability?" updateIsExistingLiabilityMsg updateIsExistingLiabilityState
-                ]
-           ]
+    [ Grid.row
+        []
+        [ yesOrNoCol "Is expenditure subcontracted?" updateIsSubcontractedMsg updateIsSubcontractedState disabled
+        , yesOrNoCol "Is expenditure a partial payment?" updateIsPartialPaymentMsg updateIsPartialPaymentState disabled
+        , yesOrNoCol "Is this an existing Liability?" updateIsExistingLiabilityMsg updateIsExistingLiabilityState disabled
+        ]
+    ]
 
 
 errorRows : String -> List (Html msg)

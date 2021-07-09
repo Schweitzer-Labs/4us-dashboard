@@ -75,6 +75,7 @@ view model =
             --    UpdateIsExistingLiability
             --    model.isExistingLiability
             --    False
+            --    False
             ++ paymentMethodSelectRows
             ++ paymentMethodCheckRows model
 
