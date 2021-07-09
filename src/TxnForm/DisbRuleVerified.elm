@@ -80,7 +80,7 @@ view model =
         []
         ([ div [] [ text "Payment Info goes up here" ] ]
             ++ createDisbursementForm model
-            ++ [ ExpandableBankData.view model.showBankData model.txn <| ToggleBankData model.showBankData ]
+            ++ [ ExpandableBankData.view model.showBankData model.txn <| ToggleBankData ]
         )
 
 
@@ -245,7 +245,7 @@ type Msg
     | UpdateIsSubcontracted Bool
     | UpdateIsPartialPayment Bool
     | UpdateIsExistingLiability Bool
-    | ToggleBankData Bool
+    | ToggleBankData
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -281,13 +281,8 @@ update msg model =
         UpdateIsExistingLiability bool ->
             ( { model | formIsExistingLiability = Just bool }, Cmd.none )
 
-        ToggleBankData bool ->
-            case bool of
-                True ->
-                    ( { model | showBankData = False }, Cmd.none )
-
-                False ->
-                    ( { model | showBankData = True }, Cmd.none )
+        ToggleBankData ->
+            ( { model | showBankData = not model.showBankData }, Cmd.none )
 
 
 encode : Disbursement.Model -> Encode.Value

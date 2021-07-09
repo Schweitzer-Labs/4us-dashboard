@@ -1,4 +1,4 @@
-module ExpandableBankData exposing (Model, view)
+module ExpandableBankData exposing (view)
 
 import Asset
 import BankData
@@ -9,10 +9,6 @@ import Html exposing (Attribute, Html, text, u)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Transaction
-
-
-type alias Model =
-    { dataIsVisible : Bool }
 
 
 angleIcon : Bool -> Html msg
@@ -49,7 +45,7 @@ view dataIsVisible txn toggleMsg =
         ([]
             ++ headerRow txn.id toggleMsg dataIsVisible
             ++ (if dataIsVisible then
-                    [ BankData.view False txn ]
+                    [ BankData.view txn ]
 
                 else
                     []
