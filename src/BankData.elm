@@ -1,6 +1,5 @@
 module BankData exposing (Model, view)
 
-import BankIdHeader exposing (BankData)
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
@@ -8,8 +7,6 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Attribute, Html, h5, h6, text)
 import LabelWithData exposing (labelWithData, labelWithMaybeData, labelWithMaybeTimeData, labelWithTimeData)
 import PaymentMethod exposing (PaymentMethod)
-import TimeZone exposing (america__new_york)
-import Timestamp
 import Transaction
 
 

@@ -75,26 +75,11 @@ init txns txn =
     }
 
 
-bankData =
-    { analyzedPayeeName = "Id"
-    , analyzedCategory = "Business Services"
-    , analyzedTransactionDate = "June 26, 2021"
-    , description = "POS PURCHASE NON PIN ADVANTAGE PRESS SARATOGA SPRI NY"
-    , id = " Test"
-    }
-
-
-paymentData =
-    { postedDate = "June 28, 2021"
-    , paymentType = PaymentMethod.Ach
-    }
-
-
 view : Model -> Html Msg
 view model =
     Grid.container
         []
-        ([ MakeBankDataConfig.view { bankData = bankData, paymentData = paymentData } ]
+        ([]
             ++ createDisbursementForm model
         )
 
