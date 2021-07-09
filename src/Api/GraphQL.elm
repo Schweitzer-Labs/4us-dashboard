@@ -66,6 +66,12 @@ transactionQuery =
           attestsToBeingAnAdultCitizen
           stripePaymentIntentId
           cardNumberLastFourDigits
+          finicityCategory
+          finicityBestRepresentation
+          finicityPostedDate
+          finicityTransactionDate
+          finicityNormalizedPayeeName
+          finicityDescription
         }
       }
     """

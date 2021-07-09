@@ -44,6 +44,12 @@ type alias Model =
     , isSubcontracted : Maybe Bool
     , isPartialPayment : Maybe Bool
     , isExistingLiability : Maybe Bool
+    , finicityCategory : Maybe String
+    , finicityBestRepresentation : Maybe String
+    , finicityPostedDate : Maybe Int
+    , finicityTransactionDate : Maybe Int
+    , finicityNormalizedPayeeName : Maybe String
+    , finicityDescription : Maybe String
     }
 
 
@@ -83,6 +89,12 @@ init =
     , isSubcontracted = Nothing
     , isPartialPayment = Nothing
     , isExistingLiability = Nothing
+    , finicityCategory = Nothing
+    , finicityBestRepresentation = Nothing
+    , finicityPostedDate = Nothing
+    , finicityTransactionDate = Nothing
+    , finicityNormalizedPayeeName = Nothing
+    , finicityDescription = Nothing
     }
 
 
@@ -147,3 +159,9 @@ decoder =
         |> maybeBool "isSubcontracted"
         |> maybeBool "isPartialPayment"
         |> maybeBool "isExistingLiability"
+        |> maybeString "finicityCategory"
+        |> maybeString "finicityBestRepresentation"
+        |> maybeInt "finicityPostedDate"
+        |> maybeInt "finicityTransactionDate"
+        |> maybeString "finicityNormalizedPayeeName"
+        |> maybeString "finicityDescription"
