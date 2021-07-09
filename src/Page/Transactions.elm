@@ -48,6 +48,7 @@ import TransactionType exposing (TransactionType(..))
 import Transactions
 import TxnForm as TxnForm
 import TxnForm.DisbRuleUnverified as DisbRuleUnverified
+import TxnForm.DisbRuleVerified as DisbRuleVerified
 
 
 
@@ -78,8 +79,11 @@ type alias Model =
     , createDisbursementSubmitting : Bool
     , disbRuleUnverifiedModal : DisbRuleUnverified.Model
     , disbRuleUnverifiedSubmitting : Bool
-    , config : Config
     , disbRuleUnverifiedModalVisibility : Modal.Visibility
+    , disbRuleVerifiedModal : DisbRuleVerified.Model
+    , disbRuleVerifiedSubmitting : Bool
+    , disbRuleVerifiedModalVisibility : Modal.Visibility
+    , config : Config
     }
 
 
@@ -109,6 +113,9 @@ init config session aggs committee committeeId =
       , disbRuleUnverifiedModal = DisbRuleUnverified.init [] Transaction.init
       , disbRuleUnverifiedSubmitting = False
       , disbRuleUnverifiedModalVisibility = Modal.hidden
+      , disbRuleVerifiedModal = DisbRuleVerified.init Transaction.init
+      , disbRuleVerifiedSubmitting = False
+      , disbRuleVerifiedModalVisibility = Modal.hidden
       , config = config
       }
     , getTransactions config committeeId LoadTransactionsData Nothing
@@ -128,6 +135,7 @@ loadedView model =
         , generateDisclosureModal model
         , createDisbursementModal model
         , disbRuleUnverifiedModal model
+        , disbRuleVerifiedModal model
         ]
 
 
@@ -166,16 +174,32 @@ createContributionModal model =
 disbRuleUnverifiedModal : Model -> Html Msg
 disbRuleUnverifiedModal model =
     PlatformModal.view
-        { hideMsg = HideDisbRuleUnverifiedModal
-        , animateMsg = AnimateDisbRuleUnverifiedModal
+        { hideMsg = DisbRuleUnverifiedModalHide
+        , animateMsg = DisbRuleUnverifiedModalAnimate
         , title = "Reconcile Disbursement"
-        , updateMsg = DisbRuleUnverifiedModalUpdated
+        , updateMsg = DisbRuleUnverifiedModalUpdate
         , subModel = model.disbRuleUnverifiedModal
         , subView = DisbRuleUnverified.view
-        , submitMsg = SubmitDisbRuleUnverified
-        , submitText = "Save"
+        , submitMsg = DisbRuleUnverifiedSubmit
+        , submitText = "Reconcile"
         , isSubmitting = model.disbRuleUnverifiedSubmitting
         , visibility = model.disbRuleUnverifiedModalVisibility
+        }
+
+
+disbRuleVerifiedModal : Model -> Html Msg
+disbRuleVerifiedModal model =
+    PlatformModal.view
+        { hideMsg = DisbRuleVerifiedModalHide
+        , animateMsg = DisbRuleVerifiedModalAnimate
+        , title = "Disbursement"
+        , updateMsg = DisbRuleVerifiedModalUpdate
+        , subModel = model.disbRuleVerifiedModal
+        , subView = DisbRuleVerified.view
+        , submitMsg = DisbRuleVerifiedSubmit
+        , submitText = "Save"
+        , isSubmitting = model.disbRuleVerifiedSubmitting
+        , visibility = model.disbRuleVerifiedModalVisibility
         }
 
 
@@ -351,19 +375,20 @@ type Msg
     | AnimateCreateDisbursementModal Modal.Visibility
     | SubmitCreateDisbursement
     | SubmitCreateDisbursementDelay
-    | HideDisbRuleUnverifiedModal
-    | AnimateDisbRuleUnverifiedModal Modal.Visibility
-    | DisbRuleUnverifiedModalUpdated DisbRuleUnverified.Msg
-    | SubmitDisbRuleUnverified
+    | DisbRuleUnverifiedModalHide
+    | DisbRuleUnverifiedModalAnimate Modal.Visibility
+    | DisbRuleUnverifiedModalUpdate DisbRuleUnverified.Msg
+    | DisbRuleUnverifiedSubmit
+    | DisbRuleVerifiedModalHide
+    | DisbRuleVerifiedModalAnimate Modal.Visibility
+    | DisbRuleVerifiedModalUpdate DisbRuleVerified.Msg
+    | DisbRuleVerifiedSubmit
     | ShowTxnFormModal Transaction.Model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        AnimateDisbRuleUnverifiedModal visibility ->
-            ( { model | disbRuleUnverifiedModalVisibility = visibility }, Cmd.none )
-
         ShowTxnFormModal txn ->
             case TxnForm.fromTxn txn of
                 TxnForm.DisbRuleUnverified ->
@@ -374,26 +399,60 @@ update msg model =
                     , Cmd.none
                     )
 
+                TxnForm.DisbRuleVerified ->
+                    ( { model
+                        | disbRuleVerifiedModalVisibility = Modal.shown
+                        , disbRuleVerifiedModal = DisbRuleVerified.init txn
+                      }
+                    , Cmd.none
+                    )
+
                 _ ->
                     ( model, Cmd.none )
 
-        HideDisbRuleUnverifiedModal ->
+        -- Disb Rule Unverified Modal State
+        DisbRuleUnverifiedModalAnimate visibility ->
+            ( { model | disbRuleUnverifiedModalVisibility = visibility }, Cmd.none )
+
+        DisbRuleUnverifiedModalHide ->
             ( { model
                 | disbRuleUnverifiedModalVisibility = Modal.hidden
               }
             , Cmd.none
             )
 
-        SubmitDisbRuleUnverified ->
+        DisbRuleUnverifiedSubmit ->
             ( model, Cmd.none )
 
-        DisbRuleUnverifiedModalUpdated subMsg ->
+        DisbRuleUnverifiedModalUpdate subMsg ->
             let
                 ( subModel, subCmd ) =
                     DisbRuleUnverified.update subMsg model.disbRuleUnverifiedModal
             in
-            ( { model | disbRuleUnverifiedModal = subModel }, Cmd.map DisbRuleUnverifiedModalUpdated subCmd )
+            ( { model | disbRuleUnverifiedModal = subModel }, Cmd.map DisbRuleUnverifiedModalUpdate subCmd )
 
+        -- Disb Rule Verified Modal State
+        DisbRuleVerifiedModalAnimate visibility ->
+            ( { model | disbRuleVerifiedModalVisibility = visibility }, Cmd.none )
+
+        DisbRuleVerifiedModalHide ->
+            ( { model
+                | disbRuleVerifiedModalVisibility = Modal.hidden
+              }
+            , Cmd.none
+            )
+
+        DisbRuleVerifiedSubmit ->
+            ( model, Cmd.none )
+
+        DisbRuleVerifiedModalUpdate subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    DisbRuleVerified.update subMsg model.disbRuleVerifiedModal
+            in
+            ( { model | disbRuleVerifiedModal = subModel }, Cmd.map DisbRuleVerifiedModalUpdate subCmd )
+
+        -- Main page stuff
         GotSession session ->
             ( { model | session = session }, Cmd.none )
 
@@ -657,7 +716,8 @@ subscriptions model =
         , Dropdown.subscriptions model.filtersDropdown ToggleFiltersDropdown
         , Dropdown.subscriptions model.generateDisclosureModalDownloadDropdownState ToggleGenerateDisclosureModalDownloadDropdown
         , Modal.subscriptions model.createDisbursementModalVisibility AnimateCreateDisbursementModal
-        , Modal.subscriptions model.disbRuleUnverifiedModalVisibility AnimateDisbRuleUnverifiedModal
+        , Modal.subscriptions model.disbRuleUnverifiedModalVisibility DisbRuleUnverifiedModalAnimate
+        , Modal.subscriptions model.disbRuleVerifiedModalVisibility DisbRuleVerifiedModalAnimate
         ]
 
 

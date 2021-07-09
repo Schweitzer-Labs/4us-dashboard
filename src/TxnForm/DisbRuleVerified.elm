@@ -1,4 +1,19 @@
-module TxnForm.DisbRuleVerified exposing (Msg, encode, update, view)
+module TxnForm.DisbRuleVerified exposing
+    ( Model
+    , Msg(..)
+    , addressRow
+    , cityStateZipRow
+    , encode
+    , errorBorder
+    , init
+    , maybeWithBlank
+    , questionRows
+    , recipientNameRow
+    , selectPurpose
+    , selectPurposeRow
+    , update
+    , view
+    )
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input exposing (value)
@@ -12,7 +27,7 @@ import Disbursement.Forms exposing (yesOrNoRows)
 import Html exposing (Html, div, text)
 import Html.Attributes as Attribute exposing (class, for)
 import Json.Encode as Encode
-import PurposeCode
+import PurposeCode exposing (PurposeCode)
 import Transaction
 
 
@@ -25,25 +40,62 @@ errorBorder str =
         []
 
 
-view : Transaction.Model -> Html Msg
+type alias Model =
+    { txn : Transaction.Model
+    , formEntityName : Maybe String
+    , formAddressLine1 : Maybe String
+    , formAddressLine2 : Maybe String
+    , formCity : Maybe String
+    , formState : Maybe String
+    , formPostalCode : Maybe String
+    , formPurposeCode : Maybe PurposeCode
+    , formIsSubcontracted : Maybe Bool
+    , formIsPartialPayment : Maybe Bool
+    , formIsExistingLiability : Maybe Bool
+    }
+
+
+init : Transaction.Model -> Model
+init txn =
+    { txn = txn
+    , formEntityName = txn.entityName
+    , formAddressLine1 = Nothing
+    , formAddressLine2 = Nothing
+    , formCity = Nothing
+    , formState = Nothing
+    , formPostalCode = Nothing
+    , formPurposeCode = Nothing
+    , formIsSubcontracted = Nothing
+    , formIsPartialPayment = Nothing
+    , formIsExistingLiability = Nothing
+    }
+
+
+view : Model -> Html Msg
 view model =
     Grid.container
         []
-        ([ div [] [ text "hello from above the form" ] ]
-            ++ [ recipientNameRow model
-               , addressRow model
-               , cityStateZipRow model
-               , selectPurposeRow model
-               ]
-            ++ questionRows model
+        ([ div [] [ text "Payment Info goes up here" ] ]
+            ++ createDisbursementForm model
+            ++ [ div [] [ text "And bank data might go down here if the txn is bank verified" ] ]
         )
 
 
-recipientNameRow : Transaction.Model -> Html Msg
+createDisbursementForm : Model -> List (Html Msg)
+createDisbursementForm model =
+    [ recipientNameRow model
+    , addressRow model
+    , cityStateZipRow model
+    , selectPurposeRow model
+    ]
+        ++ questionRows model
+
+
+recipientNameRow : Model -> Html Msg
 recipientNameRow model =
     let
         entityNameOrBlank =
-            Maybe.withDefault "" model.entityName
+            Maybe.withDefault "" model.formEntityName
     in
     Grid.row
         []
@@ -61,20 +113,20 @@ recipientNameRow model =
         ]
 
 
-selectPurposeRow : Transaction.Model -> Html Msg
+selectPurposeRow : Model -> Html Msg
 selectPurposeRow model =
     Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ selectPurpose model ] ]
 
 
-questionRows : Transaction.Model -> List (Html Msg)
+questionRows : Model -> List (Html Msg)
 questionRows model =
     yesOrNoRows
         UpdateIsSubcontracted
-        model.isSubcontracted
+        model.formIsSubcontracted
         UpdateIsPartialPayment
-        model.isPartialPayment
+        model.formIsPartialPayment
         UpdateIsExistingLiability
-        model.isExistingLiability
+        model.formIsExistingLiability
         True
 
 
@@ -83,8 +135,8 @@ maybeWithBlank =
     Maybe.withDefault ""
 
 
-addressRow : Transaction.Model -> Html Msg
-addressRow t =
+addressRow : Model -> Html Msg
+addressRow { txn } =
     Grid.row [ Row.attrs [ Spacing.mt2 ] ]
         [ Grid.col
             [ Col.lg6 ]
@@ -92,8 +144,8 @@ addressRow t =
                 [ Input.id "addressLine1"
                 , Input.onInput AddressLine1Updated
                 , Input.placeholder "Enter Street Address"
-                , Input.attrs (errorBorder <| maybeWithBlank t.addressLine1)
-                , Input.value <| maybeWithBlank t.addressLine1
+                , Input.attrs (errorBorder <| maybeWithBlank txn.addressLine1)
+                , Input.value <| maybeWithBlank txn.addressLine1
                 ]
             ]
         , Grid.col
@@ -102,14 +154,14 @@ addressRow t =
                 [ Input.id "addressLine2"
                 , Input.onInput AddressLine2Updated
                 , Input.placeholder "Secondary Address"
-                , Input.value <| maybeWithBlank t.addressLine2
+                , Input.value <| maybeWithBlank txn.addressLine2
                 ]
             ]
         ]
 
 
-cityStateZipRow : Transaction.Model -> Html Msg
-cityStateZipRow t =
+cityStateZipRow : Model -> Html Msg
+cityStateZipRow model =
     Grid.row [ Row.attrs [ Spacing.mt2 ] ]
         [ Grid.col
             [ Col.lg4 ]
@@ -117,8 +169,8 @@ cityStateZipRow t =
                 [ Input.id "city"
                 , Input.onInput CityUpdated
                 , Input.placeholder "Enter city"
-                , Input.attrs (errorBorder <| maybeWithBlank t.city)
-                , Input.value <| maybeWithBlank t.city
+                , Input.attrs (errorBorder <| maybeWithBlank model.formCity)
+                , Input.value <| maybeWithBlank model.formCity
                 ]
             ]
         , Grid.col
@@ -127,8 +179,8 @@ cityStateZipRow t =
                 [ Input.id "state"
                 , Input.onInput StateUpdated
                 , Input.placeholder "State"
-                , Input.attrs (errorBorder <| maybeWithBlank t.state)
-                , Input.value <| maybeWithBlank t.state
+                , Input.attrs (errorBorder <| maybeWithBlank model.formState)
+                , Input.value <| maybeWithBlank model.formState
                 ]
             ]
         , Grid.col
@@ -137,18 +189,18 @@ cityStateZipRow t =
                 [ Input.id "postalCode"
                 , Input.onInput PostalCodeUpdated
                 , Input.placeholder "Postal Code"
-                , Input.attrs (errorBorder <| maybeWithBlank t.postalCode)
-                , Input.value <| maybeWithBlank t.postalCode
+                , Input.attrs (errorBorder <| maybeWithBlank model.formPostalCode)
+                , Input.value <| maybeWithBlank model.formPostalCode
                 ]
             ]
         ]
 
 
-selectPurpose : Transaction.Model -> Html Msg
-selectPurpose t =
+selectPurpose : Model -> Html Msg
+selectPurpose model =
     let
         purpleCodeOrBlank =
-            maybeWithBlank <| Maybe.map PurposeCode.toString t.purposeCode
+            maybeWithBlank <| Maybe.map PurposeCode.toString model.formPurposeCode
     in
     Form.group
         []
@@ -170,7 +222,7 @@ selectPurpose t =
                 List.map
                     (\( _, codeText, purposeText ) ->
                         Select.item
-                            [ Attribute.selected (codeText == PurposeCode.fromMaybeToString t.purposeCode)
+                            [ Attribute.selected (codeText == PurposeCode.fromMaybeToString model.formPurposeCode)
                             , Attribute.value codeText
                             ]
                             [ text <| purposeText ]
@@ -192,38 +244,38 @@ type Msg
     | UpdateIsExistingLiability Bool
 
 
-update : Msg -> Transaction.Model -> ( Transaction.Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         EntityNameUpdated str ->
-            ( { model | entityName = Just str }, Cmd.none )
+            ( { model | formEntityName = Just str }, Cmd.none )
 
         AddressLine1Updated str ->
-            ( { model | addressLine1 = Just str }, Cmd.none )
+            ( { model | formAddressLine1 = Just str }, Cmd.none )
 
         AddressLine2Updated str ->
-            ( { model | addressLine2 = Just str }, Cmd.none )
+            ( { model | formAddressLine2 = Just str }, Cmd.none )
 
         CityUpdated str ->
-            ( { model | city = Just str }, Cmd.none )
+            ( { model | formCity = Just str }, Cmd.none )
 
         StateUpdated str ->
-            ( { model | state = Just str }, Cmd.none )
+            ( { model | formState = Just str }, Cmd.none )
 
         PostalCodeUpdated str ->
-            ( { model | postalCode = Just str }, Cmd.none )
+            ( { model | formPostalCode = Just str }, Cmd.none )
 
         PurposeCodeUpdated code ->
-            ( { model | purposeCode = PurposeCode.fromString code }, Cmd.none )
+            ( { model | formPurposeCode = PurposeCode.fromString code }, Cmd.none )
 
         UpdateIsSubcontracted bool ->
-            ( { model | isSubcontracted = Just bool }, Cmd.none )
+            ( { model | formIsSubcontracted = Just bool }, Cmd.none )
 
         UpdateIsPartialPayment bool ->
-            ( { model | isPartialPayment = Just bool }, Cmd.none )
+            ( { model | formIsPartialPayment = Just bool }, Cmd.none )
 
         UpdateIsExistingLiability bool ->
-            ( { model | isExistingLiability = Just bool }, Cmd.none )
+            ( { model | formIsExistingLiability = Just bool }, Cmd.none )
 
 
 encode : Disbursement.Model -> Encode.Value

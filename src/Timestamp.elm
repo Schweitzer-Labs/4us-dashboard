@@ -4,7 +4,6 @@ import Date
 import DateTime
 import Html exposing (Html, span, text)
 import Html.Attributes exposing (class)
-import Json.Decode as Decode exposing (Decoder, fail, succeed)
 import Time exposing (Month(..))
 import TimeZone exposing (america__new_york)
 

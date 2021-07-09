@@ -7,7 +7,6 @@ import Transaction
 type Model
     = DisbRuleVerified
     | DisbRuleUnverified
-    | DisbReconciled
     | NoOp
 
 
@@ -21,7 +20,7 @@ fromTxn txn =
             DisbRuleUnverified
 
         ( Out, False, False ) ->
-            DisbReconciled
+            DisbRuleVerified
 
         _ ->
             NoOp
