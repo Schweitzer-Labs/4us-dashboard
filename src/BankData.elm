@@ -19,8 +19,8 @@ type alias Model =
 
 
 formLabelRow : Bool -> String -> List (Html msg)
-formLabelRow context str =
-    case context of
+formLabelRow showHeading str =
+    case showHeading of
         True ->
             [ Grid.row []
                 [ Grid.col [ Col.md4 ] [ h6 [] [ text str ] ] ]
@@ -54,11 +54,11 @@ paymentInfoRow data =
 
 
 view : Bool -> Model -> Html msg
-view context model =
+view showHeading model =
     Grid.containerFluid
         []
     <|
         []
-            ++ formLabelRow context "Bank Data"
+            ++ formLabelRow showHeading "Bank Data"
             ++ bankInfoRows model
             ++ paymentInfoRow model

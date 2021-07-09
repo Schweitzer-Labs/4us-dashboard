@@ -5,7 +5,7 @@ import BankData
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
-import Html exposing (Attribute, Html, div, h4, h6, text)
+import Html exposing (Attribute, Html, text, u)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Transaction
@@ -33,7 +33,7 @@ bankHeaderStyle =
 headerRow : String -> msg -> Bool -> List (Html msg)
 headerRow id msg val =
     [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
-        [ Grid.col [] [ h6 [ bankHeaderStyle, onClick msg ] [ text <| "Bank Data: " ++ id, angleIcon val ] ] ]
+        [ Grid.col [] [ u [ bankHeaderStyle, onClick msg ] [ text <| "Bank Data: " ++ id, angleIcon val ] ] ]
     ]
 
 

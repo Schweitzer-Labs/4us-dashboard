@@ -53,6 +53,7 @@ type alias Model =
     , formIsSubcontracted : Maybe Bool
     , formIsPartialPayment : Maybe Bool
     , formIsExistingLiability : Maybe Bool
+    , showBankData : Bool
     }
 
 
@@ -69,6 +70,7 @@ init txn =
     , formIsSubcontracted = Nothing
     , formIsPartialPayment = Nothing
     , formIsExistingLiability = Nothing
+    , showBankData = False
     }
 
 
@@ -78,7 +80,7 @@ view model =
         []
         ([ div [] [ text "Payment Info goes up here" ] ]
             ++ createDisbursementForm model
-            ++ [ ExpandableBankData.view False model.txn <| EntityNameUpdated "" ]
+            ++ [ ExpandableBankData.view model.showBankData model.txn <| ToggleBankData model.showBankData ]
         )
 
 
@@ -243,6 +245,7 @@ type Msg
     | UpdateIsSubcontracted Bool
     | UpdateIsPartialPayment Bool
     | UpdateIsExistingLiability Bool
+    | ToggleBankData Bool
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -277,6 +280,14 @@ update msg model =
 
         UpdateIsExistingLiability bool ->
             ( { model | formIsExistingLiability = Just bool }, Cmd.none )
+
+        ToggleBankData bool ->
+            case bool of
+                True ->
+                    ( { model | showBankData = False }, Cmd.none )
+
+                False ->
+                    ( { model | showBankData = True }, Cmd.none )
 
 
 encode : Disbursement.Model -> Encode.Value
