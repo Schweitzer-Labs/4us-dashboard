@@ -274,7 +274,7 @@ angleDownGlyph =
 
 angleUpGlyph : List (Attribute msg) -> Html msg
 angleUpGlyph =
-    glyph "fas fa-angle-down"
+    glyph "fas fa-angle-up"
 
 
 timesGlyph : List (Attribute msg) -> Html msg

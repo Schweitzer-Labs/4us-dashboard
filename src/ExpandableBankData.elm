@@ -17,11 +17,12 @@ type alias Model =
 
 angleIcon : Bool -> Html msg
 angleIcon val =
-    if val then
-        Asset.angleDownGlyph [ class "text-slate-blue ml-2" ]
+    case val of
+        True ->
+            Asset.angleUpGlyph [ class "text-slate-blue ml-2" ]
 
-    else
-        Asset.angleUpGlyph [ class "text-slate-blue ml-2" ]
+        False ->
+            Asset.angleDownGlyph [ class "text-slate-blue ml-2" ]
 
 
 bankHeaderStyle : Attribute msg
@@ -46,7 +47,7 @@ view dataIsVisible txn toggleMsg =
         []
     <|
         ([]
-            ++ headerRow txn.id toggleMsg True
+            ++ headerRow txn.id toggleMsg dataIsVisible
             ++ (if dataIsVisible then
                     [ BankData.view False txn ]
 

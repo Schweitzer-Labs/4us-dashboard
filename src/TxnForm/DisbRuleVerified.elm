@@ -78,7 +78,7 @@ view model =
         []
         ([ div [] [ text "Payment Info goes up here" ] ]
             ++ createDisbursementForm model
-            ++ [ ExpandableBankData.view True model.txn <| EntityNameUpdated "" ]
+            ++ [ ExpandableBankData.view False model.txn <| EntityNameUpdated "" ]
         )
 
 
