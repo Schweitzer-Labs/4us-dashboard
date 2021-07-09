@@ -78,7 +78,7 @@ view : Model -> Html Msg
 view model =
     Grid.container
         []
-        ([]
+        ([ BankData.view model.txn ]
             ++ createDisbursementForm model
         )
 

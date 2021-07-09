@@ -1,6 +1,15 @@
-module LabelWithData exposing (dataLabel, dataText, labelWithData, labelWithMaybeData, labelWithMaybeTimeData, labelWithTimeData)
+module LabelWithData exposing
+    ( dataLabel
+    , dataLongText
+    , dataText
+    , labelWithData
+    , labelWithMaybeData
+    , labelWithMaybeLongData
+    , labelWithMaybeTimeData
+    , labelWithTimeData
+    )
 
-import Html exposing (Attribute, Html, div, h4, h5, h6, text)
+import Html exposing (Attribute, Html, div, h4, h5, h6, span, text)
 import Html.Attributes exposing (class)
 import TimeZone exposing (america__new_york)
 import Timestamp
@@ -13,12 +22,17 @@ dataLabelStyle =
 
 dataLabel : String -> Html msg
 dataLabel label =
-    h6 [ dataLabelStyle ] [ text label ]
+    div [ dataLabelStyle ] [ text label ]
 
 
 dataText : String -> Html msg
 dataText data =
-    h4 [ class "font-size-large" ] [ text data ]
+    div [ class "font-size-large" ] [ text data ]
+
+
+dataLongText : String -> Html msg
+dataLongText data =
+    div [ class "font-size-medium" ] [ text data ]
 
 
 labelWithMaybeData : String -> Maybe String -> Html msg
@@ -28,6 +42,22 @@ labelWithMaybeData label data =
             div []
                 [ dataLabel label
                 , dataText a
+                ]
+
+        Nothing ->
+            div []
+                [ dataLabel label
+                , dataText "N/A"
+                ]
+
+
+labelWithMaybeLongData : String -> Maybe String -> Html msg
+labelWithMaybeLongData label data =
+    case data of
+        Just a ->
+            div []
+                [ dataLabel label
+                , dataLongText a
                 ]
 
         Nothing ->

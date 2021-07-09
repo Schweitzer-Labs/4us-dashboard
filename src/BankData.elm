@@ -1,11 +1,11 @@
-module BankData exposing (Model, view)
+module BankData exposing (Model, formLabelRow, view)
 
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
-import Html exposing (Attribute, Html, h5, h6, text)
-import LabelWithData exposing (labelWithData, labelWithMaybeData, labelWithMaybeTimeData, labelWithTimeData)
+import Html exposing (Attribute, Html, div, h5, h6, text)
+import LabelWithData exposing (labelWithData, labelWithMaybeData, labelWithMaybeLongData, labelWithMaybeTimeData, labelWithTimeData)
 import PaymentMethod exposing (PaymentMethod)
 import Transaction
 
@@ -30,35 +30,30 @@ formLabelRow showHeading str =
             []
 
 
-bankInfoRows : Model -> List (Html msg)
-bankInfoRows data =
-    [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
-        [ Grid.col [ Col.md4, Col.attrs [ Spacing.ml2 ] ] [ labelWithMaybeData "Analyzed Payee Name" data.finicityNormalizedPayeeName ]
-        , Grid.col [ Col.md4, Col.offsetLg3 ] [ labelWithMaybeData "Analyzed Category" data.finicityCategory ]
+bankDataRows : Model -> List (Html msg)
+bankDataRows data =
+    [ Grid.row [ Row.attrs [ Spacing.mt4 ] ]
+        [ Grid.col [] [ labelWithMaybeData "Analyzed Payee Name" data.finicityNormalizedPayeeName ]
+        , Grid.col [] [ labelWithMaybeData "Analyzed Category" data.finicityCategory ]
         ]
-    , Grid.row []
-        [ Grid.col [ Col.attrs [ Spacing.mt2, Spacing.ml2 ] ] [ labelWithMaybeData "Description" data.finicityDescription ] ]
-    , Grid.row []
-        [ Grid.col [ Col.md4, Col.attrs [ Spacing.mt2, Spacing.ml2 ] ] [ labelWithMaybeTimeData "Initiated Date" data.finicityTransactionDate ]
+    , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
+        [ Grid.col [] [ labelWithMaybeLongData "Description" data.finicityDescription ] ]
+    , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
+        [ Grid.col [] [ labelWithTimeData "Posted Date" <| data.initiatedTimestamp ]
+        , Grid.col [] [ labelWithData "Payment Type" <| PaymentMethod.toDisplayString data.paymentMethod ]
         ]
-    ]
-
-
-paymentInfoRow : Model -> List (Html msg)
-paymentInfoRow data =
-    [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
-        [ Grid.col [ Col.md4, Col.attrs [ Spacing.ml2 ] ] [ labelWithTimeData "Posted Date" <| data.initiatedTimestamp ]
-        , Grid.col [ Col.md4, Col.attrs [ Spacing.ml2 ] ] [ labelWithData "Payment Type" <| PaymentMethod.toDisplayString data.paymentMethod ]
+    , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
+        [ Grid.col [] [ labelWithMaybeTimeData "Initiated Date" data.finicityTransactionDate ]
         ]
     ]
 
 
-view : Bool -> Model -> Html msg
-view showHeading model =
-    Grid.containerFluid
+view : Model -> Html msg
+view model =
+    div
         []
-    <|
-        []
-            ++ formLabelRow showHeading "Bank Data"
-            ++ bankInfoRows model
-            ++ paymentInfoRow model
+        [ h6 [] [ text "Payment Info" ]
+        , Grid.containerFluid
+            []
+            (bankDataRows model)
+        ]
