@@ -15,7 +15,7 @@ module TxnForm.DisbRuleUnverified exposing
     , view
     )
 
-import BankData as MakeBankDataConfig
+import BankData as BankData
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input exposing (value)
 import Bootstrap.Form.Select as Select
@@ -79,7 +79,7 @@ view : Model -> Html Msg
 view model =
     Grid.container
         []
-        ([]
+        ([ BankData.view model.txn ]
             ++ createDisbursementForm model
         )
 

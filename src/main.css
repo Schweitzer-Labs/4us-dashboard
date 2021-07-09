@@ -7288,3 +7288,9 @@ body {
 
 .font-size-22 {
   font-size: 22px; }
+
+.font-size-medium {
+  font-size: 16px; }
+
+.font-size-large {
+  font-size: 32px; }
