@@ -18,11 +18,16 @@ type alias Model =
     Transaction.Model
 
 
-formLabelRow : String -> List (Html msg)
-formLabelRow str =
-    [ Grid.row []
-        [ Grid.col [ Col.md4 ] [ h6 [] [ text str ] ] ]
-    ]
+formLabelRow : Bool -> String -> List (Html msg)
+formLabelRow context str =
+    case context of
+        True ->
+            [ Grid.row []
+                [ Grid.col [ Col.md4 ] [ h6 [] [ text str ] ] ]
+            ]
+
+        False ->
+            []
 
 
 bankInfoRows : Model -> List (Html msg)
@@ -48,12 +53,12 @@ paymentInfoRow data =
     ]
 
 
-view : Model -> Html msg
-view model =
+view : Bool -> Model -> Html msg
+view context model =
     Grid.containerFluid
         []
     <|
         []
-            ++ formLabelRow "Bank Data"
+            ++ formLabelRow context "Bank Data"
             ++ bankInfoRows model
             ++ paymentInfoRow model
