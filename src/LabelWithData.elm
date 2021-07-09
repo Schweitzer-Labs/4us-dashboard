@@ -1,6 +1,6 @@
 module LabelWithData exposing (dataLabel, dataText, labelWithData, labelWithDescriptionData)
 
-import Html exposing (Attribute, Html, div, h4, h5, text)
+import Html exposing (Attribute, Html, div, h4, h5, h6, text)
 import Html.Attributes exposing (class)
 
 
@@ -11,7 +11,7 @@ dataLabelStyle =
 
 dataLabel : String -> Html msg
 dataLabel label =
-    h4 [ dataLabelStyle ] [ text label ]
+    h6 [ dataLabelStyle ] [ text label ]
 
 
 dataText : String -> Html msg
@@ -23,7 +23,7 @@ labelWithDescriptionData : String -> String -> Html msg
 labelWithDescriptionData label data =
     div []
         [ dataLabel label
-        , h5 [] [ text data ]
+        , h6 [] [ text data ]
         ]
 
 

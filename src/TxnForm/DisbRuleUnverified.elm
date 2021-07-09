@@ -76,17 +76,16 @@ init txns txn =
 
 
 bankData =
-    { analyzedPayeeName = "Test"
-    , analyzedCategory = "Test"
-    , analyzedPostedDate = "Test"
-    , analyzedCreatedDate = "Test"
-    , description = "Test"
+    { analyzedPayeeName = "Id"
+    , analyzedCategory = "Business Services"
+    , analyzedTransactionDate = "June 26, 2021"
+    , description = "POS PURCHASE NON PIN ADVANTAGE PRESS SARATOGA SPRI NY"
     , id = " Test"
     }
 
 
 paymentData =
-    { postedDate = "Test"
+    { postedDate = "June 28, 2021"
     , paymentType = PaymentMethod.Ach
     }
 
