@@ -15,6 +15,7 @@ type alias BankData =
     , analyzedPostedDate : String
     , analyzedCreatedDate : String
     , description : String
+    , id : String
     }
 
 
@@ -64,11 +65,11 @@ infoRows model =
 ---- VIEW ----
 
 
-view : Model -> String -> msg -> Html msg
-view model id toggleMsg =
+view : Model -> msg -> Html msg
+view model toggleMsg =
     Grid.containerFluid
         []
     <|
         []
-            ++ headerRow id toggleMsg model.dataIsVisible
+            ++ headerRow model.data.id toggleMsg model.dataIsVisible
             ++ infoRows model

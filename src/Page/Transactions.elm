@@ -46,6 +46,8 @@ import Transaction
 import Transaction.TransactionsData as TransactionsData exposing (TransactionsData)
 import TransactionType exposing (TransactionType(..))
 import Transactions
+import TxnForm as TxnForm
+import TxnForm.DisbRuleUnverified as DisbRuleUnverified
 
 
 
@@ -74,10 +76,10 @@ type alias Model =
     , createDisbursementModalVisibility : Modal.Visibility
     , createDisbursementModal : CreateDisbursement.Model
     , createDisbursementSubmitting : Bool
-    , enrichTransactionModalVisibility : Modal.Visibility
-    , enrichTransactionModal : Transaction.Model
-    , enrichTransactionSubmitting : Bool
+    , disbRuleUnverifiedModal : DisbRuleUnverified.Model
+    , disbRuleUnverifiedSubmitting : Bool
     , config : Config
+    , disbRuleUnverifiedModalVisibility : Modal.Visibility
     }
 
 
@@ -104,9 +106,9 @@ init config session aggs committee committeeId =
       , createDisbursementModalVisibility = Modal.hidden
       , createDisbursementModal = CreateDisbursement.init
       , createDisbursementSubmitting = False
-      , enrichTransactionModalVisibility = Modal.hidden
-      , enrichTransactionModal = Transaction.init
-      , enrichTransactionSubmitting = False
+      , disbRuleUnverifiedModal = DisbRuleUnverified.init [] Transaction.init
+      , disbRuleUnverifiedSubmitting = False
+      , disbRuleUnverifiedModalVisibility = Modal.hidden
       , config = config
       }
     , getTransactions config committeeId LoadTransactionsData Nothing
@@ -121,28 +123,12 @@ loadedView : Model -> Html Msg
 loadedView model =
     div [ class "fade-in" ]
         [ dropdowns model
-        , Transactions.viewInteractive model.committee SortTransactions ShowEnrichTransactionModal [] model.transactions
+        , Transactions.viewInteractive model.committee SortTransactions ShowTxnFormModal [] model.transactions
         , createContributionModal model
         , generateDisclosureModal model
         , createDisbursementModal model
-        , enrichTransactionModal model
+        , disbRuleUnverifiedModal model
         ]
-
-
-enrichTransactionModal : Model -> Html Msg
-enrichTransactionModal model =
-    PlatformModal.view
-        { hideMsg = HideEnrichTransactionModal
-        , animateMsg = AnimateEnrichTransactionModal
-        , title = "Complete Disbursement"
-        , updateMsg = EnrichTransactionModalUpdated
-        , subModel = model.enrichTransactionModal
-        , subView = EnrichTransaction.view
-        , submitMsg = SubmitEnrichedDisbursement
-        , submitText = "Verify"
-        , isSubmitting = model.enrichTransactionSubmitting
-        , visibility = model.enrichTransactionModalVisibility
-        }
 
 
 createDisbursementModal : Model -> Html Msg
@@ -174,6 +160,22 @@ createContributionModal model =
         , submitText = "Submit"
         , isSubmitting = model.createContributionSubmitting
         , visibility = model.createContributionModalVisibility
+        }
+
+
+disbRuleUnverifiedModal : Model -> Html Msg
+disbRuleUnverifiedModal model =
+    PlatformModal.view
+        { hideMsg = HideDisbRuleUnverifiedModal
+        , animateMsg = AnimateDisbRuleUnverifiedModal
+        , title = "Reconcile Disbursement"
+        , updateMsg = DisbRuleUnverifiedModalUpdated
+        , subModel = model.disbRuleUnverifiedModal
+        , subView = DisbRuleUnverified.view
+        , submitMsg = SubmitDisbRuleUnverified
+        , submitText = "Save"
+        , isSubmitting = model.disbRuleUnverifiedSubmitting
+        , visibility = model.disbRuleUnverifiedModalVisibility
         }
 
 
@@ -349,18 +351,49 @@ type Msg
     | AnimateCreateDisbursementModal Modal.Visibility
     | SubmitCreateDisbursement
     | SubmitCreateDisbursementDelay
-    | HideEnrichTransactionModal
-    | ShowEnrichTransactionModal Transaction.Model
-    | EnrichTransactionModalUpdated EnrichTransaction.Msg
-    | AnimateEnrichTransactionModal Modal.Visibility
-    | GotEnrichTransactionResponse (Result Http.Error String)
-    | SubmitEnrichedDisbursement
-    | SubmitEnrichedDisbursementDelay
+    | HideDisbRuleUnverifiedModal
+    | AnimateDisbRuleUnverifiedModal Modal.Visibility
+    | DisbRuleUnverifiedModalUpdated DisbRuleUnverified.Msg
+    | SubmitDisbRuleUnverified
+    | ShowTxnFormModal Transaction.Model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        AnimateDisbRuleUnverifiedModal visibility ->
+            ( { model | disbRuleUnverifiedModalVisibility = visibility }, Cmd.none )
+
+        ShowTxnFormModal txn ->
+            case TxnForm.fromTxn txn of
+                TxnForm.DisbRuleUnverified ->
+                    ( { model
+                        | disbRuleUnverifiedModalVisibility = Modal.shown
+                        , disbRuleUnverifiedModal = DisbRuleUnverified.init model.transactions txn
+                      }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        HideDisbRuleUnverifiedModal ->
+            ( { model
+                | disbRuleUnverifiedModalVisibility = Modal.hidden
+              }
+            , Cmd.none
+            )
+
+        SubmitDisbRuleUnverified ->
+            ( model, Cmd.none )
+
+        DisbRuleUnverifiedModalUpdated subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    DisbRuleUnverified.update subMsg model.disbRuleUnverifiedModal
+            in
+            ( { model | disbRuleUnverifiedModal = subModel }, Cmd.map DisbRuleUnverifiedModalUpdated subCmd )
+
         GotSession session ->
             ( { model | session = session }, Cmd.none )
 
@@ -588,43 +621,6 @@ update msg model =
             , getTransactions model.config model.committeeId LoadTransactionsData Nothing
             )
 
-        ShowEnrichTransactionModal transaction ->
-            ( { model
-                | enrichTransactionModalVisibility = Modal.shown
-                , enrichTransactionModal = transaction
-              }
-            , Cmd.none
-            )
-
-        HideEnrichTransactionModal ->
-            ( { model | enrichTransactionModalVisibility = Modal.hidden }
-            , Cmd.none
-            )
-
-        GotEnrichTransactionResponse res ->
-            case res of
-                Ok data ->
-                    ( model, Delay.after 1 Delay.Second SubmitEnrichedDisbursementDelay )
-
-                Err _ ->
-                    ( model, Cmd.none )
-
-        SubmitEnrichedDisbursement ->
-            ( model, Cmd.none )
-
-        SubmitEnrichedDisbursementDelay ->
-            ( model, Cmd.none )
-
-        EnrichTransactionModalUpdated subMsg ->
-            let
-                ( subModel, subCmd ) =
-                    EnrichTransaction.update subMsg model.enrichTransactionModal
-            in
-            ( { model | enrichTransactionModal = subModel }, Cmd.map EnrichTransactionModalUpdated subCmd )
-
-        AnimateEnrichTransactionModal visibility ->
-            ( { model | enrichTransactionModalVisibility = visibility }, Cmd.none )
-
 
 applyFilter : Transactions.Label -> (Disbursement.Model -> String) -> Model -> Model
 applyFilter label field model =
@@ -661,7 +657,7 @@ subscriptions model =
         , Dropdown.subscriptions model.filtersDropdown ToggleFiltersDropdown
         , Dropdown.subscriptions model.generateDisclosureModalDownloadDropdownState ToggleGenerateDisclosureModalDownloadDropdown
         , Modal.subscriptions model.createDisbursementModalVisibility AnimateCreateDisbursementModal
-        , Modal.subscriptions model.enrichTransactionModalVisibility AnimateEnrichTransactionModal
+        , Modal.subscriptions model.disbRuleUnverifiedModalVisibility AnimateDisbRuleUnverifiedModal
         ]
 
 
@@ -786,9 +782,9 @@ encodeDisbursement model =
                 , ( "city", Encode.string d.city )
                 , ( "state", Encode.string d.state )
                 , ( "postalCode", Encode.string d.postalCode )
-                , ( "isSubcontracted", Encode.bool <| d.isSubcontracted == "yes" )
-                , ( "isPartialPayment", Encode.bool <| d.isPartialPayment == "yes" )
-                , ( "isExistingLiability", Encode.bool <| d.isExistingLiability == "yes" )
+                , ( "isSubcontracted", Encode.bool <| Maybe.withDefault False d.isSubcontracted )
+                , ( "isPartialPayment", Encode.bool <| Maybe.withDefault False d.isPartialPayment )
+                , ( "isExistingLiability", Encode.bool <| Maybe.withDefault False d.isExistingLiability )
                 , ( "purposeCode", Encode.string <| Maybe.withDefault (PurposeCode.toString PurposeCode.OTHER) d.purposeCode )
                 , ( "paymentDate", Encode.int <| dateStringToMillis d.checkDate )
                 , ( "transactionType", Encode.string <| TransactionType.toString TransactionType.Disbursement )
