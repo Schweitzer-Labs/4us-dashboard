@@ -15,6 +15,7 @@ module TxnForm.DisbRuleUnverified exposing
     , view
     )
 
+import BankData as MakeBankDataConfig
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input exposing (value)
 import Bootstrap.Form.Select as Select
@@ -27,6 +28,7 @@ import Disbursement.Forms exposing (yesOrNoRows)
 import Html exposing (Html, text)
 import Html.Attributes as Attribute exposing (class, for)
 import Json.Encode as Encode
+import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
 import Transaction
 
@@ -77,7 +79,7 @@ view : Model -> Html Msg
 view model =
     Grid.container
         []
-        ([ text "hello from above" ]
+        ([]
             ++ createDisbursementForm model
         )
 

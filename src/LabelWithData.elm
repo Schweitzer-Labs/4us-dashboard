@@ -1,7 +1,9 @@
-module LabelWithData exposing (dataLabel, dataText, labelWithData, labelWithDescriptionData)
+module LabelWithData exposing (dataLabel, dataText, labelWithData, labelWithMaybeData, labelWithMaybeTimeData, labelWithTimeData)
 
-import Html exposing (Attribute, Html, div, h4, h5, text)
+import Html exposing (Attribute, Html, div, h4, h5, h6, text)
 import Html.Attributes exposing (class)
+import TimeZone exposing (america__new_york)
+import Timestamp
 
 
 dataLabelStyle : Attribute msg
@@ -11,7 +13,7 @@ dataLabelStyle =
 
 dataLabel : String -> Html msg
 dataLabel label =
-    h4 [ dataLabelStyle ] [ text label ]
+    h6 [ dataLabelStyle ] [ text label ]
 
 
 dataText : String -> Html msg
@@ -19,12 +21,20 @@ dataText data =
     h4 [ class "font-size-large" ] [ text data ]
 
 
-labelWithDescriptionData : String -> String -> Html msg
-labelWithDescriptionData label data =
-    div []
-        [ dataLabel label
-        , h5 [] [ text data ]
-        ]
+labelWithMaybeData : String -> Maybe String -> Html msg
+labelWithMaybeData label data =
+    case data of
+        Just a ->
+            div []
+                [ dataLabel label
+                , dataText a
+                ]
+
+        Nothing ->
+            div []
+                [ dataLabel label
+                , dataText "N/A"
+                ]
 
 
 labelWithData : String -> String -> Html msg
@@ -32,4 +42,28 @@ labelWithData label data =
     div []
         [ dataLabel label
         , dataText data
+        ]
+
+
+labelWithMaybeTimeData : String -> Maybe Int -> Html msg
+labelWithMaybeTimeData label data =
+    case data of
+        Just a ->
+            div []
+                [ dataLabel label
+                , dataText <| Timestamp.format (america__new_york ()) a
+                ]
+
+        Nothing ->
+            div []
+                [ dataLabel label
+                , dataText "N/A"
+                ]
+
+
+labelWithTimeData : String -> Int -> Html msg
+labelWithTimeData label data =
+    div []
+        [ dataLabel label
+        , dataText <| Timestamp.format (america__new_york ()) data
         ]

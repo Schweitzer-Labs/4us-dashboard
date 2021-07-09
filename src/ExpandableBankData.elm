@@ -1,4 +1,4 @@
-module BankIdHeader exposing (BankData, Model, infoRows, view)
+module ExapandableBankData exposing (BankData, Model, infoRows, view)
 
 import Asset
 import Bootstrap.Grid as Grid
@@ -6,14 +6,13 @@ import Bootstrap.Grid.Col as Col
 import Html exposing (Attribute, Html, div, h4, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import LabelWithData exposing (labelWithData, labelWithDescriptionData)
+import LabelWithData exposing (labelWithData)
 
 
 type alias BankData =
     { analyzedPayeeName : String
     , analyzedCategory : String
-    , analyzedPostedDate : String
-    , analyzedCreatedDate : String
+    , analyzedTransactionDate : String
     , description : String
     , id : String
     }
@@ -54,7 +53,7 @@ infoRows model =
             , Grid.col [ Col.md4, Col.offsetMd3 ] [ labelWithData "Analyzed Category" model.data.analyzedCategory ]
             ]
         , Grid.row []
-            [ Grid.col [ Col.md4 ] [ labelWithDescriptionData "Description" model.data.description ] ]
+            [ Grid.col [ Col.md4 ] [ labelWithData "Description" model.data.description ] ]
         ]
 
     else
