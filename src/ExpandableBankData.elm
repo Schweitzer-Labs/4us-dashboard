@@ -45,7 +45,7 @@ view dataIsVisible txn toggleMsg =
         ([]
             ++ headerRow txn.id toggleMsg dataIsVisible
             ++ (if dataIsVisible then
-                    [ BankData.view txn ]
+                    [ BankData.view False txn ]
 
                 else
                     []

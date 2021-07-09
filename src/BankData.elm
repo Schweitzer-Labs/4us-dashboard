@@ -48,12 +48,21 @@ bankDataRows data =
     ]
 
 
-view : Model -> Html msg
-view model =
+view : Bool -> Model -> Html msg
+view isShowing model =
+    let
+        heading =
+            if isShowing then
+                [ h6 [] [ text "Payment Info" ] ]
+
+            else
+                []
+    in
     div
         []
-        [ h6 [] [ text "Payment Info" ]
-        , Grid.containerFluid
-            []
-            (bankDataRows model)
-        ]
+        (heading
+            ++ [ Grid.containerFluid
+                    []
+                    (bankDataRows model)
+               ]
+        )
