@@ -3,7 +3,7 @@ module PurposeCode exposing (PurposeCode(..), fromMaybeToString, fromString, pur
 import Bootstrap.Form as Form
 import Bootstrap.Form.Select as Select
 import Html exposing (Html, text)
-import Html.Attributes exposing (for, value)
+import Html.Attributes as Attribute exposing (for, value)
 
 
 type PurposeCode
@@ -139,18 +139,32 @@ fromMaybeToString =
     Maybe.withDefault "" << Maybe.map toString
 
 
-select : (String -> msg) -> Html msg
-select updateMsg =
+select : Maybe PurposeCode -> (Maybe PurposeCode -> msg) -> Html msg
+select maybePurposeCode updateMsg =
     Form.group
         []
         [ Form.label [ for "purpose" ] [ text "Purpose" ]
         , Select.select
             [ Select.id "purpose"
-            , Select.onChange updateMsg
+            , Select.onChange (fromString >> updateMsg)
+            , Select.attrs <| [ Attribute.value <| fromMaybeToString maybePurposeCode ]
             ]
           <|
-            (++) [ Select.item [] [ text "---" ] ] <|
+            (++)
+                [ Select.item
+                    [ Attribute.selected (maybePurposeCode == Nothing)
+                    , Attribute.value ""
+                    ]
+                    [ text "---" ]
+                ]
+            <|
                 List.map
-                    (\( _, codeText, purposeText ) -> Select.item [ value codeText ] [ text <| purposeText ])
+                    (\( _, codeText, purposeText ) ->
+                        Select.item
+                            [ Attribute.selected (codeText == fromMaybeToString maybePurposeCode)
+                            , Attribute.value codeText
+                            ]
+                            [ text <| purposeText ]
+                    )
                     purposeCodeText
         ]

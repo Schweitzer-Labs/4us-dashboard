@@ -36,7 +36,8 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
     [ Grid.row [ Row.centerLg, Row.attrs [ Spacing.mt2 ] ]
         [ Grid.col [ Col.lg6 ]
             [ Input.text
-                [ Input.value addressLine1
+                [ Input.id "addressLine1"
+                , Input.value addressLine1
                 , Input.onInput address1Msg
                 , Input.placeholder "Street Address"
                 , Input.disabled disabled
@@ -44,7 +45,8 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
             ]
         , Grid.col [ Col.lg6 ]
             [ Input.text
-                [ Input.value addressLine2
+                [ Input.id "addressLine2"
+                , Input.value addressLine2
                 , Input.onInput address2Msg
                 , Input.placeholder "Secondary Address"
                 , Input.disabled disabled
@@ -54,7 +56,8 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
     , Grid.row [ Row.centerLg, Row.attrs [ Spacing.mt2 ] ]
         [ Grid.col [ Col.lg6 ]
             [ Input.text
-                [ Input.value city
+                [ Input.id "city"
+                , Input.value city
                 , Input.onInput cityMsg
                 , Input.placeholder "City"
                 , Input.disabled disabled
@@ -62,7 +65,8 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
             ]
         , Grid.col [ Col.lg3 ]
             [ Input.text
-                [ Input.value state
+                [ Input.id "state"
+                , Input.value state
                 , Input.onInput stateMsg
                 , Input.placeholder "State"
                 , Input.disabled disabled
@@ -70,7 +74,8 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
             ]
         , Grid.col [ Col.lg3 ]
             [ Input.text
-                [ Input.value postalCode
+                [ Input.id "postalCode"
+                , Input.value postalCode
                 , Input.onInput postalCodeMsg
                 , Input.placeholder "Postal Code"
                 , Input.disabled disabled

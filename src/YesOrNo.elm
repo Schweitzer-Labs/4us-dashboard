@@ -1,13 +1,37 @@
-module Disbursement.Forms exposing (yesOrNoCol, yesOrNoRows)
+module YesOrNo exposing (errorRows, view, yesOrNoCol)
 
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
+import DataMsg exposing (toData, toMsg)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 
 
-yesOrNoCol : String -> (Bool -> msg) -> Maybe Bool -> Bool -> Column msg
+type alias Config msg =
+    { isSubcontracted : DataMsg.MsgMaybeBool msg
+    , isPartialPayment : DataMsg.MsgMaybeBool msg
+    , isExistingLiability : DataMsg.MsgMaybeBool msg
+    , disabled : Bool
+    }
+
+
+view : Config msg -> List (Html msg)
+view { isSubcontracted, isPartialPayment, isExistingLiability, disabled } =
+    --let
+    --    anyBlank =
+    --        updateIsSubcontractedState == Nothing || updateIsPartialPaymentState == Nothing || updateIsExistingLiabilityState == Nothing
+    --in
+    [ Grid.row
+        []
+        [ yesOrNoCol "Is expenditure subcontracted?" (toMsg isSubcontracted) (toData isSubcontracted) disabled
+        , yesOrNoCol "Is expenditure a partial payment?" (toMsg isPartialPayment) (toData isPartialPayment) disabled
+        , yesOrNoCol "Is this an existing Liability?" (toMsg isExistingLiability) (toData isExistingLiability) disabled
+        ]
+    ]
+
+
+yesOrNoCol : String -> (Maybe Bool -> msg) -> Maybe Bool -> Bool -> Column msg
 yesOrNoCol question msg maybeState disabled =
     let
         state =
@@ -30,7 +54,7 @@ yesOrNoCol question msg maybeState disabled =
                 [ Radio.createCustom
                     [ Radio.id (question ++ "yes")
                     , Radio.inline
-                    , Radio.onClick (msg True)
+                    , Radio.onClick (msg <| Just True)
                     , Radio.checked (state == "yes")
                     , Radio.danger
                     , Radio.disabled disabled
@@ -39,37 +63,13 @@ yesOrNoCol question msg maybeState disabled =
                 , Radio.createCustom
                     [ Radio.id (question ++ "no")
                     , Radio.inline
-                    , Radio.onClick (msg False)
+                    , Radio.onClick (msg <| Just False)
                     , Radio.checked (state == "no")
                     , Radio.danger
                     , Radio.disabled disabled
                     ]
                     "No"
                 ]
-
-
-yesOrNoRows :
-    (Bool -> msg)
-    -> Maybe Bool
-    -> (Bool -> msg)
-    -> Maybe Bool
-    -> (Bool -> msg)
-    -> Maybe Bool
-    -> Bool
-    -> Bool
-    -> List (Html msg)
-yesOrNoRows updateIsSubcontractedMsg updateIsSubcontractedState updateIsPartialPaymentMsg updateIsPartialPaymentState updateIsExistingLiabilityMsg updateIsExistingLiabilityState submitted disabled =
-    let
-        anyBlank =
-            updateIsSubcontractedState == Nothing || updateIsPartialPaymentState == Nothing || updateIsExistingLiabilityState == Nothing
-    in
-    [ Grid.row
-        []
-        [ yesOrNoCol "Is expenditure subcontracted?" updateIsSubcontractedMsg updateIsSubcontractedState disabled
-        , yesOrNoCol "Is expenditure a partial payment?" updateIsPartialPaymentMsg updateIsPartialPaymentState disabled
-        , yesOrNoCol "Is this an existing Liability?" updateIsExistingLiabilityMsg updateIsExistingLiabilityState disabled
-        ]
-    ]
 
 
 errorRows : String -> List (Html msg)

@@ -1,7 +1,6 @@
 module Main exposing (Model(..), Msg(..), changeRouteTo, init, main, subscriptions, toSession, update, updateWith, view)
 
 import Aggregations
-import Api exposing (Token)
 import Browser exposing (Document)
 import Browser.Dom as Dom
 import Browser.Navigation as Nav

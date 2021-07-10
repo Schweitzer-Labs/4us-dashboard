@@ -21,7 +21,6 @@ import CreateContribution
 import CreateDisbursement
 import Delay
 import Disbursement as Disbursement
-import EnrichTransaction
 import EntityType
 import File.Download as Download
 import FileDisclosure
@@ -831,9 +830,9 @@ encodeDisbursement model =
         variables =
             Encode.object <|
                 [ ( "committeeId", Encode.string model.committeeId )
-                , ( "amount", Encode.int <| Cents.fromDollars d.checkAmount )
-                , ( "paymentMethod", Encode.string <| Maybe.withDefault (PaymentMethod.toDataString PaymentMethod.Debit) d.paymentMethod )
-                , ( "entityName", Encode.string d.checkRecipient )
+                , ( "amount", Encode.int <| Cents.fromDollars d.amount )
+                , ( "paymentMethod", Encode.string <| PaymentMethod.fromMaybeToString d.paymentMethod )
+                , ( "entityName", Encode.string d.entityName )
                 , ( "addressLine1", Encode.string d.addressLine1 )
                 , ( "city", Encode.string d.city )
                 , ( "state", Encode.string d.state )
@@ -841,8 +840,8 @@ encodeDisbursement model =
                 , ( "isSubcontracted", Encode.bool <| Maybe.withDefault False d.isSubcontracted )
                 , ( "isPartialPayment", Encode.bool <| Maybe.withDefault False d.isPartialPayment )
                 , ( "isExistingLiability", Encode.bool <| Maybe.withDefault False d.isExistingLiability )
-                , ( "purposeCode", Encode.string <| Maybe.withDefault (PurposeCode.toString PurposeCode.OTHER) d.purposeCode )
-                , ( "paymentDate", Encode.int <| dateStringToMillis d.checkDate )
+                , ( "purposeCode", Encode.string <| PurposeCode.toString <| Maybe.withDefault PurposeCode.OTHER d.purposeCode )
+                , ( "paymentDate", Encode.int <| dateStringToMillis d.paymentDate )
                 , ( "transactionType", Encode.string <| TransactionType.toString TransactionType.Disbursement )
                 ]
                     ++ optionalFieldString "checkNumber" d.checkNumber

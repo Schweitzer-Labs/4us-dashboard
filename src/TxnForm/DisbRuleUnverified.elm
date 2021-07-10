@@ -7,7 +7,6 @@ module TxnForm.DisbRuleUnverified exposing
     , errorBorder
     , init
     , maybeWithBlank
-    , questionRows
     , recipientNameRow
     , selectPurpose
     , selectPurposeRow
@@ -24,7 +23,6 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Disbursement as Disbursement
-import Disbursement.Forms exposing (yesOrNoRows)
 import Html exposing (Html, text)
 import Html.Attributes as Attribute exposing (class, for)
 import Json.Encode as Encode
@@ -89,7 +87,6 @@ createDisbursementForm model =
     , cityStateZipRow model
     , selectPurposeRow model
     ]
-        ++ questionRows model
 
 
 recipientNameRow : Model -> Html Msg
@@ -117,19 +114,6 @@ recipientNameRow model =
 selectPurposeRow : Model -> Html Msg
 selectPurposeRow model =
     Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ selectPurpose model ] ]
-
-
-questionRows : Model -> List (Html Msg)
-questionRows model =
-    yesOrNoRows
-        UpdateIsSubcontracted
-        model.formIsSubcontracted
-        UpdateIsPartialPayment
-        model.formIsPartialPayment
-        UpdateIsExistingLiability
-        model.formIsExistingLiability
-        True
-        True
 
 
 maybeWithBlank : Maybe String -> String

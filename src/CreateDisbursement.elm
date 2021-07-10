@@ -9,45 +9,45 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (for, value)
-import PaymentMethod
-import PurposeCode
+import PaymentMethod exposing (PaymentMethod)
+import PurposeCode exposing (PurposeCode)
 
 
 type alias Model =
-    { checkRecipient : String
-    , checkAmount : String
-    , checkNumber : String
-    , checkDate : String
-    , purposeCode : Maybe String
-    , paymentMethod : Maybe String
+    { entityName : String
     , addressLine1 : String
     , addressLine2 : String
     , city : String
     , state : String
     , postalCode : String
+    , purposeCode : Maybe PurposeCode
     , isSubcontracted : Maybe Bool
     , isPartialPayment : Maybe Bool
     , isExistingLiability : Maybe Bool
+    , amount : String
+    , paymentDate : String
+    , paymentMethod : Maybe PaymentMethod
+    , checkNumber : String
     , error : String
     }
 
 
 init : Model
 init =
-    { checkRecipient = ""
-    , checkAmount = ""
-    , checkNumber = ""
-    , checkDate = ""
-    , purposeCode = Nothing
-    , paymentMethod = Nothing
+    { entityName = ""
     , addressLine1 = ""
     , addressLine2 = ""
     , city = ""
     , state = ""
     , postalCode = ""
+    , purposeCode = Nothing
     , isSubcontracted = Nothing
     , isPartialPayment = Nothing
     , isExistingLiability = Nothing
+    , amount = ""
+    , paymentDate = ""
+    , paymentMethod = Nothing
+    , checkNumber = ""
     , error = ""
     }
 
@@ -62,9 +62,7 @@ view model =
     Grid.containerFluid
         []
     <|
-        recipientNameRows model
-            ++ addressRows model
-            ++ purposeCodeRows model
+        addressRows model
             --++ yesOrNoRows
             --    UpdateIsSubcontracted
             --    model.isSubcontracted
@@ -74,13 +72,7 @@ view model =
             --    model.isExistingLiability
             --    False
             --    False
-            ++ paymentMethodSelectRows
             ++ paymentMethodCheckRows model
-
-
-purposeCodeRows : Model -> List (Html Msg)
-purposeCodeRows model =
-    [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ PurposeCode.select PurposeUpdated ] ] ]
 
 
 addressRows : Model -> List (Html Msg)
@@ -95,37 +87,13 @@ addressRows model =
         }
 
 
-recipientNameRows : Model -> List (Html Msg)
-recipientNameRows model =
-    [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
-        [ Grid.col
-            []
-            [ Form.label [ for "recipient-name" ] [ text "Recipient Info" ]
-            , Input.text [ Input.id "recipient-name", Input.onInput CheckRecipientUpdated, Input.placeholder "Enter recipient name" ]
-            ]
-        ]
-    ]
-
-
-paymentMethodSelectRows : List (Html Msg)
-paymentMethodSelectRows =
-    [ Grid.row
-        [ Row.attrs [ Spacing.mt3 ] ]
-        [ Grid.col
-            []
-            [ PaymentMethod.dropdown PaymentMethodUpdated
-            ]
-        ]
-    ]
-
-
 paymentMethodCheckRows : Model -> List (Html Msg)
 paymentMethodCheckRows model =
     [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             [ Col.lg4 ]
             [ Form.label [ for "amount" ] [ text "Amount" ]
-            , Input.text [ Input.id "amount", Input.onInput CheckAmountUpdated, Input.placeholder "Enter amount" ]
+            , Input.text [ Input.id "amount", Input.onInput AmountUpdated, Input.placeholder "Enter amount" ]
             ]
         , Grid.col
             [ Col.lg4 ]
@@ -135,7 +103,7 @@ paymentMethodCheckRows model =
         , Grid.col
             [ Col.lg4 ]
             [ Form.label [ for "date" ] [ text "Date" ]
-            , Input.date [ Input.id "date", Input.onInput CheckDateUpdated ]
+            , Input.date [ Input.id "date", Input.onInput PaymentDateUpdated ]
             ]
         ]
     ]
@@ -143,20 +111,20 @@ paymentMethodCheckRows model =
 
 type Msg
     = NoOp
-    | PurposeUpdated String
-    | CheckAmountUpdated String
-    | CheckRecipientUpdated String
-    | CheckNumberUpdated String
-    | CheckDateUpdated String
+    | EntityNameUpdated String
     | AddressLine1Updated String
     | AddressLine2Updated String
     | CityUpdated String
     | StateUpdated String
     | PostalCodeUpdated String
+    | PurposeCodeUpdated (Maybe PurposeCode)
     | IsSubcontractedUpdated (Maybe Bool)
     | IsPartialPaymentUpdated (Maybe Bool)
     | IsExistingLiabilityUpdated (Maybe Bool)
-    | PaymentMethodUpdated String
+    | AmountUpdated String
+    | PaymentDateUpdated String
+    | PaymentMethodUpdated (Maybe PaymentMethod)
+    | CheckNumberUpdated String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -165,23 +133,23 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        PurposeUpdated str ->
-            ( { model | purposeCode = Just str }, Cmd.none )
+        PurposeCodeUpdated str ->
+            ( { model | purposeCode = str }, Cmd.none )
 
-        PaymentMethodUpdated str ->
-            ( { model | paymentMethod = Just str }, Cmd.none )
+        PaymentMethodUpdated pm ->
+            ( { model | paymentMethod = pm }, Cmd.none )
 
-        CheckAmountUpdated str ->
-            ( { model | checkAmount = str }, Cmd.none )
+        AmountUpdated str ->
+            ( { model | amount = str }, Cmd.none )
 
-        CheckRecipientUpdated str ->
-            ( { model | checkRecipient = str }, Cmd.none )
+        EntityNameUpdated str ->
+            ( { model | entityName = str }, Cmd.none )
 
         CheckNumberUpdated str ->
             ( { model | checkNumber = str }, Cmd.none )
 
-        CheckDateUpdated str ->
-            ( { model | checkDate = str }, Cmd.none )
+        PaymentDateUpdated str ->
+            ( { model | paymentDate = str }, Cmd.none )
 
         AddressLine1Updated str ->
             ( { model | addressLine1 = str }, Cmd.none )
