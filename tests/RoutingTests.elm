@@ -1,4 +1,4 @@
-module RoutingTests exposing (..)
+module RoutingTests exposing (fragment, fromUrl, testUrl)
 
 import Expect exposing (Expectation)
 import Json.Decode as Decode exposing (decodeString)
@@ -6,6 +6,7 @@ import Route exposing (Route(..))
 import Test exposing (..)
 import Url exposing (Url)
 import Username exposing (Username)
+
 
 
 -- TODO need to add lots more tests!
@@ -16,8 +17,6 @@ fromUrl =
     describe "Route.fromUrl"
         [ testUrl "" Home
         , testUrl "link-builder" LinkBuilder
-        , testUrl "disbursements" Disbursements
-        , testUrl "needs-review" NeedsReview
         ]
 
 
@@ -43,5 +42,3 @@ fragment frag =
     , query = Nothing
     , fragment = Just frag
     }
-
-

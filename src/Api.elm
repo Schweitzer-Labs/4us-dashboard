@@ -1,9 +1,7 @@
 module Api exposing
-    ( Cred
-    , Token(..)
+    ( Token(..)
     , decodeError
     , post
-    , username
     )
 
 {-| This module is responsible for communicating to the Conduit API.
@@ -15,24 +13,14 @@ It exposes an opaque Endpoint type which is guaranteed to point to the correct U
 import Api.Endpoint as Endpoint exposing (Endpoint)
 import Http exposing (Body, Expect)
 import Json.Decode as Decode exposing (Decoder, Value, decodeString, field, string)
-import Username exposing (Username)
 
 
 
 -- CRED
 
 
-type Cred
-    = Cred Username String
-
-
 type Token
     = Token String
-
-
-username : Cred -> Username
-username (Cred val _) =
-    val
 
 
 credHeader : Token -> Http.Header

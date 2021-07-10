@@ -4,6 +4,7 @@ import Asset
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
+import Cents
 import Html exposing (Html, div, h4, h6, text)
 import Html.Attributes exposing (class)
 import LabelWithData exposing (labelWithContent, labelWithData, labelWithTimeData)
@@ -38,7 +39,7 @@ dataView : Transaction.Model -> Html msg
 dataView txn =
     Grid.container []
         [ Grid.row [ Row.attrs [ Spacing.mt4 ] ]
-            [ Grid.col [] [ labelWithData "Amount" <| String.fromInt txn.amount ]
+            [ Grid.col [] [ labelWithData "Amount" <| Cents.toDollar txn.amount ]
             , Grid.col [] [ labelWithTimeData "Date" <| txn.initiatedTimestamp ]
             , Grid.col [] [ labelWithData "Payment Type" <| PaymentMethod.toDisplayString txn.paymentMethod ]
             ]

@@ -1,4 +1,4 @@
-module Config.Env exposing (loginUrl)
+module Cognito exposing (loginUrl)
 
 
 loginUrl : String -> String -> String -> String -> String

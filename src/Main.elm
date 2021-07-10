@@ -12,7 +12,6 @@ import Html exposing (Html)
 import Page
 import Page.Blank as Blank
 import Page.LinkBuilder as LinkBuilder
-import Page.NeedsReview as NeedsReview
 import Page.NotFound as NotFound
 import Page.Transactions as Transactions
 import Route exposing (Route)
@@ -29,7 +28,6 @@ type Model
     = NotFound Session
     | Redirect Session
     | LinkBuilder LinkBuilder.Model
-    | NeedsReview NeedsReview.Model
     | Transactions Transactions.Model
 
 
@@ -55,7 +53,6 @@ type Msg
     | ClickedLink Browser.UrlRequest
     | GotLinkBuilderMsg LinkBuilder.Msg
     | GotSession Session
-    | GotNeedsReviewMsg NeedsReview.Msg
     | GotTransactionsMsg Transactions.Msg
 
 
@@ -74,9 +71,6 @@ toSession page =
         LinkBuilder session ->
             LinkBuilder.toSession session
 
-        NeedsReview session ->
-            NeedsReview.toSession session
-
 
 toAggregations : Model -> Aggregations.Model
 toAggregations page =
@@ -93,9 +87,6 @@ toAggregations page =
         LinkBuilder linkBuilder ->
             linkBuilder.aggregations
 
-        NeedsReview needsReview ->
-            needsReview.aggregations
-
 
 toCommittee : Model -> Committee.Model
 toCommittee page =
@@ -111,28 +102,6 @@ toCommittee page =
 
         LinkBuilder linkBuilder ->
             linkBuilder.committee
-
-        NeedsReview needsReview ->
-            needsReview.committee
-
-
-toToken : Model -> Token
-toToken page =
-    case page of
-        Redirect session ->
-            Api.Token ""
-
-        NotFound session ->
-            Api.Token ""
-
-        Transactions transactions ->
-            Api.Token transactions.config.token
-
-        LinkBuilder linkBuilder ->
-            Api.Token linkBuilder.config.token
-
-        NeedsReview needsReview ->
-            Api.Token needsReview.config.token
 
 
 toConfig : Model -> Config
@@ -161,9 +130,6 @@ toConfig page =
 
         LinkBuilder linkBuilder ->
             linkBuilder.config
-
-        NeedsReview needsReview ->
-            needsReview.config
 
 
 changeRouteTo : Url -> Config -> Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -213,15 +179,6 @@ changeRouteTo url config maybeRoute model =
                 committeeId
                 |> updateWith LinkBuilder GotLinkBuilderMsg model
 
-        Just Route.NeedsReview ->
-            NeedsReview.init
-                config
-                session
-                aggregations
-                committee
-                committeeId
-                |> updateWith NeedsReview GotNeedsReviewMsg model
-
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -261,10 +218,6 @@ update msg model =
         ( GotLinkBuilderMsg subMsg, LinkBuilder linkBuilder ) ->
             LinkBuilder.update subMsg linkBuilder
                 |> updateWith LinkBuilder GotLinkBuilderMsg model
-
-        ( GotNeedsReviewMsg subMsg, NeedsReview disbursements ) ->
-            NeedsReview.update subMsg disbursements
-                |> updateWith NeedsReview GotNeedsReviewMsg model
 
         ( GotSession session, Redirect _ ) ->
             ( Redirect session
@@ -324,9 +277,6 @@ view model =
         LinkBuilder linkBuilder ->
             viewPage Page.LinkBuilder GotLinkBuilderMsg (LinkBuilder.view linkBuilder)
 
-        NeedsReview disbursements ->
-            viewPage Page.NeedsReview GotNeedsReviewMsg (NeedsReview.view disbursements)
-
 
 
 ---- PROGRAM ----
@@ -340,9 +290,6 @@ subscriptions model =
 
         LinkBuilder linkBuilder ->
             Sub.map GotLinkBuilderMsg (LinkBuilder.subscriptions linkBuilder)
-
-        NeedsReview disbursements ->
-            Sub.map GotNeedsReviewMsg (NeedsReview.subscriptions disbursements)
 
         _ ->
             Sub.none

@@ -1,7 +1,7 @@
 module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, update, view)
 
 import Aggregations as Aggregations
-import Api exposing (Cred, Token)
+import Api exposing (Token)
 import Api.Endpoint exposing (Endpoint(..))
 import Api.GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, encodeTransactionQuery, getTransactions, graphQLErrorDecoder, transactionQuery)
 import Bootstrap.Button as Button
@@ -14,14 +14,13 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
 import Cents
+import Cognito exposing (loginUrl)
 import Committee
 import Config exposing (Config)
-import Config.Env exposing (loginUrl)
 import CreateContribution
 import CreateDisbursement
 import Delay
 import Disbursement as Disbursement
-import Disbursements
 import EnrichTransaction
 import EntityType
 import File.Download as Download
@@ -63,7 +62,6 @@ type alias Model =
     , transactions : Transactions.Model
     , aggregations : Aggregations.Model
     , committee : Committee.Model
-    , currentSort : Disbursements.Label
     , createContributionModalVisibility : Modal.Visibility
     , createContributionModal : CreateContribution.Model
     , createContributionSubmitting : Bool
@@ -96,7 +94,6 @@ init config session aggs committee committeeId =
       , transactions = []
       , aggregations = aggs
       , committee = committee
-      , currentSort = Disbursements.Record
       , createContributionModalVisibility = Modal.hidden
       , createContributionModal = CreateContribution.init
       , createContributionSubmitting = False

@@ -18,9 +18,9 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
+import Cognito exposing (loginUrl)
 import Committee
 import Config exposing (Config)
-import Config.Env exposing (loginUrl)
 import Html exposing (..)
 import Html.Attributes as SvgA exposing (class, for, href, src, style)
 import Http
