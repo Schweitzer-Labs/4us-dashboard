@@ -1,5 +1,7 @@
 module CreateContribution exposing (Model, Msg(..), init, setError, update, view)
 
+import Address
+import AmountDate
 import AppInput exposing (inputEmail, inputText)
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
@@ -25,17 +27,16 @@ type alias Model =
     { submitting : Bool
     , errors : List String
     , error : String
-    , checkAmount : String
     , checkNumber : String
-    , checkDate : String
+    , paymentDate : String
     , paymentMethod : String
     , emailAddress : String
     , phoneNumber : String
     , firstName : String
     , middleName : String
     , lastName : String
-    , address1 : String
-    , address2 : String
+    , addressLine1 : String
+    , addressLine2 : String
     , city : String
     , state : String
     , postalCode : String
@@ -61,16 +62,16 @@ init =
     { submitting = False
     , error = ""
     , errors = []
-    , checkAmount = ""
+    , amount = ""
     , checkNumber = ""
-    , checkDate = ""
+    , paymentDate = ""
     , emailAddress = ""
     , phoneNumber = ""
     , firstName = ""
     , middleName = ""
     , lastName = ""
-    , address1 = ""
-    , address2 = ""
+    , addressLine1 = ""
+    , addressLine2 = ""
     , city = ""
     , state = ""
     , postalCode = ""
@@ -84,7 +85,6 @@ init =
     , expirationMonth = ""
     , expirationYear = ""
     , cvv = ""
-    , amount = ""
     , owners = []
     , ownerName = ""
     , ownerOwnership = ""
@@ -117,26 +117,10 @@ labelRow str =
 
 amountDateRow : Model -> List (Html Msg)
 amountDateRow model =
-    [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
-        [ Grid.col
-            []
-            [ Input.text
-                [ Input.id "amount"
-                , Input.onInput CheckAmountUpdated
-                , Input.value model.checkAmount
-                , Input.placeholder "Enter amount"
-                ]
-            ]
-        , Grid.col
-            []
-            [ Input.date
-                [ Input.id "date"
-                , Input.onInput CheckDateUpdated
-                , Input.value model.checkDate
-                ]
-            ]
-        ]
-    ]
+    AmountDate.view
+        { amount = ( model.amount, AmountUpdated )
+        , paymentDate = ( model.paymentDate, PaymentDateUpdated )
+        }
 
 
 checkRow : Model -> List (Html Msg)
@@ -209,7 +193,7 @@ view model =
             ++ labelRow "Donor Info"
             ++ donorInfoRows model
             ++ labelRow "Processing Info"
-            ++ PaymentMethod.select UpdatePaymentMethod model.paymentMethod
+            ++ PaymentMethod.select PaymentMethodUpdated model.paymentMethod
             ++ processingRow model
 
 
@@ -303,17 +287,17 @@ manageOwnerRows model =
                 [ Row.attrs [ Spacing.mt3 ] ]
                 [ Grid.col
                     []
-                    [ inputText UpdateOwnerName "Owner Name" model.ownerName
+                    [ inputText OwnerNameUpdated "Owner Name" model.ownerName
                     ]
                 , Grid.col
                     []
-                    [ inputText UpdateOwnerOwnership "Percent Ownership" model.ownerOwnership ]
+                    [ inputText OwnerOwnershipUpdated "Percent Ownership" model.ownerOwnership ]
                 ]
            , Grid.row
                 [ Row.attrs [ Spacing.mt3 ] ]
                 [ Grid.col
                     [ Col.xs6, Col.offsetXs6 ]
-                    [ submitButton "Add another member" AddOwner False False ]
+                    [ submitButton "Add another member" OwnerAdded False False ]
                 ]
            ]
 
@@ -337,7 +321,7 @@ orgRows model =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ EntityType.orgView UpdateOrganizationClassification model.maybeEntityType ]
+            [ EntityType.orgView OrganizationClassificationUpdated model.maybeEntityType ]
         ]
     ]
         ++ llcRow
@@ -346,7 +330,7 @@ orgRows model =
                 [ Grid.col
                     []
                     [ Input.text
-                        [ Input.onInput UpdateOrganizationName
+                        [ Input.onInput OrganizationNameUpdated
                         , Input.placeholder "Organization Name"
                         , Input.value model.entityName
                         ]
@@ -355,51 +339,40 @@ orgRows model =
            ]
 
 
+addressRows : Model -> List (Html Msg)
+addressRows model =
+    Address.view
+        { addressLine1 = ( model.addressLine1, AddressLine1Updated )
+        , addressLine2 = ( model.addressLine2, AddressLine2Updated )
+        , city = ( model.city, CityUpdated )
+        , state = ( model.state, StateUpdated )
+        , postalCode = ( model.postalCode, PostalCodeUpdated )
+        , disabled = False
+        }
+
+
 piiRows : Model -> List (Html Msg)
 piiRows model =
     [ Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputEmail UpdateEmailAddress "Email Address" model.emailAddress ]
+            [ inputEmail EmailAddressUpdated "Email Address" model.emailAddress ]
         , Grid.col
             []
-            [ inputText UpdatePhoneNumber "Phone Number" model.phoneNumber ]
+            [ inputText PhoneNumberUpdated "Phone Number" model.phoneNumber ]
         ]
     , Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputText UpdateFirstName "First Name" model.firstName ]
+            [ inputText FirstNameUpdated "First Name" model.firstName ]
         , Grid.col
             []
-            [ inputText UpdateLastName "Last Name" model.lastName ]
-        ]
-    , Grid.row
-        [ Row.attrs [ Spacing.mt3 ] ]
-        [ Grid.col
-            []
-            [ inputText UpdateAddress1 "Address 1" model.address1
-            ]
-        , Grid.col
-            []
-            [ inputText UpdateAddress2 "Address 2" model.address2
-            ]
-        ]
-    , Grid.row
-        [ Row.attrs [ Spacing.mt3 ] ]
-        [ Grid.col
-            []
-            [ inputText UpdateCity "City" model.city ]
-        , Grid.col
-            []
-            [ State.view UpdateState model.state ]
-        , Grid.col
-            []
-            [ inputText UpdatePostalCode "Zip" model.postalCode
-            ]
+            [ inputText LastNameUpdated "Last Name" model.lastName ]
         ]
     ]
+        ++ addressRows model
 
 
 familyRow : Model -> List (Html Msg)
@@ -415,7 +388,7 @@ familyRow model =
         [ Grid.col
             []
           <|
-            EntityType.familyRadioList UpdateFamilyOrIndividual model.maybeEntityType
+            EntityType.familyRadioList FamilyOrIndividualUpdated model.maybeEntityType
         ]
     ]
 
@@ -433,7 +406,7 @@ attestsToBeingAnAdultCitizenRow model =
         [ Grid.col
             []
           <|
-            EntityType.familyRadioList UpdateFamilyOrIndividual model.maybeEntityType
+            EntityType.familyRadioList FamilyOrIndividualUpdated model.maybeEntityType
         ]
     ]
 
@@ -450,7 +423,7 @@ orgOrIndRow model =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ OrgOrInd.row ChooseOrgOrInd model.maybeOrgOrInd ]
+            [ OrgOrInd.row OrgOrIndUpdated model.maybeOrgOrInd ]
         ]
     ]
 
@@ -461,10 +434,10 @@ employerOccupationRow model =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputText UpdateEmployer "Employer Name" model.employer ]
+            [ inputText EmployerUpdated "Employer Name" model.employer ]
         , Grid.col
             []
-            [ inputText UpdateOccupation "Occupation" model.occupation ]
+            [ inputText OccupationUpdated "Occupation" model.occupation ]
         ]
 
 
@@ -482,45 +455,45 @@ employmentStatusRows model =
             []
           <|
             Radio.radioList "employmentStatus"
-                [ SelectRadio.view UpdateEmploymentStatus "employed" "Employed" model.employmentStatus
-                , SelectRadio.view UpdateEmploymentStatus "unemployed" "Unemployed" model.employmentStatus
-                , SelectRadio.view UpdateEmploymentStatus "retired" "Retired" model.employmentStatus
-                , SelectRadio.view UpdateEmploymentStatus "self_employed" "Self Employed" model.employmentStatus
+                [ SelectRadio.view EmploymentStatusUpdated "employed" "Employed" model.employmentStatus
+                , SelectRadio.view EmploymentStatusUpdated "unemployed" "Unemployed" model.employmentStatus
+                , SelectRadio.view EmploymentStatusUpdated "retired" "Retired" model.employmentStatus
+                , SelectRadio.view EmploymentStatusUpdated "self_employed" "Self Employed" model.employmentStatus
                 ]
         ]
     ]
 
 
 type Msg
-    = CheckAmountUpdated String
+    = AmountUpdated String
     | CheckNumberUpdated String
-    | CheckDateUpdated String
+    | PaymentDateUpdated String
       --- Donor Info
-    | ChooseOrgOrInd (Maybe OrgOrInd)
-    | UpdateEmailAddress String
-    | UpdatePhoneNumber String
-    | UpdateFirstName String
-    | UpdateLastName String
-    | UpdateAddress1 String
-    | UpdateAddress2 String
-    | UpdateCity String
-    | UpdateState String
-    | UpdatePostalCode String
-    | UpdateEmploymentStatus String
-    | UpdateEmployer String
-    | UpdateOccupation String
-    | UpdateOrganizationName String
-    | UpdateOrganizationClassification (Maybe EntityType)
-    | UpdateFamilyOrIndividual EntityType
-    | AddOwner
-    | UpdateOwnerName String
-    | UpdateOwnerOwnership String
+    | OrgOrIndUpdated (Maybe OrgOrInd)
+    | EmailAddressUpdated String
+    | PhoneNumberUpdated String
+    | FirstNameUpdated String
+    | LastNameUpdated String
+    | AddressLine1Updated String
+    | AddressLine2Updated String
+    | CityUpdated String
+    | StateUpdated String
+    | PostalCodeUpdated String
+    | EmploymentStatusUpdated String
+    | EmployerUpdated String
+    | OccupationUpdated String
+    | OrganizationNameUpdated String
+    | OrganizationClassificationUpdated (Maybe EntityType)
+    | FamilyOrIndividualUpdated EntityType
+    | OwnerAdded
+    | OwnerNameUpdated String
+    | OwnerOwnershipUpdated String
       -- Payment info
     | CardYearUpdated String
     | CardMonthUpdated String
     | CardNumberUpdated String
     | NoOp String
-    | UpdatePaymentMethod String
+    | PaymentMethodUpdated String
     | CVVUpdated String
 
 
@@ -530,77 +503,77 @@ update msg model =
         NoOp str ->
             ( model, Cmd.none )
 
-        CheckAmountUpdated str ->
-            ( { model | checkAmount = str }, Cmd.none )
+        AmountUpdated str ->
+            ( { model | amount = str }, Cmd.none )
 
         -- Donor Info
-        ChooseOrgOrInd maybeOrgOrInd ->
+        OrgOrIndUpdated maybeOrgOrInd ->
             ( { model | maybeOrgOrInd = maybeOrgOrInd, maybeEntityType = Nothing, errors = [] }, Cmd.none )
 
-        UpdateOrganizationName entityName ->
+        OrganizationNameUpdated entityName ->
             ( { model | entityName = entityName }, Cmd.none )
 
-        UpdateOrganizationClassification maybeEntityType ->
+        OrganizationClassificationUpdated maybeEntityType ->
             ( { model | maybeEntityType = maybeEntityType }, Cmd.none )
 
-        AddOwner ->
+        OwnerAdded ->
             let
                 newOwner =
                     Owners.Owner model.ownerName model.ownerOwnership
             in
             ( { model | owners = model.owners ++ [ newOwner ], ownerOwnership = "", ownerName = "" }, Cmd.none )
 
-        UpdateOwnerName str ->
+        OwnerNameUpdated str ->
             ( { model | ownerName = str }, Cmd.none )
 
-        UpdateOwnerOwnership str ->
+        OwnerOwnershipUpdated str ->
             ( { model | ownerOwnership = str }, Cmd.none )
 
-        UpdatePhoneNumber str ->
+        PhoneNumberUpdated str ->
             ( { model | phoneNumber = str }, Cmd.none )
 
-        UpdateEmailAddress str ->
+        EmailAddressUpdated str ->
             ( { model | emailAddress = str }, Cmd.none )
 
-        UpdateFirstName str ->
+        FirstNameUpdated str ->
             ( { model | firstName = str }, Cmd.none )
 
-        UpdateLastName str ->
+        LastNameUpdated str ->
             ( { model | lastName = str }, Cmd.none )
 
-        UpdateAddress1 str ->
-            ( { model | address1 = str }, Cmd.none )
+        AddressLine1Updated str ->
+            ( { model | addressLine1 = str }, Cmd.none )
 
-        UpdateAddress2 str ->
-            ( { model | address2 = str }, Cmd.none )
+        AddressLine2Updated str ->
+            ( { model | addressLine2 = str }, Cmd.none )
 
-        UpdatePostalCode str ->
+        PostalCodeUpdated str ->
             ( { model | postalCode = str }, Cmd.none )
 
-        UpdateCity str ->
+        CityUpdated str ->
             ( { model | city = str }, Cmd.none )
 
-        UpdateState str ->
+        StateUpdated str ->
             ( { model | state = str }, Cmd.none )
 
-        UpdateFamilyOrIndividual entityType ->
+        FamilyOrIndividualUpdated entityType ->
             ( { model | maybeEntityType = Just entityType }, Cmd.none )
 
-        UpdateEmploymentStatus str ->
+        EmploymentStatusUpdated str ->
             ( { model | employmentStatus = str }, Cmd.none )
 
-        UpdateEmployer str ->
+        EmployerUpdated str ->
             ( { model | employer = str }, Cmd.none )
 
-        UpdateOccupation str ->
+        OccupationUpdated str ->
             ( { model | occupation = str }, Cmd.none )
 
         -- Payment Info
         CheckNumberUpdated str ->
             ( { model | checkNumber = str }, Cmd.none )
 
-        CheckDateUpdated str ->
-            ( { model | checkDate = str }, Cmd.none )
+        PaymentDateUpdated str ->
+            ( { model | paymentDate = str }, Cmd.none )
 
         CardMonthUpdated str ->
             ( { model | expirationMonth = str }, Cmd.none )
@@ -614,5 +587,5 @@ update msg model =
         CardYearUpdated str ->
             ( { model | expirationYear = str }, Cmd.none )
 
-        UpdatePaymentMethod str ->
+        PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )

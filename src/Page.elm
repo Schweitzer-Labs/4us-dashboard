@@ -178,11 +178,6 @@ navContainer page =
         ]
 
 
-toolBarAsset : Image -> Html msg
-toolBarAsset image =
-    img [ Asset.src image, class "tool-asset" ] []
-
-
 navRow : Bool -> Html msg -> Page -> Route -> String -> Html msg
 navRow enabled glyph page route label =
     let

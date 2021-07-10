@@ -763,11 +763,11 @@ encodeContribution model =
         variables =
             Encode.object <|
                 [ ( "committeeId", Encode.string model.committeeId )
-                , ( "amount", Encode.int <| Cents.fromDollars contrib.checkAmount )
+                , ( "amount", Encode.int <| Cents.fromDollars contrib.amount )
                 , ( "paymentMethod", Encode.string contrib.paymentMethod )
                 , ( "firstName", Encode.string contrib.firstName )
                 , ( "lastName", Encode.string contrib.lastName )
-                , ( "addressLine1", Encode.string contrib.address1 )
+                , ( "addressLine1", Encode.string contrib.addressLine1 )
                 , ( "city", Encode.string contrib.city )
                 , ( "state", Encode.string contrib.state )
                 , ( "postalCode", Encode.string contrib.postalCode )
@@ -775,7 +775,7 @@ encodeContribution model =
                 , ( "transactionType", Encode.string <| TransactionType.toString TransactionType.Contribution )
                 ]
                     ++ optionalFieldString "emailAddress" contrib.emailAddress
-                    ++ optionalFieldNotZero "paymentDate" (dateStringToMillis contrib.checkDate)
+                    ++ optionalFieldNotZero "paymentDate" (dateStringToMillis contrib.paymentDate)
                     ++ optionalFieldString "cardNumber" contrib.cardNumber
                     ++ optionalFieldStringInt "cardExpirationMonth" contrib.expirationMonth
                     ++ optionalFieldStringInt "cardExpirationYear" contrib.expirationYear
@@ -785,7 +785,7 @@ encodeContribution model =
                     ++ optionalFieldString "employer" contrib.employer
                     ++ optionalFieldString "occupation" contrib.occupation
                     ++ optionalFieldString "middleName" contrib.middleName
-                    ++ optionalFieldString "addressLine2" contrib.address2
+                    ++ optionalFieldString "addressLine2" contrib.addressLine2
                     ++ optionalFieldString "occupation" contrib.occupation
                     ++ optionalFieldString "phoneNumber" contrib.phoneNumber
     in
@@ -834,8 +834,7 @@ encodeDisbursement model =
                 , ( "amount", Encode.int <| Cents.fromDollars d.checkAmount )
                 , ( "paymentMethod", Encode.string <| Maybe.withDefault (PaymentMethod.toDataString PaymentMethod.Debit) d.paymentMethod )
                 , ( "entityName", Encode.string d.checkRecipient )
-                , ( "addressLine1", Encode.string d.address1 )
-                , ( "addressLine2", Encode.string d.address2 )
+                , ( "addressLine1", Encode.string d.addressLine1 )
                 , ( "city", Encode.string d.city )
                 , ( "state", Encode.string d.state )
                 , ( "postalCode", Encode.string d.postalCode )
@@ -847,7 +846,7 @@ encodeDisbursement model =
                 , ( "transactionType", Encode.string <| TransactionType.toString TransactionType.Disbursement )
                 ]
                     ++ optionalFieldString "checkNumber" d.checkNumber
-                    ++ optionalFieldString "addressLine2" d.address2
+                    ++ optionalFieldString "addressLine2" d.addressLine2
     in
     encodeQuery createDisbursementMutation variables
 

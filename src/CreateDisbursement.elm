@@ -3,12 +3,10 @@ module CreateDisbursement exposing (Model, Msg(..), init, setError, update, view
 import Address
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
-import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
-import Disbursement.Forms exposing (yesOrNoRows)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (for, value)
 import PaymentMethod
@@ -22,8 +20,8 @@ type alias Model =
     , checkDate : String
     , purposeCode : Maybe String
     , paymentMethod : Maybe String
-    , address1 : String
-    , address2 : String
+    , addressLine1 : String
+    , addressLine2 : String
     , city : String
     , state : String
     , postalCode : String
@@ -42,8 +40,8 @@ init =
     , checkDate = ""
     , purposeCode = Nothing
     , paymentMethod = Nothing
-    , address1 = ""
-    , address2 = ""
+    , addressLine1 = ""
+    , addressLine2 = ""
     , city = ""
     , state = ""
     , postalCode = ""
@@ -87,12 +85,14 @@ purposeCodeRows model =
 
 addressRows : Model -> List (Html Msg)
 addressRows model =
-    Address.row
-        ( model.address1, Address1Updated )
-        ( model.address2, Address2Updated )
-        ( model.city, CityUpdated )
-        ( model.state, StateUpdated )
-        ( model.postalCode, PostalCodeUpdated )
+    Address.view
+        { addressLine1 = ( model.addressLine1, AddressLine1Updated )
+        , addressLine2 = ( model.addressLine2, AddressLine2Updated )
+        , city = ( model.city, CityUpdated )
+        , state = ( model.state, StateUpdated )
+        , postalCode = ( model.postalCode, PostalCodeUpdated )
+        , disabled = False
+        }
 
 
 recipientNameRows : Model -> List (Html Msg)
@@ -113,7 +113,7 @@ paymentMethodSelectRows =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ PaymentMethod.dropdown UpdatePaymentMethod
+            [ PaymentMethod.dropdown PaymentMethodUpdated
             ]
         ]
     ]
@@ -148,15 +148,15 @@ type Msg
     | CheckRecipientUpdated String
     | CheckNumberUpdated String
     | CheckDateUpdated String
-    | Address1Updated String
-    | Address2Updated String
+    | AddressLine1Updated String
+    | AddressLine2Updated String
     | CityUpdated String
     | StateUpdated String
     | PostalCodeUpdated String
-    | UpdateIsSubcontracted (Maybe Bool)
-    | UpdateIsPartialPayment (Maybe Bool)
-    | UpdateIsExistingLiability (Maybe Bool)
-    | UpdatePaymentMethod String
+    | IsSubcontractedUpdated (Maybe Bool)
+    | IsPartialPaymentUpdated (Maybe Bool)
+    | IsExistingLiabilityUpdated (Maybe Bool)
+    | PaymentMethodUpdated String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -168,7 +168,7 @@ update msg model =
         PurposeUpdated str ->
             ( { model | purposeCode = Just str }, Cmd.none )
 
-        UpdatePaymentMethod str ->
+        PaymentMethodUpdated str ->
             ( { model | paymentMethod = Just str }, Cmd.none )
 
         CheckAmountUpdated str ->
@@ -183,11 +183,11 @@ update msg model =
         CheckDateUpdated str ->
             ( { model | checkDate = str }, Cmd.none )
 
-        Address1Updated str ->
-            ( { model | address1 = str }, Cmd.none )
+        AddressLine1Updated str ->
+            ( { model | addressLine1 = str }, Cmd.none )
 
-        Address2Updated str ->
-            ( { model | address2 = str }, Cmd.none )
+        AddressLine2Updated str ->
+            ( { model | addressLine2 = str }, Cmd.none )
 
         CityUpdated str ->
             ( { model | city = str }, Cmd.none )
@@ -198,11 +198,11 @@ update msg model =
         PostalCodeUpdated str ->
             ( { model | postalCode = str }, Cmd.none )
 
-        UpdateIsSubcontracted str ->
+        IsSubcontractedUpdated str ->
             ( { model | isSubcontracted = Nothing }, Cmd.none )
 
-        UpdateIsPartialPayment str ->
+        IsPartialPaymentUpdated str ->
             ( { model | isPartialPayment = Nothing }, Cmd.none )
 
-        UpdateIsExistingLiability str ->
+        IsExistingLiabilityUpdated str ->
             ( { model | isExistingLiability = Nothing }, Cmd.none )

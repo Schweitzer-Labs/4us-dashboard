@@ -1,4 +1,4 @@
-module BankData exposing (Model, formLabelRow, view)
+module BankData exposing (formLabelRow, view)
 
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
@@ -8,14 +8,6 @@ import Html exposing (Attribute, Html, div, h5, h6, text)
 import LabelWithData exposing (labelWithData, labelWithMaybeData, labelWithMaybeLongData, labelWithMaybeTimeData, labelWithTimeData)
 import PaymentMethod exposing (PaymentMethod)
 import Transaction
-
-
-
---- Model ---
-
-
-type alias Model =
-    Transaction.Model
 
 
 formLabelRow : Bool -> String -> List (Html msg)
@@ -30,7 +22,7 @@ formLabelRow showHeading str =
             []
 
 
-bankDataRows : Model -> List (Html msg)
+bankDataRows : Transaction.Model -> List (Html msg)
 bankDataRows data =
     [ Grid.row [ Row.attrs [ Spacing.mt4 ] ]
         [ Grid.col [] [ labelWithMaybeData "Analyzed Payee Name" data.finicityNormalizedPayeeName ]
@@ -48,7 +40,7 @@ bankDataRows data =
     ]
 
 
-view : Bool -> Model -> Html msg
+view : Bool -> Transaction.Model -> Html msg
 view isShowing model =
     let
         heading =

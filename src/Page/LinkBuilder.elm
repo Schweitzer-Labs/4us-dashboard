@@ -27,7 +27,6 @@ import Http
 import QRCode
 import Session exposing (Session)
 import Task exposing (Task)
-import Transaction.ContributionsData as ContributionsData exposing (ContributionsData)
 import Transaction.TransactionsData exposing (TransactionsData)
 import Url.Builder
 

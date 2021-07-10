@@ -1,18 +1,10 @@
 module EnrichDisbursement exposing (Msg, encode, update, view)
 
-import Bootstrap.Form as Form
-import Bootstrap.Form.Input as Input exposing (value)
-import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
-import Bootstrap.Grid.Row as Row
-import Bootstrap.Utilities.Spacing as Spacing
 import Disbursement as Disbursement
-import Disbursement.Forms exposing (yesOrNoRows)
-import Html exposing (Html, text)
-import Html.Attributes as Attribute exposing (class, for)
+import Html exposing (Html)
+import Html.Attributes exposing (class)
 import Json.Encode as Encode
-import PurposeCode
 
 
 errorBorder : String -> List (Html.Attribute Msg)
