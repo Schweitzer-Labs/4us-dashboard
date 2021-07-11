@@ -1,4 +1,13 @@
-module Api.GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, encodeTransactionQuery, getTransactions, graphQLErrorDecoder, transactionQuery)
+module Api.GraphQL exposing
+    ( MutationResponse(..)
+    , contributionMutation
+    , createDisbursementMutation
+    , encodeQuery
+    , getTransaction
+    , getTransactions
+    , graphQLErrorDecoder
+    , transactionQuery
+    )
 
 import Api
 import Api.Endpoint exposing (Endpoint(..))
@@ -6,6 +15,7 @@ import Config exposing (Config)
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode exposing (Value)
+import Transaction.TransactionData as TransactionData exposing (TransactionData)
 import Transaction.TransactionsData as TransactionsData exposing (TransactionsData)
 import TransactionType exposing (TransactionType)
 
@@ -32,8 +42,8 @@ committeeQuery =
     """
 
 
-transactionQuery : String
-transactionQuery =
+transactionsQuery : String
+transactionsQuery =
     committeeQuery
         ++ """
         transactions(committeeId: $committeeId, transactionType: $transactionType) {
@@ -74,6 +84,51 @@ transactionQuery =
           finicityDescription
         }
       }
+    """
+
+
+transactionQuery : String
+transactionQuery =
+    """
+        query TransactionQuery($committeeId: String!, $id: String) {
+          transaction(committeeId: $committeeId, id: $id) {
+            id
+            committeeId
+            direction
+            amount
+            paymentMethod
+            bankVerified
+            ruleVerified
+            initiatedTimestamp
+            purposeCode
+            refCode
+            firstName
+            middleName
+            lastName
+            addressLine1
+            addressLine2
+            entityName
+            city
+            state
+            postalCode
+            employer
+            occupation
+            entityType
+            companyName
+            phoneNumber
+            emailAddress
+            transactionType
+            attestsToBeingAnAdultCitizen
+            stripePaymentIntentId
+            cardNumberLastFourDigits
+            finicityCategory
+            finicityBestRepresentation
+            finicityPostedDate
+            finicityTransactionDate
+            finicityNormalizedPayeeName
+            finicityDescription
+          }
+        }
     """
 
 
@@ -185,8 +240,8 @@ encodeQuery query variables =
         ]
 
 
-encodeTransactionQuery : String -> String -> Maybe TransactionType -> Value
-encodeTransactionQuery query committeeId maybeTxnType =
+encodeTransactionsQuery : String -> String -> Maybe TransactionType -> Value
+encodeTransactionsQuery query committeeId maybeTxnType =
     let
         txnTypeFilter =
             case maybeTxnType of
@@ -229,8 +284,29 @@ getTransactions :
 getTransactions config committeeId updateMsg maybeTxnType =
     let
         body =
-            encodeTransactionQuery transactionQuery committeeId maybeTxnType |> Http.jsonBody
+            encodeTransactionsQuery transactionsQuery committeeId maybeTxnType |> Http.jsonBody
     in
     Http.send updateMsg <|
         Api.post (Endpoint config.apiEndpoint) (Api.Token config.token) body <|
             TransactionsData.decode
+
+
+getTransaction :
+    Config
+    -> (Result Http.Error TransactionData -> msg)
+    -> String
+    -> String
+    -> Cmd msg
+getTransaction config updateMsg committeeId txnId =
+    let
+        body =
+            Http.jsonBody <|
+                encodeQuery transactionQuery <|
+                    Encode.object <|
+                        [ ( "committeeId", Encode.string committeeId )
+                        , ( "id", Encode.string txnId )
+                        ]
+    in
+    Http.send updateMsg <|
+        Api.post (Endpoint config.apiEndpoint) (Api.Token config.token) body <|
+            TransactionData.decode

@@ -3,7 +3,7 @@ module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, u
 import Aggregations as Aggregations
 import Api exposing (Token)
 import Api.Endpoint exposing (Endpoint(..))
-import Api.GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, encodeTransactionQuery, getTransactions, graphQLErrorDecoder, transactionQuery)
+import Api.GraphQL as GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, getTransactions, graphQLErrorDecoder)
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Grid as Grid exposing (Column)
@@ -41,6 +41,7 @@ import Task exposing (Task)
 import Time
 import Timestamp exposing (dateStringToMillis)
 import Transaction
+import Transaction.TransactionData exposing (TransactionData)
 import Transaction.TransactionsData as TransactionsData exposing (TransactionsData)
 import TransactionType exposing (TransactionType(..))
 import Transactions
@@ -114,7 +115,7 @@ init config session aggs committee committeeId =
       , disbRuleVerifiedModalVisibility = Modal.hidden
       , config = config
       }
-    , getTransactions config committeeId LoadTransactionsData Nothing
+    , getTransactions config committeeId GotTransactionsData Nothing
     )
 
 
@@ -342,7 +343,7 @@ exitButton =
 
 type Msg
     = GotSession Session
-    | LoadTransactionsData (Result Http.Error TransactionsData)
+    | GotTransactionsData (Result Http.Error TransactionsData)
     | SortTransactions Transactions.Label
     | GenerateReport FileFormat
     | HideCreateContributionModal
@@ -354,6 +355,7 @@ type Msg
     | AnimateCreateContributionModal Modal.Visibility
     | GotCreateContributionResponse (Result Http.Error MutationResponse)
     | GotCreateDisbursementResponse (Result Http.Error MutationResponse)
+    | GotTransactionData (Result Http.Error TransactionData)
     | SubmitCreateContribution
     | SubmitCreateContributionDelay
     | ToggleActionsDropdown Dropdown.State
@@ -382,29 +384,57 @@ type Msg
     | ShowTxnFormModal Transaction.Model
 
 
+openTxnFormModalLoading : Model -> Transaction.Model -> ( Model, Cmd Msg )
+openTxnFormModalLoading model txn =
+    case TxnForm.fromTxn txn of
+        TxnForm.DisbRuleUnverified ->
+            ( { model
+                | disbRuleUnverifiedModalVisibility = Modal.shown
+                , disbRuleUnverifiedModal = DisbRuleUnverified.init model.transactions txn
+              }
+            , Cmd.none
+            )
+
+        TxnForm.DisbRuleVerified ->
+            ( { model
+                | disbRuleVerifiedModalVisibility = Modal.shown
+                , disbRuleVerifiedModal = DisbRuleVerified.loadingInit
+              }
+            , GraphQL.getTransaction model.config GotTransactionData model.committeeId txn.id
+            )
+
+        _ ->
+            ( model, Cmd.none )
+
+
+openTxnFormModalLoaded : Model -> Transaction.Model -> ( Model, Cmd Msg )
+openTxnFormModalLoaded model txn =
+    case TxnForm.fromTxn txn of
+        TxnForm.DisbRuleUnverified ->
+            ( { model
+                | disbRuleUnverifiedModalVisibility = Modal.shown
+                , disbRuleUnverifiedModal = DisbRuleUnverified.init model.transactions txn
+              }
+            , Cmd.none
+            )
+
+        TxnForm.DisbRuleVerified ->
+            ( { model
+                | disbRuleVerifiedModalVisibility = Modal.shown
+                , disbRuleVerifiedModal = DisbRuleVerified.init txn
+              }
+            , Cmd.none
+            )
+
+        _ ->
+            ( model, Cmd.none )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ShowTxnFormModal txn ->
-            case TxnForm.fromTxn txn of
-                TxnForm.DisbRuleUnverified ->
-                    ( { model
-                        | disbRuleUnverifiedModalVisibility = Modal.shown
-                        , disbRuleUnverifiedModal = DisbRuleUnverified.init model.transactions txn
-                      }
-                    , Cmd.none
-                    )
-
-                TxnForm.DisbRuleVerified ->
-                    ( { model
-                        | disbRuleVerifiedModalVisibility = Modal.shown
-                        , disbRuleVerifiedModal = DisbRuleVerified.init txn
-                      }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
+            openTxnFormModalLoading model txn
 
         -- Disb Rule Unverified Modal State
         DisbRuleUnverifiedModalAnimate visibility ->
@@ -480,7 +510,20 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        LoadTransactionsData res ->
+        GotTransactionData res ->
+            case res of
+                Ok body ->
+                    openTxnFormModalLoaded model body.data.transaction
+
+                Err _ ->
+                    let
+                        { cognitoDomain, cognitoClientId, redirectUri } =
+                            model.config
+                    in
+                    ( model, Cmd.none )
+
+        --( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+        GotTransactionsData res ->
             case res of
                 Ok body ->
                     ( { model
@@ -606,7 +649,7 @@ update msg model =
                 | createContributionModalVisibility = Modal.hidden
                 , createContributionSubmitting = False
               }
-            , getTransactions model.config model.committeeId LoadTransactionsData model.filterTransactionType
+            , getTransactions model.config model.committeeId GotTransactionsData model.filterTransactionType
             )
 
         ToggleActionsDropdown state ->
@@ -620,17 +663,17 @@ update msg model =
 
         FilterByContributions ->
             ( { model | filterTransactionType = Just TransactionType.Contribution }
-            , getTransactions model.config model.committeeId LoadTransactionsData (Just TransactionType.Contribution)
+            , getTransactions model.config model.committeeId GotTransactionsData (Just TransactionType.Contribution)
             )
 
         FilterByDisbursements ->
             ( { model | filterTransactionType = Just TransactionType.Disbursement }
-            , getTransactions model.config model.committeeId LoadTransactionsData (Just TransactionType.Disbursement)
+            , getTransactions model.config model.committeeId GotTransactionsData (Just TransactionType.Disbursement)
             )
 
         FilterAll ->
             ( { model | filterTransactionType = Nothing }
-            , getTransactions model.config model.committeeId LoadTransactionsData Nothing
+            , getTransactions model.config model.committeeId GotTransactionsData Nothing
             )
 
         FileDisclosure ->
@@ -673,7 +716,7 @@ update msg model =
                 , createDisbursementSubmitting = False
                 , createDisbursementModal = CreateDisbursement.init
               }
-            , getTransactions model.config model.committeeId LoadTransactionsData Nothing
+            , getTransactions model.config model.committeeId GotTransactionsData Nothing
             )
 
 

@@ -3,6 +3,7 @@ module TxnForm.DisbRuleVerified exposing
     , Msg(..)
     , encode
     , init
+    , loadingInit
     , update
     , view
     )
@@ -12,6 +13,7 @@ import Disbursement as Disbursement
 import DisbursementInfo
 import Html exposing (Html)
 import Json.Encode as Encode
+import Loading
 import PaymentInfo
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
@@ -35,7 +37,17 @@ type alias Model =
     , paymentMethod : Maybe PaymentMethod
     , checkNumber : String
     , showBankData : Bool
+    , loading : Bool
     }
+
+
+loadingInit : Model
+loadingInit =
+    let
+        state =
+            init Transaction.init
+    in
+    { state | loading = True }
 
 
 init : Transaction.Model -> Model
@@ -56,32 +68,50 @@ init txn =
     , paymentMethod = Nothing
     , checkNumber = ""
     , showBankData = False
+    , loading = False
     }
 
 
 view : Model -> Html Msg
 view model =
+    if model.loading then
+        loadingView
+
+    else
+        loadedView model
+
+
+loadingView : Html msg
+loadingView =
+    Loading.view
+
+
+loadedView : Model -> Html Msg
+loadedView model =
     Grid.container
         []
-        ([ PaymentInfo.view model.txn ]
-            ++ DisbursementInfo.view
-                { entityName = ( model.entityName, EntityNameUpdated )
-                , addressLine1 = ( model.addressLine1, AddressLine1Updated )
-                , addressLine2 = ( model.addressLine2, AddressLine2Updated )
-                , city = ( model.city, CityUpdated )
-                , state = ( model.state, StateUpdated )
-                , postalCode = ( model.postalCode, PostalCodeUpdated )
-                , purposeCode = ( model.purposeCode, PurposeCodeUpdated )
-                , isSubcontracted = ( model.isSubcontracted, IsSubcontractedUpdated )
-                , isPartialPayment = ( model.isPartialPayment, IsPartialPaymentUpdated )
-                , isExistingLiability = ( model.isExistingLiability, IsExistingLiabilityUpdated )
-                , amount = Nothing
-                , paymentDate = Nothing
-                , paymentMethod = Nothing
-                , disabled = True
-                , isEditable = True
-                }
-        )
+        (PaymentInfo.view model.txn ++ disbFormRow model)
+
+
+disbFormRow : Model -> List (Html Msg)
+disbFormRow model =
+    DisbursementInfo.view
+        { entityName = ( model.entityName, EntityNameUpdated )
+        , addressLine1 = ( model.addressLine1, AddressLine1Updated )
+        , addressLine2 = ( model.addressLine2, AddressLine2Updated )
+        , city = ( model.city, CityUpdated )
+        , state = ( model.state, StateUpdated )
+        , postalCode = ( model.postalCode, PostalCodeUpdated )
+        , purposeCode = ( model.purposeCode, PurposeCodeUpdated )
+        , isSubcontracted = ( model.isSubcontracted, IsSubcontractedUpdated )
+        , isPartialPayment = ( model.isPartialPayment, IsPartialPaymentUpdated )
+        , isExistingLiability = ( model.isExistingLiability, IsExistingLiabilityUpdated )
+        , amount = Nothing
+        , paymentDate = Nothing
+        , paymentMethod = Nothing
+        , disabled = True
+        , isEditable = True
+        }
 
 
 type Msg

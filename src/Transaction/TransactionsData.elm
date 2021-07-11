@@ -7,11 +7,11 @@ import Transactions
 
 
 type alias TransactionsData =
-    { data : TransactionObject
+    { data : TransactionsObject
     }
 
 
-type alias TransactionObject =
+type alias TransactionsObject =
     { transactions : Transactions.Model
     , aggregations : Aggregations.Model
     , committee : Committee.Model
@@ -25,10 +25,10 @@ decode =
         (Decode.field "data" decodeTransactionObject)
 
 
-decodeTransactionObject : Decode.Decoder TransactionObject
+decodeTransactionObject : Decode.Decoder TransactionsObject
 decodeTransactionObject =
     Decode.map3
-        TransactionObject
+        TransactionsObject
         (Decode.field "transactions" Transactions.decoder)
         (Decode.field "aggregations" Aggregations.decoder)
         (Decode.field "committee" Committee.decoder)

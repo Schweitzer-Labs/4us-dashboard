@@ -12,13 +12,14 @@ import PaymentMethod
 import Transaction
 
 
-view : Transaction.Model -> Html msg
+view : Transaction.Model -> List (Html msg)
 view txn =
-    div
+    [ div
         []
         [ h6 [] [ text "Payment Info" ]
         , dataView txn
         ]
+    ]
 
 
 statusContent : Bool -> Html msg
