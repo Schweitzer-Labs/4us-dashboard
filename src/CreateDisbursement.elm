@@ -7,6 +7,7 @@ import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
+import DisbursementInfo
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (for, value)
 import PaymentMethod exposing (PaymentMethod)
@@ -62,17 +63,23 @@ view model =
     Grid.containerFluid
         []
     <|
-        addressRows model
-            --++ yesOrNoRows
-            --    UpdateIsSubcontracted
-            --    model.isSubcontracted
-            --    UpdateIsPartialPayment
-            --    model.isPartialPayment
-            --    UpdateIsExistingLiability
-            --    model.isExistingLiability
-            --    False
-            --    False
-            ++ paymentMethodCheckRows model
+        DisbursementInfo.view
+            { entityName = ( model.entityName, EntityNameUpdated )
+            , addressLine1 = ( model.addressLine1, AddressLine1Updated )
+            , addressLine2 = ( model.addressLine2, AddressLine2Updated )
+            , city = ( model.city, CityUpdated )
+            , state = ( model.state, StateUpdated )
+            , postalCode = ( model.postalCode, PostalCodeUpdated )
+            , purposeCode = ( model.purposeCode, PurposeCodeUpdated )
+            , isSubcontracted = ( model.isSubcontracted, IsSubcontractedUpdated )
+            , isPartialPayment = ( model.isPartialPayment, IsPartialPaymentUpdated )
+            , isExistingLiability = ( model.isExistingLiability, IsExistingLiabilityUpdated )
+            , amount = Just ( model.amount, AmountUpdated )
+            , paymentDate = Just ( model.paymentDate, PaymentDateUpdated )
+            , paymentMethod = Just ( model.paymentMethod, PaymentMethodUpdated )
+            , disabled = False
+            , isEditable = True
+            }
 
 
 addressRows : Model -> List (Html Msg)
