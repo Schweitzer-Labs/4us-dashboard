@@ -1,43 +1,19 @@
 module TxnForm.DisbRuleUnverified exposing
     ( Model
     , Msg(..)
-    , addressRow
-    , cityStateZipRow
     , encode
-    , errorBorder
     , init
-    , maybeWithBlank
-    , recipientNameRow
-    , selectPurpose
-    , selectPurposeRow
     , update
     , view
     )
 
 import BankData
-import Bootstrap.Form as Form
-import Bootstrap.Form.Input as Input exposing (value)
-import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
-import Bootstrap.Grid.Row as Row
-import Bootstrap.Utilities.Spacing as Spacing
 import Disbursement as Disbursement
-import Html exposing (Html, text)
-import Html.Attributes as Attribute exposing (class, for)
+import Html exposing (Html)
 import Json.Encode as Encode
-import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
 import Transaction
-
-
-errorBorder : String -> List (Html.Attribute Msg)
-errorBorder str =
-    if String.length str < 2 then
-        [ class "border-danger" ]
-
-    else
-        []
 
 
 type alias Model =
@@ -78,143 +54,6 @@ view model =
     Grid.container
         []
         [ BankData.view True model.txn ]
-
-
-createDisbursementForm : Model -> List (Html Msg)
-createDisbursementForm model =
-    [ recipientNameRow model
-    , addressRow model
-    , cityStateZipRow model
-    , selectPurposeRow model
-    ]
-
-
-recipientNameRow : Model -> Html Msg
-recipientNameRow model =
-    let
-        entityNameOrBlank =
-            Maybe.withDefault "" model.formEntityName
-    in
-    Grid.row
-        []
-        [ Grid.col
-            []
-            [ Form.label [ for "recipient-name" ] [ text "Recipient Info" ]
-            , Input.text
-                [ Input.id "recipient-name"
-                , Input.onInput EntityNameUpdated
-                , Input.placeholder "Enter recipient name"
-                , Input.attrs (errorBorder entityNameOrBlank)
-                , value entityNameOrBlank
-                ]
-            ]
-        ]
-
-
-selectPurposeRow : Model -> Html Msg
-selectPurposeRow model =
-    Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ selectPurpose model ] ]
-
-
-maybeWithBlank : Maybe String -> String
-maybeWithBlank =
-    Maybe.withDefault ""
-
-
-addressRow : Model -> Html Msg
-addressRow { txn } =
-    Grid.row [ Row.attrs [ Spacing.mt2 ] ]
-        [ Grid.col
-            [ Col.lg6 ]
-            [ Input.text
-                [ Input.id "addressLine1"
-                , Input.onInput AddressLine1Updated
-                , Input.placeholder "Enter Street Address"
-                , Input.attrs (errorBorder <| maybeWithBlank txn.addressLine1)
-                , Input.value <| maybeWithBlank txn.addressLine1
-                ]
-            ]
-        , Grid.col
-            [ Col.lg6 ]
-            [ Input.text
-                [ Input.id "addressLine2"
-                , Input.onInput AddressLine2Updated
-                , Input.placeholder "Secondary Address"
-                , Input.value <| maybeWithBlank txn.addressLine2
-                ]
-            ]
-        ]
-
-
-cityStateZipRow : Model -> Html Msg
-cityStateZipRow model =
-    Grid.row [ Row.attrs [ Spacing.mt2 ] ]
-        [ Grid.col
-            [ Col.lg4 ]
-            [ Input.text
-                [ Input.id "city"
-                , Input.onInput CityUpdated
-                , Input.placeholder "Enter city"
-                , Input.attrs (errorBorder <| maybeWithBlank model.formCity)
-                , Input.value <| maybeWithBlank model.formCity
-                ]
-            ]
-        , Grid.col
-            [ Col.lg4 ]
-            [ Input.text
-                [ Input.id "state"
-                , Input.onInput StateUpdated
-                , Input.placeholder "State"
-                , Input.attrs (errorBorder <| maybeWithBlank model.formState)
-                , Input.value <| maybeWithBlank model.formState
-                ]
-            ]
-        , Grid.col
-            [ Col.lg4 ]
-            [ Input.text
-                [ Input.id "postalCode"
-                , Input.onInput PostalCodeUpdated
-                , Input.placeholder "Postal Code"
-                , Input.attrs (errorBorder <| maybeWithBlank model.formPostalCode)
-                , Input.value <| maybeWithBlank model.formPostalCode
-                ]
-            ]
-        ]
-
-
-selectPurpose : Model -> Html Msg
-selectPurpose model =
-    let
-        purpleCodeOrBlank =
-            maybeWithBlank <| Maybe.map PurposeCode.toString model.formPurposeCode
-    in
-    Form.group
-        []
-        [ Form.label [ for "purpose" ] [ text "Purpose" ]
-        , Select.select
-            [ Select.id "purpose"
-            , Select.onChange PurposeCodeUpdated
-            , Select.attrs <| [ Attribute.value <| purpleCodeOrBlank ] ++ errorBorder purpleCodeOrBlank
-            ]
-          <|
-            (++)
-                [ Select.item
-                    [ Attribute.selected (purpleCodeOrBlank == "")
-                    , Attribute.value ""
-                    ]
-                    [ text "---" ]
-                ]
-            <|
-                List.map
-                    (\( _, codeText, purposeText ) ->
-                        Select.item
-                            [ Attribute.selected (codeText == PurposeCode.fromMaybeToString model.formPurposeCode)
-                            , Attribute.value codeText
-                            ]
-                            [ text <| purposeText ]
-                    )
-                    PurposeCode.purposeCodeText
-        ]
 
 
 type Msg

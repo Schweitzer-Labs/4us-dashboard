@@ -139,8 +139,8 @@ fromMaybeToString =
     Maybe.withDefault "" << Maybe.map toString
 
 
-select : Maybe PurposeCode -> (Maybe PurposeCode -> msg) -> Html msg
-select maybePurposeCode updateMsg =
+select : Maybe PurposeCode -> (Maybe PurposeCode -> msg) -> Bool -> Html msg
+select maybePurposeCode updateMsg disabled =
     Form.group
         []
         [ Form.label [ for "purpose" ] [ text "Purpose" ]
@@ -148,6 +148,7 @@ select maybePurposeCode updateMsg =
             [ Select.id "purpose"
             , Select.onChange (fromString >> updateMsg)
             , Select.attrs <| [ Attribute.value <| fromMaybeToString maybePurposeCode ]
+            , Select.disabled disabled
             ]
           <|
             (++)

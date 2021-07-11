@@ -45,6 +45,7 @@ view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeC
                 , Input.onInput (toMsg entityName)
                 , Input.placeholder "Enter recipient name"
                 , Input.value (toData entityName)
+                , Input.disabled disabled
                 ]
             ]
         ]
@@ -57,7 +58,7 @@ view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeC
             , postalCode = postalCode
             , disabled = disabled
             }
-        ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ PurposeCode.select (toData purposeCode) (toMsg purposeCode) ] ]
+        ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ PurposeCode.select (toData purposeCode) (toMsg purposeCode) disabled ] ]
            ]
         ++ YesOrNo.view
             { isSubcontracted = isSubcontracted

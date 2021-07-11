@@ -1,58 +1,39 @@
 module TxnForm.DisbRuleVerified exposing
     ( Model
     , Msg(..)
-    , addressRow
-    , cityStateZipRow
     , encode
-    , errorBorder
     , init
-    , maybeWithBlank
-    , recipientNameRow
-    , selectPurpose
-    , selectPurposeRow
     , update
     , view
     )
 
-import Asset
-import Bootstrap.Form as Form
-import Bootstrap.Form.Input as Input exposing (value)
-import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
-import Bootstrap.Grid.Row as Row
-import Bootstrap.Utilities.Spacing as Spacing
 import Disbursement as Disbursement
-import ExpandableBankData
-import Html exposing (Html, div, span, text)
-import Html.Attributes as Attribute exposing (class, for)
+import DisbursementInfo
+import Html exposing (Html)
 import Json.Encode as Encode
 import PaymentInfo
+import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
 import Transaction
 
 
-errorBorder : String -> List (Html.Attribute Msg)
-errorBorder str =
-    if String.length str < 2 then
-        [ class "" ]
-
-    else
-        []
-
-
 type alias Model =
     { txn : Transaction.Model
-    , formEntityName : Maybe String
-    , formAddressLine1 : Maybe String
-    , formAddressLine2 : Maybe String
-    , formCity : Maybe String
-    , formState : Maybe String
-    , formPostalCode : Maybe String
-    , formPurposeCode : Maybe PurposeCode
-    , formIsSubcontracted : Maybe Bool
-    , formIsPartialPayment : Maybe Bool
-    , formIsExistingLiability : Maybe Bool
+    , entityName : String
+    , addressLine1 : String
+    , addressLine2 : String
+    , city : String
+    , state : String
+    , postalCode : String
+    , purposeCode : Maybe PurposeCode
+    , isSubcontracted : Maybe Bool
+    , isPartialPayment : Maybe Bool
+    , isExistingLiability : Maybe Bool
+    , amount : String
+    , paymentDate : String
+    , paymentMethod : Maybe PaymentMethod
+    , checkNumber : String
     , showBankData : Bool
     }
 
@@ -60,16 +41,20 @@ type alias Model =
 init : Transaction.Model -> Model
 init txn =
     { txn = txn
-    , formEntityName = txn.entityName
-    , formAddressLine1 = Nothing
-    , formAddressLine2 = Nothing
-    , formCity = Nothing
-    , formState = Nothing
-    , formPostalCode = Nothing
-    , formPurposeCode = Nothing
-    , formIsSubcontracted = Nothing
-    , formIsPartialPayment = Nothing
-    , formIsExistingLiability = Nothing
+    , entityName = Maybe.withDefault "" txn.entityName
+    , addressLine1 = Maybe.withDefault "" txn.addressLine1
+    , addressLine2 = Maybe.withDefault "" txn.addressLine2
+    , city = Maybe.withDefault "" txn.city
+    , state = Maybe.withDefault "" txn.state
+    , postalCode = Maybe.withDefault "" txn.postalCode
+    , purposeCode = txn.purposeCode
+    , isSubcontracted = txn.isSubcontracted
+    , isPartialPayment = txn.isPartialPayment
+    , isExistingLiability = txn.isExistingLiability
+    , amount = ""
+    , paymentDate = ""
+    , paymentMethod = Nothing
+    , checkNumber = ""
     , showBankData = False
     }
 
@@ -79,153 +64,24 @@ view model =
     Grid.container
         []
         ([ PaymentInfo.view model.txn ]
-            ++ createDisbursementForm model
-         --++ [ ExpandableBankData.view model.showBankData model.txn <| ToggleBankData ]
+            ++ DisbursementInfo.view
+                { entityName = ( model.entityName, EntityNameUpdated )
+                , addressLine1 = ( model.addressLine1, AddressLine1Updated )
+                , addressLine2 = ( model.addressLine2, AddressLine2Updated )
+                , city = ( model.city, CityUpdated )
+                , state = ( model.state, StateUpdated )
+                , postalCode = ( model.postalCode, PostalCodeUpdated )
+                , purposeCode = ( model.purposeCode, PurposeCodeUpdated )
+                , isSubcontracted = ( model.isSubcontracted, IsSubcontractedUpdated )
+                , isPartialPayment = ( model.isPartialPayment, IsPartialPaymentUpdated )
+                , isExistingLiability = ( model.isExistingLiability, IsExistingLiabilityUpdated )
+                , amount = Nothing
+                , paymentDate = Nothing
+                , paymentMethod = Nothing
+                , disabled = True
+                , isEditable = True
+                }
         )
-
-
-createDisbursementForm : Model -> List (Html Msg)
-createDisbursementForm model =
-    [ recipientNameRow model
-    , addressRow model
-    , cityStateZipRow model
-    , selectPurposeRow model
-    ]
-
-
-recipientNameRow : Model -> Html Msg
-recipientNameRow model =
-    let
-        entityNameOrBlank =
-            Maybe.withDefault "" model.formEntityName
-    in
-    Grid.row
-        [ Row.attrs [ Spacing.mt3 ] ]
-        [ Grid.col
-            []
-            [ Form.label [ for "recipient-name" ] [ span [ class "align-middle" ] [ span [ class "align-middle" ] [ text "Recipient Info" ], Asset.editGlyph [ Spacing.ml2, class "align-middle" ] ] ]
-            , Input.text
-                [ Input.id "recipient-name"
-                , Input.onInput EntityNameUpdated
-                , Input.placeholder "Enter recipient name"
-                , Input.attrs (errorBorder entityNameOrBlank)
-                , value entityNameOrBlank
-                , Input.disabled True
-                ]
-            ]
-        ]
-
-
-selectPurposeRow : Model -> Html Msg
-selectPurposeRow model =
-    Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ selectPurpose model ] ]
-
-
-maybeWithBlank : Maybe String -> String
-maybeWithBlank =
-    Maybe.withDefault ""
-
-
-addressRow : Model -> Html Msg
-addressRow { txn } =
-    Grid.row [ Row.attrs [ Spacing.mt2 ] ]
-        [ Grid.col
-            [ Col.lg6 ]
-            [ Input.text
-                [ Input.id "addressLine1"
-                , Input.onInput AddressLine1Updated
-                , Input.placeholder "Enter Street Address"
-                , Input.attrs (errorBorder <| maybeWithBlank txn.addressLine1)
-                , Input.value <| maybeWithBlank txn.addressLine1
-                , Input.disabled True
-                ]
-            ]
-        , Grid.col
-            [ Col.lg6 ]
-            [ Input.text
-                [ Input.id "addressLine2"
-                , Input.onInput AddressLine2Updated
-                , Input.placeholder "Secondary Address"
-                , Input.value <| maybeWithBlank txn.addressLine2
-                , Input.disabled True
-                ]
-            ]
-        ]
-
-
-cityStateZipRow : Model -> Html Msg
-cityStateZipRow model =
-    Grid.row [ Row.attrs [ Spacing.mt2 ] ]
-        [ Grid.col
-            [ Col.lg4 ]
-            [ Input.text
-                [ Input.id "city"
-                , Input.onInput CityUpdated
-                , Input.placeholder "Enter city"
-                , Input.attrs (errorBorder <| maybeWithBlank model.formCity)
-                , Input.value <| maybeWithBlank model.formCity
-                , Input.disabled True
-                ]
-            ]
-        , Grid.col
-            [ Col.lg4 ]
-            [ Input.text
-                [ Input.id "state"
-                , Input.onInput StateUpdated
-                , Input.placeholder "State"
-                , Input.attrs (errorBorder <| maybeWithBlank model.formState)
-                , Input.value <| maybeWithBlank model.formState
-                , Input.disabled True
-                ]
-            ]
-        , Grid.col
-            [ Col.lg4 ]
-            [ Input.text
-                [ Input.id "postalCode"
-                , Input.onInput PostalCodeUpdated
-                , Input.placeholder "Postal Code"
-                , Input.attrs (errorBorder <| maybeWithBlank model.formPostalCode)
-                , Input.value <| maybeWithBlank model.formPostalCode
-                , Input.disabled True
-                ]
-            ]
-        ]
-
-
-selectPurpose : Model -> Html Msg
-selectPurpose model =
-    let
-        purpleCodeOrBlank =
-            maybeWithBlank <| Maybe.map PurposeCode.toString model.formPurposeCode
-    in
-    Form.group
-        []
-        [ Form.label [ for "purpose" ] [ text "Purpose" ]
-        , Select.select
-            [ Select.id "purpose"
-            , Select.onChange PurposeCodeUpdated
-            , Select.attrs <| [ Attribute.value <| purpleCodeOrBlank ] ++ errorBorder purpleCodeOrBlank
-            , Select.disabled True
-            ]
-          <|
-            (++)
-                [ Select.item
-                    [ Attribute.selected (purpleCodeOrBlank == "")
-                    , Attribute.value ""
-                    ]
-                    [ text "---" ]
-                ]
-            <|
-                List.map
-                    (\( _, codeText, purposeText ) ->
-                        Select.item
-                            [ Attribute.selected (codeText == PurposeCode.fromMaybeToString model.formPurposeCode)
-                            , Attribute.value codeText
-                            ]
-                            [ text <| purposeText ]
-                    )
-                    PurposeCode.purposeCodeText
-        ]
 
 
 type Msg
@@ -235,45 +91,61 @@ type Msg
     | CityUpdated String
     | StateUpdated String
     | PostalCodeUpdated String
-    | PurposeCodeUpdated String
-    | UpdateIsSubcontracted Bool
-    | UpdateIsPartialPayment Bool
-    | UpdateIsExistingLiability Bool
+    | PurposeCodeUpdated (Maybe PurposeCode)
+    | IsSubcontractedUpdated (Maybe Bool)
+    | IsPartialPaymentUpdated (Maybe Bool)
+    | IsExistingLiabilityUpdated (Maybe Bool)
+    | AmountUpdated String
+    | PaymentDateUpdated String
+    | PaymentMethodUpdated (Maybe PaymentMethod)
+    | CheckNumberUpdated String
     | ToggleBankData
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        PurposeCodeUpdated str ->
+            ( { model | purposeCode = str }, Cmd.none )
+
+        PaymentMethodUpdated pm ->
+            ( { model | paymentMethod = pm }, Cmd.none )
+
+        AmountUpdated str ->
+            ( { model | amount = str }, Cmd.none )
+
         EntityNameUpdated str ->
-            ( { model | formEntityName = Just str }, Cmd.none )
+            ( { model | entityName = str }, Cmd.none )
+
+        CheckNumberUpdated str ->
+            ( { model | checkNumber = str }, Cmd.none )
+
+        PaymentDateUpdated str ->
+            ( { model | paymentDate = str }, Cmd.none )
 
         AddressLine1Updated str ->
-            ( { model | formAddressLine1 = Just str }, Cmd.none )
+            ( { model | addressLine1 = str }, Cmd.none )
 
         AddressLine2Updated str ->
-            ( { model | formAddressLine2 = Just str }, Cmd.none )
+            ( { model | addressLine2 = str }, Cmd.none )
 
         CityUpdated str ->
-            ( { model | formCity = Just str }, Cmd.none )
+            ( { model | city = str }, Cmd.none )
 
         StateUpdated str ->
-            ( { model | formState = Just str }, Cmd.none )
+            ( { model | state = str }, Cmd.none )
 
         PostalCodeUpdated str ->
-            ( { model | formPostalCode = Just str }, Cmd.none )
+            ( { model | postalCode = str }, Cmd.none )
 
-        PurposeCodeUpdated code ->
-            ( { model | formPurposeCode = PurposeCode.fromString code }, Cmd.none )
+        IsSubcontractedUpdated bool ->
+            ( { model | isSubcontracted = bool }, Cmd.none )
 
-        UpdateIsSubcontracted bool ->
-            ( { model | formIsSubcontracted = Just bool }, Cmd.none )
+        IsPartialPaymentUpdated bool ->
+            ( { model | isPartialPayment = bool }, Cmd.none )
 
-        UpdateIsPartialPayment bool ->
-            ( { model | formIsPartialPayment = Just bool }, Cmd.none )
-
-        UpdateIsExistingLiability bool ->
-            ( { model | formIsExistingLiability = Just bool }, Cmd.none )
+        IsExistingLiabilityUpdated bool ->
+            ( { model | isExistingLiability = bool }, Cmd.none )
 
         ToggleBankData ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )

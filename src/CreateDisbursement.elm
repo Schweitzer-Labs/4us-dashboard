@@ -1,15 +1,8 @@
 module CreateDisbursement exposing (Model, Msg(..), init, setError, update, view)
 
-import Address
-import Bootstrap.Form as Form
-import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid exposing (Column)
-import Bootstrap.Grid.Col as Col
-import Bootstrap.Grid.Row as Row
-import Bootstrap.Utilities.Spacing as Spacing
 import DisbursementInfo
-import Html exposing (Html, div, text)
-import Html.Attributes exposing (for, value)
+import Html exposing (Html)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
 
@@ -82,40 +75,6 @@ view model =
             }
 
 
-addressRows : Model -> List (Html Msg)
-addressRows model =
-    Address.view
-        { addressLine1 = ( model.addressLine1, AddressLine1Updated )
-        , addressLine2 = ( model.addressLine2, AddressLine2Updated )
-        , city = ( model.city, CityUpdated )
-        , state = ( model.state, StateUpdated )
-        , postalCode = ( model.postalCode, PostalCodeUpdated )
-        , disabled = False
-        }
-
-
-paymentMethodCheckRows : Model -> List (Html Msg)
-paymentMethodCheckRows model =
-    [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
-        [ Grid.col
-            [ Col.lg4 ]
-            [ Form.label [ for "amount" ] [ text "Amount" ]
-            , Input.text [ Input.id "amount", Input.onInput AmountUpdated, Input.placeholder "Enter amount" ]
-            ]
-        , Grid.col
-            [ Col.lg4 ]
-            [ Form.label [ for "check-number" ] [ text "Check Number" ]
-            , Input.text [ Input.id "check-number", Input.onInput CheckNumberUpdated, Input.placeholder "Enter check number" ]
-            ]
-        , Grid.col
-            [ Col.lg4 ]
-            [ Form.label [ for "date" ] [ text "Date" ]
-            , Input.date [ Input.id "date", Input.onInput PaymentDateUpdated ]
-            ]
-        ]
-    ]
-
-
 type Msg
     = NoOp
     | EntityNameUpdated String
@@ -173,11 +132,11 @@ update msg model =
         PostalCodeUpdated str ->
             ( { model | postalCode = str }, Cmd.none )
 
-        IsSubcontractedUpdated str ->
-            ( { model | isSubcontracted = Nothing }, Cmd.none )
+        IsSubcontractedUpdated bool ->
+            ( { model | isSubcontracted = bool }, Cmd.none )
 
-        IsPartialPaymentUpdated str ->
-            ( { model | isPartialPayment = Nothing }, Cmd.none )
+        IsPartialPaymentUpdated bool ->
+            ( { model | isPartialPayment = bool }, Cmd.none )
 
-        IsExistingLiabilityUpdated str ->
-            ( { model | isExistingLiability = Nothing }, Cmd.none )
+        IsExistingLiabilityUpdated bool ->
+            ( { model | isExistingLiability = bool }, Cmd.none )
