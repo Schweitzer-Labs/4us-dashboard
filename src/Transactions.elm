@@ -38,29 +38,29 @@ type Label
     | Verified
 
 
-labels : (Label -> msg) -> List ( msg, String )
-labels sortMsg =
-    [ ( sortMsg DateTime, "Date / Time" )
-    , ( sortMsg EntityName, "Entity Name" )
-    , ( sortMsg Context, "Entity Type" )
-    , ( sortMsg Amount, "Amount" )
-    , ( sortMsg Verified, "Verified" )
-    , ( sortMsg PaymentMethod, "Payment Method" )
-    , ( sortMsg PaymentMethod, "Processor" )
-    , ( sortMsg Status, "Status" )
+labels : List String
+labels =
+    [ "Date / Time"
+    , "Entity Name"
+    , "Entity Type"
+    , "Amount"
+    , "Verified"
+    , "Payment Method"
+    , "Processor"
+    , "Status"
     ]
 
 
-view : Committee.Model -> (Label -> msg) -> List (Html msg) -> List Transaction.Model -> Html msg
-view committee sortMsg content txns =
-    DataTable.view "Awaiting Transactions." content (labels sortMsg) (transactionRowMap committee) <|
+view : Committee.Model -> List (Html msg) -> List Transaction.Model -> Html msg
+view committee content txns =
+    DataTable.view "Awaiting Transactions." content labels (transactionRowMap committee) <|
         List.map (\d -> ( Nothing, d )) <|
             List.reverse (sortBy .initiatedTimestamp txns)
 
 
-viewInteractive : Committee.Model -> (Label -> msg) -> (Transaction.Model -> msg) -> List (Html msg) -> List Transaction.Model -> Html msg
-viewInteractive committee sortMsg selectMsg content txns =
-    DataTable.view "Awaiting Transactions." content (labels sortMsg) (transactionRowMap committee) <|
+viewInteractive : Committee.Model -> (Transaction.Model -> msg) -> List (Html msg) -> List Transaction.Model -> Html msg
+viewInteractive committee selectMsg content txns =
+    DataTable.view "Awaiting Transactions." content labels (transactionRowMap committee) <|
         List.map (\t -> ( Just <| selectMsg t, t )) <|
             List.reverse (sortBy .initiatedTimestamp txns)
 

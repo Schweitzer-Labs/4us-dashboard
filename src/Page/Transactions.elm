@@ -127,7 +127,7 @@ loadedView : Model -> Html Msg
 loadedView model =
     div [ class "fade-in" ]
         [ dropdowns model
-        , Transactions.viewInteractive model.committee SortTransactions ShowTxnFormModal [] model.transactions
+        , Transactions.viewInteractive model.committee ShowTxnFormModal [] model.transactions
         , createContributionModal model
         , generateDisclosureModal model
         , createDisbursementModal model
@@ -344,7 +344,6 @@ exitButton =
 type Msg
     = GotSession Session
     | GotTransactionsData (Result Http.Error TransactionsData)
-    | SortTransactions Transactions.Label
     | GenerateReport FileFormat
     | HideCreateContributionModal
     | ShowCreateContributionModal
@@ -493,23 +492,6 @@ update msg model =
         AnimateGenerateDisclosureModal visibility ->
             ( { model | generateDisclosureModalVisibility = visibility }, Cmd.none )
 
-        SortTransactions label ->
-            case label of
-                Transactions.EntityName ->
-                    ( applyFilter label .entityName model, Cmd.none )
-
-                Transactions.DateTime ->
-                    ( applyFilter label .dateProcessed model, Cmd.none )
-
-                Transactions.Amount ->
-                    ( applyFilter label .amount model, Cmd.none )
-
-                Transactions.PaymentMethod ->
-                    ( applyFilter label .paymentMethod model, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
-
         GotTransactionData res ->
             case res of
                 Ok body ->
@@ -520,9 +502,8 @@ update msg model =
                         { cognitoDomain, cognitoClientId, redirectUri } =
                             model.config
                     in
-                    ( model, Cmd.none )
+                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
 
-        --( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
         GotTransactionsData res ->
             case res of
                 Ok body ->

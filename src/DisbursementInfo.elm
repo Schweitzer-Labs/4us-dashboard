@@ -9,7 +9,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (for)
+import Html.Attributes exposing (class, for)
 import PaymentMethod
 import PurposeCode
 import YesOrNo
@@ -36,7 +36,7 @@ type alias Config msg =
 
 view : Config msg -> List (Html msg)
 view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, amount, paymentDate, paymentMethod, disabled, isEditable } =
-    [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
+    [ Grid.row [ Row.attrs [ Spacing.mt2, class "fade-in" ] ]
         [ Grid.col
             []
             [ Form.label [ for "recipient-name" ] [ text "Recipient Info" ]

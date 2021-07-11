@@ -15,7 +15,7 @@ import Transaction
 view : Transaction.Model -> List (Html msg)
 view txn =
     [ div
-        []
+        [ class "fade-in" ]
         [ h6 [] [ text "Payment Info" ]
         , dataView txn
         ]
