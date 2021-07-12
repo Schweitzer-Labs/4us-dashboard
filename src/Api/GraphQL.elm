@@ -127,6 +127,9 @@ transactionQuery =
             finicityTransactionDate
             finicityNormalizedPayeeName
             finicityDescription
+            isSubcontracted
+            isPartialPayment
+            isExistingLiability
           }
         }
     """

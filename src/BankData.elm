@@ -29,13 +29,12 @@ bankDataRows data =
         , Grid.col [] [ labelWithMaybeData "Analyzed Category" data.finicityCategory ]
         ]
     , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
-        [ Grid.col [] [ labelWithMaybeLongData "Description" data.finicityDescription ] ]
-    , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
-        [ Grid.col [] [ labelWithTimeData "Posted Date" <| data.initiatedTimestamp ]
+        [ Grid.col [] [ labelWithMaybeLongData "Description" data.finicityDescription ]
         , Grid.col [] [ labelWithData "Payment Type" <| PaymentMethod.toDisplayString data.paymentMethod ]
         ]
     , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
-        [ Grid.col [] [ labelWithMaybeTimeData "Initiated Date" data.finicityTransactionDate ]
+        [ Grid.col [] [ labelWithTimeData "Posted Date" <| data.initiatedTimestamp ]
+        , Grid.col [] [ labelWithMaybeTimeData "Initiated Date" data.finicityTransactionDate ]
         ]
     ]
 
@@ -45,7 +44,7 @@ view isShowing model =
     let
         heading =
             if isShowing then
-                [ h6 [] [ text "Payment Info" ] ]
+                [ h6 [] [ text "Bank Data" ] ]
 
             else
                 []

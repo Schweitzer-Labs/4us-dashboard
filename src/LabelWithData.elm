@@ -11,7 +11,7 @@ module LabelWithData exposing
     )
 
 import Bootstrap.Utilities.Spacing as Spacing
-import Html exposing (Attribute, Html, div, h4, h5, h6, span, text)
+import Html exposing (Attribute, Html, div, text)
 import Html.Attributes exposing (class)
 import TimeZone exposing (america__new_york)
 import Timestamp
@@ -34,7 +34,7 @@ dataText data =
 
 dataLongText : String -> Html msg
 dataLongText data =
-    div [ class "font-size-medium" ] [ text data ]
+    div [ Spacing.mt1, class "font-size-medium" ] [ text data ]
 
 
 labelWithMaybeData : String -> Maybe String -> Html msg

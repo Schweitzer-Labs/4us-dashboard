@@ -139,13 +139,13 @@ loadedView model =
 createDisbursementModal : Model -> Html Msg
 createDisbursementModal model =
     PlatformModal.view
-        { hideMsg = HideCreateDisbursementModal
-        , animateMsg = AnimateCreateDisbursementModal
+        { hideMsg = CreateDisbursementModalHide
+        , animateMsg = CreateDisbursementModalAnimate
         , title = "Create Disbursement"
-        , updateMsg = CreateDisbursementModalUpdated
+        , updateMsg = CreateDisbursementModalUpdate
         , subModel = model.createDisbursementModal
         , subView = CreateDisbursement.view
-        , submitMsg = SubmitCreateDisbursement
+        , submitMsg = CreateDisbursementSubmit
         , submitText = "Create Disbursement"
         , isSubmitting = model.createDisbursementSubmitting
         , visibility = model.createDisbursementModalVisibility
@@ -254,7 +254,7 @@ actionsDropdown model =
                 Dropdown.toggle [ Button.success, Button.disabled False, Button.attrs [ Spacing.pl3, Spacing.pr3 ] ] [ text "Actions" ]
             , items =
                 [ Dropdown.buttonItem [ onClick ShowCreateContributionModal ] [ text "Create Contribution" ]
-                , Dropdown.buttonItem [ onClick ShowCreateDisbursementModal ] [ text "Create Disbursement" ]
+                , Dropdown.buttonItem [ onClick CreateDisbursementModalShow ] [ text "Create Disbursement" ]
                 , Dropdown.buttonItem [ onClick ShowGenerateDisclosureModal ] [ text "File Disclosure" ]
                 ]
             }
@@ -356,7 +356,6 @@ type Msg
     | GotCreateDisbursementResponse (Result Http.Error MutationResponse)
     | GotTransactionData (Result Http.Error TransactionData)
     | SubmitCreateContribution
-    | SubmitCreateContributionDelay
     | ToggleActionsDropdown Dropdown.State
     | ToggleFiltersDropdown Dropdown.State
     | ToggleGenerateDisclosureModalDownloadDropdown Dropdown.State
@@ -366,16 +365,17 @@ type Msg
     | FilterByDisbursements
     | NoOp
     | FilterAll
-    | HideCreateDisbursementModal
-    | ShowCreateDisbursementModal
-    | CreateDisbursementModalUpdated CreateDisbursement.Msg
-    | AnimateCreateDisbursementModal Modal.Visibility
-    | SubmitCreateDisbursement
-    | SubmitCreateDisbursementDelay
+    | CreateDisbursementModalHide
+    | CreateDisbursementModalAnimate Modal.Visibility
+    | CreateDisbursementModalUpdate CreateDisbursement.Msg
+    | CreateDisbursementModalShow
+    | CreateDisbursementSubmit
+      -- Disb Unverified Modal
     | DisbRuleUnverifiedModalHide
     | DisbRuleUnverifiedModalAnimate Modal.Visibility
     | DisbRuleUnverifiedModalUpdate DisbRuleUnverified.Msg
     | DisbRuleUnverifiedSubmit
+      -- Disb Verified Modal
     | DisbRuleVerifiedModalHide
     | DisbRuleVerifiedModalAnimate Modal.Visibility
     | DisbRuleVerifiedModalUpdate DisbRuleVerified.Msg
@@ -574,7 +574,12 @@ update msg model =
                 Ok createContribResp ->
                     case createContribResp of
                         Success id ->
-                            ( model, Delay.after 2 Delay.Second SubmitCreateContributionDelay )
+                            ( { model
+                                | createContributionModalVisibility = Modal.hidden
+                                , createContributionSubmitting = False
+                              }
+                            , getTransactions model.config model.committeeId GotTransactionsData model.filterTransactionType
+                            )
 
                         ValidationFailure errList ->
                             ( { model
@@ -602,7 +607,13 @@ update msg model =
                 Ok createDisbResp ->
                     case createDisbResp of
                         Success id ->
-                            ( model, Delay.after 2 Delay.Second SubmitCreateDisbursementDelay )
+                            ( { model
+                                | createDisbursementModalVisibility = Modal.hidden
+                                , createDisbursementSubmitting = False
+                                , createDisbursementModal = CreateDisbursement.init
+                              }
+                            , getTransactions model.config model.committeeId GotTransactionsData Nothing
+                            )
 
                         ValidationFailure errList ->
                             ( { model
@@ -624,14 +635,6 @@ update msg model =
                       }
                     , Cmd.none
                     )
-
-        SubmitCreateContributionDelay ->
-            ( { model
-                | createContributionModalVisibility = Modal.hidden
-                , createContributionSubmitting = False
-              }
-            , getTransactions model.config model.committeeId GotTransactionsData model.filterTransactionType
-            )
 
         ToggleActionsDropdown state ->
             ( { model | actionsDropdown = state }, Cmd.none )
@@ -666,39 +669,30 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        ShowCreateDisbursementModal ->
+        CreateDisbursementModalShow ->
             ( { model | createDisbursementModalVisibility = Modal.shown }, Cmd.none )
 
-        HideCreateDisbursementModal ->
-            ( { model | createDisbursementModalVisibility = Modal.hidden }
+        CreateDisbursementModalHide ->
+            ( { model | createDisbursementModalVisibility = Modal.hidden, createDisbursementModal = CreateDisbursement.init }
             , Cmd.none
             )
 
-        SubmitCreateDisbursement ->
+        CreateDisbursementSubmit ->
             ( { model
                 | createDisbursementSubmitting = True
               }
             , createDisbursement model
             )
 
-        AnimateCreateDisbursementModal visibility ->
+        CreateDisbursementModalAnimate visibility ->
             ( { model | createDisbursementModalVisibility = visibility }, Cmd.none )
 
-        CreateDisbursementModalUpdated subMsg ->
+        CreateDisbursementModalUpdate subMsg ->
             let
                 ( subModel, subCmd ) =
                     CreateDisbursement.update subMsg model.createDisbursementModal
             in
-            ( { model | createDisbursementModal = subModel }, Cmd.map CreateDisbursementModalUpdated subCmd )
-
-        SubmitCreateDisbursementDelay ->
-            ( { model
-                | createDisbursementModalVisibility = Modal.hidden
-                , createDisbursementSubmitting = False
-                , createDisbursementModal = CreateDisbursement.init
-              }
-            , getTransactions model.config model.committeeId GotTransactionsData Nothing
-            )
+            ( { model | createDisbursementModal = subModel }, Cmd.map CreateDisbursementModalUpdate subCmd )
 
 
 applyFilter : Transactions.Label -> (Disbursement.Model -> String) -> Model -> Model
@@ -735,7 +729,7 @@ subscriptions model =
         , Dropdown.subscriptions model.actionsDropdown ToggleActionsDropdown
         , Dropdown.subscriptions model.filtersDropdown ToggleFiltersDropdown
         , Dropdown.subscriptions model.generateDisclosureModalDownloadDropdownState ToggleGenerateDisclosureModalDownloadDropdown
-        , Modal.subscriptions model.createDisbursementModalVisibility AnimateCreateDisbursementModal
+        , Modal.subscriptions model.createDisbursementModalVisibility CreateDisbursementModalAnimate
         , Modal.subscriptions model.disbRuleUnverifiedModalVisibility DisbRuleUnverifiedModalAnimate
         , Modal.subscriptions model.disbRuleVerifiedModalVisibility DisbRuleVerifiedModalAnimate
         ]
