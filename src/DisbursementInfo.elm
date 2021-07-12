@@ -46,7 +46,7 @@ view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeC
             [ Form.label [ for "recipient-name" ]
                 [ text "Recipient Info"
                 , if isEditable then
-                    span [ class "ml-2", onClick toggleEdit ] [ Asset.editGlyph [] ]
+                    span [ Spacing.ml2, onClick toggleEdit ] [ Asset.editGlyph [] ]
 
                   else
                     span [] []
