@@ -12,12 +12,13 @@ type alias Config msg =
     { isSubcontracted : DataMsg.MsgMaybeBool msg
     , isPartialPayment : DataMsg.MsgMaybeBool msg
     , isExistingLiability : DataMsg.MsgMaybeBool msg
+    , isInKind : DataMsg.MsgMaybeBool msg
     , disabled : Bool
     }
 
 
 view : Config msg -> List (Html msg)
-view { isSubcontracted, isPartialPayment, isExistingLiability, disabled } =
+view { isSubcontracted, isPartialPayment, isExistingLiability, isInKind, disabled } =
     --let
     --    anyBlank =
     --        updateIsSubcontractedState == Nothing || updateIsPartialPaymentState == Nothing || updateIsExistingLiabilityState == Nothing
@@ -27,6 +28,7 @@ view { isSubcontracted, isPartialPayment, isExistingLiability, disabled } =
         [ yesOrNoCol "Is expenditure subcontracted?" (toMsg isSubcontracted) (toData isSubcontracted) disabled
         , yesOrNoCol "Is expenditure a partial payment?" (toMsg isPartialPayment) (toData isPartialPayment) disabled
         , yesOrNoCol "Is this an existing Liability?" (toMsg isExistingLiability) (toData isExistingLiability) disabled
+        , yesOrNoCol "Is this an In-Kind payment?" (toMsg isInKind) (toData isInKind) disabled
         ]
     ]
 

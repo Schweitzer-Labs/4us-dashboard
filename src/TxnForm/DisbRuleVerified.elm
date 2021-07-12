@@ -32,6 +32,7 @@ type alias Model =
     , isSubcontracted : Maybe Bool
     , isPartialPayment : Maybe Bool
     , isExistingLiability : Maybe Bool
+    , isInKind : Maybe Bool
     , amount : String
     , paymentDate : String
     , paymentMethod : Maybe PaymentMethod
@@ -63,6 +64,7 @@ init txn =
     , isSubcontracted = txn.isSubcontracted
     , isPartialPayment = txn.isPartialPayment
     , isExistingLiability = txn.isExistingLiability
+    , isInKind = Nothing
     , amount = ""
     , paymentDate = ""
     , paymentMethod = Nothing
@@ -106,6 +108,7 @@ disbFormRow model =
         , isSubcontracted = ( model.isSubcontracted, IsSubcontractedUpdated )
         , isPartialPayment = ( model.isPartialPayment, IsPartialPaymentUpdated )
         , isExistingLiability = ( model.isExistingLiability, IsExistingLiabilityUpdated )
+        , isInKind = ( model.isInKind, IsInKindUpdated )
         , amount = Nothing
         , paymentDate = Nothing
         , paymentMethod = Nothing
@@ -125,6 +128,7 @@ type Msg
     | IsSubcontractedUpdated (Maybe Bool)
     | IsPartialPaymentUpdated (Maybe Bool)
     | IsExistingLiabilityUpdated (Maybe Bool)
+    | IsInKindUpdated (Maybe Bool)
     | AmountUpdated String
     | PaymentDateUpdated String
     | PaymentMethodUpdated (Maybe PaymentMethod)
@@ -176,6 +180,9 @@ update msg model =
 
         IsExistingLiabilityUpdated bool ->
             ( { model | isExistingLiability = bool }, Cmd.none )
+
+        IsInKindUpdated bool ->
+            ( { model | isInKind = bool }, Cmd.none )
 
         ToggleBankData ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )

@@ -26,6 +26,7 @@ type alias Config msg =
     , isSubcontracted : DataMsg.MsgMaybeBool msg
     , isPartialPayment : DataMsg.MsgMaybeBool msg
     , isExistingLiability : DataMsg.MsgMaybeBool msg
+    , isInKind : DataMsg.MsgMaybeBool msg
     , amount : Maybe (DataMsg.MsgString msg)
     , paymentDate : Maybe (DataMsg.MsgString msg)
     , paymentMethod : Maybe (DataMsg.MsgMaybePaymentMethod msg)
@@ -35,7 +36,7 @@ type alias Config msg =
 
 
 view : Config msg -> List (Html msg)
-view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, amount, paymentDate, paymentMethod, disabled, isEditable } =
+view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable } =
     [ Grid.row [ Row.attrs [ Spacing.mt2, class "fade-in" ] ]
         [ Grid.col
             []
@@ -64,6 +65,7 @@ view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeC
             { isSubcontracted = isSubcontracted
             , isPartialPayment = isPartialPayment
             , isExistingLiability = isExistingLiability
+            , isInKind = isInKind
             , disabled = disabled
             }
         ++ (case ( amount, paymentDate, paymentMethod ) of
