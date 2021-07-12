@@ -14,23 +14,27 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
+import DataTable exposing (DataRow)
 import Disbursement as Disbursement
 import DisbursementInfo
-import Html exposing (Html, div, h6, span, text)
-import Html.Attributes exposing (class)
+import Html exposing (Html, div, h6, input, span, text)
+import Html.Attributes exposing (class, type_)
 import Html.Events exposing (onClick)
 import Json.Encode as Encode
 import LabelWithData exposing (labelWithContent, labelWithData)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
-import ReconcileItemsTable
+import TimeZone exposing (america__new_york)
+import Timestamp
 import Transaction
+import Transactions
 
 
 type alias Model =
     { txns : List Transaction.Model
     , txn : Transaction.Model
     , selected : List Transaction.Model
+    , related : List Transaction.Model
     , entityName : String
     , addressLine1 : String
     , addressLine2 : String
@@ -54,6 +58,7 @@ init txns txn =
     { txns = txns
     , txn = txn
     , selected = []
+    , related = getRelatedDisb txn txns
     , entityName = ""
     , addressLine1 = ""
     , addressLine2 = ""
@@ -72,6 +77,11 @@ init txns txn =
     }
 
 
+getRelatedDisb : Transaction.Model -> List Transaction.Model -> List Transaction.Model
+getRelatedDisb txn txns =
+    List.filter (\val -> (val.paymentMethod == txn.paymentMethod) && (val.amount < txn.amount) && not val.bankVerified && val.ruleVerified) txns
+
+
 view : Model -> Html Msg
 view model =
     div
@@ -85,8 +95,43 @@ view model =
             , addDisbButtonOrHeading model
             ]
                 ++ disbFormRow model
-                ++ [ ReconcileItemsTable.view [] [] ]
+                ++ [ reconcileItemsTable model.related model.selected ]
         ]
+
+
+labels : List String
+labels =
+    [ "Selected"
+    , "Date"
+    , "Entity Name"
+    , "Amount"
+    , "Purpose Code"
+    ]
+
+
+transactionRowMap : ( Maybe msg, Transaction.Model ) -> ( Maybe Msg, DataRow Msg )
+transactionRowMap ( maybeMsg, txn ) =
+    let
+        name =
+            Maybe.withDefault Transactions.missingContent (Maybe.map Transactions.uppercaseText <| Transactions.getEntityName txn)
+
+        amount =
+            Transactions.getAmount txn
+    in
+    ( Just <| RelatedTransactionToggled txn
+    , [ ( "Selected", input [ type_ "checkbox" ] [] )
+      , ( "Date / Time", text <| Timestamp.format (america__new_york ()) txn.initiatedTimestamp )
+      , ( "Entity Name", name )
+      , ( "Amount", amount )
+      , ( "Purpose Code", Transactions.getContext txn )
+      ]
+    )
+
+
+reconcileItemsTable : List Transaction.Model -> List Transaction.Model -> Html Msg
+reconcileItemsTable relatedTxns selectedTxns =
+    DataTable.view "Awaiting Transactions." labels transactionRowMap <|
+        List.map (\d -> ( Nothing, d )) relatedTxns
 
 
 addDisbButtonOrHeading : Model -> Html Msg
@@ -178,6 +223,7 @@ type Msg
     | PaymentMethodUpdated (Maybe PaymentMethod)
     | CheckNumberUpdated String
     | CreateDisbToggled
+    | RelatedTransactionToggled Transaction.Model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -227,6 +273,20 @@ update msg model =
 
         CreateDisbToggled ->
             ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
+
+        RelatedTransactionToggled clickedTxn ->
+            let
+                isMember =
+                    List.any (\txn -> txn.id == clickedTxn.id) model.selected
+
+                selected =
+                    if isMember then
+                        List.filter (\txn -> txn.id /= clickedTxn.id) model.selected
+
+                    else
+                        model.selected ++ [ clickedTxn ]
+            in
+            ( { model | selected = selected }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )

@@ -1,4 +1,19 @@
-module Transactions exposing (Model, decoder, getAmount, getEntityName, getStatus, labels, missingContent, statusContent, transactionRowMap, uppercaseText, verifiedContent, view, viewInteractive)
+module Transactions exposing
+    ( Model
+    , decoder
+    , getAmount
+    , getContext
+    , getEntityName
+    , getStatus
+    , labels
+    , missingContent
+    , statusContent
+    , transactionRowMap
+    , uppercaseText
+    , verifiedContent
+    , view
+    , viewInteractive
+    )
 
 import Asset
 import Bank
