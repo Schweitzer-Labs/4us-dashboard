@@ -74,7 +74,8 @@ view model =
             , paymentDate = Just ( model.paymentDate, PaymentDateUpdated )
             , paymentMethod = Just ( model.paymentMethod, PaymentMethodUpdated )
             , disabled = False
-            , isEditable = True
+            , isEditable = False
+            , toggleEdit = NoOp
             }
 
 

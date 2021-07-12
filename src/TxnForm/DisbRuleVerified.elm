@@ -39,6 +39,7 @@ type alias Model =
     , checkNumber : String
     , showBankData : Bool
     , loading : Bool
+    , disabled : Bool
     }
 
 
@@ -71,6 +72,7 @@ init txn =
     , checkNumber = ""
     , showBankData = False
     , loading = False
+    , disabled = True
     }
 
 
@@ -112,8 +114,9 @@ disbFormRow model =
         , amount = Nothing
         , paymentDate = Nothing
         , paymentMethod = Nothing
-        , disabled = True
+        , disabled = model.disabled
         , isEditable = True
+        , toggleEdit = ToggleEditForm
         }
 
 
@@ -134,6 +137,7 @@ type Msg
     | PaymentMethodUpdated (Maybe PaymentMethod)
     | CheckNumberUpdated String
     | ToggleBankData
+    | ToggleEditForm
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -186,6 +190,9 @@ update msg model =
 
         ToggleBankData ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
+
+        ToggleEditForm ->
+            ( { model | disabled = not model.disabled }, Cmd.none )
 
 
 encode : Disbursement.Model -> Encode.Value

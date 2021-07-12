@@ -2,14 +2,16 @@ module DisbursementInfo exposing (Config, view)
 
 import Address
 import AmountDate
+import Asset
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
-import Html exposing (Html, div, text)
+import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class, for)
+import Html.Events exposing (onClick)
 import PaymentMethod
 import PurposeCode
 import YesOrNo
@@ -32,15 +34,23 @@ type alias Config msg =
     , paymentMethod : Maybe (DataMsg.MsgMaybePaymentMethod msg)
     , disabled : Bool
     , isEditable : Bool
+    , toggleEdit : msg
     }
 
 
 view : Config msg -> List (Html msg)
-view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable } =
+view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable, toggleEdit } =
     [ Grid.row [ Row.attrs [ Spacing.mt2, class "fade-in" ] ]
         [ Grid.col
             []
-            [ Form.label [ for "recipient-name" ] [ text "Recipient Info" ]
+            [ Form.label [ for "recipient-name" ]
+                [ text "Recipient Info"
+                , if isEditable then
+                    span [ class "ml-2", onClick toggleEdit ] [ Asset.editGlyph [] ]
+
+                  else
+                    span [] []
+                ]
             , Input.text
                 [ Input.id "recipient-name"
                 , Input.onInput (toMsg entityName)

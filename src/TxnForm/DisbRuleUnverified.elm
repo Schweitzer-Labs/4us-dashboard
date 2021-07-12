@@ -47,6 +47,7 @@ type alias Model =
     , paymentMethod : Maybe PaymentMethod
     , checkNumber : String
     , createDisbIsVisible : Bool
+    , disabled : Bool
     }
 
 
@@ -71,6 +72,7 @@ init txns txn =
     , paymentMethod = Just txn.paymentMethod
     , checkNumber = ""
     , createDisbIsVisible = False
+    , disabled = True
     }
 
 
@@ -126,8 +128,9 @@ disbFormRow model =
             , amount = Just ( model.amount, AmountUpdated )
             , paymentDate = Just ( model.amount, PaymentDateUpdated )
             , paymentMethod = Nothing
-            , disabled = False
-            , isEditable = True
+            , disabled = model.disabled
+            , isEditable = False
+            , toggleEdit = NoOp
             }
 
     else
@@ -182,6 +185,7 @@ type Msg
     | PaymentMethodUpdated (Maybe PaymentMethod)
     | CheckNumberUpdated String
     | CreateDisbToggled
+    | EditDisbToggle
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -234,6 +238,9 @@ update msg model =
 
         CreateDisbToggled ->
             ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
+
+        EditDisbToggle ->
+            ( { model | disabled = not model.disabled }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
