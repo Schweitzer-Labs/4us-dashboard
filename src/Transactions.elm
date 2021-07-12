@@ -1,4 +1,4 @@
-module Transactions exposing (Label(..), Model, decoder, getAmount, getEntityName, getStatus, labels, missingContent, statusContent, stringToBool, transactionRowMap, uppercaseText, verifiedContent, view, viewInteractive)
+module Transactions exposing (Model, decoder, getAmount, getEntityName, getStatus, labels, missingContent, statusContent, transactionRowMap, uppercaseText, verifiedContent, view, viewInteractive)
 
 import Asset
 import Bank
@@ -27,17 +27,6 @@ decoder =
     Decode.list Transaction.decoder
 
 
-type Label
-    = DateTime
-    | EntityName
-    | Amount
-    | Context
-    | Rule
-    | PaymentMethod
-    | Status
-    | Verified
-
-
 labels : List String
 labels =
     [ "Date / Time"
@@ -51,16 +40,16 @@ labels =
     ]
 
 
-view : Committee.Model -> List (Html msg) -> List Transaction.Model -> Html msg
-view committee content txns =
-    DataTable.view "Awaiting Transactions." content labels (transactionRowMap committee) <|
+view : Committee.Model -> List Transaction.Model -> Html msg
+view committee txns =
+    DataTable.view "Awaiting Transactions." labels (transactionRowMap committee) <|
         List.map (\d -> ( Nothing, d )) <|
             List.reverse (sortBy .initiatedTimestamp txns)
 
 
-viewInteractive : Committee.Model -> (Transaction.Model -> msg) -> List (Html msg) -> List Transaction.Model -> Html msg
-viewInteractive committee selectMsg content txns =
-    DataTable.view "Awaiting Transactions." content labels (transactionRowMap committee) <|
+viewInteractive : Committee.Model -> (Transaction.Model -> msg) -> List Transaction.Model -> Html msg
+viewInteractive committee selectMsg txns =
+    DataTable.view "Awaiting Transactions." labels (transactionRowMap committee) <|
         List.map (\t -> ( Just <| selectMsg t, t )) <|
             List.reverse (sortBy .initiatedTimestamp txns)
 
@@ -203,13 +192,3 @@ verifiedContent val =
 
     else
         Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
-
-
-stringToBool : String -> Bool
-stringToBool str =
-    case str of
-        "true" ->
-            True
-
-        _ ->
-            False

@@ -51,8 +51,8 @@ transactionRowMap ( maybeMsg, transaction ) =
     )
 
 
-view : (Label -> msg) -> List (Html msg) -> List Transaction.Model -> Html msg
-view sortMsg content txns =
-    DataTable.view "Awaiting Transactions." content (labels sortMsg) transactionRowMap <|
+view : List String -> List Transaction.Model -> Html msg
+view content txns =
+    DataTable.view "Awaiting Transactions." content transactionRowMap <|
         List.map (\d -> ( Nothing, d )) <|
             List.reverse (sortBy .initiatedTimestamp txns)

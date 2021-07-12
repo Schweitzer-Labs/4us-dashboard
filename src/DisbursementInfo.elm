@@ -72,6 +72,9 @@ view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeC
                         ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] (PaymentMethod.dropdown (toData pm) (toMsg pm)) ]
                            ]
 
+                ( Just a, Just p, _ ) ->
+                    AmountDate.view { amount = a, paymentDate = p }
+
                 _ ->
                     []
            )

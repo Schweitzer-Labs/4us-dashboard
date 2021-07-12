@@ -23,6 +23,7 @@ import Json.Encode as Encode
 import LabelWithData exposing (labelWithContent, labelWithData)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
+import ReconcileItemsTable
 import Transaction
 
 
@@ -53,19 +54,19 @@ init txns txn =
     { txns = txns
     , txn = txn
     , selected = []
-    , entityName = Maybe.withDefault "" txn.entityName
-    , addressLine1 = Maybe.withDefault "" txn.addressLine1
-    , addressLine2 = Maybe.withDefault "" txn.addressLine2
-    , city = Maybe.withDefault "" txn.city
-    , state = Maybe.withDefault "" txn.state
-    , postalCode = Maybe.withDefault "" txn.postalCode
-    , purposeCode = txn.purposeCode
-    , isSubcontracted = txn.isSubcontracted
-    , isPartialPayment = txn.isPartialPayment
-    , isExistingLiability = txn.isExistingLiability
+    , entityName = ""
+    , addressLine1 = ""
+    , addressLine2 = ""
+    , city = ""
+    , state = ""
+    , postalCode = ""
+    , purposeCode = Nothing
+    , isSubcontracted = Nothing
+    , isPartialPayment = Nothing
+    , isExistingLiability = Nothing
     , amount = ""
     , paymentDate = ""
-    , paymentMethod = Nothing
+    , paymentMethod = Just txn.paymentMethod
     , checkNumber = ""
     , createDisbIsVisible = False
     }
@@ -79,57 +80,55 @@ view model =
         , h6 [ Spacing.mt4 ] [ text "Reconcile" ]
         , Grid.containerFluid
             []
+          <|
             [ reconcileInfoRow model.txn model.selected
-            , addDisbursementButton
+            , addDisbButtonOrHeading model
             ]
+                ++ disbFormRow model
+                ++ [ ReconcileItemsTable.view [] [] ]
         ]
 
 
-addDisbursementButton : Html Msg
-addDisbursementButton =
-    div [ Spacing.mt4, class "text-slate-blue font-size-medium hover-underline hover-pointer", onClick NoOp ]
+addDisbButtonOrHeading : Model -> Html Msg
+addDisbButtonOrHeading model =
+    if model.createDisbIsVisible then
+        div [ Spacing.mt4, class "font-size-large" ] [ text "Create Disbursement" ]
+
+    else
+        addDisbButton
+
+
+addDisbButton : Html Msg
+addDisbButton =
+    div [ Spacing.mt4, class "text-slate-blue font-size-medium hover-underline hover-pointer", onClick CreateDisbToggled ]
         [ Asset.plusCircleGlyph [ class "text-slate-blue font-size-22" ]
         , span [ Spacing.ml1, class "align-middle" ] [ text "Add Disbursement" ]
         ]
 
 
-type Msg
-    = NoOp
-    | EntityNameUpdated String
-    | AddressLine1Updated String
-    | AddressLine2Updated String
-    | CityUpdated String
-    | StateUpdated String
-    | PostalCodeUpdated String
-    | PurposeCodeUpdated (Maybe PurposeCode)
-    | IsSubcontractedUpdated (Maybe Bool)
-    | IsPartialPaymentUpdated (Maybe Bool)
-    | IsExistingLiabilityUpdated (Maybe Bool)
-    | AmountUpdated String
-    | PaymentDateUpdated String
-    | PaymentMethodUpdated (Maybe PaymentMethod)
-    | CheckNumberUpdated String
-
-
 disbFormRow : Model -> List (Html Msg)
 disbFormRow model =
-    DisbursementInfo.view
-        { entityName = ( model.entityName, EntityNameUpdated )
-        , addressLine1 = ( model.addressLine1, AddressLine1Updated )
-        , addressLine2 = ( model.addressLine2, AddressLine2Updated )
-        , city = ( model.city, CityUpdated )
-        , state = ( model.state, StateUpdated )
-        , postalCode = ( model.postalCode, PostalCodeUpdated )
-        , purposeCode = ( model.purposeCode, PurposeCodeUpdated )
-        , isSubcontracted = ( model.isSubcontracted, IsSubcontractedUpdated )
-        , isPartialPayment = ( model.isPartialPayment, IsPartialPaymentUpdated )
-        , isExistingLiability = ( model.isExistingLiability, IsExistingLiabilityUpdated )
-        , amount = Nothing
-        , paymentDate = Nothing
-        , paymentMethod = Nothing
-        , disabled = True
-        , isEditable = True
-        }
+    if model.createDisbIsVisible then
+        DisbursementInfo.view
+            { entityName = ( model.entityName, EntityNameUpdated )
+            , addressLine1 = ( model.addressLine1, AddressLine1Updated )
+            , addressLine2 = ( model.addressLine2, AddressLine2Updated )
+            , city = ( model.city, CityUpdated )
+            , state = ( model.state, StateUpdated )
+            , postalCode = ( model.postalCode, PostalCodeUpdated )
+            , purposeCode = ( model.purposeCode, PurposeCodeUpdated )
+            , isSubcontracted = ( model.isSubcontracted, IsSubcontractedUpdated )
+            , isPartialPayment = ( model.isPartialPayment, IsPartialPaymentUpdated )
+            , isExistingLiability = ( model.isExistingLiability, IsExistingLiabilityUpdated )
+            , amount = Just ( model.amount, AmountUpdated )
+            , paymentDate = Just ( model.amount, PaymentDateUpdated )
+            , paymentMethod = Nothing
+            , disabled = False
+            , isEditable = True
+            }
+
+    else
+        []
 
 
 matchesIcon : Bool -> Html msg
@@ -160,6 +159,25 @@ reconcileInfoRow bankTxn selectedTxns =
         , Grid.col [ Col.md4 ] [ labelWithData "Total Selected" <| Cents.toDollar selectedTotal ]
         , Grid.col [ Col.md4 ] [ labelWithBankVerificationIcon "Matches" matches ]
         ]
+
+
+type Msg
+    = NoOp
+    | EntityNameUpdated String
+    | AddressLine1Updated String
+    | AddressLine2Updated String
+    | CityUpdated String
+    | StateUpdated String
+    | PostalCodeUpdated String
+    | PurposeCodeUpdated (Maybe PurposeCode)
+    | IsSubcontractedUpdated (Maybe Bool)
+    | IsPartialPaymentUpdated (Maybe Bool)
+    | IsExistingLiabilityUpdated (Maybe Bool)
+    | AmountUpdated String
+    | PaymentDateUpdated String
+    | PaymentMethodUpdated (Maybe PaymentMethod)
+    | CheckNumberUpdated String
+    | CreateDisbToggled
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -206,6 +224,9 @@ update msg model =
 
         IsExistingLiabilityUpdated bool ->
             ( { model | isExistingLiability = bool }, Cmd.none )
+
+        CreateDisbToggled ->
+            ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )

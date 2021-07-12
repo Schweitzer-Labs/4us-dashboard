@@ -127,7 +127,7 @@ loadedView : Model -> Html Msg
 loadedView model =
     div [ class "fade-in" ]
         [ dropdowns model
-        , Transactions.viewInteractive model.committee ShowTxnFormModal [] model.transactions
+        , Transactions.viewInteractive model.committee ShowTxnFormModal model.transactions
         , createContributionModal model
         , generateDisclosureModal model
         , createDisbursementModal model
@@ -693,11 +693,6 @@ update msg model =
                     CreateDisbursement.update subMsg model.createDisbursementModal
             in
             ( { model | createDisbursementModal = subModel }, Cmd.map CreateDisbursementModalUpdate subCmd )
-
-
-applyFilter : Transactions.Label -> (Disbursement.Model -> String) -> Model -> Model
-applyFilter label field model =
-    model
 
 
 generateReport : Cmd msg

@@ -21,12 +21,11 @@ type alias DataRow msg =
 
 view :
     String
-    -> Actions msg
     -> List String
     -> (( Maybe msg, a ) -> ( Maybe msg, DataRow msg ))
     -> List ( Maybe msg, a )
     -> Html msg
-view emptyCopy actions labels mapper data =
+view emptyCopy labels mapper data =
     let
         table =
             Table.table
@@ -38,14 +37,7 @@ view emptyCopy actions labels mapper data =
                 , thead =
                     Table.thead
                         []
-                    <|
-                        (if List.isEmpty actions then
-                            []
-
-                         else
-                            [ actionsRow actions ]
-                        )
-                            ++ [ labelRow labels ]
+                        [ labelRow labels ]
                 , tbody =
                     Table.tbody [] <| List.map dataRow <| List.map mapper data
                 }
