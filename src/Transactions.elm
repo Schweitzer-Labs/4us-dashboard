@@ -58,14 +58,14 @@ labels =
 view : Committee.Model -> List Transaction.Model -> Html msg
 view committee txns =
     DataTable.view "Awaiting Transactions." labels (transactionRowMap committee) <|
-        List.map (\d -> ( Nothing, d )) <|
+        List.map (\d -> ( Nothing, Nothing, d )) <|
             List.reverse (sortBy .initiatedTimestamp txns)
 
 
 viewInteractive : Committee.Model -> (Transaction.Model -> msg) -> List Transaction.Model -> Html msg
 viewInteractive committee selectMsg txns =
     DataTable.view "Awaiting Transactions." labels (transactionRowMap committee) <|
-        List.map (\t -> ( Just <| selectMsg t, t )) <|
+        List.map (\t -> ( Nothing, Just <| selectMsg t, t )) <|
             List.reverse (sortBy .initiatedTimestamp txns)
 
 
@@ -158,8 +158,8 @@ uppercaseText str =
     span [ class "text-capitalize" ] [ text str ]
 
 
-transactionRowMap : Committee.Model -> ( Maybe msg, Transaction.Model ) -> ( Maybe msg, DataRow msg )
-transactionRowMap committee ( maybeMsg, transaction ) =
+transactionRowMap : Committee.Model -> ( Maybe a, Maybe msg, Transaction.Model ) -> ( Maybe msg, DataRow msg )
+transactionRowMap committee ( _, maybeMsg, transaction ) =
     let
         name =
             Maybe.withDefault missingContent (Maybe.map uppercaseText <| getEntityName transaction)

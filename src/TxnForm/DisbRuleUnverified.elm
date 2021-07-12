@@ -9,6 +9,7 @@ module TxnForm.DisbRuleUnverified exposing
 
 import Asset
 import BankData
+import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
@@ -79,7 +80,7 @@ init txns txn =
 
 getRelatedDisb : Transaction.Model -> List Transaction.Model -> List Transaction.Model
 getRelatedDisb txn txns =
-    List.filter (\val -> (val.paymentMethod == txn.paymentMethod) && (val.amount < txn.amount) && not val.bankVerified && val.ruleVerified) txns
+    List.filter (\val -> (val.paymentMethod == txn.paymentMethod) && (val.amount <= txn.amount) && not val.bankVerified && val.ruleVerified) txns
 
 
 view : Model -> Html Msg
@@ -109,17 +110,30 @@ labels =
     ]
 
 
-transactionRowMap : ( Maybe msg, Transaction.Model ) -> ( Maybe Msg, DataRow Msg )
-transactionRowMap ( maybeMsg, txn ) =
+transactionRowMap : ( Maybe (List Transaction.Model), Maybe msg, Transaction.Model ) -> ( Maybe Msg, DataRow Msg )
+transactionRowMap ( maybeSelected, maybeMsg, txn ) =
     let
         name =
             Maybe.withDefault Transactions.missingContent (Maybe.map Transactions.uppercaseText <| Transactions.getEntityName txn)
 
         amount =
             Transactions.getAmount txn
+
+        selected =
+            Maybe.withDefault [] maybeSelected
+
+        isChecked =
+            isSelected txn selected
     in
-    ( Just <| RelatedTransactionToggled txn
-    , [ ( "Selected", input [ type_ "checkbox" ] [] )
+    ( Nothing
+    , [ ( "Selected"
+        , Checkbox.checkbox
+            [ Checkbox.id txn.id
+            , Checkbox.checked isChecked
+            , Checkbox.onCheck <| RelatedTransactionClicked txn
+            ]
+            ""
+        )
       , ( "Date / Time", text <| Timestamp.format (america__new_york ()) txn.initiatedTimestamp )
       , ( "Entity Name", name )
       , ( "Amount", amount )
@@ -131,7 +145,7 @@ transactionRowMap ( maybeMsg, txn ) =
 reconcileItemsTable : List Transaction.Model -> List Transaction.Model -> Html Msg
 reconcileItemsTable relatedTxns selectedTxns =
     DataTable.view "Awaiting Transactions." labels transactionRowMap <|
-        List.map (\d -> ( Nothing, d )) relatedTxns
+        List.map (\d -> ( Just selectedTxns, Nothing, d )) relatedTxns
 
 
 addDisbButtonOrHeading : Model -> Html Msg
@@ -179,7 +193,7 @@ disbFormRow model =
 matchesIcon : Bool -> Html msg
 matchesIcon val =
     if val then
-        Asset.circleCheckGlyph [ class "text-success font-size-large" ]
+        Asset.circleCheckGlyph [ class "text-green font-size-large" ]
 
     else
         Asset.timesGlyph [ class "text-danger font-size-large" ]
@@ -223,7 +237,7 @@ type Msg
     | PaymentMethodUpdated (Maybe PaymentMethod)
     | CheckNumberUpdated String
     | CreateDisbToggled
-    | RelatedTransactionToggled Transaction.Model
+    | RelatedTransactionClicked Transaction.Model Bool
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -274,22 +288,24 @@ update msg model =
         CreateDisbToggled ->
             ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
 
-        RelatedTransactionToggled clickedTxn ->
+        RelatedTransactionClicked clickedTxn isChecked ->
             let
-                isMember =
-                    List.any (\txn -> txn.id == clickedTxn.id) model.selected
-
                 selected =
-                    if isMember then
-                        List.filter (\txn -> txn.id /= clickedTxn.id) model.selected
+                    if isChecked then
+                        model.selected ++ [ clickedTxn ]
 
                     else
-                        model.selected ++ [ clickedTxn ]
+                        List.filter (\txn -> txn.id /= clickedTxn.id) model.selected
             in
             ( { model | selected = selected }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
+
+
+isSelected : Transaction.Model -> List Transaction.Model -> Bool
+isSelected txn selected =
+    List.any (\val -> val.id == txn.id) selected
 
 
 encode : Disbursement.Model -> Encode.Value
