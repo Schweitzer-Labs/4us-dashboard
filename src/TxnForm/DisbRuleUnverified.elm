@@ -55,6 +55,7 @@ type alias Model =
     , createDisbIsVisible : Bool
     , disabled : Bool
     , isSubmitDisabled : Bool
+    , maybeError : Maybe String
     }
 
 
@@ -82,6 +83,7 @@ init txns txn =
     , createDisbIsVisible = False
     , disabled = True
     , isSubmitDisabled = False
+    , maybeError = Nothing
     }
 
 
@@ -193,6 +195,7 @@ disbFormRow model =
             , disabled = model.disabled
             , isEditable = False
             , toggleEdit = NoOp
+            , maybeError = model.maybeError
             }
             ++ [ div [ Spacing.mt4, Spacing.mb4 ] [ SubmitButton.submitButton "Create" NoOp False False ] ]
 

@@ -20,7 +20,6 @@ import Config exposing (Config)
 import CreateContribution
 import CreateDisbursement
 import Delay
-import Disbursement as Disbursement
 import EntityType
 import File.Download as Download
 import FileDisclosure
@@ -48,6 +47,7 @@ import Transactions
 import TxnForm as TxnForm
 import TxnForm.DisbRuleUnverified as DisbRuleUnverified
 import TxnForm.DisbRuleVerified as DisbRuleVerified
+import Validate exposing (validate)
 
 
 
@@ -623,7 +623,7 @@ update msg model =
                         ValidationFailure errList ->
                             ( { model
                                 | createDisbursementModal =
-                                    CreateDisbursement.setError model.createDisbursementModal <|
+                                    CreateDisbursement.fromError model.createDisbursementModal <|
                                         Maybe.withDefault "Unexplained error" <|
                                             List.head errList
                                 , createDisbursementSubmitting = False
@@ -634,7 +634,7 @@ update msg model =
                 Err err ->
                     ( { model
                         | createDisbursementModal =
-                            CreateDisbursement.setError model.createDisbursementModal <|
+                            CreateDisbursement.fromError model.createDisbursementModal <|
                                 Api.decodeError err
                         , createContributionSubmitting = False
                       }
@@ -683,11 +683,20 @@ update msg model =
             )
 
         CreateDisbursementSubmit ->
-            ( { model
-                | createDisbursementSubmitting = True
-              }
-            , createDisbursement model
-            )
+            case validate CreateDisbursement.validator model.createDisbursementModal of
+                Err errors ->
+                    let
+                        error =
+                            Maybe.withDefault "Form error" <| List.head errors
+                    in
+                    ( { model | createDisbursementModal = CreateDisbursement.fromError model.createDisbursementModal error }, Cmd.none )
+
+                Ok val ->
+                    ( { model
+                        | createDisbursementSubmitting = True
+                      }
+                    , createDisbursement model
+                    )
 
         CreateDisbursementModalAnimate visibility ->
             ( { model | createDisbursementModalVisibility = visibility }, Cmd.none )

@@ -1,10 +1,20 @@
-module CreateDisbursement exposing (Model, Msg(..), init, setError, update, view)
+module CreateDisbursement exposing
+    ( Model
+    , Msg(..)
+    , fromError
+    , init
+    , update
+    , validator
+    , view
+    )
 
+import Address exposing (postalCodeToErrors)
 import Bootstrap.Grid as Grid exposing (Column)
 import DisbursementInfo
 import Html exposing (Html)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
+import Validate exposing (Validator, fromErrors, ifBlank, ifInvalidEmail)
 
 
 type alias Model =
@@ -23,7 +33,7 @@ type alias Model =
     , paymentDate : String
     , paymentMethod : Maybe PaymentMethod
     , checkNumber : String
-    , error : String
+    , maybeError : Maybe String
     , isSubmitDisabled : Bool
     }
 
@@ -45,14 +55,9 @@ init =
     , paymentDate = ""
     , paymentMethod = Nothing
     , checkNumber = ""
-    , error = ""
+    , maybeError = Nothing
     , isSubmitDisabled = False
     }
-
-
-setError : Model -> String -> Model
-setError model str =
-    { model | error = str }
 
 
 view : Model -> Html Msg
@@ -78,6 +83,7 @@ view model =
             , disabled = False
             , isEditable = False
             , toggleEdit = NoOp
+            , maybeError = model.maybeError
             }
 
 
@@ -150,3 +156,36 @@ update msg model =
 
         IsInKindUpdated bool ->
             ( { model | isInKind = bool, isSubmitDisabled = True }, Cmd.none )
+
+
+validator : Validator String Model
+validator =
+    Validate.firstError
+        [ ifBlank .entityName "Entity name is missing."
+        , ifBlank .addressLine1 "Address 1 is missing."
+        , ifBlank .city "City is missing."
+        , ifBlank .state "State is missing."
+        , ifBlank .postalCode "Postal Code is missing."
+        , postalCodeValidator
+        , amountValidator
+        ]
+
+
+amountValidator : Validator String Model
+amountValidator =
+    ifBlank .amount "Amount is missing."
+
+
+postalCodeValidator : Validator String Model
+postalCodeValidator =
+    fromErrors postalCodeOnModelToErrors
+
+
+postalCodeOnModelToErrors : Model -> List String
+postalCodeOnModelToErrors model =
+    postalCodeToErrors model.postalCode
+
+
+fromError : Model -> String -> Model
+fromError model error =
+    { model | maybeError = Just error }

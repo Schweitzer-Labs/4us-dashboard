@@ -41,6 +41,7 @@ type alias Model =
     , loading : Bool
     , disabled : Bool
     , isSubmitDisabled : Bool
+    , maybeError : Maybe String
     }
 
 
@@ -75,6 +76,7 @@ init txn =
     , loading = False
     , disabled = True
     , isSubmitDisabled = False
+    , maybeError = Nothing
     }
 
 
@@ -119,6 +121,7 @@ disbFormRow model =
         , disabled = model.disabled
         , isEditable = True
         , toggleEdit = ToggleEditForm
+        , maybeError = model.maybeError
         }
 
 
