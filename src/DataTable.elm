@@ -22,8 +22,8 @@ type alias DataRow msg =
 view :
     String
     -> List String
-    -> (( Maybe msg, a ) -> ( Maybe msg, DataRow msg ))
-    -> List ( Maybe msg, a )
+    -> (( Maybe b, Maybe msg, a ) -> ( Maybe msg, DataRow msg ))
+    -> List ( Maybe b, Maybe msg, a )
     -> Html msg
 view emptyCopy labels mapper data =
     let

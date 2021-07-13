@@ -9,28 +9,34 @@ module TxnForm.DisbRuleUnverified exposing
 
 import Asset
 import BankData
+import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
+import DataTable exposing (DataRow)
 import Disbursement as Disbursement
 import DisbursementInfo
-import Html exposing (Html, div, h6, span, text)
-import Html.Attributes exposing (class)
+import Html exposing (Html, div, h6, input, span, text)
+import Html.Attributes exposing (class, type_)
 import Html.Events exposing (onClick)
 import Json.Encode as Encode
 import LabelWithData exposing (labelWithContent, labelWithData)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
-import ReconcileItemsTable
+import SubmitButton
+import TimeZone exposing (america__new_york)
+import Timestamp
 import Transaction
+import Transactions
 
 
 type alias Model =
     { txns : List Transaction.Model
     , txn : Transaction.Model
     , selected : List Transaction.Model
+    , related : List Transaction.Model
     , entityName : String
     , addressLine1 : String
     , addressLine2 : String
@@ -56,6 +62,7 @@ init txns txn =
     { txns = txns
     , txn = txn
     , selected = []
+    , related = getRelatedDisb txn txns
     , entityName = ""
     , addressLine1 = ""
     , addressLine2 = ""
@@ -76,6 +83,11 @@ init txns txn =
     }
 
 
+getRelatedDisb : Transaction.Model -> List Transaction.Model -> List Transaction.Model
+getRelatedDisb txn txns =
+    List.filter (\val -> (val.paymentMethod == txn.paymentMethod) && (val.amount <= txn.amount) && not val.bankVerified && val.ruleVerified) txns
+
+
 view : Model -> Html Msg
 view model =
     div
@@ -89,14 +101,62 @@ view model =
             , addDisbButtonOrHeading model
             ]
                 ++ disbFormRow model
-                ++ [ ReconcileItemsTable.view [] [] ]
+                ++ [ reconcileItemsTable model.related model.selected ]
         ]
+
+
+labels : List String
+labels =
+    [ "Selected"
+    , "Date"
+    , "Entity Name"
+    , "Amount"
+    , "Purpose Code"
+    ]
+
+
+transactionRowMap : ( Maybe (List Transaction.Model), Maybe msg, Transaction.Model ) -> ( Maybe Msg, DataRow Msg )
+transactionRowMap ( maybeSelected, maybeMsg, txn ) =
+    let
+        name =
+            Maybe.withDefault Transactions.missingContent (Maybe.map Transactions.uppercaseText <| Transactions.getEntityName txn)
+
+        amount =
+            Transactions.getAmount txn
+
+        selected =
+            Maybe.withDefault [] maybeSelected
+
+        isChecked =
+            isSelected txn selected
+    in
+    ( Nothing
+    , [ ( "Selected"
+        , Checkbox.checkbox
+            [ Checkbox.id txn.id
+            , Checkbox.checked isChecked
+            , Checkbox.onCheck <| RelatedTransactionClicked txn
+            ]
+            ""
+        )
+      , ( "Date / Time", text <| Timestamp.format (america__new_york ()) txn.initiatedTimestamp )
+      , ( "Entity Name", name )
+      , ( "Amount", amount )
+      , ( "Purpose Code", Transactions.getContext txn )
+      ]
+    )
+
+
+reconcileItemsTable : List Transaction.Model -> List Transaction.Model -> Html Msg
+reconcileItemsTable relatedTxns selectedTxns =
+    DataTable.view "Awaiting Transactions." labels transactionRowMap <|
+        List.map (\d -> ( Just selectedTxns, Nothing, d )) relatedTxns
 
 
 addDisbButtonOrHeading : Model -> Html Msg
 addDisbButtonOrHeading model =
     if model.createDisbIsVisible then
-        div [ Spacing.mt4, class "font-size-large" ] [ text "Create Disbursement" ]
+        div [ Spacing.mt4, class "font-size-large", onClick CreateDisbToggled ] [ text "Create Disbursement" ]
 
     else
         addDisbButton
@@ -132,6 +192,7 @@ disbFormRow model =
             , isEditable = False
             , toggleEdit = NoOp
             }
+            ++ [ div [ Spacing.mt4, Spacing.mb4 ] [ SubmitButton.submitButton "Create" NoOp False False ] ]
 
     else
         []
@@ -140,7 +201,7 @@ disbFormRow model =
 matchesIcon : Bool -> Html msg
 matchesIcon val =
     if val then
-        Asset.circleCheckGlyph [ class "text-success font-size-large" ]
+        Asset.circleCheckGlyph [ class "text-green font-size-large" ]
 
     else
         Asset.timesGlyph [ class "text-danger font-size-large" ]
@@ -186,6 +247,7 @@ type Msg
     | CheckNumberUpdated String
     | CreateDisbToggled
     | EditDisbToggle
+    | RelatedTransactionClicked Transaction.Model Bool
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -242,8 +304,24 @@ update msg model =
         EditDisbToggle ->
             ( { model | disabled = not model.disabled }, Cmd.none )
 
+        RelatedTransactionClicked clickedTxn isChecked ->
+            let
+                selected =
+                    if isChecked then
+                        model.selected ++ [ clickedTxn ]
+
+                    else
+                        List.filter (\txn -> txn.id /= clickedTxn.id) model.selected
+            in
+            ( { model | selected = selected }, Cmd.none )
+
         NoOp ->
             ( model, Cmd.none )
+
+
+isSelected : Transaction.Model -> List Transaction.Model -> Bool
+isSelected txn selected =
+    List.any (\val -> val.id == txn.id) selected
 
 
 encode : Disbursement.Model -> Encode.Value
