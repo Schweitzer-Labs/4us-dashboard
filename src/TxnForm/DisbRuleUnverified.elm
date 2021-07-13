@@ -54,6 +54,7 @@ type alias Model =
     , checkNumber : String
     , createDisbIsVisible : Bool
     , disabled : Bool
+    , isSubmitDisabled : Bool
     }
 
 
@@ -80,6 +81,7 @@ init txns txn =
     , checkNumber = ""
     , createDisbIsVisible = False
     , disabled = True
+    , isSubmitDisabled = False
     }
 
 
@@ -296,7 +298,7 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool }, Cmd.none )
+            ( { model | isInKind = bool, isSubmitDisabled = True }, Cmd.none )
 
         CreateDisbToggled ->
             ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )

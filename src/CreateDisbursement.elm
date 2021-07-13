@@ -24,6 +24,7 @@ type alias Model =
     , paymentMethod : Maybe PaymentMethod
     , checkNumber : String
     , error : String
+    , isSubmitDisabled : Bool
     }
 
 
@@ -45,6 +46,7 @@ init =
     , paymentMethod = Nothing
     , checkNumber = ""
     , error = ""
+    , isSubmitDisabled = False
     }
 
 
@@ -147,4 +149,4 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool }, Cmd.none )
+            ( { model | isInKind = bool, isSubmitDisabled = True }, Cmd.none )

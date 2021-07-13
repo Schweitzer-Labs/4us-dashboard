@@ -148,6 +148,7 @@ createDisbursementModal model =
         , submitMsg = CreateDisbursementSubmit
         , submitText = "Create Disbursement"
         , isSubmitting = model.createDisbursementSubmitting
+        , isSubmitDisabled = model.createDisbursementModal.isSubmitDisabled
         , visibility = model.createDisbursementModalVisibility
         }
 
@@ -164,6 +165,7 @@ createContributionModal model =
         , submitMsg = SubmitCreateContribution
         , submitText = "Submit"
         , isSubmitting = model.createContributionSubmitting
+        , isSubmitDisabled = False
         , visibility = model.createContributionModalVisibility
         }
 
@@ -180,6 +182,7 @@ disbRuleUnverifiedModal model =
         , submitMsg = DisbRuleUnverifiedSubmit
         , submitText = "Reconcile"
         , isSubmitting = model.disbRuleUnverifiedSubmitting
+        , isSubmitDisabled = model.disbRuleUnverifiedModal.isSubmitDisabled
         , visibility = model.disbRuleUnverifiedModalVisibility
         }
 
@@ -196,6 +199,7 @@ disbRuleVerifiedModal model =
         , submitMsg = DisbRuleVerifiedSubmit
         , submitText = "Save"
         , isSubmitting = model.disbRuleVerifiedSubmitting
+        , isSubmitDisabled = model.disbRuleVerifiedModal.isSubmitDisabled
         , visibility = model.disbRuleVerifiedModalVisibility
         }
 
