@@ -25,6 +25,7 @@ import Json.Encode as Encode
 import LabelWithData exposing (labelWithContent, labelWithData)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
+import SubmitButton
 import TimeZone exposing (america__new_york)
 import Timestamp
 import Transaction
@@ -151,7 +152,7 @@ reconcileItemsTable relatedTxns selectedTxns =
 addDisbButtonOrHeading : Model -> Html Msg
 addDisbButtonOrHeading model =
     if model.createDisbIsVisible then
-        div [ Spacing.mt4, class "font-size-large" ] [ text "Create Disbursement" ]
+        div [ Spacing.mt4, class "font-size-large", onClick CreateDisbToggled ] [ text "Create Disbursement" ]
 
     else
         addDisbButton
@@ -185,6 +186,7 @@ disbFormRow model =
             , disabled = False
             , isEditable = True
             }
+            ++ [ div [ Spacing.mt4, Spacing.mb4 ] [ SubmitButton.submitButton "Create" NoOp False False ] ]
 
     else
         []
