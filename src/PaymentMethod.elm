@@ -125,7 +125,7 @@ toDisplayString src =
 
 fromMaybeToString : Maybe PaymentMethod -> String
 fromMaybeToString =
-    Maybe.withDefault "" << Maybe.map toDataString
+    Maybe.withDefault "---" << Maybe.map toDataString
 
 
 fromString : String -> Maybe PaymentMethod
@@ -188,7 +188,7 @@ dropdown maybePaymentMethod updateMsg =
             (++)
                 [ Select.item
                     [ Attribute.selected (maybePaymentMethod == Nothing)
-                    , Attribute.value ""
+                    , Attribute.value "---"
                     ]
                     [ text "---" ]
                 ]
