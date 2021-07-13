@@ -11,8 +11,8 @@ type alias Actions msg =
     List (Html msg)
 
 
-type alias Labels msg =
-    List ( msg, String )
+type alias Labels =
+    List String
 
 
 type alias DataRow msg =
@@ -21,12 +21,11 @@ type alias DataRow msg =
 
 view :
     String
-    -> Actions msg
-    -> Labels msg
+    -> List String
     -> (( Maybe msg, a ) -> ( Maybe msg, DataRow msg ))
     -> List ( Maybe msg, a )
     -> Html msg
-view emptyCopy actions labels mapper data =
+view emptyCopy labels mapper data =
     let
         table =
             Table.table
@@ -38,14 +37,7 @@ view emptyCopy actions labels mapper data =
                 , thead =
                     Table.thead
                         []
-                    <|
-                        (if List.isEmpty actions then
-                            []
-
-                         else
-                            [ actionsRow actions ]
-                        )
-                            ++ [ labelRow labels ]
+                        [ labelRow labels ]
                 , tbody =
                     Table.tbody [] <| List.map dataRow <| List.map mapper data
                 }
@@ -62,16 +54,15 @@ emptyText copy =
     div [ class "text-center", Spacing.mt5 ] [ text copy ]
 
 
-stickyTh : ( msg, String ) -> Cell msg
-stickyTh ( msg, str ) =
+stickyTh : String -> Cell msg
+stickyTh str =
     Table.th
-        [ Table.cellAttr <| class "bg-white shadow-sm hover-underline hover-pointer"
-        , Table.cellAttr <| onClick msg
+        [ Table.cellAttr <| class "bg-white shadow-sm"
         ]
         [ text str ]
 
 
-labelRow : Labels msg -> Table.Row msg
+labelRow : Labels -> Table.Row msg
 labelRow labels =
     Table.tr [] <| List.map stickyTh labels
 

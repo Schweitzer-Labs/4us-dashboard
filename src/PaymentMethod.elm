@@ -1,10 +1,10 @@
-module PaymentMethod exposing (PaymentMethod(..), decoder, dropdown, select, toDataString, toDisplayString)
+module PaymentMethod exposing (PaymentMethod(..), decoder, dropdown, fromMaybeToString, select, toDataString, toDisplayString)
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Form.Select as Select
 import Html exposing (Html, text)
-import Html.Attributes exposing (for, value)
+import Html.Attributes as Attribute exposing (for, value)
 import Json.Decode as Decode exposing (Decoder)
 import SelectRadio
 
@@ -123,6 +123,42 @@ toDisplayString src =
             "Other"
 
 
+fromMaybeToString : Maybe PaymentMethod -> String
+fromMaybeToString =
+    Maybe.withDefault "" << Maybe.map toDataString
+
+
+fromString : String -> Maybe PaymentMethod
+fromString str =
+    case str of
+        "Ach" ->
+            Just Ach
+
+        "Wire" ->
+            Just Wire
+
+        "Check" ->
+            Just Check
+
+        "Credit" ->
+            Just Credit
+
+        "Debit" ->
+            Just Debit
+
+        "Transfer" ->
+            Just Transfer
+
+        "InKind" ->
+            Just InKind
+
+        "Other" ->
+            Just Other
+
+        _ ->
+            Nothing
+
+
 type AccountType
     = Checking
     | Saving
@@ -138,18 +174,33 @@ select updateMsg paymentMethodString =
         ]
 
 
-dropdown : (String -> msg) -> Html msg
-dropdown updateMsg =
-    Form.group
+dropdown : Maybe PaymentMethod -> (Maybe PaymentMethod -> msg) -> List (Html msg)
+dropdown maybePaymentMethod updateMsg =
+    [ Form.group
         []
-        [ Form.label [ for "payment-method" ] [ text "Payment Method" ]
+        [ Form.label [ for "paymentMethod" ] [ text "Payment Method" ]
         , Select.select
-            [ Select.id "payment-method"
-            , Select.onChange updateMsg
+            [ Select.id "paymentMethod"
+            , Select.onChange (fromString >> updateMsg)
+            , Select.attrs <| [ Attribute.value <| fromMaybeToString maybePaymentMethod ]
             ]
           <|
-            (++) [ Select.item [] [ text "---" ] ] <|
+            (++)
+                [ Select.item
+                    [ Attribute.selected (maybePaymentMethod == Nothing)
+                    , Attribute.value ""
+                    ]
+                    [ text "---" ]
+                ]
+            <|
                 List.map
-                    (\paymentMethod -> Select.item [ value (toDataString paymentMethod) ] [ text (toDisplayString paymentMethod) ])
+                    (\paymentMethod ->
+                        Select.item
+                            [ Attribute.value (toDataString paymentMethod)
+                            , Attribute.selected (Just paymentMethod == maybePaymentMethod)
+                            ]
+                            [ text (toDisplayString paymentMethod) ]
+                    )
                     paymentMethods
         ]
+    ]

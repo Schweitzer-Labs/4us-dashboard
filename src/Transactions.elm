@@ -1,4 +1,4 @@
-module Transactions exposing (Label(..), Model, decoder, labels, statusContent, stringToBool, transactionRowMap, verifiedContent, view)
+module Transactions exposing (Model, decoder, getAmount, getEntityName, getStatus, labels, missingContent, statusContent, transactionRowMap, uppercaseText, verifiedContent, view, viewInteractive)
 
 import Asset
 import Bank
@@ -27,34 +27,30 @@ decoder =
     Decode.list Transaction.decoder
 
 
-type Label
-    = DateTime
-    | EntityName
-    | Amount
-    | Context
-    | Rule
-    | PaymentMethod
-    | Status
-    | Verified
-
-
-labels : (Label -> msg) -> List ( msg, String )
-labels sortMsg =
-    [ ( sortMsg DateTime, "Date / Time" )
-    , ( sortMsg EntityName, "Entity Name" )
-    , ( sortMsg Context, "Entity Type" )
-    , ( sortMsg Amount, "Amount" )
-    , ( sortMsg Verified, "Verified" )
-    , ( sortMsg PaymentMethod, "Payment Method" )
-    , ( sortMsg PaymentMethod, "Processor" )
-    , ( sortMsg Status, "Status" )
+labels : List String
+labels =
+    [ "Date / Time"
+    , "Entity Name"
+    , "Entity Type"
+    , "Amount"
+    , "Verified"
+    , "Payment Method"
+    , "Processor"
+    , "Status"
     ]
 
 
-view : Committee.Model -> (Label -> msg) -> List (Html msg) -> List Transaction.Model -> Html msg
-view committee sortMsg content txns =
-    DataTable.view "Awaiting Transactions." content (labels sortMsg) (transactionRowMap committee) <|
+view : Committee.Model -> List Transaction.Model -> Html msg
+view committee txns =
+    DataTable.view "Awaiting Transactions." labels (transactionRowMap committee) <|
         List.map (\d -> ( Nothing, d )) <|
+            List.reverse (sortBy .initiatedTimestamp txns)
+
+
+viewInteractive : Committee.Model -> (Transaction.Model -> msg) -> List Transaction.Model -> Html msg
+viewInteractive committee selectMsg txns =
+    DataTable.view "Awaiting Transactions." labels (transactionRowMap committee) <|
+        List.map (\t -> ( Just <| selectMsg t, t )) <|
             List.reverse (sortBy .initiatedTimestamp txns)
 
 
@@ -196,13 +192,3 @@ verifiedContent val =
 
     else
         Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
-
-
-stringToBool : String -> Bool
-stringToBool str =
-    case str of
-        "true" ->
-            True
-
-        _ ->
-            False

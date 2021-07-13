@@ -71,7 +71,7 @@ warningRows aggs =
             [ Row.attrs [] ]
             [ Grid.col
                 []
-                [ a [ Route.href Route.NeedsReview ] [ AppDialogue.warning <| text errorMessage ]
+                [ a [ Route.href Route.Transactions ] [ AppDialogue.warning <| text errorMessage ]
                 ]
             ]
         ]

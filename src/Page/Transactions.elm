@@ -1,9 +1,9 @@
 module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, update, view)
 
 import Aggregations as Aggregations
-import Api exposing (Cred, Token)
+import Api exposing (Token)
 import Api.Endpoint exposing (Endpoint(..))
-import Api.GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, encodeTransactionQuery, getTransactions, graphQLErrorDecoder, transactionQuery)
+import Api.GraphQL as GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, getTransactions, graphQLErrorDecoder)
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Grid as Grid exposing (Column)
@@ -14,14 +14,13 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
 import Cents
+import Cognito exposing (loginUrl)
 import Committee
 import Config exposing (Config)
-import Config.Env exposing (loginUrl)
 import CreateContribution
 import CreateDisbursement
 import Delay
 import Disbursement as Disbursement
-import Disbursements
 import EntityType
 import File.Download as Download
 import FileDisclosure
@@ -34,15 +33,21 @@ import Json.Decode as Decode exposing (string)
 import Json.Encode as Encode exposing (Value)
 import Loading
 import PaymentMethod
+import PlatformModal
 import PurposeCode
 import Session exposing (Session)
 import SubmitButton exposing (submitButton)
 import Task exposing (Task)
 import Time
 import Timestamp exposing (dateStringToMillis)
+import Transaction
+import Transaction.TransactionData exposing (TransactionData)
 import Transaction.TransactionsData as TransactionsData exposing (TransactionsData)
 import TransactionType exposing (TransactionType(..))
 import Transactions
+import TxnForm as TxnForm
+import TxnForm.DisbRuleUnverified as DisbRuleUnverified
+import TxnForm.DisbRuleVerified as DisbRuleVerified
 
 
 
@@ -57,7 +62,6 @@ type alias Model =
     , transactions : Transactions.Model
     , aggregations : Aggregations.Model
     , committee : Committee.Model
-    , currentSort : Disbursements.Label
     , createContributionModalVisibility : Modal.Visibility
     , createContributionModal : CreateContribution.Model
     , createContributionSubmitting : Bool
@@ -71,6 +75,12 @@ type alias Model =
     , createDisbursementModalVisibility : Modal.Visibility
     , createDisbursementModal : CreateDisbursement.Model
     , createDisbursementSubmitting : Bool
+    , disbRuleUnverifiedModal : DisbRuleUnverified.Model
+    , disbRuleUnverifiedSubmitting : Bool
+    , disbRuleUnverifiedModalVisibility : Modal.Visibility
+    , disbRuleVerifiedModal : DisbRuleVerified.Model
+    , disbRuleVerifiedSubmitting : Bool
+    , disbRuleVerifiedModalVisibility : Modal.Visibility
     , config : Config
     }
 
@@ -84,7 +94,6 @@ init config session aggs committee committeeId =
       , transactions = []
       , aggregations = aggs
       , committee = committee
-      , currentSort = Disbursements.Record
       , createContributionModalVisibility = Modal.hidden
       , createContributionModal = CreateContribution.init
       , createContributionSubmitting = False
@@ -98,9 +107,15 @@ init config session aggs committee committeeId =
       , createDisbursementModalVisibility = Modal.hidden
       , createDisbursementModal = CreateDisbursement.init
       , createDisbursementSubmitting = False
+      , disbRuleUnverifiedModal = DisbRuleUnverified.init [] Transaction.init
+      , disbRuleUnverifiedSubmitting = False
+      , disbRuleUnverifiedModalVisibility = Modal.hidden
+      , disbRuleVerifiedModal = DisbRuleVerified.init Transaction.init
+      , disbRuleVerifiedSubmitting = False
+      , disbRuleVerifiedModalVisibility = Modal.hidden
       , config = config
       }
-    , getTransactions config committeeId LoadTransactionsData Nothing
+    , getTransactions config committeeId GotTransactionsData Nothing
     )
 
 
@@ -112,32 +127,77 @@ loadedView : Model -> Html Msg
 loadedView model =
     div [ class "fade-in" ]
         [ dropdowns model
-        , Transactions.view model.committee SortTransactions [] model.transactions
+        , Transactions.viewInteractive model.committee ShowTxnFormModal model.transactions
         , createContributionModal model
         , generateDisclosureModal model
         , createDisbursementModal model
+        , disbRuleUnverifiedModal model
+        , disbRuleVerifiedModal model
         ]
 
 
 createDisbursementModal : Model -> Html Msg
 createDisbursementModal model =
-    Modal.config HideCreateDisbursementModal
-        |> Modal.withAnimation AnimateCreateDisbursementModal
-        |> Modal.large
-        |> Modal.scrollableBody True
-        |> Modal.hideOnBackdropClick True
-        |> Modal.h3 [] [ text "Create Disbursement" ]
-        |> Modal.body
-            []
-            [ Html.map CreateDisbursementModalUpdated <|
-                CreateDisbursement.view model.createDisbursementModal
-            ]
-        |> Modal.footer []
-            [ Grid.containerFluid
-                []
-                [ buttonRow "Create Disbursement" SubmitCreateDisbursement model.createDisbursementSubmitting True model.createDisbursementSubmitting ]
-            ]
-        |> Modal.view model.createDisbursementModalVisibility
+    PlatformModal.view
+        { hideMsg = CreateDisbursementModalHide
+        , animateMsg = CreateDisbursementModalAnimate
+        , title = "Create Disbursement"
+        , updateMsg = CreateDisbursementModalUpdate
+        , subModel = model.createDisbursementModal
+        , subView = CreateDisbursement.view
+        , submitMsg = CreateDisbursementSubmit
+        , submitText = "Create Disbursement"
+        , isSubmitting = model.createDisbursementSubmitting
+        , visibility = model.createDisbursementModalVisibility
+        }
+
+
+createContributionModal : Model -> Html Msg
+createContributionModal model =
+    PlatformModal.view
+        { hideMsg = HideCreateContributionModal
+        , animateMsg = AnimateCreateContributionModal
+        , title = "Create Contribution"
+        , updateMsg = CreateContributionModalUpdated
+        , subModel = model.createContributionModal
+        , subView = CreateContribution.view
+        , submitMsg = SubmitCreateContribution
+        , submitText = "Submit"
+        , isSubmitting = model.createContributionSubmitting
+        , visibility = model.createContributionModalVisibility
+        }
+
+
+disbRuleUnverifiedModal : Model -> Html Msg
+disbRuleUnverifiedModal model =
+    PlatformModal.view
+        { hideMsg = DisbRuleUnverifiedModalHide
+        , animateMsg = DisbRuleUnverifiedModalAnimate
+        , title = "Reconcile Disbursement"
+        , updateMsg = DisbRuleUnverifiedModalUpdate
+        , subModel = model.disbRuleUnverifiedModal
+        , subView = DisbRuleUnverified.view
+        , submitMsg = DisbRuleUnverifiedSubmit
+        , submitText = "Reconcile"
+        , isSubmitting = model.disbRuleUnverifiedSubmitting
+        , visibility = model.disbRuleUnverifiedModalVisibility
+        }
+
+
+disbRuleVerifiedModal : Model -> Html Msg
+disbRuleVerifiedModal model =
+    PlatformModal.view
+        { hideMsg = DisbRuleVerifiedModalHide
+        , animateMsg = DisbRuleVerifiedModalAnimate
+        , title = "Disbursement"
+        , updateMsg = DisbRuleVerifiedModalUpdate
+        , subModel = model.disbRuleVerifiedModal
+        , subView = DisbRuleVerified.view
+        , submitMsg = DisbRuleVerifiedSubmit
+        , submitText = "Save"
+        , isSubmitting = model.disbRuleVerifiedSubmitting
+        , visibility = model.disbRuleVerifiedModalVisibility
+        }
 
 
 view : Model -> { title : String, content : Html Msg }
@@ -191,10 +251,10 @@ actionsDropdown model =
             { options = []
             , toggleMsg = ToggleActionsDropdown
             , toggleButton =
-                Dropdown.toggle [ Button.success, Button.disabled True, Button.attrs [ Spacing.pl3, Spacing.pr3 ] ] [ text "Actions" ]
+                Dropdown.toggle [ Button.success, Button.disabled False, Button.attrs [ Spacing.pl3, Spacing.pr3 ] ] [ text "Actions" ]
             , items =
                 [ Dropdown.buttonItem [ onClick ShowCreateContributionModal ] [ text "Create Contribution" ]
-                , Dropdown.buttonItem [ onClick ShowCreateDisbursementModal ] [ text "Create Disbursement" ]
+                , Dropdown.buttonItem [ onClick CreateDisbursementModalShow ] [ text "Create Disbursement" ]
                 , Dropdown.buttonItem [ onClick ShowGenerateDisclosureModal ] [ text "File Disclosure" ]
                 ]
             }
@@ -248,50 +308,6 @@ generateDisclosureModal model =
         |> Modal.view model.generateDisclosureModalVisibility
 
 
-createContributionModal : Model -> Html Msg
-createContributionModal model =
-    Modal.config HideCreateContributionModal
-        |> Modal.withAnimation AnimateCreateContributionModal
-        |> Modal.large
-        |> Modal.hideOnBackdropClick True
-        |> Modal.scrollableBody True
-        |> Modal.h3 [] [ text "Create Contribution" ]
-        |> Modal.body
-            []
-            [ Html.map CreateContributionModalUpdated <|
-                CreateContribution.view model.createContributionModal
-            ]
-        |> Modal.footer []
-            [ Grid.containerFluid
-                []
-                [ createContributionButtonRow model ]
-            ]
-        |> Modal.view model.createContributionModalVisibility
-
-
-createContributionButtonRow : Model -> Html Msg
-createContributionButtonRow model =
-    Grid.row
-        [ Row.betweenXs ]
-        [ Grid.col
-            [ Col.lg3, Col.attrs [ class "text-left" ] ]
-            [ createContributionExitButton ]
-        , Grid.col
-            [ Col.lg3 ]
-            [ submitButton "Submit" SubmitCreateContribution model.createContributionSubmitting False ]
-        ]
-
-
-createContributionExitButton : Html Msg
-createContributionExitButton =
-    Button.button
-        [ Button.outlineSuccess
-        , Button.block
-        , Button.attrs [ onClick HideCreateContributionModal ]
-        ]
-        [ text "Exit" ]
-
-
 buttonRow : String -> Msg -> Bool -> Bool -> Bool -> Html Msg
 buttonRow displayText msg submitting enableExit disabled =
     Grid.row
@@ -327,8 +343,7 @@ exitButton =
 
 type Msg
     = GotSession Session
-    | LoadTransactionsData (Result Http.Error TransactionsData)
-    | SortTransactions Transactions.Label
+    | GotTransactionsData (Result Http.Error TransactionsData)
     | GenerateReport FileFormat
     | HideCreateContributionModal
     | ShowCreateContributionModal
@@ -339,8 +354,8 @@ type Msg
     | AnimateCreateContributionModal Modal.Visibility
     | GotCreateContributionResponse (Result Http.Error MutationResponse)
     | GotCreateDisbursementResponse (Result Http.Error MutationResponse)
+    | GotTransactionData (Result Http.Error TransactionData)
     | SubmitCreateContribution
-    | SubmitCreateContributionDelay
     | ToggleActionsDropdown Dropdown.State
     | ToggleFiltersDropdown Dropdown.State
     | ToggleGenerateDisclosureModalDownloadDropdown Dropdown.State
@@ -350,17 +365,119 @@ type Msg
     | FilterByDisbursements
     | NoOp
     | FilterAll
-    | HideCreateDisbursementModal
-    | ShowCreateDisbursementModal
-    | CreateDisbursementModalUpdated CreateDisbursement.Msg
-    | AnimateCreateDisbursementModal Modal.Visibility
-    | SubmitCreateDisbursement
-    | SubmitCreateDisbursementDelay
+    | CreateDisbursementModalHide
+    | CreateDisbursementModalAnimate Modal.Visibility
+    | CreateDisbursementModalUpdate CreateDisbursement.Msg
+    | CreateDisbursementModalShow
+    | CreateDisbursementSubmit
+      -- Disb Unverified Modal
+    | DisbRuleUnverifiedModalHide
+    | DisbRuleUnverifiedModalAnimate Modal.Visibility
+    | DisbRuleUnverifiedModalUpdate DisbRuleUnverified.Msg
+    | DisbRuleUnverifiedSubmit
+      -- Disb Verified Modal
+    | DisbRuleVerifiedModalHide
+    | DisbRuleVerifiedModalAnimate Modal.Visibility
+    | DisbRuleVerifiedModalUpdate DisbRuleVerified.Msg
+    | DisbRuleVerifiedSubmit
+    | ShowTxnFormModal Transaction.Model
+
+
+openTxnFormModalLoading : Model -> Transaction.Model -> ( Model, Cmd Msg )
+openTxnFormModalLoading model txn =
+    case TxnForm.fromTxn txn of
+        TxnForm.DisbRuleUnverified ->
+            ( { model
+                | disbRuleUnverifiedModalVisibility = Modal.shown
+                , disbRuleUnverifiedModal = DisbRuleUnverified.init model.transactions txn
+              }
+            , Cmd.none
+            )
+
+        TxnForm.DisbRuleVerified ->
+            ( { model
+                | disbRuleVerifiedModalVisibility = Modal.shown
+                , disbRuleVerifiedModal = DisbRuleVerified.loadingInit
+              }
+            , GraphQL.getTransaction model.config GotTransactionData model.committeeId txn.id
+            )
+
+        _ ->
+            ( model, Cmd.none )
+
+
+openTxnFormModalLoaded : Model -> Transaction.Model -> ( Model, Cmd Msg )
+openTxnFormModalLoaded model txn =
+    case TxnForm.fromTxn txn of
+        TxnForm.DisbRuleUnverified ->
+            ( { model
+                | disbRuleUnverifiedModalVisibility = Modal.shown
+                , disbRuleUnverifiedModal = DisbRuleUnverified.init model.transactions txn
+              }
+            , Cmd.none
+            )
+
+        TxnForm.DisbRuleVerified ->
+            ( { model
+                | disbRuleVerifiedModalVisibility = Modal.shown
+                , disbRuleVerifiedModal = DisbRuleVerified.init txn
+              }
+            , Cmd.none
+            )
+
+        _ ->
+            ( model, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ShowTxnFormModal txn ->
+            openTxnFormModalLoading model txn
+
+        -- Disb Rule Unverified Modal State
+        DisbRuleUnverifiedModalAnimate visibility ->
+            ( { model | disbRuleUnverifiedModalVisibility = visibility }, Cmd.none )
+
+        DisbRuleUnverifiedModalHide ->
+            ( { model
+                | disbRuleUnverifiedModalVisibility = Modal.hidden
+              }
+            , Cmd.none
+            )
+
+        DisbRuleUnverifiedSubmit ->
+            ( model, Cmd.none )
+
+        DisbRuleUnverifiedModalUpdate subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    DisbRuleUnverified.update subMsg model.disbRuleUnverifiedModal
+            in
+            ( { model | disbRuleUnverifiedModal = subModel }, Cmd.map DisbRuleUnverifiedModalUpdate subCmd )
+
+        -- Disb Rule Verified Modal State
+        DisbRuleVerifiedModalAnimate visibility ->
+            ( { model | disbRuleVerifiedModalVisibility = visibility }, Cmd.none )
+
+        DisbRuleVerifiedModalHide ->
+            ( { model
+                | disbRuleVerifiedModalVisibility = Modal.hidden
+              }
+            , Cmd.none
+            )
+
+        DisbRuleVerifiedSubmit ->
+            ( model, Cmd.none )
+
+        DisbRuleVerifiedModalUpdate subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    DisbRuleVerified.update subMsg model.disbRuleVerifiedModal
+            in
+            ( { model | disbRuleVerifiedModal = subModel }, Cmd.map DisbRuleVerifiedModalUpdate subCmd )
+
+        -- Main page stuff
         GotSession session ->
             ( { model | session = session }, Cmd.none )
 
@@ -375,24 +492,19 @@ update msg model =
         AnimateGenerateDisclosureModal visibility ->
             ( { model | generateDisclosureModalVisibility = visibility }, Cmd.none )
 
-        SortTransactions label ->
-            case label of
-                Transactions.EntityName ->
-                    ( applyFilter label .entityName model, Cmd.none )
+        GotTransactionData res ->
+            case res of
+                Ok body ->
+                    openTxnFormModalLoaded model body.data.transaction
 
-                Transactions.DateTime ->
-                    ( applyFilter label .dateProcessed model, Cmd.none )
+                Err _ ->
+                    let
+                        { cognitoDomain, cognitoClientId, redirectUri } =
+                            model.config
+                    in
+                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
 
-                Transactions.Amount ->
-                    ( applyFilter label .amount model, Cmd.none )
-
-                Transactions.PaymentMethod ->
-                    ( applyFilter label .paymentMethod model, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
-
-        LoadTransactionsData res ->
+        GotTransactionsData res ->
             case res of
                 Ok body ->
                     ( { model
@@ -411,7 +523,6 @@ update msg model =
                     in
                     ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
 
-        --( model, Cmd.none )
         ShowCreateContributionModal ->
             ( { model
                 | createContributionModalVisibility = Modal.shown
@@ -463,7 +574,12 @@ update msg model =
                 Ok createContribResp ->
                     case createContribResp of
                         Success id ->
-                            ( model, Delay.after 2 Delay.Second SubmitCreateContributionDelay )
+                            ( { model
+                                | createContributionModalVisibility = Modal.hidden
+                                , createContributionSubmitting = False
+                              }
+                            , getTransactions model.config model.committeeId GotTransactionsData model.filterTransactionType
+                            )
 
                         ValidationFailure errList ->
                             ( { model
@@ -491,7 +607,13 @@ update msg model =
                 Ok createDisbResp ->
                     case createDisbResp of
                         Success id ->
-                            ( model, Delay.after 2 Delay.Second SubmitCreateDisbursementDelay )
+                            ( { model
+                                | createDisbursementModalVisibility = Modal.hidden
+                                , createDisbursementSubmitting = False
+                                , createDisbursementModal = CreateDisbursement.init
+                              }
+                            , getTransactions model.config model.committeeId GotTransactionsData Nothing
+                            )
 
                         ValidationFailure errList ->
                             ( { model
@@ -514,14 +636,6 @@ update msg model =
                     , Cmd.none
                     )
 
-        SubmitCreateContributionDelay ->
-            ( { model
-                | createContributionModalVisibility = Modal.hidden
-                , createContributionSubmitting = False
-              }
-            , getTransactions model.config model.committeeId LoadTransactionsData model.filterTransactionType
-            )
-
         ToggleActionsDropdown state ->
             ( { model | actionsDropdown = state }, Cmd.none )
 
@@ -533,17 +647,17 @@ update msg model =
 
         FilterByContributions ->
             ( { model | filterTransactionType = Just TransactionType.Contribution }
-            , getTransactions model.config model.committeeId LoadTransactionsData (Just TransactionType.Contribution)
+            , getTransactions model.config model.committeeId GotTransactionsData (Just TransactionType.Contribution)
             )
 
         FilterByDisbursements ->
             ( { model | filterTransactionType = Just TransactionType.Disbursement }
-            , getTransactions model.config model.committeeId LoadTransactionsData (Just TransactionType.Disbursement)
+            , getTransactions model.config model.committeeId GotTransactionsData (Just TransactionType.Disbursement)
             )
 
         FilterAll ->
             ( { model | filterTransactionType = Nothing }
-            , getTransactions model.config model.committeeId LoadTransactionsData Nothing
+            , getTransactions model.config model.committeeId GotTransactionsData Nothing
             )
 
         FileDisclosure ->
@@ -555,44 +669,30 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        ShowCreateDisbursementModal ->
+        CreateDisbursementModalShow ->
             ( { model | createDisbursementModalVisibility = Modal.shown }, Cmd.none )
 
-        HideCreateDisbursementModal ->
-            ( { model | createDisbursementModalVisibility = Modal.hidden }
+        CreateDisbursementModalHide ->
+            ( { model | createDisbursementModalVisibility = Modal.hidden, createDisbursementModal = CreateDisbursement.init }
             , Cmd.none
             )
 
-        SubmitCreateDisbursement ->
+        CreateDisbursementSubmit ->
             ( { model
                 | createDisbursementSubmitting = True
               }
             , createDisbursement model
             )
 
-        AnimateCreateDisbursementModal visibility ->
+        CreateDisbursementModalAnimate visibility ->
             ( { model | createDisbursementModalVisibility = visibility }, Cmd.none )
 
-        CreateDisbursementModalUpdated subMsg ->
+        CreateDisbursementModalUpdate subMsg ->
             let
                 ( subModel, subCmd ) =
                     CreateDisbursement.update subMsg model.createDisbursementModal
             in
-            ( { model | createDisbursementModal = subModel }, Cmd.map CreateDisbursementModalUpdated subCmd )
-
-        SubmitCreateDisbursementDelay ->
-            ( { model
-                | createDisbursementModalVisibility = Modal.hidden
-                , createDisbursementSubmitting = False
-                , createDisbursementModal = CreateDisbursement.init
-              }
-            , getTransactions model.config model.committeeId LoadTransactionsData Nothing
-            )
-
-
-applyFilter : Transactions.Label -> (Disbursement.Model -> String) -> Model -> Model
-applyFilter label field model =
-    model
+            ( { model | createDisbursementModal = subModel }, Cmd.map CreateDisbursementModalUpdate subCmd )
 
 
 generateReport : Cmd msg
@@ -624,7 +724,9 @@ subscriptions model =
         , Dropdown.subscriptions model.actionsDropdown ToggleActionsDropdown
         , Dropdown.subscriptions model.filtersDropdown ToggleFiltersDropdown
         , Dropdown.subscriptions model.generateDisclosureModalDownloadDropdownState ToggleGenerateDisclosureModalDownloadDropdown
-        , Modal.subscriptions model.createDisbursementModalVisibility AnimateCreateDisbursementModal
+        , Modal.subscriptions model.createDisbursementModalVisibility CreateDisbursementModalAnimate
+        , Modal.subscriptions model.disbRuleUnverifiedModalVisibility DisbRuleUnverifiedModalAnimate
+        , Modal.subscriptions model.disbRuleVerifiedModalVisibility DisbRuleVerifiedModalAnimate
         ]
 
 
@@ -673,11 +775,11 @@ encodeContribution model =
         variables =
             Encode.object <|
                 [ ( "committeeId", Encode.string model.committeeId )
-                , ( "amount", Encode.int <| Cents.fromDollars contrib.checkAmount )
+                , ( "amount", Encode.int <| Cents.fromDollars contrib.amount )
                 , ( "paymentMethod", Encode.string contrib.paymentMethod )
                 , ( "firstName", Encode.string contrib.firstName )
                 , ( "lastName", Encode.string contrib.lastName )
-                , ( "addressLine1", Encode.string contrib.address1 )
+                , ( "addressLine1", Encode.string contrib.addressLine1 )
                 , ( "city", Encode.string contrib.city )
                 , ( "state", Encode.string contrib.state )
                 , ( "postalCode", Encode.string contrib.postalCode )
@@ -685,7 +787,7 @@ encodeContribution model =
                 , ( "transactionType", Encode.string <| TransactionType.toString TransactionType.Contribution )
                 ]
                     ++ optionalFieldString "emailAddress" contrib.emailAddress
-                    ++ optionalFieldNotZero "paymentDate" (dateStringToMillis contrib.checkDate)
+                    ++ optionalFieldNotZero "paymentDate" (dateStringToMillis contrib.paymentDate)
                     ++ optionalFieldString "cardNumber" contrib.cardNumber
                     ++ optionalFieldStringInt "cardExpirationMonth" contrib.expirationMonth
                     ++ optionalFieldStringInt "cardExpirationYear" contrib.expirationYear
@@ -695,7 +797,7 @@ encodeContribution model =
                     ++ optionalFieldString "employer" contrib.employer
                     ++ optionalFieldString "occupation" contrib.occupation
                     ++ optionalFieldString "middleName" contrib.middleName
-                    ++ optionalFieldString "addressLine2" contrib.address2
+                    ++ optionalFieldString "addressLine2" contrib.addressLine2
                     ++ optionalFieldString "occupation" contrib.occupation
                     ++ optionalFieldString "phoneNumber" contrib.phoneNumber
     in
@@ -741,23 +843,22 @@ encodeDisbursement model =
         variables =
             Encode.object <|
                 [ ( "committeeId", Encode.string model.committeeId )
-                , ( "amount", Encode.int <| Cents.fromDollars d.checkAmount )
-                , ( "paymentMethod", Encode.string <| Maybe.withDefault (PaymentMethod.toDataString PaymentMethod.Debit) d.paymentMethod )
-                , ( "entityName", Encode.string d.checkRecipient )
-                , ( "addressLine1", Encode.string d.address1 )
-                , ( "addressLine2", Encode.string d.address2 )
+                , ( "amount", Encode.int <| Cents.fromDollars d.amount )
+                , ( "paymentMethod", Encode.string <| PaymentMethod.fromMaybeToString d.paymentMethod )
+                , ( "entityName", Encode.string d.entityName )
+                , ( "addressLine1", Encode.string d.addressLine1 )
                 , ( "city", Encode.string d.city )
                 , ( "state", Encode.string d.state )
                 , ( "postalCode", Encode.string d.postalCode )
-                , ( "isSubcontracted", Encode.bool <| d.isSubcontracted == "yes" )
-                , ( "isPartialPayment", Encode.bool <| d.isPartialPayment == "yes" )
-                , ( "isExistingLiability", Encode.bool <| d.isExistingLiability == "yes" )
-                , ( "purposeCode", Encode.string <| Maybe.withDefault (PurposeCode.toString PurposeCode.OTHER) d.purposeCode )
-                , ( "paymentDate", Encode.int <| dateStringToMillis d.checkDate )
+                , ( "isSubcontracted", Encode.bool <| Maybe.withDefault False d.isSubcontracted )
+                , ( "isPartialPayment", Encode.bool <| Maybe.withDefault False d.isPartialPayment )
+                , ( "isExistingLiability", Encode.bool <| Maybe.withDefault False d.isExistingLiability )
+                , ( "purposeCode", Encode.string <| PurposeCode.toString <| Maybe.withDefault PurposeCode.OTHER d.purposeCode )
+                , ( "paymentDate", Encode.int <| dateStringToMillis d.paymentDate )
                 , ( "transactionType", Encode.string <| TransactionType.toString TransactionType.Disbursement )
                 ]
                     ++ optionalFieldString "checkNumber" d.checkNumber
-                    ++ optionalFieldString "addressLine2" d.address2
+                    ++ optionalFieldString "addressLine2" d.addressLine2
     in
     encodeQuery createDisbursementMutation variables
 

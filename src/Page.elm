@@ -26,7 +26,6 @@ type Page
     = Other
     | Home
     | LinkBuilder
-    | NeedsReview
     | Transactions
 
 
@@ -133,9 +132,6 @@ pageIsActive page route =
         ( Home, Route.Home ) ->
             True
 
-        ( NeedsReview, Route.NeedsReview ) ->
-            False
-
         ( LinkBuilder, Route.LinkBuilder ) ->
             True
 
@@ -178,14 +174,8 @@ navContainer page =
     Grid.containerFluid
         [ Spacing.mt5 ]
         [ navRow True (Asset.coinsGlyph [ class "tool-glyph" ]) page Route.Transactions "Transactions"
-        , navRow False (Asset.searchDollarGlyph [ class "tool-glyph" ]) page Route.NeedsReview "Needs Review"
         , navRow True (Asset.linkGlyph [ class "tool-glyph" ]) page Route.LinkBuilder "Link Builder"
         ]
-
-
-toolBarAsset : Image -> Html msg
-toolBarAsset image =
-    img [ Asset.src image, class "tool-asset" ] []
 
 
 navRow : Bool -> Html msg -> Page -> Route -> String -> Html msg

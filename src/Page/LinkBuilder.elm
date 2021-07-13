@@ -18,16 +18,15 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
+import Cognito exposing (loginUrl)
 import Committee
 import Config exposing (Config)
-import Config.Env exposing (loginUrl)
 import Html exposing (..)
 import Html.Attributes as SvgA exposing (class, for, href, src, style)
 import Http
 import QRCode
 import Session exposing (Session)
 import Task exposing (Task)
-import Transaction.ContributionsData as ContributionsData exposing (ContributionsData)
 import Transaction.TransactionsData exposing (TransactionsData)
 import Url.Builder
 
