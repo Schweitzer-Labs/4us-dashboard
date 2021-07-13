@@ -21,6 +21,7 @@ type alias MakeModalConfig msg subMsg subModel =
     , submitMsg : msg
     , submitText : String
     , isSubmitting : Bool
+    , isSubmitDisabled : Bool
     , visibility : Modal.Visibility
     }
 
@@ -41,7 +42,7 @@ view config =
         |> Modal.footer []
             [ Grid.containerFluid
                 []
-                [ buttonRow config.hideMsg config.submitText config.submitMsg config.isSubmitting True config.isSubmitting ]
+                [ buttonRow config.hideMsg config.submitText config.submitMsg config.isSubmitting True config.isSubmitDisabled ]
             ]
         |> Modal.view config.visibility
 

@@ -40,6 +40,7 @@ type alias Model =
     , showBankData : Bool
     , loading : Bool
     , disabled : Bool
+    , isSubmitDisabled : Bool
     }
 
 
@@ -73,6 +74,7 @@ init txn =
     , showBankData = False
     , loading = False
     , disabled = True
+    , isSubmitDisabled = False
     }
 
 
@@ -121,7 +123,8 @@ disbFormRow model =
 
 
 type Msg
-    = EntityNameUpdated String
+    = NoOp
+    | EntityNameUpdated String
     | AddressLine1Updated String
     | AddressLine2Updated String
     | CityUpdated String
@@ -186,13 +189,16 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool }, Cmd.none )
+            ( { model | isInKind = bool, isSubmitDisabled = True }, Cmd.none )
 
         ToggleBankData ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
 
         ToggleEditForm ->
             ( { model | disabled = not model.disabled }, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 encode : Disbursement.Model -> Encode.Value
