@@ -24,6 +24,7 @@ type alias Model =
     , paymentMethod : Maybe PaymentMethod
     , checkNumber : String
     , error : String
+    , disabled : Bool
     }
 
 
@@ -45,6 +46,7 @@ init =
     , paymentMethod = Nothing
     , checkNumber = ""
     , error = ""
+    , disabled = False
     }
 
 
@@ -73,7 +75,7 @@ view model =
             , amount = Just ( model.amount, AmountUpdated )
             , paymentDate = Just ( model.paymentDate, PaymentDateUpdated )
             , paymentMethod = Just ( model.paymentMethod, PaymentMethodUpdated )
-            , disabled = False
+            , disabled = model.disabled
             , isEditable = False
             , toggleEdit = NoOp
             }
@@ -147,4 +149,4 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool }, Cmd.none )
+            ( { model | isInKind = bool, disabled = True }, Cmd.none )
