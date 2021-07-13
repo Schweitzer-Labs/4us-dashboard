@@ -136,7 +136,7 @@ toString purpose =
 
 fromMaybeToString : Maybe PurposeCode -> String
 fromMaybeToString =
-    Maybe.withDefault "" << Maybe.map toString
+    Maybe.withDefault "---" << Maybe.map toString
 
 
 select : Maybe PurposeCode -> (Maybe PurposeCode -> msg) -> Bool -> Html msg
@@ -154,7 +154,7 @@ select maybePurposeCode updateMsg disabled =
             (++)
                 [ Select.item
                     [ Attribute.selected (maybePurposeCode == Nothing)
-                    , Attribute.value ""
+                    , Attribute.value "---"
                     ]
                     [ text "---" ]
                 ]
