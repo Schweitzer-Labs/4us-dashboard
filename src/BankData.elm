@@ -5,6 +5,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Attribute, Html, div, h5, h6, text)
+import Html.Attributes exposing (class)
 import LabelWithData exposing (labelWithData, labelWithMaybeData, labelWithMaybeLongData, labelWithMaybeTimeData, labelWithTimeData)
 import PaymentMethod exposing (PaymentMethod)
 import Transaction
@@ -33,8 +34,8 @@ bankDataRows data =
         , Grid.col [] [ labelWithData "Payment Type" <| PaymentMethod.toDisplayString data.paymentMethod ]
         ]
     , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
-        [ Grid.col [] [ labelWithTimeData "Posted Date" <| data.initiatedTimestamp ]
-        , Grid.col [] [ labelWithMaybeTimeData "Initiated Date" data.finicityTransactionDate ]
+        [ Grid.col [] [ Maybe.withDefault (text "N/A") <| Maybe.map (labelWithTimeData "Posted Date") data.finicityPostedDate ]
+        , Grid.col [] [ labelWithMaybeTimeData "Transaction Date" data.finicityTransactionDate ]
         ]
     ]
 
@@ -44,16 +45,13 @@ view isShowing model =
     let
         heading =
             if isShowing then
-                [ h6 [] [ text "Bank Data" ] ]
+                [ div [ class "text-size-medium" ] [ text "Bank Data" ] ]
 
             else
                 []
     in
     div
         []
-        (heading
-            ++ [ Grid.containerFluid
-                    []
-                    (bankDataRows model)
-               ]
-        )
+    <|
+        heading
+            ++ bankDataRows model

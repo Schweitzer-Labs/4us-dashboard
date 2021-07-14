@@ -19,7 +19,7 @@ fromTxn txn =
         ( Out, False, True ) ->
             DisbRuleUnverified
 
-        ( Out, False, False ) ->
+        ( Out, True, True ) ->
             DisbRuleVerified
 
         _ ->
