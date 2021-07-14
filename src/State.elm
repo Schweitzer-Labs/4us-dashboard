@@ -73,10 +73,10 @@ withStateKeys =
     Dict.fromList <| List.map (\( a, b ) -> ( b, a )) statesAndAbbrsList
 
 
-view : (String -> msg) -> String -> Html msg
-view msg currentValue =
+view : (String -> msg) -> String -> Bool -> Html msg
+view msg currentValue isDisabled =
     Select.select
-        [ Select.id "State", Select.onChange msg ]
+        [ Select.id "State", Select.onChange msg, Select.disabled isDisabled ]
     <|
         [ Select.item [ value "" ] [ text "-- State --" ] ]
             ++ List.map
