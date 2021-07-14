@@ -193,26 +193,21 @@ disbFormRow model =
             , isEditable = False
             , toggleEdit = NoOp
             }
-            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" NoOp False True False ]
+            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" NoOp False False ]
 
     else
         []
 
 
-buttonRow : msg -> String -> String -> msg -> Bool -> Bool -> Bool -> Html msg
-buttonRow hideMsg displayText exitText msg submitting enableExit disabled =
+buttonRow : msg -> String -> String -> msg -> Bool -> Bool -> Html msg
+buttonRow hideMsg displayText exitText msg submitting disabled =
     Grid.row
         [ Row.betweenXs, Row.attrs [ Spacing.m2 ] ]
         [ Grid.col
-            [ Col.lg3, Col.attrs [ class "text-left" ] ]
-            (if enableExit then
-                [ exitButton hideMsg exitText ]
-
-             else
-                []
-            )
+            [ Col.lg4, Col.attrs [ class "text-left" ] ]
+            [ exitButton hideMsg exitText ]
         , Grid.col
-            [ Col.lg3 ]
+            [ Col.lg4 ]
             [ submitButton displayText msg submitting disabled ]
         ]
 
