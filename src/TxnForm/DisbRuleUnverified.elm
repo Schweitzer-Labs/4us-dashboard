@@ -12,6 +12,7 @@ module TxnForm.DisbRuleUnverified exposing
 import Api.GraphQL exposing (MutationResponse(..), mutationValidationFailureDecoder)
 import Asset
 import BankData
+import Bootstrap.Button as Button
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
@@ -31,7 +32,7 @@ import Json.Encode as Encode
 import LabelWithData exposing (labelWithContent, labelWithData)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
-import SubmitButton
+import SubmitButton exposing (submitButton)
 import TimeZone exposing (america__new_york)
 import Timestamp
 import Transaction
@@ -207,10 +208,33 @@ disbFormRow model =
             , toggleEdit = NoOp
             , maybeError = model.maybeError
             }
-            ++ [ div [ Spacing.mt4, Spacing.mb4 ] [ SubmitButton.submitButton "Create" NoOp False False ] ]
+            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" NoOp False False ]
 
     else
         []
+
+
+buttonRow : msg -> String -> String -> msg -> Bool -> Bool -> Html msg
+buttonRow hideMsg displayText exitText msg submitting disabled =
+    Grid.row
+        [ Row.betweenXs, Row.attrs [ Spacing.m2 ] ]
+        [ Grid.col
+            [ Col.lg4, Col.attrs [ class "text-left" ] ]
+            [ exitButton hideMsg exitText ]
+        , Grid.col
+            [ Col.lg4 ]
+            [ submitButton displayText msg submitting disabled ]
+        ]
+
+
+exitButton : msg -> String -> Html msg
+exitButton hideMsg displayText =
+    Button.button
+        [ Button.outlinePrimary
+        , Button.block
+        , Button.attrs [ onClick hideMsg ]
+        ]
+        [ text displayText ]
 
 
 matchesIcon : Bool -> Html msg
