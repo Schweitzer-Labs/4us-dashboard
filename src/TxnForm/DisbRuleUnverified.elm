@@ -335,7 +335,7 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, isSubmitDisabled = True }, Cmd.none )
+            ( { model | isInKind = bool, isSubmitDisabled = not <| model.isInKind == Just True }, Cmd.none )
 
         CreateDisbToggled ->
             ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )

@@ -205,7 +205,7 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, isSubmitDisabled = True }, Cmd.none )
+            ( { model | isInKind = bool, isSubmitDisabled = not <| model.isInKind == Just True }, Cmd.none )
 
         BankDataToggled ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
