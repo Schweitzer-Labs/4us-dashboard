@@ -7,6 +7,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg
 import Html exposing (Html, div)
+import State
 
 
 type alias Config msg =
@@ -64,14 +65,7 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
                 ]
             ]
         , Grid.col [ Col.lg3 ]
-            [ Input.text
-                [ Input.id "state"
-                , Input.value state
-                , Input.onInput stateMsg
-                , Input.placeholder "State"
-                , Input.disabled disabled
-                ]
-            ]
+            [ State.view stateMsg state disabled ]
         , Grid.col [ Col.lg3 ]
             [ Input.text
                 [ Input.id "postalCode"
