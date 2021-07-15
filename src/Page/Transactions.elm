@@ -509,7 +509,18 @@ update msg model =
             )
 
         DisbRuleVerifiedSubmit ->
-            ( model, Cmd.none )
+            case validate DisbRuleVerified.validator model.disbRuleVerifiedModal of
+                Err errors ->
+                    let
+                        error =
+                            Maybe.withDefault "Form error" <| List.head errors
+                    in
+                    ( { model | disbRuleVerifiedModal = DisbRuleVerified.fromError model.disbRuleVerifiedModal error }, Cmd.none )
+
+                Ok val ->
+                    ( model
+                    , Cmd.none
+                    )
 
         DisbRuleVerifiedModalUpdate subMsg ->
             let
@@ -934,7 +945,10 @@ createDisbursementSuccessDecoder =
                     Decode.string
 
 
+
 -- @Todo factor into respective model view update module
+
+
 sendReconcileDisb : Model -> Cmd Msg
 sendReconcileDisb model =
     let

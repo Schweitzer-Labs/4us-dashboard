@@ -2,13 +2,15 @@ module TxnForm.DisbRuleVerified exposing
     ( Model
     , Msg(..)
     , encode
+    , fromError
     , init
     , loadingInit
     , update
+    , validator
     , view
     )
 
-import BankData
+import Address exposing (postalCodeToErrors)
 import Bootstrap.Grid as Grid
 import Disbursement as Disbursement
 import DisbursementInfo
@@ -20,6 +22,7 @@ import PaymentInfo
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
 import Transaction
+import Validate exposing (Validator, fromErrors, ifBlank)
 
 
 type alias Model =
@@ -230,3 +233,30 @@ encode disb =
         , ( "postalCode", Encode.string disb.postalCode )
         , ( "purposeCode", Encode.string disb.purposeCode )
         ]
+
+
+validator : Validator String Model
+validator =
+    Validate.firstError
+        [ ifBlank .entityName "Entity name is missing."
+        , ifBlank .addressLine1 "Address 1 is missing."
+        , ifBlank .city "City is missing."
+        , ifBlank .state "State is missing."
+        , ifBlank .postalCode "Postal Code is missing."
+        , postalCodeValidator
+        ]
+
+
+postalCodeValidator : Validator String Model
+postalCodeValidator =
+    fromErrors postalCodeOnModelToErrors
+
+
+postalCodeOnModelToErrors : Model -> List String
+postalCodeOnModelToErrors model =
+    postalCodeToErrors model.postalCode
+
+
+fromError : Model -> String -> Model
+fromError model error =
+    { model | maybeError = Just error }
