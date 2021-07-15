@@ -81,6 +81,6 @@ view msg currentValue isDisabled =
         [ Select.item [ value "" ] [ text "-- State --" ] ]
             ++ List.map
                 (\( abbr, whole ) ->
-                    Select.item [ value abbr, selected (currentValue == abbr) ] [ text whole ]
+                    Select.item [ value <| String.toUpper abbr, selected (currentValue == String.toUpper abbr) ] [ text whole ]
                 )
                 statesAndAbbrsList
