@@ -1,4 +1,4 @@
-module Address exposing (Config, view)
+module Address exposing (Config, postalCodeToErrors, view)
 
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
@@ -77,3 +77,19 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
             ]
         ]
     ]
+
+
+postalCodeToErrors : String -> List String
+postalCodeToErrors postalCode =
+    let
+        length =
+            String.length <| postalCode
+    in
+    if length < 5 then
+        [ "ZIP code is too short." ]
+
+    else if length > 9 then
+        [ "ZIP code is too long." ]
+
+    else
+        []

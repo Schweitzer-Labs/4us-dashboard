@@ -1,31 +1,38 @@
 module TxnForm.DisbRuleUnverified exposing
     ( Model
     , Msg(..)
+    , decoder
     , encode
+    , fromError
     , init
     , update
     , view
     )
 
+import Api.GraphQL exposing (MutationResponse(..), mutationValidationFailureDecoder)
 import Asset
 import BankData
+import Bootstrap.Button as Button
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
+import Config exposing (Config)
 import DataTable exposing (DataRow)
 import Disbursement as Disbursement
 import DisbursementInfo
 import Html exposing (Html, div, h6, input, span, text)
 import Html.Attributes exposing (class, type_)
 import Html.Events exposing (onClick)
+import Http
+import Json.Decode as Decode
 import Json.Encode as Encode
 import LabelWithData exposing (labelWithContent, labelWithData)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
-import SubmitButton
+import SubmitButton exposing (submitButton)
 import TimeZone exposing (america__new_york)
 import Timestamp
 import Transaction
@@ -34,8 +41,9 @@ import Transactions
 
 type alias Model =
     { txns : List Transaction.Model
-    , txn : Transaction.Model
-    , selected : List Transaction.Model
+    , bankTxn : Transaction.Model
+    , committeeId : String
+    , selectedTxns : List Transaction.Model
     , related : List Transaction.Model
     , entityName : String
     , addressLine1 : String
@@ -55,14 +63,17 @@ type alias Model =
     , createDisbIsVisible : Bool
     , disabled : Bool
     , isSubmitDisabled : Bool
+    , maybeError : Maybe String
+    , config : Config
     }
 
 
-init : List Transaction.Model -> Transaction.Model -> Model
-init txns txn =
+init : Config -> List Transaction.Model -> Transaction.Model -> Model
+init config txns txn =
     { txns = txns
-    , txn = txn
-    , selected = []
+    , bankTxn = txn
+    , committeeId = txn.committeeId
+    , selectedTxns = []
     , related = getRelatedDisb txn txns
     , entityName = ""
     , addressLine1 = ""
@@ -82,6 +93,8 @@ init txns txn =
     , createDisbIsVisible = False
     , disabled = True
     , isSubmitDisabled = False
+    , maybeError = Nothing
+    , config = config
     }
 
 
@@ -94,16 +107,16 @@ view : Model -> Html Msg
 view model =
     div
         [ Spacing.mt4 ]
-        [ BankData.view True model.txn
+        [ BankData.view True model.bankTxn
         , h6 [ Spacing.mt4 ] [ text "Reconcile" ]
         , Grid.containerFluid
             []
           <|
-            [ reconcileInfoRow model.txn model.selected
+            [ reconcileInfoRow model.bankTxn model.selectedTxns
             , addDisbButtonOrHeading model
             ]
                 ++ disbFormRow model
-                ++ [ reconcileItemsTable model.related model.selected ]
+                ++ [ reconcileItemsTable model.related model.selectedTxns ]
         ]
 
 
@@ -190,14 +203,38 @@ disbFormRow model =
             , amount = Just ( model.amount, AmountUpdated )
             , paymentDate = Just ( model.amount, PaymentDateUpdated )
             , paymentMethod = Nothing
-            , disabled = model.disabled
+            , disabled = False
             , isEditable = False
             , toggleEdit = NoOp
+            , maybeError = model.maybeError
             }
-            ++ [ div [ Spacing.mt4, Spacing.mb4 ] [ SubmitButton.submitButton "Create" NoOp False False ] ]
+            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" NoOp False False ]
 
     else
         []
+
+
+buttonRow : msg -> String -> String -> msg -> Bool -> Bool -> Html msg
+buttonRow hideMsg displayText exitText msg submitting disabled =
+    Grid.row
+        [ Row.betweenXs, Row.attrs [ Spacing.m2 ] ]
+        [ Grid.col
+            [ Col.lg4, Col.attrs [ class "text-left" ] ]
+            [ exitButton hideMsg exitText ]
+        , Grid.col
+            [ Col.lg4 ]
+            [ submitButton displayText msg submitting disabled ]
+        ]
+
+
+exitButton : msg -> String -> Html msg
+exitButton hideMsg displayText =
+    Button.button
+        [ Button.outlinePrimary
+        , Button.block
+        , Button.attrs [ onClick hideMsg ]
+        ]
+        [ text displayText ]
 
 
 matchesIcon : Bool -> Html msg
@@ -310,12 +347,12 @@ update msg model =
             let
                 selected =
                     if isChecked then
-                        model.selected ++ [ clickedTxn ]
+                        model.selectedTxns ++ [ clickedTxn ]
 
                     else
-                        List.filter (\txn -> txn.id /= clickedTxn.id) model.selected
+                        List.filter (\txn -> txn.id /= clickedTxn.id) model.selectedTxns
             in
-            ( { model | selected = selected }, Cmd.none )
+            ( { model | selectedTxns = selected }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -326,16 +363,29 @@ isSelected txn selected =
     List.any (\val -> val.id == txn.id) selected
 
 
-encode : Disbursement.Model -> Encode.Value
-encode disb =
+encode : Model -> Encode.Value
+encode model =
     Encode.object
-        [ ( "disbursementId", Encode.string disb.disbursementId )
-        , ( "committeeId", Encode.string disb.committeeId )
-        , ( "entityName", Encode.string disb.entityName )
-        , ( "addressLine1", Encode.string disb.addressLine1 )
-        , ( "addressLine2", Encode.string disb.addressLine2 )
-        , ( "city", Encode.string disb.city )
-        , ( "state", Encode.string disb.state )
-        , ( "postalCode", Encode.string disb.postalCode )
-        , ( "purposeCode", Encode.string disb.purposeCode )
+        [ ( "selectedTransactions", Encode.list Encode.string <| List.map (\txn -> txn.id) model.selectedTxns )
+        , ( "bankTransaction", Encode.string model.bankTxn.id )
+        , ( "committeeId", Encode.string model.committeeId )
         ]
+
+
+successDecoder : Decode.Decoder MutationResponse
+successDecoder =
+    Decode.map Success <|
+        Decode.field "data" <|
+            Decode.field "reconcileDisbursement" <|
+                Decode.field "id" <|
+                    Decode.string
+
+
+decoder : Decode.Decoder MutationResponse
+decoder =
+    Decode.oneOf [ successDecoder, mutationValidationFailureDecoder ]
+
+
+fromError : Model -> String -> Model
+fromError model error =
+    { model | maybeError = Just error }

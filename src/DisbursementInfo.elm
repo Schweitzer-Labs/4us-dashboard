@@ -35,32 +35,43 @@ type alias Config msg =
     , disabled : Bool
     , isEditable : Bool
     , toggleEdit : msg
+    , maybeError : Maybe String
     }
 
 
 view : Config msg -> List (Html msg)
-view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable, toggleEdit } =
-    [ Grid.row [ Row.attrs [ Spacing.mt2, class "fade-in" ] ]
-        [ Grid.col
-            []
-            [ Form.label [ for "recipient-name" ]
-                [ text "Recipient Info"
-                , if isEditable then
-                    span [ class "hover-underline hover-pointer", Spacing.ml2, onClick toggleEdit ] [ Asset.editGlyph [] ]
+view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable, toggleEdit, maybeError } =
+    let
+        errorContent =
+            case maybeError of
+                Just error ->
+                    [ Grid.row [ Row.attrs [ Spacing.mt2, class "text-danger" ] ] [ Grid.col [] [ text error ] ] ]
 
-                  else
-                    span [] []
+                Nothing ->
+                    []
+    in
+    errorContent
+        ++ [ Grid.row [ Row.attrs [ Spacing.mt2, class "fade-in" ] ]
+                [ Grid.col
+                    []
+                    [ Form.label [ for "recipient-name" ]
+                        [ text "Recipient Info"
+                        , if isEditable then
+                            span [ class "hover-underline hover-pointer", Spacing.ml2, onClick toggleEdit ] [ Asset.editGlyph [] ]
+
+                          else
+                            span [] []
+                        ]
+                    , Input.text
+                        [ Input.id "recipient-name"
+                        , Input.onInput (toMsg entityName)
+                        , Input.placeholder "Enter recipient name"
+                        , Input.value (toData entityName)
+                        , Input.disabled disabled
+                        ]
+                    ]
                 ]
-            , Input.text
-                [ Input.id "recipient-name"
-                , Input.onInput (toMsg entityName)
-                , Input.placeholder "Enter recipient name"
-                , Input.value (toData entityName)
-                , Input.disabled disabled
-                ]
-            ]
-        ]
-    ]
+           ]
         ++ Address.view
             { addressLine1 = addressLine1
             , addressLine2 = addressLine2

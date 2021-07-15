@@ -3,7 +3,7 @@ module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, u
 import Aggregations as Aggregations
 import Api exposing (Token)
 import Api.Endpoint exposing (Endpoint(..))
-import Api.GraphQL as GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, getTransactions, graphQLErrorDecoder)
+import Api.GraphQL as GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, getTransactions, graphQLErrorDecoder, mutationValidationFailureDecoder, reconcileDisbMutation)
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Grid as Grid exposing (Column)
@@ -20,7 +20,6 @@ import Config exposing (Config)
 import CreateContribution
 import CreateDisbursement
 import Delay
-import Disbursement as Disbursement
 import EntityType
 import File.Download as Download
 import FileDisclosure
@@ -48,6 +47,7 @@ import Transactions
 import TxnForm as TxnForm
 import TxnForm.DisbRuleUnverified as DisbRuleUnverified
 import TxnForm.DisbRuleVerified as DisbRuleVerified
+import Validate exposing (validate)
 
 
 
@@ -107,7 +107,7 @@ init config session aggs committee committeeId =
       , createDisbursementModalVisibility = Modal.hidden
       , createDisbursementModal = CreateDisbursement.init
       , createDisbursementSubmitting = False
-      , disbRuleUnverifiedModal = DisbRuleUnverified.init [] Transaction.init
+      , disbRuleUnverifiedModal = DisbRuleUnverified.init config [] Transaction.init
       , disbRuleUnverifiedSubmitting = False
       , disbRuleUnverifiedModalVisibility = Modal.hidden
       , disbRuleVerifiedModal = DisbRuleVerified.init Transaction.init
@@ -379,6 +379,7 @@ type Msg
     | DisbRuleUnverifiedModalAnimate Modal.Visibility
     | DisbRuleUnverifiedModalUpdate DisbRuleUnverified.Msg
     | DisbRuleUnverifiedSubmit
+    | DisbRuleUnverifiedGotMutResp (Result Http.Error MutationResponse)
       -- Disb Verified Modal
     | DisbRuleVerifiedModalHide
     | DisbRuleVerifiedModalAnimate Modal.Visibility
@@ -393,7 +394,7 @@ openTxnFormModalLoading model txn =
         TxnForm.DisbRuleUnverified ->
             ( { model
                 | disbRuleUnverifiedModalVisibility = Modal.shown
-                , disbRuleUnverifiedModal = DisbRuleUnverified.init model.transactions txn
+                , disbRuleUnverifiedModal = DisbRuleUnverified.init model.config model.transactions txn
               }
             , Cmd.none
             )
@@ -416,7 +417,7 @@ openTxnFormModalLoaded model txn =
         TxnForm.DisbRuleUnverified ->
             ( { model
                 | disbRuleUnverifiedModalVisibility = Modal.shown
-                , disbRuleUnverifiedModal = DisbRuleUnverified.init model.transactions txn
+                , disbRuleUnverifiedModal = DisbRuleUnverified.init model.config model.transactions txn
               }
             , Cmd.none
             )
@@ -451,7 +452,7 @@ update msg model =
             )
 
         DisbRuleUnverifiedSubmit ->
-            ( model, Cmd.none )
+            ( { model | disbRuleUnverifiedSubmitting = True }, sendReconcileDisb model )
 
         DisbRuleUnverifiedModalUpdate subMsg ->
             let
@@ -459,6 +460,42 @@ update msg model =
                     DisbRuleUnverified.update subMsg model.disbRuleUnverifiedModal
             in
             ( { model | disbRuleUnverifiedModal = subModel }, Cmd.map DisbRuleUnverifiedModalUpdate subCmd )
+
+        DisbRuleUnverifiedGotMutResp res ->
+            case res of
+                Ok mutResp ->
+                    case mutResp of
+                        Success id ->
+                            ( { model
+                                | disbRuleUnverifiedModalVisibility = Modal.hidden
+                                , disbRuleUnverifiedSubmitting = False
+
+                                -- @Todo make this state impossible
+                                , disbRuleUnverifiedModal = DisbRuleUnverified.init model.config [] model.disbRuleUnverifiedModal.bankTxn
+                              }
+                            , getTransactions model.config model.committeeId GotTransactionsData Nothing
+                            )
+
+                        ResValidationFailure errList ->
+                            ( { model
+                                | disbRuleUnverifiedModal =
+                                    DisbRuleUnverified.fromError model.disbRuleUnverifiedModal <|
+                                        Maybe.withDefault "Unexplained error" <|
+                                            List.head errList
+                                , disbRuleUnverifiedSubmitting = False
+                              }
+                            , Cmd.none
+                            )
+
+                Err err ->
+                    ( { model
+                        | disbRuleUnverifiedModal =
+                            DisbRuleUnverified.fromError model.disbRuleUnverifiedModal <|
+                                Api.decodeError err
+                        , disbRuleUnverifiedSubmitting = False
+                      }
+                    , Cmd.none
+                    )
 
         -- Disb Rule Verified Modal State
         DisbRuleVerifiedModalAnimate visibility ->
@@ -525,9 +562,9 @@ update msg model =
                         { cognitoDomain, cognitoClientId, redirectUri } =
                             model.config
                     in
-                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                    --( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                    ( model, Cmd.none )
 
-        --( model, Cmd.none )
         ShowCreateContributionModal ->
             ( { model
                 | createContributionModalVisibility = Modal.shown
@@ -586,7 +623,7 @@ update msg model =
                             , getTransactions model.config model.committeeId GotTransactionsData model.filterTransactionType
                             )
 
-                        ValidationFailure errList ->
+                        ResValidationFailure errList ->
                             ( { model
                                 | createContributionModal =
                                     CreateContribution.setError model.createContributionModal <|
@@ -620,10 +657,10 @@ update msg model =
                             , getTransactions model.config model.committeeId GotTransactionsData Nothing
                             )
 
-                        ValidationFailure errList ->
+                        ResValidationFailure errList ->
                             ( { model
                                 | createDisbursementModal =
-                                    CreateDisbursement.setError model.createDisbursementModal <|
+                                    CreateDisbursement.fromError model.createDisbursementModal <|
                                         Maybe.withDefault "Unexplained error" <|
                                             List.head errList
                                 , createDisbursementSubmitting = False
@@ -634,7 +671,7 @@ update msg model =
                 Err err ->
                     ( { model
                         | createDisbursementModal =
-                            CreateDisbursement.setError model.createDisbursementModal <|
+                            CreateDisbursement.fromError model.createDisbursementModal <|
                                 Api.decodeError err
                         , createContributionSubmitting = False
                       }
@@ -683,11 +720,20 @@ update msg model =
             )
 
         CreateDisbursementSubmit ->
-            ( { model
-                | createDisbursementSubmitting = True
-              }
-            , createDisbursement model
-            )
+            case validate CreateDisbursement.validator model.createDisbursementModal of
+                Err errors ->
+                    let
+                        error =
+                            Maybe.withDefault "Form error" <| List.head errors
+                    in
+                    ( { model | createDisbursementModal = CreateDisbursement.fromError model.createDisbursementModal error }, Cmd.none )
+
+                Ok val ->
+                    ( { model
+                        | createDisbursementSubmitting = True
+                      }
+                    , createDisbursement model
+                    )
 
         CreateDisbursementModalAnimate visibility ->
             ( { model | createDisbursementModalVisibility = visibility }, Cmd.none )
@@ -834,11 +880,6 @@ createContributionSuccessDecoder =
                     Decode.string
 
 
-mutationValidationFailureDecoder : Decode.Decoder MutationResponse
-mutationValidationFailureDecoder =
-    Decode.map ValidationFailure graphQLErrorDecoder
-
-
 encodeDisbursement : Model -> Encode.Value
 encodeDisbursement model =
     let
@@ -891,3 +932,17 @@ createDisbursementSuccessDecoder =
             Decode.field "createDisbursement" <|
                 Decode.field "id" <|
                     Decode.string
+
+
+-- @Todo factor into respective model view update module
+sendReconcileDisb : Model -> Cmd Msg
+sendReconcileDisb model =
+    let
+        body =
+            Http.jsonBody <|
+                encodeQuery reconcileDisbMutation <|
+                    DisbRuleUnverified.encode model.disbRuleUnverifiedModal
+    in
+    Http.send DisbRuleUnverifiedGotMutResp <|
+        Api.post (Endpoint model.config.apiEndpoint) (Api.Token model.config.token) body <|
+            DisbRuleUnverified.decoder

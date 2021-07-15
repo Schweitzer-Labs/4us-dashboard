@@ -6,6 +6,8 @@ module Api.GraphQL exposing
     , getTransaction
     , getTransactions
     , graphQLErrorDecoder
+    , mutationValidationFailureDecoder
+    , reconcileDisbMutation
     , transactionQuery
     )
 
@@ -192,6 +194,27 @@ contributionMutation =
     """
 
 
+reconcileDisbMutation : String
+reconcileDisbMutation =
+    """
+    mutation(
+      $committeeId: String!,
+      $selectedTransactions: [String!]!,
+      $bankTransaction: String!
+    ) {
+      reconcileDisbursement(
+        reconcileDisbursementData: {
+            selectedTransactions: $selectedTransactions,
+            bankTransaction: $bankTransaction,
+            committeeId: $committeeId
+        }
+      ) {
+        id
+      }
+    }
+    """
+
+
 createDisbursementMutation : String
 createDisbursementMutation =
     """
@@ -275,7 +298,7 @@ graphQLErrorDecoder =
 
 type MutationResponse
     = Success String
-    | ValidationFailure (List String)
+    | ResValidationFailure (List String)
 
 
 getTransactions :
@@ -294,6 +317,13 @@ getTransactions config committeeId updateMsg maybeTxnType =
             TransactionsData.decode
 
 
+getTransactionVariables : String -> String -> List ( String, Value )
+getTransactionVariables committeeId txnId =
+    [ ( "committeeId", Encode.string committeeId )
+    , ( "id", Encode.string txnId )
+    ]
+
+
 getTransaction :
     Config
     -> (Result Http.Error TransactionData -> msg)
@@ -306,10 +336,13 @@ getTransaction config updateMsg committeeId txnId =
             Http.jsonBody <|
                 encodeQuery transactionQuery <|
                     Encode.object <|
-                        [ ( "committeeId", Encode.string committeeId )
-                        , ( "id", Encode.string txnId )
-                        ]
+                        getTransactionVariables committeeId txnId
     in
     Http.send updateMsg <|
         Api.post (Endpoint config.apiEndpoint) (Api.Token config.token) body <|
             TransactionData.decode
+
+
+mutationValidationFailureDecoder : Decode.Decoder MutationResponse
+mutationValidationFailureDecoder =
+    Decode.map ResValidationFailure graphQLErrorDecoder

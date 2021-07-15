@@ -8,9 +8,11 @@ module TxnForm.DisbRuleVerified exposing
     , view
     )
 
+import BankData
 import Bootstrap.Grid as Grid
 import Disbursement as Disbursement
 import DisbursementInfo
+import ExpandableBankData
 import Html exposing (Html)
 import Json.Encode as Encode
 import Loading
@@ -39,8 +41,9 @@ type alias Model =
     , checkNumber : String
     , showBankData : Bool
     , loading : Bool
-    , disabled : Bool
     , isSubmitDisabled : Bool
+    , maybeError : Maybe String
+    , formDisabled : Bool
     }
 
 
@@ -73,8 +76,9 @@ init txn =
     , checkNumber = ""
     , showBankData = False
     , loading = False
-    , disabled = True
+    , formDisabled = True
     , isSubmitDisabled = False
+    , maybeError = Nothing
     }
 
 
@@ -94,9 +98,20 @@ loadingView =
 
 loadedView : Model -> Html Msg
 loadedView model =
+    let
+        bankData =
+            if model.txn.bankVerified then
+                ExpandableBankData.view model.showBankData model.txn BankDataToggled
+
+            else
+                []
+    in
     Grid.container
         []
-        (PaymentInfo.view model.txn ++ disbFormRow model)
+        (PaymentInfo.view model.txn
+            ++ disbFormRow model
+            ++ bankData
+        )
 
 
 disbFormRow : Model -> List (Html Msg)
@@ -116,9 +131,10 @@ disbFormRow model =
         , amount = Nothing
         , paymentDate = Nothing
         , paymentMethod = Nothing
-        , disabled = model.disabled
+        , disabled = model.formDisabled
         , isEditable = True
-        , toggleEdit = ToggleEditForm
+        , toggleEdit = EditFormToggled
+        , maybeError = model.maybeError
         }
 
 
@@ -139,8 +155,8 @@ type Msg
     | PaymentDateUpdated String
     | PaymentMethodUpdated (Maybe PaymentMethod)
     | CheckNumberUpdated String
-    | ToggleBankData
-    | ToggleEditForm
+    | EditFormToggled
+    | BankDataToggled
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -191,11 +207,11 @@ update msg model =
         IsInKindUpdated bool ->
             ( { model | isInKind = bool, isSubmitDisabled = True }, Cmd.none )
 
-        ToggleBankData ->
+        BankDataToggled ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
 
-        ToggleEditForm ->
-            ( { model | disabled = not model.disabled }, Cmd.none )
+        EditFormToggled ->
+            ( { model | formDisabled = not model.formDisabled }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
