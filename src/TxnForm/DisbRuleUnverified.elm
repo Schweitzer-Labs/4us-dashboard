@@ -154,7 +154,7 @@ transactionRowMap ( maybeSelected, maybeMsg, txn ) =
             ]
             ""
         )
-      , ( "Date / Time", text <| Timestamp.format (america__new_york ()) txn.initiatedTimestamp )
+      , ( "Date / Time", text <| Timestamp.format (america__new_york ()) txn.paymentDate )
       , ( "Entity Name", name )
       , ( "Amount", amount )
       , ( "Purpose Code", Transactions.getContext txn )

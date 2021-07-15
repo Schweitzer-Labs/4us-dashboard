@@ -59,14 +59,14 @@ view : Committee.Model -> List Transaction.Model -> Html msg
 view committee txns =
     DataTable.view "Awaiting Transactions." labels (transactionRowMap committee) <|
         List.map (\d -> ( Nothing, Nothing, d )) <|
-            List.reverse (sortBy .initiatedTimestamp txns)
+            List.reverse (sortBy .paymentDate txns)
 
 
 viewInteractive : Committee.Model -> (Transaction.Model -> msg) -> List Transaction.Model -> Html msg
 viewInteractive committee selectMsg txns =
     DataTable.view "Awaiting Transactions." labels (transactionRowMap committee) <|
         List.map (\t -> ( Nothing, Just <| selectMsg t, t )) <|
-            List.reverse (sortBy .initiatedTimestamp txns)
+            List.reverse (sortBy .paymentDate txns)
 
 
 processor : Committee.Model -> Transaction.Model -> Html msg
@@ -174,7 +174,7 @@ transactionRowMap committee ( _, maybeMsg, transaction ) =
             getEntityType transaction
     in
     ( maybeMsg
-    , [ ( "Date / Time", text <| Timestamp.format (america__new_york ()) transaction.initiatedTimestamp )
+    , [ ( "Date / Time", text <| Timestamp.format (america__new_york ()) transaction.paymentDate )
       , ( "Entity Name", name )
       , ( "Context", entityType )
       , ( "Amount", amount )

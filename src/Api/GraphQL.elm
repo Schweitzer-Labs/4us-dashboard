@@ -57,6 +57,7 @@ transactionsQuery =
           bankVerified
           ruleVerified
           initiatedTimestamp
+          paymentDate
           purposeCode
           refCode
           firstName
@@ -102,6 +103,7 @@ transactionQuery =
             bankVerified
             ruleVerified
             initiatedTimestamp
+            paymentDate
             purposeCode
             refCode
             firstName
