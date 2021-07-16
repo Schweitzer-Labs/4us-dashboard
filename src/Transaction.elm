@@ -18,6 +18,7 @@ type alias Model =
     , bankVerified : Bool
     , ruleVerified : Bool
     , initiatedTimestamp : Int
+    , paymentDate : Int
     , bankVerifiedTimestamp : Maybe Int
     , ruleVerifiedTimestamp : Maybe Int
     , purposeCode : Maybe PurposeCode
@@ -63,6 +64,7 @@ init =
     , bankVerified = False
     , ruleVerified = False
     , initiatedTimestamp = 0
+    , paymentDate = 0
     , bankVerifiedTimestamp = Nothing
     , ruleVerifiedTimestamp = Nothing
     , purposeCode = Nothing
@@ -133,6 +135,7 @@ decoder =
         |> required "bankVerified" bool
         |> required "ruleVerified" bool
         |> required "initiatedTimestamp" int
+        |> required "paymentDate" int
         |> maybeInt "bankVerifiedTimestamp"
         |> maybeInt "ruleVerifiedTimestamp"
         |> maybePurposeCode "purposeCode"

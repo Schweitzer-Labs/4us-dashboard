@@ -1,8 +1,6 @@
 module TxnForm.DisbRuleUnverified exposing
     ( Model
     , Msg(..)
-    , decoder
-    , encode
     , fromError
     , init
     , update
@@ -160,7 +158,7 @@ transactionRowMap ( maybeSelected, maybeMsg, txn ) =
             ]
             ""
         )
-      , ( "Date / Time", text <| Timestamp.format (america__new_york ()) txn.initiatedTimestamp )
+      , ( "Date / Time", text <| Timestamp.format (america__new_york ()) txn.paymentDate )
       , ( "Entity Name", name )
       , ( "Amount", amount )
       , ( "Purpose Code", Transactions.getContext txn )
@@ -367,29 +365,6 @@ update msg model =
 isSelected : Transaction.Model -> List Transaction.Model -> Bool
 isSelected txn selected =
     List.any (\val -> val.id == txn.id) selected
-
-
-encode : Model -> Encode.Value
-encode model =
-    Encode.object
-        [ ( "selectedTransactions", Encode.list Encode.string <| List.map (\txn -> txn.id) model.selectedTxns )
-        , ( "bankTransaction", Encode.string model.bankTxn.id )
-        , ( "committeeId", Encode.string model.committeeId )
-        ]
-
-
-successDecoder : Decode.Decoder MutationResponse
-successDecoder =
-    Decode.map Success <|
-        Decode.field "data" <|
-            Decode.field "reconcileDisbursement" <|
-                Decode.field "id" <|
-                    Decode.string
-
-
-decoder : Decode.Decoder MutationResponse
-decoder =
-    Decode.oneOf [ successDecoder, mutationValidationFailureDecoder ]
 
 
 fromError : Model -> String -> Model

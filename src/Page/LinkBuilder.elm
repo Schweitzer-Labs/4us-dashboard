@@ -4,9 +4,7 @@ module Page.LinkBuilder exposing (Model, Msg, init, subscriptions, toSession, up
 -}
 
 import Aggregations
-import Api exposing (Token)
-import Api.Endpoint exposing (Endpoint(..))
-import Api.GraphQL exposing (getTransactions)
+import Api.GetTxns as GetTxns
 import Bootstrap.Button as Button
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
@@ -27,7 +25,7 @@ import Http
 import QRCode
 import Session exposing (Session)
 import Task exposing (Task)
-import Transaction.TransactionsData exposing (TransactionsData)
+import TransactionType exposing (TransactionType)
 import Url.Builder
 
 
@@ -49,16 +47,20 @@ type alias Model =
 
 init : Config -> Session -> Aggregations.Model -> Committee.Model -> String -> ( Model, Cmd Msg )
 init config session aggs committee committeeId =
-    ( { session = session
-      , refCode = ""
-      , amount = ""
-      , url = ""
-      , committeeId = committeeId
-      , aggregations = aggs
-      , committee = committee
-      , config = config
-      }
-    , getTransactions config committeeId LoadAggregationsData Nothing
+    let
+        initModel =
+            { session = session
+            , refCode = ""
+            , amount = ""
+            , url = ""
+            , committeeId = committeeId
+            , aggregations = aggs
+            , committee = committee
+            , config = config
+            }
+    in
+    ( initModel
+    , getTransactions initModel Nothing
     )
 
 
@@ -162,7 +164,7 @@ type Msg
     = GotSession Session
     | RefCodeUpdated String
     | AmountUpdated String
-    | LoadAggregationsData (Result Http.Error TransactionsData)
+    | GotTransactionsData (Result Http.Error GetTxns.Model)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -177,7 +179,7 @@ update msg model =
         AmountUpdated str ->
             ( { model | amount = str }, Cmd.none )
 
-        LoadAggregationsData res ->
+        GotTransactionsData res ->
             case res of
                 Ok body ->
                     ( { model
@@ -224,6 +226,15 @@ scrollToTop =
         -- It's not worth showing the user anything special if scrolling fails.
         -- If anything, we'd log this to an error recording service.
         |> Task.onError (\_ -> Task.succeed ())
+
+
+
+-- HTTP
+
+
+getTransactions : Model -> Maybe TransactionType -> Cmd Msg
+getTransactions model maybeTxnType =
+    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType
 
 
 
