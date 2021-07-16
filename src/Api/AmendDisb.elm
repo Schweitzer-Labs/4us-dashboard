@@ -6,8 +6,6 @@ import Http
 import Json.Decode as Decode
 import Json.Encode as Encode exposing (Value)
 import Timestamp exposing (dateStringToMillis)
-import TransactionType exposing (TransactionType)
-import TxnForm.DisbRuleUnverified as DisbRuleUnverified
 import TxnForm.DisbRuleVerified as DisbRuleVerified
 
 
