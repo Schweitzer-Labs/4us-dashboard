@@ -8,9 +8,7 @@ module TxnForm.DisbRuleVerified exposing
     , view
     )
 
-import BankData
 import Bootstrap.Grid as Grid
-import Disbursement as Disbursement
 import DisbursementInfo
 import ExpandableBankData
 import Html exposing (Html)

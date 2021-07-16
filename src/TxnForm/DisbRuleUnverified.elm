@@ -7,7 +7,6 @@ module TxnForm.DisbRuleUnverified exposing
     , view
     )
 
-import Api.GraphQL exposing (MutationResponse(..), mutationValidationFailureDecoder)
 import Asset
 import BankData
 import Bootstrap.Button as Button
@@ -19,14 +18,10 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import Config exposing (Config)
 import DataTable exposing (DataRow)
-import Disbursement as Disbursement
 import DisbursementInfo
 import Html exposing (Html, div, h6, input, span, text)
 import Html.Attributes exposing (class, type_)
 import Html.Events exposing (onClick)
-import Http
-import Json.Decode as Decode
-import Json.Encode as Encode
 import LabelWithData exposing (labelWithContent, labelWithData)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
