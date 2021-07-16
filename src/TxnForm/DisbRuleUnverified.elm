@@ -210,7 +210,12 @@ disbFormRow model =
 buttonRow : msg -> String -> String -> msg -> Bool -> Bool -> Html msg
 buttonRow hideMsg displayText exitText msg submitting disabled =
     Grid.row
-        [ Row.betweenXs, Row.attrs [ Spacing.m2 ] ]
+        [ Row.betweenXs
+        , Row.attrs
+            [ Spacing.mt3
+            , Spacing.mb3
+            ]
+        ]
         [ Grid.col
             [ Col.lg4, Col.attrs [ class "text-left" ] ]
             [ exitButton hideMsg exitText ]
