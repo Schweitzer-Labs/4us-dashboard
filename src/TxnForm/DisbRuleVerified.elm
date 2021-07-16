@@ -1,7 +1,6 @@
 module TxnForm.DisbRuleVerified exposing
     ( Model
     , Msg(..)
-    , encode
     , fromError
     , init
     , loadingInit
@@ -218,21 +217,6 @@ update msg model =
 
         NoOp ->
             ( model, Cmd.none )
-
-
-encode : Disbursement.Model -> Encode.Value
-encode disb =
-    Encode.object
-        [ ( "disbursementId", Encode.string disb.disbursementId )
-        , ( "committeeId", Encode.string disb.committeeId )
-        , ( "entityName", Encode.string disb.entityName )
-        , ( "addressLine1", Encode.string disb.addressLine1 )
-        , ( "addressLine2", Encode.string disb.addressLine2 )
-        , ( "city", Encode.string disb.city )
-        , ( "state", Encode.string disb.state )
-        , ( "postalCode", Encode.string disb.postalCode )
-        , ( "purposeCode", Encode.string disb.purposeCode )
-        ]
 
 
 validator : Validator String Model
