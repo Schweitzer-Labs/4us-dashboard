@@ -2,9 +2,9 @@ module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, u
 
 import Aggregations as Aggregations
 import Api exposing (Token)
+import Api.AmendDisb as AmendDisb
 import Api.CreateContrib as CreateConrib
 import Api.CreateDisb as CreateDisb
-import Api.Endpoint exposing (Endpoint(..))
 import Api.GetTxn as GetTxn
 import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse(..))
@@ -18,14 +18,12 @@ import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
-import Cents
 import Cognito exposing (loginUrl)
 import Committee
 import Config exposing (Config)
 import CreateContribution
 import CreateDisbursement
 import Delay
-import EntityType
 import File.Download as Download
 import FileDisclosure
 import FileFormat exposing (FileFormat)
@@ -33,12 +31,8 @@ import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Http
-import Json.Decode as Decode exposing (string)
-import Json.Encode as Encode exposing (Value)
 import Loading
-import PaymentMethod
 import PlatformModal
-import PurposeCode
 import Session exposing (Session)
 import SubmitButton exposing (submitButton)
 import Task exposing (Task)
@@ -346,54 +340,6 @@ exitButton =
         [ text "Exit" ]
 
 
-
--- TAGS
--- UPDATE
-
-
-type Msg
-    = GotSession Session
-    | GotTransactionsData (Result Http.Error GetTxns.Model)
-    | GenerateReport FileFormat
-    | HideCreateContributionModal
-    | ShowCreateContributionModal
-    | HideGenerateDisclosureModal
-    | ShowGenerateDisclosureModal
-    | AnimateGenerateDisclosureModal Modal.Visibility
-    | CreateContributionModalUpdated CreateContribution.Msg
-    | AnimateCreateContributionModal Modal.Visibility
-    | GotCreateContributionResponse (Result Http.Error MutationResponse)
-    | GotCreateDisbursementResponse (Result Http.Error MutationResponse)
-    | GotTransactionData (Result Http.Error GetTxn.Model)
-    | SubmitCreateContribution
-    | ToggleActionsDropdown Dropdown.State
-    | ToggleFiltersDropdown Dropdown.State
-    | ToggleGenerateDisclosureModalDownloadDropdown Dropdown.State
-    | FileDisclosure
-    | FileDisclosureDelayed
-    | FilterByContributions
-    | FilterByDisbursements
-    | NoOp
-    | FilterAll
-    | CreateDisbursementModalHide
-    | CreateDisbursementModalAnimate Modal.Visibility
-    | CreateDisbursementModalUpdate CreateDisbursement.Msg
-    | CreateDisbursementModalShow
-    | CreateDisbursementSubmit
-      -- Disb Unverified Modal
-    | DisbRuleUnverifiedModalHide
-    | DisbRuleUnverifiedModalAnimate Modal.Visibility
-    | DisbRuleUnverifiedModalUpdate DisbRuleUnverified.Msg
-    | DisbRuleUnverifiedSubmit
-    | DisbRuleUnverifiedGotMutResp (Result Http.Error MutationResponse)
-      -- Disb Verified Modal
-    | DisbRuleVerifiedModalHide
-    | DisbRuleVerifiedModalAnimate Modal.Visibility
-    | DisbRuleVerifiedModalUpdate DisbRuleVerified.Msg
-    | DisbRuleVerifiedSubmit
-    | ShowTxnFormModal Transaction.Model
-
-
 openTxnFormModalLoading : Model -> Transaction.Model -> ( Model, Cmd Msg )
 openTxnFormModalLoading model txn =
     case TxnForm.fromTxn txn of
@@ -438,6 +384,50 @@ openTxnFormModalLoaded model txn =
 
         _ ->
             ( model, Cmd.none )
+
+
+type Msg
+    = GotSession Session
+    | GotTransactionsData (Result Http.Error GetTxns.Model)
+    | GenerateReport FileFormat
+    | HideCreateContributionModal
+    | ShowCreateContributionModal
+    | HideGenerateDisclosureModal
+    | ShowGenerateDisclosureModal
+    | AnimateGenerateDisclosureModal Modal.Visibility
+    | CreateContributionModalUpdated CreateContribution.Msg
+    | AnimateCreateContributionModal Modal.Visibility
+    | GotCreateContributionResponse (Result Http.Error MutationResponse)
+    | GotCreateDisbursementResponse (Result Http.Error MutationResponse)
+    | DisbRuleVerifiedGotMutResp (Result Http.Error MutationResponse)
+    | GotTransactionData (Result Http.Error GetTxn.Model)
+    | SubmitCreateContribution
+    | ToggleActionsDropdown Dropdown.State
+    | ToggleFiltersDropdown Dropdown.State
+    | ToggleGenerateDisclosureModalDownloadDropdown Dropdown.State
+    | FileDisclosure
+    | FileDisclosureDelayed
+    | FilterByContributions
+    | FilterByDisbursements
+    | NoOp
+    | FilterAll
+    | CreateDisbursementModalHide
+    | CreateDisbursementModalAnimate Modal.Visibility
+    | CreateDisbursementModalUpdate CreateDisbursement.Msg
+    | CreateDisbursementModalShow
+    | CreateDisbursementSubmit
+      -- Disb Unverified Modal
+    | DisbRuleUnverifiedModalHide
+    | DisbRuleUnverifiedModalAnimate Modal.Visibility
+    | DisbRuleUnverifiedModalUpdate DisbRuleUnverified.Msg
+    | DisbRuleUnverifiedSubmit
+    | DisbRuleUnverifiedGotMutResp (Result Http.Error MutationResponse)
+      -- Disb Verified Modal
+    | DisbRuleVerifiedModalHide
+    | DisbRuleVerifiedModalAnimate Modal.Visibility
+    | DisbRuleVerifiedModalUpdate DisbRuleVerified.Msg
+    | DisbRuleVerifiedSubmit
+    | ShowTxnFormModal Transaction.Model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -503,6 +493,42 @@ update msg model =
                     , Cmd.none
                     )
 
+        DisbRuleVerifiedGotMutResp res ->
+            case res of
+                Ok mutResp ->
+                    case mutResp of
+                        Success id ->
+                            ( { model
+                                | disbRuleVerifiedModalVisibility = Modal.hidden
+                                , disbRuleVerifiedSubmitting = False
+
+                                -- @Todo make this state impossible
+                                , disbRuleVerifiedModal = DisbRuleVerified.loadingInit
+                              }
+                            , getTransactions model Nothing
+                            )
+
+                        ResValidationFailure errList ->
+                            ( { model
+                                | disbRuleVerifiedModal =
+                                    DisbRuleVerified.fromError model.disbRuleVerifiedModal <|
+                                        Maybe.withDefault "Unexplained error" <|
+                                            List.head errList
+                                , disbRuleVerifiedSubmitting = False
+                              }
+                            , Cmd.none
+                            )
+
+                Err err ->
+                    ( { model
+                        | disbRuleVerifiedModal =
+                            DisbRuleVerified.fromError model.disbRuleVerifiedModal <|
+                                Api.decodeError err
+                        , disbRuleVerifiedSubmitting = False
+                      }
+                    , Cmd.none
+                    )
+
         -- Disb Rule Verified Modal State
         DisbRuleVerifiedModalAnimate visibility ->
             ( { model | disbRuleVerifiedModalVisibility = visibility }, Cmd.none )
@@ -515,7 +541,7 @@ update msg model =
             )
 
         DisbRuleVerifiedSubmit ->
-            ( model, Cmd.none )
+            ( model, amendDisb model )
 
         DisbRuleVerifiedModalUpdate subMsg ->
             let
@@ -784,6 +810,11 @@ getTransactions model maybeTxnType =
 getTransaction : Model -> String -> Cmd Msg
 getTransaction model txnId =
     GetTxn.send GotTransactionData model.config <| GetTxn.encode model.committeeId txnId
+
+
+amendDisb : Model -> Cmd Msg
+amendDisb model =
+    AmendDisb.send DisbRuleVerifiedGotMutResp model.config <| AmendDisb.encode model.disbRuleVerifiedModal
 
 
 
