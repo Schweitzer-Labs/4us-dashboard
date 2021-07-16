@@ -14,7 +14,6 @@ import Disbursement as Disbursement
 import DisbursementInfo
 import ExpandableBankData
 import Html exposing (Html)
-import Json.Encode as Encode
 import Loading
 import PaymentInfo
 import PaymentMethod exposing (PaymentMethod)
