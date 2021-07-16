@@ -550,8 +550,10 @@ update msg model =
                     ( { model | disbRuleVerifiedModal = DisbRuleVerified.fromError model.disbRuleVerifiedModal error }, Cmd.none )
 
                 Ok val ->
-                    ( model
-                    , Cmd.none
+                    ( { model
+                        | disbRuleVerifiedSubmitting = True
+                      }
+                    , amendDisb model
                     )
 
         DisbRuleVerifiedModalUpdate subMsg ->
