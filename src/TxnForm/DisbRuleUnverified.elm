@@ -20,7 +20,6 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import Config exposing (Config)
-import CreateDisbursement exposing (disableOnYes)
 import DataTable exposing (DataRow)
 import Disbursement as Disbursement
 import DisbursementInfo
@@ -336,7 +335,7 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, isSubmitDisabled = disableOnYes bool }, Cmd.none )
+            ( { model | isInKind = bool, isSubmitDisabled = disableSubmitOnInKind model }, Cmd.none )
 
         CreateDisbToggled ->
             ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
@@ -390,3 +389,15 @@ decoder =
 fromError : Model -> String -> Model
 fromError model error =
     { model | maybeError = Just error }
+
+
+disableSubmitOnInKind : Model -> Bool
+disableSubmitOnInKind model =
+    if model.isInKind == Just True then
+        True
+
+    else if model.paymentMethod /= Nothing then
+        False
+
+    else
+        model.isSubmitDisabled

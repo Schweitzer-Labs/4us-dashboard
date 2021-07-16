@@ -12,7 +12,6 @@ module TxnForm.DisbRuleVerified exposing
 
 import Address exposing (postalCodeToErrors)
 import Bootstrap.Grid as Grid
-import CreateDisbursement exposing (disableOnYes)
 import Disbursement as Disbursement
 import DisbursementInfo
 import ExpandableBankData
@@ -81,7 +80,7 @@ init txn =
     , showBankData = False
     , loading = False
     , formDisabled = True
-    , isSubmitDisabled = False
+    , isSubmitDisabled = True
     , maybeError = Nothing
     }
 
@@ -209,13 +208,13 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, isSubmitDisabled = disableOnYes bool }, Cmd.none )
+            ( { model | isInKind = bool, isSubmitDisabled = disableSubmitOnInKind model }, Cmd.none )
 
         BankDataToggled ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
 
         EditFormToggled ->
-            ( { model | formDisabled = not model.formDisabled }, Cmd.none )
+            ( { model | formDisabled = not model.formDisabled, isSubmitDisabled = False }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -261,3 +260,15 @@ postalCodeOnModelToErrors model =
 fromError : Model -> String -> Model
 fromError model error =
     { model | maybeError = Just error }
+
+
+disableSubmitOnInKind : Model -> Bool
+disableSubmitOnInKind model =
+    if model.isInKind == Just True then
+        True
+
+    else if model.paymentMethod /= Nothing then
+        False
+
+    else
+        model.isSubmitDisabled

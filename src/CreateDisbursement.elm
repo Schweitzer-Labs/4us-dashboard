@@ -1,7 +1,6 @@
 module CreateDisbursement exposing
     ( Model
     , Msg(..)
-    , disableOnYes
     , fromError
     , init
     , update
@@ -15,7 +14,7 @@ import DisbursementInfo
 import Html exposing (Html)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
-import Validate exposing (Validator, fromErrors, ifBlank, ifInvalidEmail)
+import Validate exposing (Validator, fromErrors, ifBlank)
 
 
 type alias Model =
@@ -57,7 +56,7 @@ init =
     , paymentMethod = Nothing
     , checkNumber = ""
     , maybeError = Nothing
-    , isSubmitDisabled = False
+    , isSubmitDisabled = True
     }
 
 
@@ -117,7 +116,7 @@ update msg model =
             ( { model | purposeCode = str }, Cmd.none )
 
         PaymentMethodUpdated pm ->
-            ( { model | paymentMethod = pm }, Cmd.none )
+            ( { model | paymentMethod = pm, isSubmitDisabled = False }, Cmd.none )
 
         AmountUpdated str ->
             ( { model | amount = str }, Cmd.none )
@@ -158,19 +157,10 @@ update msg model =
         IsInKindUpdated bool ->
             ( { model
                 | isInKind = bool
-                , isSubmitDisabled = disableOnYes bool
+                , isSubmitDisabled = disableSubmitOnInKind model
               }
             , Cmd.none
             )
-
-
-disableOnYes : Maybe Bool -> Bool
-disableOnYes isInKind =
-    if isInKind == Just True then
-        True
-
-    else
-        False
 
 
 validator : Validator String Model
@@ -204,3 +194,15 @@ postalCodeOnModelToErrors model =
 fromError : Model -> String -> Model
 fromError model error =
     { model | maybeError = Just error }
+
+
+disableSubmitOnInKind : Model -> Bool
+disableSubmitOnInKind model =
+    if model.isInKind == Just True then
+        True
+
+    else if model.paymentMethod /= Nothing then
+        False
+
+    else
+        model.isSubmitDisabled
