@@ -38,7 +38,7 @@ import TimeZone exposing (america__new_york)
 import Timestamp
 import Transaction
 import Transactions
-import Validate exposing (Validator, fromErrors, ifBlank)
+import Validate exposing (Validator, fromErrors, ifBlank, validate)
 
 
 type alias Model =
@@ -212,7 +212,7 @@ disbFormRow model =
             , toggleEdit = NoOp
             , maybeError = model.maybeError
             }
-            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" NoOp False model.isCreateDisbDisabled ]
+            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" CreateDisb False model.isCreateDisbDisabled ]
 
     else
         []
@@ -289,6 +289,7 @@ type Msg
     | PaymentMethodUpdated (Maybe PaymentMethod)
     | CheckNumberUpdated String
     | CreateDisbToggled
+    | CreateDisb
     | EditDisbToggle
     | RelatedTransactionClicked Transaction.Model Bool
 
@@ -343,6 +344,20 @@ update msg model =
 
         CreateDisbToggled ->
             ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
+
+        CreateDisb ->
+            case validate validator model of
+                Err errors ->
+                    let
+                        error =
+                            Maybe.withDefault "Form error" <| List.head errors
+                    in
+                    ( fromError model error, Cmd.none )
+
+                Ok val ->
+                    ( model
+                    , Cmd.none
+                    )
 
         EditDisbToggle ->
             ( { model | disabled = not model.disabled }, Cmd.none )

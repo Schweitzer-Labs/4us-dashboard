@@ -386,7 +386,6 @@ type Msg
     | DisbRuleUnverifiedModalUpdate DisbRuleUnverified.Msg
     | DisbRuleUnverifiedSubmit
     | DisbRuleUnverifiedGotMutResp (Result Http.Error MutationResponse)
-    | DisbRuleUnverifiedCreateDisbSubmit
       -- Disb Verified Modal
     | DisbRuleVerifiedModalHide
     | DisbRuleVerifiedModalAnimate Modal.Visibility
@@ -467,20 +466,6 @@ update msg model =
                     DisbRuleUnverified.update subMsg model.disbRuleUnverifiedModal
             in
             ( { model | disbRuleUnverifiedModal = subModel }, Cmd.map DisbRuleUnverifiedModalUpdate subCmd )
-
-        DisbRuleUnverifiedCreateDisbSubmit ->
-            case validate DisbRuleUnverified.validator model.disbRuleUnverifiedModal of
-                Err errors ->
-                    let
-                        error =
-                            Maybe.withDefault "Form error" <| List.head errors
-                    in
-                    ( { model | disbRuleUnverifiedModal = DisbRuleUnverified.fromError model.disbRuleUnverifiedModal error }, Cmd.none )
-
-                Ok val ->
-                    ( model
-                    , Cmd.none
-                    )
 
         DisbRuleUnverifiedGotMutResp res ->
             case res of
