@@ -2,8 +2,13 @@ module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, u
 
 import Aggregations as Aggregations
 import Api exposing (Token)
+import Api.CreateContrib as CreateConrib
+import Api.CreateDisb as CreateDisb
 import Api.Endpoint exposing (Endpoint(..))
-import Api.GraphQL as GraphQL exposing (MutationResponse(..), contributionMutation, createDisbursementMutation, encodeQuery, getTransactions, graphQLErrorDecoder, mutationValidationFailureDecoder, reconcileDisbMutation)
+import Api.GetTxn as GetTxn
+import Api.GetTxns as GetTxns
+import Api.GraphQL exposing (MutationResponse(..))
+import Api.ReconcileDisb as ReconcileDisb
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Grid as Grid exposing (Column)
@@ -38,10 +43,7 @@ import Session exposing (Session)
 import SubmitButton exposing (submitButton)
 import Task exposing (Task)
 import Time
-import Timestamp exposing (dateStringToMillis)
 import Transaction
-import Transaction.TransactionData exposing (TransactionData)
-import Transaction.TransactionsData as TransactionsData exposing (TransactionsData)
 import TransactionType exposing (TransactionType(..))
 import Transactions
 import TxnForm as TxnForm
@@ -87,35 +89,39 @@ type alias Model =
 
 init : Config -> Session -> Aggregations.Model -> Committee.Model -> String -> ( Model, Cmd Msg )
 init config session aggs committee committeeId =
-    ( { session = session
-      , loading = True
-      , committeeId = committeeId
-      , timeZone = Time.utc
-      , transactions = []
-      , aggregations = aggs
-      , committee = committee
-      , createContributionModalVisibility = Modal.hidden
-      , createContributionModal = CreateContribution.init
-      , createContributionSubmitting = False
-      , generateDisclosureModalVisibility = Modal.hidden
-      , actionsDropdown = Dropdown.initialState
-      , filtersDropdown = Dropdown.initialState
-      , generateDisclosureModalDownloadDropdownState = Dropdown.initialState
-      , filterTransactionType = Nothing
-      , disclosureSubmitting = False
-      , disclosureSubmitted = False
-      , createDisbursementModalVisibility = Modal.hidden
-      , createDisbursementModal = CreateDisbursement.init
-      , createDisbursementSubmitting = False
-      , disbRuleUnverifiedModal = DisbRuleUnverified.init config [] Transaction.init
-      , disbRuleUnverifiedSubmitting = False
-      , disbRuleUnverifiedModalVisibility = Modal.hidden
-      , disbRuleVerifiedModal = DisbRuleVerified.init Transaction.init
-      , disbRuleVerifiedSubmitting = False
-      , disbRuleVerifiedModalVisibility = Modal.hidden
-      , config = config
-      }
-    , getTransactions config committeeId GotTransactionsData Nothing
+    let
+        initModel =
+            { session = session
+            , loading = True
+            , committeeId = committeeId
+            , timeZone = Time.utc
+            , transactions = []
+            , aggregations = aggs
+            , committee = committee
+            , createContributionModalVisibility = Modal.hidden
+            , createContributionModal = CreateContribution.init committeeId
+            , createContributionSubmitting = False
+            , generateDisclosureModalVisibility = Modal.hidden
+            , actionsDropdown = Dropdown.initialState
+            , filtersDropdown = Dropdown.initialState
+            , generateDisclosureModalDownloadDropdownState = Dropdown.initialState
+            , filterTransactionType = Nothing
+            , disclosureSubmitting = False
+            , disclosureSubmitted = False
+            , createDisbursementModalVisibility = Modal.hidden
+            , createDisbursementModal = CreateDisbursement.init committeeId
+            , createDisbursementSubmitting = False
+            , disbRuleUnverifiedModal = DisbRuleUnverified.init config [] Transaction.init
+            , disbRuleUnverifiedSubmitting = False
+            , disbRuleUnverifiedModalVisibility = Modal.hidden
+            , disbRuleVerifiedModal = DisbRuleVerified.init Transaction.init
+            , disbRuleVerifiedSubmitting = False
+            , disbRuleVerifiedModalVisibility = Modal.hidden
+            , config = config
+            }
+    in
+    ( initModel
+    , getTransactions initModel Nothing
     )
 
 
@@ -347,7 +353,7 @@ exitButton =
 
 type Msg
     = GotSession Session
-    | GotTransactionsData (Result Http.Error TransactionsData)
+    | GotTransactionsData (Result Http.Error GetTxns.Model)
     | GenerateReport FileFormat
     | HideCreateContributionModal
     | ShowCreateContributionModal
@@ -358,7 +364,7 @@ type Msg
     | AnimateCreateContributionModal Modal.Visibility
     | GotCreateContributionResponse (Result Http.Error MutationResponse)
     | GotCreateDisbursementResponse (Result Http.Error MutationResponse)
-    | GotTransactionData (Result Http.Error TransactionData)
+    | GotTransactionData (Result Http.Error GetTxn.Model)
     | SubmitCreateContribution
     | ToggleActionsDropdown Dropdown.State
     | ToggleFiltersDropdown Dropdown.State
@@ -404,7 +410,7 @@ openTxnFormModalLoading model txn =
                 | disbRuleVerifiedModalVisibility = Modal.shown
                 , disbRuleVerifiedModal = DisbRuleVerified.loadingInit
               }
-            , GraphQL.getTransaction model.config GotTransactionData model.committeeId txn.id
+            , getTransaction model txn.id
             )
 
         _ ->
@@ -452,7 +458,7 @@ update msg model =
             )
 
         DisbRuleUnverifiedSubmit ->
-            ( { model | disbRuleUnverifiedSubmitting = True }, sendReconcileDisb model )
+            ( { model | disbRuleUnverifiedSubmitting = True }, reconcileDisb model )
 
         DisbRuleUnverifiedModalUpdate subMsg ->
             let
@@ -473,7 +479,7 @@ update msg model =
                                 -- @Todo make this state impossible
                                 , disbRuleUnverifiedModal = DisbRuleUnverified.init model.config [] model.disbRuleUnverifiedModal.bankTxn
                               }
-                            , getTransactions model.config model.committeeId GotTransactionsData Nothing
+                            , getTransactions model Nothing
                             )
 
                         ResValidationFailure errList ->
@@ -568,7 +574,7 @@ update msg model =
         ShowCreateContributionModal ->
             ( { model
                 | createContributionModalVisibility = Modal.shown
-                , createContributionModal = CreateContribution.init
+                , createContributionModal = CreateContribution.init model.committeeId
               }
             , Cmd.none
             )
@@ -620,7 +626,7 @@ update msg model =
                                 | createContributionModalVisibility = Modal.hidden
                                 , createContributionSubmitting = False
                               }
-                            , getTransactions model.config model.committeeId GotTransactionsData model.filterTransactionType
+                            , getTransactions model model.filterTransactionType
                             )
 
                         ResValidationFailure errList ->
@@ -652,9 +658,9 @@ update msg model =
                             ( { model
                                 | createDisbursementModalVisibility = Modal.hidden
                                 , createDisbursementSubmitting = False
-                                , createDisbursementModal = CreateDisbursement.init
+                                , createDisbursementModal = CreateDisbursement.init model.committeeId
                               }
-                            , getTransactions model.config model.committeeId GotTransactionsData Nothing
+                            , getTransactions model Nothing
                             )
 
                         ResValidationFailure errList ->
@@ -689,17 +695,17 @@ update msg model =
 
         FilterByContributions ->
             ( { model | filterTransactionType = Just TransactionType.Contribution }
-            , getTransactions model.config model.committeeId GotTransactionsData (Just TransactionType.Contribution)
+            , getTransactions model (Just TransactionType.Contribution)
             )
 
         FilterByDisbursements ->
             ( { model | filterTransactionType = Just TransactionType.Disbursement }
-            , getTransactions model.config model.committeeId GotTransactionsData (Just TransactionType.Disbursement)
+            , getTransactions model (Just TransactionType.Disbursement)
             )
 
         FilterAll ->
             ( { model | filterTransactionType = Nothing }
-            , getTransactions model.config model.committeeId GotTransactionsData Nothing
+            , getTransactions model Nothing
             )
 
         FileDisclosure ->
@@ -715,7 +721,7 @@ update msg model =
             ( { model | createDisbursementModalVisibility = Modal.shown }, Cmd.none )
 
         CreateDisbursementModalHide ->
-            ( { model | createDisbursementModalVisibility = Modal.hidden, createDisbursementModal = CreateDisbursement.init }
+            ( { model | createDisbursementModalVisibility = Modal.hidden, createDisbursementModal = CreateDisbursement.init model.committeeId }
             , Cmd.none
             )
 
@@ -755,6 +761,35 @@ generateReport =
 -- HTTP
 
 
+createDisbursement : Model -> Cmd Msg
+createDisbursement model =
+    CreateDisb.send GotCreateDisbursementResponse model.config <| CreateDisb.encode model.createDisbursementModal
+
+
+createContribution : Model -> Cmd Msg
+createContribution model =
+    CreateConrib.send GotCreateContributionResponse model.config <| CreateConrib.encode model.createContributionModal
+
+
+reconcileDisb : Model -> Cmd Msg
+reconcileDisb model =
+    ReconcileDisb.send DisbRuleUnverifiedGotMutResp model.config <| ReconcileDisb.encode model.disbRuleUnverifiedModal
+
+
+getTransactions : Model -> Maybe TransactionType -> Cmd Msg
+getTransactions model maybeTxnType =
+    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType
+
+
+getTransaction : Model -> String -> Cmd Msg
+getTransaction model txnId =
+    GetTxn.send GotTransactionData model.config <| GetTxn.encode model.committeeId txnId
+
+
+
+-- Dom interactions
+
+
 scrollToTop : Task x ()
 scrollToTop =
     Dom.setViewport 0 0
@@ -788,161 +823,3 @@ subscriptions model =
 toSession : Model -> Session
 toSession model =
     model.session
-
-
-optionalFieldString : String -> String -> List ( String, Value )
-optionalFieldString key val =
-    if val == "" then
-        []
-
-    else
-        [ ( key, Encode.string val ) ]
-
-
-optionalFieldStringInt : String -> String -> List ( String, Value )
-optionalFieldStringInt key val =
-    if val == "" then
-        []
-
-    else
-        [ ( key, Encode.int <| Maybe.withDefault 1 <| String.toInt val ) ]
-
-
-optionalFieldNotZero : String -> Int -> List ( String, Value )
-optionalFieldNotZero key val =
-    if val > 0 then
-        [ ( key, Encode.int val ) ]
-
-    else
-        []
-
-
-encodeContribution : Model -> Encode.Value
-encodeContribution model =
-    let
-        contrib =
-            model.createContributionModal
-
-        variables =
-            Encode.object <|
-                [ ( "committeeId", Encode.string model.committeeId )
-                , ( "amount", Encode.int <| Cents.fromDollars contrib.amount )
-                , ( "paymentMethod", Encode.string contrib.paymentMethod )
-                , ( "firstName", Encode.string contrib.firstName )
-                , ( "lastName", Encode.string contrib.lastName )
-                , ( "addressLine1", Encode.string contrib.addressLine1 )
-                , ( "city", Encode.string contrib.city )
-                , ( "state", Encode.string contrib.state )
-                , ( "postalCode", Encode.string contrib.postalCode )
-                , ( "entityType", Encode.string <| EntityType.fromMaybeToStringWithDefaultInd contrib.maybeEntityType )
-                , ( "transactionType", Encode.string <| TransactionType.toString TransactionType.Contribution )
-                ]
-                    ++ optionalFieldString "emailAddress" contrib.emailAddress
-                    ++ optionalFieldNotZero "paymentDate" (dateStringToMillis contrib.paymentDate)
-                    ++ optionalFieldString "cardNumber" contrib.cardNumber
-                    ++ optionalFieldStringInt "cardExpirationMonth" contrib.expirationMonth
-                    ++ optionalFieldStringInt "cardExpirationYear" contrib.expirationYear
-                    ++ optionalFieldString "cardCVC" contrib.cvv
-                    ++ optionalFieldString "checkNumber" contrib.checkNumber
-                    ++ optionalFieldString "entityName" contrib.entityName
-                    ++ optionalFieldString "employer" contrib.employer
-                    ++ optionalFieldString "occupation" contrib.occupation
-                    ++ optionalFieldString "middleName" contrib.middleName
-                    ++ optionalFieldString "addressLine2" contrib.addressLine2
-                    ++ optionalFieldString "occupation" contrib.occupation
-                    ++ optionalFieldString "phoneNumber" contrib.phoneNumber
-    in
-    encodeQuery contributionMutation variables
-
-
-createContribution : Model -> Cmd Msg
-createContribution model =
-    let
-        body =
-            encodeContribution model |> Http.jsonBody
-    in
-    Http.send GotCreateContributionResponse <|
-        Api.post (Endpoint model.config.apiEndpoint) (Api.Token model.config.token) body <|
-            createContributionDecoder
-
-
-createContributionDecoder : Decode.Decoder MutationResponse
-createContributionDecoder =
-    Decode.oneOf [ createContributionSuccessDecoder, mutationValidationFailureDecoder ]
-
-
-createContributionSuccessDecoder : Decode.Decoder MutationResponse
-createContributionSuccessDecoder =
-    Decode.map Success <|
-        Decode.field "data" <|
-            Decode.field "createContribution" <|
-                Decode.field "id" <|
-                    Decode.string
-
-
-encodeDisbursement : Model -> Encode.Value
-encodeDisbursement model =
-    let
-        d =
-            model.createDisbursementModal
-
-        variables =
-            Encode.object <|
-                [ ( "committeeId", Encode.string model.committeeId )
-                , ( "amount", Encode.int <| Cents.fromDollars d.amount )
-                , ( "paymentMethod", Encode.string <| PaymentMethod.fromMaybeToString d.paymentMethod )
-                , ( "entityName", Encode.string d.entityName )
-                , ( "addressLine1", Encode.string d.addressLine1 )
-                , ( "city", Encode.string d.city )
-                , ( "state", Encode.string d.state )
-                , ( "postalCode", Encode.string d.postalCode )
-                , ( "isSubcontracted", Encode.bool <| Maybe.withDefault False d.isSubcontracted )
-                , ( "isPartialPayment", Encode.bool <| Maybe.withDefault False d.isPartialPayment )
-                , ( "isExistingLiability", Encode.bool <| Maybe.withDefault False d.isExistingLiability )
-                , ( "purposeCode", Encode.string <| PurposeCode.toString <| Maybe.withDefault PurposeCode.OTHER d.purposeCode )
-                , ( "paymentDate", Encode.int <| dateStringToMillis d.paymentDate )
-                , ( "transactionType", Encode.string <| TransactionType.toString TransactionType.Disbursement )
-                ]
-                    ++ optionalFieldString "checkNumber" d.checkNumber
-                    ++ optionalFieldString "addressLine2" d.addressLine2
-    in
-    encodeQuery createDisbursementMutation variables
-
-
-createDisbursement : Model -> Cmd Msg
-createDisbursement model =
-    let
-        body =
-            encodeDisbursement model |> Http.jsonBody
-    in
-    Http.send GotCreateDisbursementResponse <|
-        Api.post (Endpoint model.config.apiEndpoint) (Api.Token model.config.token) body <|
-            createDisbursementDecoder
-
-
-createDisbursementDecoder : Decode.Decoder MutationResponse
-createDisbursementDecoder =
-    Decode.oneOf [ createDisbursementSuccessDecoder, mutationValidationFailureDecoder ]
-
-
-createDisbursementSuccessDecoder : Decode.Decoder MutationResponse
-createDisbursementSuccessDecoder =
-    Decode.map Success <|
-        Decode.field "data" <|
-            Decode.field "createDisbursement" <|
-                Decode.field "id" <|
-                    Decode.string
-
-
--- @Todo factor into respective model view update module
-sendReconcileDisb : Model -> Cmd Msg
-sendReconcileDisb model =
-    let
-        body =
-            Http.jsonBody <|
-                encodeQuery reconcileDisbMutation <|
-                    DisbRuleUnverified.encode model.disbRuleUnverifiedModal
-    in
-    Http.send DisbRuleUnverifiedGotMutResp <|
-        Api.post (Endpoint model.config.apiEndpoint) (Api.Token model.config.token) body <|
-            DisbRuleUnverified.decoder

@@ -54,11 +54,12 @@ type alias Model =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
+    , committeeId : String
     }
 
 
-init : Model
-init =
+init : String -> Model
+init committeeId =
     { submitting = False
     , error = ""
     , errors = []
@@ -89,6 +90,7 @@ init =
     , ownerName = ""
     , ownerOwnership = ""
     , paymentMethod = ""
+    , committeeId = committeeId
     }
 
 

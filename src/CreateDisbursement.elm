@@ -18,7 +18,8 @@ import Validate exposing (Validator, fromErrors, ifBlank, ifInvalidEmail)
 
 
 type alias Model =
-    { entityName : String
+    { committeeId : String
+    , entityName : String
     , addressLine1 : String
     , addressLine2 : String
     , city : String
@@ -38,9 +39,10 @@ type alias Model =
     }
 
 
-init : Model
-init =
-    { entityName = ""
+init : String -> Model
+init committeeId =
+    { committeeId = committeeId
+    , entityName = ""
     , addressLine1 = ""
     , addressLine2 = ""
     , city = ""
