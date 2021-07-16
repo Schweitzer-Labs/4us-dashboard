@@ -38,7 +38,7 @@ import TimeZone exposing (america__new_york)
 import Timestamp
 import Transaction
 import Transactions
-import Validate exposing (Validator, fromErrors, ifBlank, validate)
+import Validate exposing (Validator, fromErrors, ifBlank, ifNothing, validate)
 
 
 type alias Model =
@@ -407,6 +407,9 @@ validator =
         , ifBlank .city "City is missing."
         , ifBlank .state "State is missing."
         , ifBlank .postalCode "Postal Code is missing."
+        , ifNothing .isSubcontracted "Subcontracted Information is missing"
+        , ifNothing .isPartialPayment "Partial Payment Information is missing"
+        , ifNothing .isExistingLiability "Existing Liability Information is missing"
         , postalCodeValidator
         , amountValidator
         ]
