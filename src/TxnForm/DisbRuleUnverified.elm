@@ -6,9 +6,11 @@ module TxnForm.DisbRuleUnverified exposing
     , fromError
     , init
     , update
+    , validator
     , view
     )
 
+import Address exposing (postalCodeToErrors)
 import Api.GraphQL exposing (MutationResponse(..), mutationValidationFailureDecoder)
 import Asset
 import BankData
@@ -20,6 +22,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import Config exposing (Config)
+import CreateDisbursement
 import DataTable exposing (DataRow)
 import Disbursement as Disbursement
 import DisbursementInfo
@@ -37,6 +40,7 @@ import TimeZone exposing (america__new_york)
 import Timestamp
 import Transaction
 import Transactions
+import Validate exposing (Validator, fromErrors, ifBlank)
 
 
 type alias Model =
@@ -62,6 +66,7 @@ type alias Model =
     , checkNumber : String
     , createDisbIsVisible : Bool
     , disabled : Bool
+    , isCreateDisbDisabled : Bool
     , isSubmitDisabled : Bool
     , maybeError : Maybe String
     , config : Config
@@ -91,8 +96,9 @@ init config txns txn =
     , paymentMethod = Just txn.paymentMethod
     , checkNumber = ""
     , createDisbIsVisible = False
+    , isCreateDisbDisabled = True
     , disabled = True
-    , isSubmitDisabled = False
+    , isSubmitDisabled = True
     , maybeError = Nothing
     , config = config
     }
@@ -208,7 +214,7 @@ disbFormRow model =
             , toggleEdit = NoOp
             , maybeError = model.maybeError
             }
-            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" NoOp False False ]
+            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" NoOp False model.isCreateDisbDisabled ]
 
     else
         []
@@ -308,7 +314,7 @@ update msg model =
             ( { model | checkNumber = str }, Cmd.none )
 
         PaymentDateUpdated str ->
-            ( { model | paymentDate = str }, Cmd.none )
+            ( { model | paymentDate = str, isCreateDisbDisabled = False }, Cmd.none )
 
         AddressLine1Updated str ->
             ( { model | addressLine1 = str }, Cmd.none )
@@ -352,7 +358,7 @@ update msg model =
                     else
                         List.filter (\txn -> txn.id /= clickedTxn.id) model.selectedTxns
             in
-            ( { model | selectedTxns = selected }, Cmd.none )
+            ( { model | selectedTxns = selected, isSubmitDisabled = False }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -401,3 +407,31 @@ disableSubmitOnInKind model =
 
     else
         model.isSubmitDisabled
+
+
+validator : Validator String Model
+validator =
+    Validate.firstError
+        [ ifBlank .entityName "Entity name is missing."
+        , ifBlank .addressLine1 "Address 1 is missing."
+        , ifBlank .city "City is missing."
+        , ifBlank .state "State is missing."
+        , ifBlank .postalCode "Postal Code is missing."
+        , postalCodeValidator
+        , amountValidator
+        ]
+
+
+amountValidator : Validator String Model
+amountValidator =
+    ifBlank .amount "Amount is missing."
+
+
+postalCodeValidator : Validator String Model
+postalCodeValidator =
+    fromErrors postalCodeOnModelToErrors
+
+
+postalCodeOnModelToErrors : Model -> List String
+postalCodeOnModelToErrors model =
+    postalCodeToErrors model.postalCode
