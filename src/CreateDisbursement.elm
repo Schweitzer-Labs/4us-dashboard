@@ -1,6 +1,7 @@
 module CreateDisbursement exposing
     ( Model
     , Msg(..)
+    , disableOnYes
     , fromError
     , init
     , update
@@ -155,7 +156,21 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, isSubmitDisabled = not <| model.isInKind == Just True }, Cmd.none )
+            ( { model
+                | isInKind = bool
+                , isSubmitDisabled = disableOnYes bool
+              }
+            , Cmd.none
+            )
+
+
+disableOnYes : Maybe Bool -> Bool
+disableOnYes isInKind =
+    if isInKind == Just True then
+        True
+
+    else
+        False
 
 
 validator : Validator String Model

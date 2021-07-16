@@ -12,6 +12,7 @@ module TxnForm.DisbRuleVerified exposing
 
 import Address exposing (postalCodeToErrors)
 import Bootstrap.Grid as Grid
+import CreateDisbursement exposing (disableOnYes)
 import Disbursement as Disbursement
 import DisbursementInfo
 import ExpandableBankData
@@ -208,7 +209,7 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, isSubmitDisabled = not <| model.isInKind == Just True }, Cmd.none )
+            ( { model | isInKind = bool, isSubmitDisabled = disableOnYes bool }, Cmd.none )
 
         BankDataToggled ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
