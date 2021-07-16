@@ -199,7 +199,7 @@ disbRuleVerifiedModal model =
         , submitMsg = DisbRuleVerifiedSubmit
         , submitText = "Save"
         , isSubmitting = model.disbRuleVerifiedSubmitting
-        , isSubmitDisabled = model.disbRuleVerifiedModal.isSubmitDisabled
+        , isSubmitDisabled = model.disbRuleVerifiedSubmitting
         , visibility = model.disbRuleVerifiedModalVisibility
         }
 
@@ -399,7 +399,6 @@ type Msg
     | AnimateCreateContributionModal Modal.Visibility
     | GotCreateContributionResponse (Result Http.Error MutationResponse)
     | GotCreateDisbursementResponse (Result Http.Error MutationResponse)
-    | DisbRuleVerifiedGotMutResp (Result Http.Error MutationResponse)
     | GotTransactionData (Result Http.Error GetTxn.Model)
     | SubmitCreateContribution
     | ToggleActionsDropdown Dropdown.State
@@ -421,12 +420,13 @@ type Msg
     | DisbRuleUnverifiedModalAnimate Modal.Visibility
     | DisbRuleUnverifiedModalUpdate DisbRuleUnverified.Msg
     | DisbRuleUnverifiedSubmit
-    | DisbRuleUnverifiedGotMutResp (Result Http.Error MutationResponse)
+    | DisbRuleUnverifiedGotReconcileMutResp (Result Http.Error MutationResponse)
       -- Disb Verified Modal
     | DisbRuleVerifiedModalHide
     | DisbRuleVerifiedModalAnimate Modal.Visibility
     | DisbRuleVerifiedModalUpdate DisbRuleVerified.Msg
     | DisbRuleVerifiedSubmit
+    | DisbRuleVerifiedGotMutResp (Result Http.Error MutationResponse)
     | ShowTxnFormModal Transaction.Model
 
 
@@ -457,7 +457,7 @@ update msg model =
             in
             ( { model | disbRuleUnverifiedModal = subModel }, Cmd.map DisbRuleUnverifiedModalUpdate subCmd )
 
-        DisbRuleUnverifiedGotMutResp res ->
+        DisbRuleUnverifiedGotReconcileMutResp res ->
             case res of
                 Ok mutResp ->
                     case mutResp of
@@ -581,7 +581,7 @@ update msg model =
         GotTransactionData res ->
             case res of
                 Ok body ->
-                    openTxnFormModalLoaded model body.data.transaction
+                    openTxnFormModalLoaded model (GetTxn.toTxn body)
 
                 Err _ ->
                     let
@@ -594,9 +594,9 @@ update msg model =
             case res of
                 Ok body ->
                     ( { model
-                        | transactions = body.data.transactions
-                        , aggregations = body.data.aggregations
-                        , committee = body.data.committee
+                        | transactions = GetTxns.toTxns body
+                        , aggregations = GetTxns.toAggs body
+                        , committee = GetTxns.toCommittee body
                         , loading = False
                       }
                     , Cmd.none
@@ -812,7 +812,7 @@ createContribution model =
 
 reconcileDisb : Model -> Cmd Msg
 reconcileDisb model =
-    ReconcileDisb.send DisbRuleUnverifiedGotMutResp model.config <| ReconcileDisb.encode model.disbRuleUnverifiedModal
+    ReconcileDisb.send DisbRuleUnverifiedGotReconcileMutResp model.config <| ReconcileDisb.encode model.disbRuleUnverifiedModal
 
 
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg

@@ -1,4 +1,4 @@
-module Api.GetTxn exposing (Model, encode, send)
+module Api.GetTxn exposing (Model, encode, send, toTxn)
 
 import Api.GraphQL as GraphQL exposing (encodeQuery)
 import Config exposing (Config)
@@ -88,6 +88,11 @@ decodeTransactionObject =
     Decode.map
         TransactionObject
         (Decode.field "transaction" Transaction.decoder)
+
+
+toTxn : Model -> Transaction.Model
+toTxn model =
+    model.data.transaction
 
 
 

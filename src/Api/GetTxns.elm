@@ -1,4 +1,4 @@
-module Api.GetTxns exposing (Model, encode, send)
+module Api.GetTxns exposing (Model, encode, send, toAggs, toCommittee, toTxns)
 
 import Aggregations
 import Api.GraphQL as GraphQL exposing (encodeQuery)
@@ -109,6 +109,21 @@ type alias TransactionsObject =
     , aggregations : Aggregations.Model
     , committee : Committee.Model
     }
+
+
+toTxns : Model -> Transactions.Model
+toTxns model =
+    model.data.transactions
+
+
+toAggs : Model -> Aggregations.Model
+toAggs model =
+    model.data.aggregations
+
+
+toCommittee : Model -> Committee.Model
+toCommittee model =
+    model.data.committee
 
 
 decodeObject : Decode.Decoder TransactionsObject

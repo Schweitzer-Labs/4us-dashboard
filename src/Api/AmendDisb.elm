@@ -5,6 +5,7 @@ import Config exposing (Config)
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode exposing (Value)
+import PurposeCode
 import Timestamp exposing (dateStringToMillis)
 import TxnForm.DisbRuleVerified as DisbRuleVerified
 
@@ -13,29 +14,31 @@ query : String
 query =
     """
     mutation (
-      $committeeId: String!, 
-      $transactionId: String!, 
-      $entityName: String, 
-      $addressLine1: String, 
-      $addressLine2: String, 
-      $city: String, 
-      $state: String, 
-      $postalCode: String, 
-      $paymentDate: Float, 
+      $committeeId: String!
+      $transactionId: String!
+      $entityName: String
+      $addressLine1: String
+      $addressLine2: String
+      $city: String
+      $state: String
+      $postalCode: String
+      $paymentDate: Float
       $checkNumber: String
+      $purposeCode: PurposeCode
     ) {
       amendDisbursement(
         amendDisbursementData: {
-          committeeId: $committeeId, 
-          transactionId: $transactionId, 
-          entityName: $entityName, 
-          addressLine1: $addressLine1, 
-          addressLine2: $addressLine2, 
-          city: $city, 
-          state: $state, 
-          postalCode: $postalCode, 
-          paymentDate: $paymentDate, 
+          committeeId: $committeeId
+          transactionId: $transactionId
+          entityName: $entityName
+          addressLine1: $addressLine1
+          addressLine2: $addressLine2
+          city: $city
+          state: $state
+          postalCode: $postalCode
+          paymentDate: $paymentDate
           checkNumber: $checkNumber
+          purposeCode: $purposeCode
         }
       ) {
         id
@@ -60,6 +63,7 @@ encode model =
                     ++ optionalFieldString "postalCode" model.postalCode
                     ++ optionalFieldNotZero "paymentDate" (dateStringToMillis model.paymentDate)
                     ++ optionalFieldString "checkNumber" model.postalCode
+                    ++ (optionalFieldString "purposeCode" <| PurposeCode.fromMaybeToString model.purposeCode)
     in
     encodeQuery query variables
 
