@@ -3,6 +3,7 @@ module TxnForm.DisbRuleUnverified exposing
     , Msg(..)
     , fromError
     , init
+    , totalSelectedMatch
     , update
     , validator
     , view
@@ -367,7 +368,7 @@ update msg model =
                     else
                         List.filter (\txn -> txn.id /= clickedTxn.id) model.selectedTxns
             in
-            ( { model | selectedTxns = selected, isSubmitDisabled = False }, Cmd.none )
+            ( { model | selectedTxns = selected, isSubmitDisabled = totalSelectedMatch model }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -424,3 +425,12 @@ postalCodeValidator =
 postalCodeOnModelToErrors : Model -> List String
 postalCodeOnModelToErrors model =
     postalCodeToErrors model.postalCode
+
+
+totalSelectedMatch : Model -> Bool
+totalSelectedMatch model =
+    if List.foldr (\txn acc -> acc + txn.amount) 0 model.selectedTxns == model.bankTxn.amount then
+        False
+
+    else
+        True

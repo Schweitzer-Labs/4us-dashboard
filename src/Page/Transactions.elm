@@ -199,7 +199,7 @@ disbRuleVerifiedModal model =
         , submitMsg = DisbRuleVerifiedSubmit
         , submitText = "Save"
         , isSubmitting = model.disbRuleVerifiedSubmitting
-        , isSubmitDisabled = model.disbRuleVerifiedSubmitting
+        , isSubmitDisabled = model.disbRuleVerifiedModal.isSubmitDisabled
         , visibility = model.disbRuleVerifiedModalVisibility
         }
 
