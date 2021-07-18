@@ -4,8 +4,10 @@ import Address
 import AmountDate
 import Asset
 import Bootstrap.Form as Form
+import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Input as Input
-import Bootstrap.Grid as Grid
+import Bootstrap.Form.Radio as Radio
+import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
@@ -14,7 +16,7 @@ import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
 import PaymentMethod
 import PurposeCode
-import YesOrNo
+import YesOrNo exposing (yesOrNo)
 
 
 type alias Config msg =
@@ -82,13 +84,13 @@ view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeC
             }
         ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ PurposeCode.select (toData purposeCode) (toMsg purposeCode) disabled ] ]
            ]
-        ++ YesOrNo.view
-            { isSubcontracted = isSubcontracted
-            , isPartialPayment = isPartialPayment
-            , isExistingLiability = isExistingLiability
-            , isInKind = isInKind
-            , disabled = disabled
-            }
+        ++ [ Grid.row []
+                [ yesOrNo "Is expenditure subcontracted?" isSubcontracted entityName disabled
+                , yesOrNo "Is expenditure a partial payment?" isPartialPayment entityName disabled
+                , yesOrNo "Is this an existing Liability?" isExistingLiability entityName disabled
+                , yesOrNo "Is this an In-Kind payment?" isInKind entityName disabled
+                ]
+           ]
         ++ (case ( amount, paymentDate, paymentMethod ) of
                 ( Just a, Just p, Just pm ) ->
                     AmountDate.view { amount = a, paymentDate = p }

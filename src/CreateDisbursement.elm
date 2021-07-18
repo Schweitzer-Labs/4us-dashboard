@@ -204,10 +204,10 @@ fromError model error =
 disableSubmitOnInKind : Model -> Bool
 disableSubmitOnInKind model =
     if model.isInKind == Just True then
-        True
+        False
 
     else if model.paymentMethod /= Nothing then
-        False
+        True
 
     else
         model.isSubmitDisabled
