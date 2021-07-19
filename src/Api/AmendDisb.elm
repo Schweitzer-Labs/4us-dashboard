@@ -72,7 +72,7 @@ encode model =
                     ++ (optionalFieldString "purposeCode" <| PurposeCode.fromMaybeToString model.purposeCode)
                     ++ [ ( "isExistingLiability", Encode.bool <| Maybe.withDefault False model.isExistingLiability ) ]
                     ++ [ ( "isPartialPayment", Encode.bool <| Maybe.withDefault False model.isPartialPayment ) ]
-                    ++ [ ( "isSubcontracted", Encode.bool <| Maybe.withDefault False model.isSubcontracted ) ]
+                    ++ [ ( "isSubContracted", Encode.bool <| Maybe.withDefault False model.isSubcontracted ) ]
     in
     encodeQuery query variables
 
