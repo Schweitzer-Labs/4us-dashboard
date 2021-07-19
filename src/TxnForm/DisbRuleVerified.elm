@@ -207,7 +207,7 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, isSubmitDisabled = disableSubmitOnInKind model }, Cmd.none )
+            ( { model | isInKind = bool }, Cmd.none )
 
         BankDataToggled ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
@@ -231,6 +231,7 @@ validator =
         , ifNothing .isPartialPayment "Partial Payment Information is missing"
         , ifNothing .isExistingLiability "Existing Liability Information is missing"
         , postalCodeValidator
+        , isInKindValidator
         ]
 
 
@@ -249,13 +250,26 @@ fromError model error =
     { model | maybeError = Just error }
 
 
-disableSubmitOnInKind : Model -> Bool
-disableSubmitOnInKind model =
-    if model.isInKind == Just True then
-        True
+isInKindValidator : Validator String Model
+isInKindValidator =
+    fromErrors isInKindOnModelToErrors
 
-    else if model.paymentMethod /= Nothing then
-        False
 
-    else
-        model.isSubmitDisabled
+isInKindOnModelToErrors : Model -> List String
+isInKindOnModelToErrors model =
+    isInKindToErrors model.isInKind
+
+
+isInKindToErrors : Maybe Bool -> List String
+isInKindToErrors isInKind =
+    case isInKind of
+        Just bool ->
+            case bool of
+                True ->
+                    [ "In-Kind option is currently not supported" ]
+
+                False ->
+                    []
+
+        Nothing ->
+            []
