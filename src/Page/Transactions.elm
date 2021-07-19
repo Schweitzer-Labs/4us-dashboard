@@ -802,7 +802,7 @@ generateReport =
 
 createDisbursement : Model -> Cmd Msg
 createDisbursement model =
-    CreateDisb.send GotCreateDisbursementResponse model.config <| CreateDisb.encode model.createDisbursementModal
+    CreateDisb.send GotCreateDisbursementResponse model.config <| CreateDisb.encode CreateDisbursement.toEncodeModel model.createDisbursementModal
 
 
 createContribution : Model -> Cmd Msg

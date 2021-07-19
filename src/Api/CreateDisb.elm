@@ -1,15 +1,13 @@
-module Api.CreateDisb exposing (encode, send)
+module Api.CreateDisb exposing (EncodeModel, encode, send)
 
 import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldString)
-import Bootstrap.Modal exposing (Body)
 import Cents
 import Config exposing (Config)
-import CreateDisbursement
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
-import PaymentMethod
-import PurposeCode
+import PaymentMethod exposing (PaymentMethod)
+import PurposeCode exposing (PurposeCode)
 import Timestamp exposing (dateStringToMillis)
 import TransactionType
 
@@ -57,9 +55,32 @@ query =
     """
 
 
-encode : CreateDisbursement.Model -> Http.Body
-encode model =
+type alias EncodeModel =
+    { committeeId : String
+    , entityName : String
+    , addressLine1 : String
+    , addressLine2 : String
+    , city : String
+    , state : String
+    , postalCode : String
+    , purposeCode : Maybe PurposeCode
+    , isSubcontracted : Maybe Bool
+    , isPartialPayment : Maybe Bool
+    , isExistingLiability : Maybe Bool
+    , isInKind : Maybe Bool
+    , amount : String
+    , paymentDate : String
+    , paymentMethod : Maybe PaymentMethod
+    , checkNumber : String
+    }
+
+
+encode : (a -> EncodeModel) -> a -> Http.Body
+encode mapper val =
     let
+        model =
+            mapper val
+
         variables =
             Encode.object <|
                 [ ( "committeeId", Encode.string model.committeeId )

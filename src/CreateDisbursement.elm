@@ -3,12 +3,14 @@ module CreateDisbursement exposing
     , Msg(..)
     , fromError
     , init
+    , toEncodeModel
     , update
     , validator
     , view
     )
 
 import Address exposing (postalCodeToErrors)
+import Api.CreateDisb as CreateDisb
 import Bootstrap.Grid as Grid exposing (Column)
 import DisbursementInfo
 import Html exposing (Html)
@@ -211,3 +213,24 @@ disableSubmitOnInKind model =
 
     else
         model.isSubmitDisabled
+
+
+toEncodeModel : Model -> CreateDisb.EncodeModel
+toEncodeModel model =
+    { committeeId = model.committeeId
+    , entityName = model.entityName
+    , addressLine1 = model.addressLine1
+    , addressLine2 = model.addressLine2
+    , city = model.city
+    , state = model.state
+    , postalCode = model.postalCode
+    , purposeCode = model.purposeCode
+    , isSubcontracted = model.isSubcontracted
+    , isPartialPayment = model.isPartialPayment
+    , isExistingLiability = model.isExistingLiability
+    , isInKind = model.isInKind
+    , amount = model.amount
+    , paymentDate = model.paymentDate
+    , paymentMethod = model.paymentMethod
+    , checkNumber = model.checkNumber
+    }
