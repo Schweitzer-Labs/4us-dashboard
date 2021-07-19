@@ -182,7 +182,7 @@ disbRuleUnverifiedModal model =
         , submitMsg = DisbRuleUnverifiedSubmit
         , submitText = "Reconcile"
         , isSubmitting = model.disbRuleUnverifiedSubmitting
-        , isSubmitDisabled = model.disbRuleUnverifiedModal.isSubmitDisabled
+        , isSubmitDisabled = DisbRuleUnverified.toSubmitDisabled model.disbRuleUnverifiedModal
         , visibility = model.disbRuleUnverifiedModalVisibility
         }
 

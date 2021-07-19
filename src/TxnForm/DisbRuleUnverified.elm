@@ -3,6 +3,7 @@ module TxnForm.DisbRuleUnverified exposing
     , Msg(..)
     , fromError
     , init
+    , toSubmitDisabled
     , totalSelectedMatch
     , update
     , validator
@@ -21,7 +22,6 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import Config exposing (Config)
-import CreateDisbursement
 import DataTable exposing (DataRow)
 import DisbursementInfo
 import Html exposing (Html, div, h6, input, span, text)
@@ -61,8 +61,8 @@ type alias Model =
     , checkNumber : String
     , createDisbIsVisible : Bool
     , disabled : Bool
-    , isCreateDisbDisabled : Bool
-    , isSubmitDisabled : Bool
+    , isCreateDisbButtonDisabled : Bool
+    , isReconcileButtonDisabled : Bool
     , maybeError : Maybe String
     , config : Config
     }
@@ -91,9 +91,9 @@ init config txns txn =
     , paymentMethod = Just txn.paymentMethod
     , checkNumber = ""
     , createDisbIsVisible = False
-    , isCreateDisbDisabled = True
+    , isCreateDisbButtonDisabled = True
     , disabled = True
-    , isSubmitDisabled = True
+    , isReconcileButtonDisabled = True
     , maybeError = Nothing
     , config = config
     }
@@ -202,14 +202,14 @@ disbFormRow model =
             , isExistingLiability = ( model.isExistingLiability, IsExistingLiabilityUpdated )
             , isInKind = ( model.isInKind, IsInKindUpdated )
             , amount = Just ( model.amount, AmountUpdated )
-            , paymentDate = Just ( model.amount, PaymentDateUpdated )
+            , paymentDate = Just ( model.paymentDate, PaymentDateUpdated )
             , paymentMethod = Nothing
             , disabled = False
             , isEditable = False
             , toggleEdit = NoOp
             , maybeError = model.maybeError
             }
-            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" DisbSubmitted False model.isCreateDisbDisabled ]
+            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" CreateDisbSubmitted False model.isCreateDisbButtonDisabled ]
 
     else
         []
@@ -291,8 +291,7 @@ type Msg
     | PaymentMethodUpdated (Maybe PaymentMethod)
     | CheckNumberUpdated String
     | CreateDisbToggled
-    | DisbSubmitted
-    | EditDisbToggled
+    | CreateDisbSubmitted
     | RelatedTransactionClicked Transaction.Model Bool
 
 
@@ -315,7 +314,7 @@ update msg model =
             ( { model | checkNumber = str }, Cmd.none )
 
         PaymentDateUpdated str ->
-            ( { model | paymentDate = str, isCreateDisbDisabled = False }, Cmd.none )
+            ( { model | paymentDate = str, isCreateDisbButtonDisabled = False }, Cmd.none )
 
         AddressLine1Updated str ->
             ( { model | addressLine1 = str }, Cmd.none )
@@ -342,12 +341,12 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, isSubmitDisabled = disableSubmitOnInKind model }, Cmd.none )
+            ( { model | isInKind = bool, isCreateDisbButtonDisabled = disableSubmitOnInKind model }, Cmd.none )
 
         CreateDisbToggled ->
             ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
 
-        DisbSubmitted ->
+        CreateDisbSubmitted ->
             case validate validator model of
                 Err errors ->
                     let
@@ -361,9 +360,6 @@ update msg model =
                     , Cmd.none
                     )
 
-        EditDisbToggled ->
-            ( { model | disabled = not model.disabled }, Cmd.none )
-
         RelatedTransactionClicked clickedTxn isChecked ->
             let
                 selected =
@@ -373,7 +369,7 @@ update msg model =
                     else
                         List.filter (\txn -> txn.id /= clickedTxn.id) model.selectedTxns
             in
-            ( { model | selectedTxns = selected, isSubmitDisabled = totalSelectedMatch model }, Cmd.none )
+            ( { model | selectedTxns = selected, createDisbIsVisible = False }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -398,7 +394,7 @@ disableSubmitOnInKind model =
         False
 
     else
-        model.isSubmitDisabled
+        model.isCreateDisbButtonDisabled
 
 
 validator : Validator String Model
@@ -439,3 +435,8 @@ totalSelectedMatch model =
 
     else
         True
+
+
+toSubmitDisabled : Model -> Bool
+toSubmitDisabled =
+    .isReconcileButtonDisabled
