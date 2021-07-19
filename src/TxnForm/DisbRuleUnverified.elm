@@ -209,7 +209,7 @@ disbFormRow model =
             , toggleEdit = NoOp
             , maybeError = model.maybeError
             }
-            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" CreateDisb False model.isCreateDisbDisabled ]
+            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" DisbSubmitted False model.isCreateDisbDisabled ]
 
     else
         []
@@ -286,8 +286,8 @@ type Msg
     | PaymentMethodUpdated (Maybe PaymentMethod)
     | CheckNumberUpdated String
     | CreateDisbToggled
-    | CreateDisb
-    | EditDisbToggle
+    | DisbSubmitted
+    | EditDisbToggled
     | RelatedTransactionClicked Transaction.Model Bool
 
 
@@ -342,7 +342,7 @@ update msg model =
         CreateDisbToggled ->
             ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
 
-        CreateDisb ->
+        DisbSubmitted ->
             case validate validator model of
                 Err errors ->
                     let
@@ -356,7 +356,7 @@ update msg model =
                     , Cmd.none
                     )
 
-        EditDisbToggle ->
+        EditDisbToggled ->
             ( { model | disabled = not model.disabled }, Cmd.none )
 
         RelatedTransactionClicked clickedTxn isChecked ->
