@@ -3,10 +3,14 @@ module TxnForm.DisbRuleUnverified exposing
     , Msg(..)
     , fromError
     , init
+    , totalSelectedMatch
     , update
+    , validator
     , view
     )
 
+import Address exposing (postalCodeToErrors)
+import Api.GraphQL exposing (MutationResponse(..), mutationValidationFailureDecoder)
 import Asset
 import BankData
 import Bootstrap.Button as Button
@@ -17,6 +21,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import Config exposing (Config)
+import CreateDisbursement
 import DataTable exposing (DataRow)
 import DisbursementInfo
 import Html exposing (Html, div, h6, input, span, text)
@@ -30,6 +35,7 @@ import TimeZone exposing (america__new_york)
 import Timestamp
 import Transaction
 import Transactions
+import Validate exposing (Validator, fromErrors, ifBlank, ifNothing, validate)
 
 
 type alias Model =
@@ -55,6 +61,7 @@ type alias Model =
     , checkNumber : String
     , createDisbIsVisible : Bool
     , disabled : Bool
+    , isCreateDisbDisabled : Bool
     , isSubmitDisabled : Bool
     , maybeError : Maybe String
     , config : Config
@@ -84,8 +91,9 @@ init config txns txn =
     , paymentMethod = Just txn.paymentMethod
     , checkNumber = ""
     , createDisbIsVisible = False
+    , isCreateDisbDisabled = True
     , disabled = True
-    , isSubmitDisabled = False
+    , isSubmitDisabled = True
     , maybeError = Nothing
     , config = config
     }
@@ -201,7 +209,7 @@ disbFormRow model =
             , toggleEdit = NoOp
             , maybeError = model.maybeError
             }
-            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" NoOp False False ]
+            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" DisbSubmitted False model.isCreateDisbDisabled ]
 
     else
         []
@@ -283,7 +291,8 @@ type Msg
     | PaymentMethodUpdated (Maybe PaymentMethod)
     | CheckNumberUpdated String
     | CreateDisbToggled
-    | EditDisbToggle
+    | DisbSubmitted
+    | EditDisbToggled
     | RelatedTransactionClicked Transaction.Model Bool
 
 
@@ -306,7 +315,7 @@ update msg model =
             ( { model | checkNumber = str }, Cmd.none )
 
         PaymentDateUpdated str ->
-            ( { model | paymentDate = str }, Cmd.none )
+            ( { model | paymentDate = str, isCreateDisbDisabled = False }, Cmd.none )
 
         AddressLine1Updated str ->
             ( { model | addressLine1 = str }, Cmd.none )
@@ -333,12 +342,26 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, isSubmitDisabled = True }, Cmd.none )
+            ( { model | isInKind = bool, isSubmitDisabled = disableSubmitOnInKind model }, Cmd.none )
 
         CreateDisbToggled ->
             ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
 
-        EditDisbToggle ->
+        DisbSubmitted ->
+            case validate validator model of
+                Err errors ->
+                    let
+                        error =
+                            Maybe.withDefault "Form error" <| List.head errors
+                    in
+                    ( fromError model error, Cmd.none )
+
+                Ok val ->
+                    ( model
+                    , Cmd.none
+                    )
+
+        EditDisbToggled ->
             ( { model | disabled = not model.disabled }, Cmd.none )
 
         RelatedTransactionClicked clickedTxn isChecked ->
@@ -350,7 +373,7 @@ update msg model =
                     else
                         List.filter (\txn -> txn.id /= clickedTxn.id) model.selectedTxns
             in
-            ( { model | selectedTxns = selected }, Cmd.none )
+            ( { model | selectedTxns = selected, isSubmitDisabled = totalSelectedMatch model }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -364,3 +387,55 @@ isSelected txn selected =
 fromError : Model -> String -> Model
 fromError model error =
     { model | maybeError = Just error }
+
+
+disableSubmitOnInKind : Model -> Bool
+disableSubmitOnInKind model =
+    if model.isInKind == Just True then
+        True
+
+    else if model.paymentMethod /= Nothing then
+        False
+
+    else
+        model.isSubmitDisabled
+
+
+validator : Validator String Model
+validator =
+    Validate.firstError
+        [ ifBlank .entityName "Entity name is missing."
+        , ifBlank .addressLine1 "Address 1 is missing."
+        , ifBlank .city "City is missing."
+        , ifBlank .state "State is missing."
+        , ifBlank .postalCode "Postal Code is missing."
+        , ifNothing .isSubcontracted "Subcontracted Information is missing"
+        , ifNothing .isPartialPayment "Partial Payment Information is missing"
+        , ifNothing .isExistingLiability "Existing Liability Information is missing"
+        , postalCodeValidator
+        , amountValidator
+        ]
+
+
+amountValidator : Validator String Model
+amountValidator =
+    ifBlank .amount "Amount is missing."
+
+
+postalCodeValidator : Validator String Model
+postalCodeValidator =
+    fromErrors postalCodeOnModelToErrors
+
+
+postalCodeOnModelToErrors : Model -> List String
+postalCodeOnModelToErrors model =
+    postalCodeToErrors model.postalCode
+
+
+totalSelectedMatch : Model -> Bool
+totalSelectedMatch model =
+    if List.foldr (\txn acc -> acc + txn.amount) 0 model.selectedTxns == model.bankTxn.amount then
+        False
+
+    else
+        True

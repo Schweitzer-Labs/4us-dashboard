@@ -14,7 +14,7 @@ import DisbursementInfo
 import Html exposing (Html)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
-import Validate exposing (Validator, fromErrors, ifBlank, ifInvalidEmail)
+import Validate exposing (Validator, fromErrors, ifBlank, ifNothing)
 
 
 type alias Model =
@@ -58,7 +58,7 @@ init committeeId =
     , paymentMethod = Nothing
     , checkNumber = ""
     , maybeError = Nothing
-    , isSubmitDisabled = False
+    , isSubmitDisabled = True
     }
 
 
@@ -118,7 +118,7 @@ update msg model =
             ( { model | purposeCode = str }, Cmd.none )
 
         PaymentMethodUpdated pm ->
-            ( { model | paymentMethod = pm }, Cmd.none )
+            ( { model | paymentMethod = pm, isSubmitDisabled = False }, Cmd.none )
 
         AmountUpdated str ->
             ( { model | amount = str }, Cmd.none )
@@ -157,7 +157,12 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, isSubmitDisabled = True }, Cmd.none )
+            ( { model
+                | isInKind = bool
+                , isSubmitDisabled = disableSubmitOnInKind model
+              }
+            , Cmd.none
+            )
 
 
 validator : Validator String Model
@@ -168,6 +173,9 @@ validator =
         , ifBlank .city "City is missing."
         , ifBlank .state "State is missing."
         , ifBlank .postalCode "Postal Code is missing."
+        , ifNothing .isSubcontracted "Subcontracted Information is missing"
+        , ifNothing .isPartialPayment "Partial Payment Information is missing"
+        , ifNothing .isExistingLiability "Existing Liability Information is missing"
         , postalCodeValidator
         , amountValidator
         ]
@@ -191,3 +199,15 @@ postalCodeOnModelToErrors model =
 fromError : Model -> String -> Model
 fromError model error =
     { model | maybeError = Just error }
+
+
+disableSubmitOnInKind : Model -> Bool
+disableSubmitOnInKind model =
+    if model.isInKind == Just True then
+        False
+
+    else if model.paymentMethod /= Nothing then
+        True
+
+    else
+        model.isSubmitDisabled

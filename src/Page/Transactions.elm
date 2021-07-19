@@ -199,7 +199,7 @@ disbRuleVerifiedModal model =
         , submitMsg = DisbRuleVerifiedSubmit
         , submitText = "Save"
         , isSubmitting = model.disbRuleVerifiedSubmitting
-        , isSubmitDisabled = model.disbRuleVerifiedSubmitting
+        , isSubmitDisabled = model.disbRuleVerifiedModal.isSubmitDisabled
         , visibility = model.disbRuleVerifiedModalVisibility
         }
 
@@ -541,7 +541,20 @@ update msg model =
             )
 
         DisbRuleVerifiedSubmit ->
-            ( { model | disbRuleVerifiedSubmitting = True }, amendDisb model )
+            case validate DisbRuleVerified.validator model.disbRuleVerifiedModal of
+                Err errors ->
+                    let
+                        error =
+                            Maybe.withDefault "Form error" <| List.head errors
+                    in
+                    ( { model | disbRuleVerifiedModal = DisbRuleVerified.fromError model.disbRuleVerifiedModal error }, Cmd.none )
+
+                Ok val ->
+                    ( { model
+                        | disbRuleVerifiedSubmitting = True
+                      }
+                    , amendDisb model
+                    )
 
         DisbRuleVerifiedModalUpdate subMsg ->
             let

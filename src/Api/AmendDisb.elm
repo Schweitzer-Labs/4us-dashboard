@@ -25,6 +25,9 @@ query =
       $paymentDate: Float
       $checkNumber: String
       $purposeCode: PurposeCode
+      $isExistingLiability: Boolean
+      $isPartialPayment: Boolean
+      $isSubContracted: Boolean
     ) {
       amendDisbursement(
         amendDisbursementData: {
@@ -39,6 +42,9 @@ query =
           paymentDate: $paymentDate
           checkNumber: $checkNumber
           purposeCode: $purposeCode
+          isExistingLiability: $isExistingLiability
+          isPartialPayment: $isPartialPayment
+          isSubcontracted: $isSubContracted
         }
       ) {
         id
@@ -64,6 +70,9 @@ encode model =
                     ++ optionalFieldNotZero "paymentDate" (dateStringToMillis model.paymentDate)
                     ++ optionalFieldString "checkNumber" model.postalCode
                     ++ (optionalFieldString "purposeCode" <| PurposeCode.fromMaybeToString model.purposeCode)
+                    ++ [ ( "isExistingLiability", Encode.bool <| Maybe.withDefault False model.isExistingLiability ) ]
+                    ++ [ ( "isPartialPayment", Encode.bool <| Maybe.withDefault False model.isPartialPayment ) ]
+                    ++ [ ( "isSubContracted", Encode.bool <| Maybe.withDefault False model.isSubcontracted ) ]
     in
     encodeQuery query variables
 

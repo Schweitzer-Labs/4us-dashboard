@@ -5,18 +5,23 @@ module TxnForm.DisbRuleVerified exposing
     , init
     , loadingInit
     , update
+    , validator
     , view
     )
 
+import Address exposing (postalCodeToErrors)
 import Bootstrap.Grid as Grid
+import Disbursement as Disbursement
 import DisbursementInfo
 import ExpandableBankData
 import Html exposing (Html)
+import Json.Encode as Encode
 import Loading
 import PaymentInfo
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
 import Transaction
+import Validate exposing (Validator, fromErrors, ifBlank, ifNothing)
 
 
 type alias Model =
@@ -74,7 +79,7 @@ init txn =
     , showBankData = False
     , loading = False
     , formDisabled = True
-    , isSubmitDisabled = False
+    , isSubmitDisabled = True
     , maybeError = Nothing
     }
 
@@ -124,7 +129,7 @@ disbFormRow model =
         , isSubcontracted = ( model.isSubcontracted, IsSubcontractedUpdated )
         , isPartialPayment = ( model.isPartialPayment, IsPartialPaymentUpdated )
         , isExistingLiability = ( model.isExistingLiability, IsExistingLiabilityUpdated )
-        , isInKind = ( model.isInKind, IsInKindUpdated )
+        , isInKind = ( Just False, IsInKindUpdated )
         , amount = Nothing
         , paymentDate = Nothing
         , paymentMethod = Nothing
@@ -202,18 +207,55 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, isSubmitDisabled = True }, Cmd.none )
+            ( { model | isInKind = bool, isSubmitDisabled = disableSubmitOnInKind model }, Cmd.none )
 
         BankDataToggled ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
 
         EditFormToggled ->
-            ( { model | formDisabled = not model.formDisabled }, Cmd.none )
+            ( { model | formDisabled = not model.formDisabled, isSubmitDisabled = False }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
 
 
+validator : Validator String Model
+validator =
+    Validate.firstError
+        [ ifBlank .entityName "Entity name is missing."
+        , ifBlank .addressLine1 "Address 1 is missing."
+        , ifBlank .city "City is missing."
+        , ifBlank .state "State is missing."
+        , ifBlank .postalCode "Postal Code is missing."
+        , ifNothing .isSubcontracted "Subcontracted Information is missing"
+        , ifNothing .isPartialPayment "Partial Payment Information is missing"
+        , ifNothing .isExistingLiability "Existing Liability Information is missing"
+        , postalCodeValidator
+        ]
+
+
+postalCodeValidator : Validator String Model
+postalCodeValidator =
+    fromErrors postalCodeOnModelToErrors
+
+
+postalCodeOnModelToErrors : Model -> List String
+postalCodeOnModelToErrors model =
+    postalCodeToErrors model.postalCode
+
+
 fromError : Model -> String -> Model
 fromError model error =
     { model | maybeError = Just error }
+
+
+disableSubmitOnInKind : Model -> Bool
+disableSubmitOnInKind model =
+    if model.isInKind == Just True then
+        True
+
+    else if model.paymentMethod /= Nothing then
+        False
+
+    else
+        model.isSubmitDisabled
