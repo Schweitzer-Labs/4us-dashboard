@@ -11,8 +11,8 @@ module TxnForm.DisbRuleVerified exposing
 
 import Address exposing (postalCodeToErrors)
 import Bootstrap.Grid as Grid
+import DisbInfo
 import Disbursement as Disbursement
-import DisbursementInfo
 import ExpandableBankData
 import Html exposing (Html)
 import Json.Encode as Encode
@@ -118,7 +118,7 @@ loadedView model =
 
 disbFormRow : Model -> List (Html Msg)
 disbFormRow model =
-    DisbursementInfo.view
+    DisbInfo.view
         { entityName = ( model.entityName, EntityNameUpdated )
         , addressLine1 = ( model.addressLine1, AddressLine1Updated )
         , addressLine2 = ( model.addressLine2, AddressLine2Updated )

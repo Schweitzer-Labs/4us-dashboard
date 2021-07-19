@@ -12,7 +12,7 @@ module CreateDisbursement exposing
 import Address exposing (postalCodeToErrors)
 import Api.CreateDisb as CreateDisb
 import Bootstrap.Grid as Grid exposing (Column)
-import DisbursementInfo
+import DisbInfo
 import Html exposing (Html)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
@@ -69,7 +69,7 @@ view model =
     Grid.containerFluid
         []
     <|
-        DisbursementInfo.view
+        DisbInfo.view
             { entityName = ( model.entityName, EntityNameUpdated )
             , addressLine1 = ( model.addressLine1, AddressLine1Updated )
             , addressLine2 = ( model.addressLine2, AddressLine2Updated )

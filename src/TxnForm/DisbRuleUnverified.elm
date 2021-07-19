@@ -28,7 +28,7 @@ import Cents
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import DataTable exposing (DataRow)
-import DisbursementInfo
+import DisbInfo
 import Html exposing (Html, div, h6, input, span, text)
 import Html.Attributes exposing (class, type_)
 import Html.Events exposing (onClick)
@@ -196,7 +196,7 @@ addDisbButton =
 disbFormRow : Model -> List (Html Msg)
 disbFormRow model =
     if model.createDisbIsVisible then
-        DisbursementInfo.view
+        DisbInfo.view
             { entityName = ( model.entityName, EntityNameUpdated )
             , addressLine1 = ( model.addressLine1, AddressLine1Updated )
             , addressLine2 = ( model.addressLine2, AddressLine2Updated )

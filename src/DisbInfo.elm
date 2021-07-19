@@ -1,4 +1,4 @@
-module DisbursementInfo exposing (Config, view)
+module DisbInfo exposing (Config, view)
 
 import Address
 import AmountDate

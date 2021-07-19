@@ -41,6 +41,8 @@ import Transaction
 import TransactionType exposing (TransactionType(..))
 import Transactions
 import TxnForm as TxnForm
+import TxnForm.ContribRuleUnverified as ContribRuleUnverified
+import TxnForm.ContribRuleVerified as ContribRuleVerified
 import TxnForm.DisbRuleUnverified as DisbRuleUnverified
 import TxnForm.DisbRuleVerified as DisbRuleVerified
 import Validate exposing (validate)
@@ -71,12 +73,26 @@ type alias Model =
     , createDisbursementModalVisibility : Modal.Visibility
     , createDisbursementModal : CreateDisbursement.Model
     , createDisbursementSubmitting : Bool
+
+    -- Disb unverified modal
     , disbRuleUnverifiedModal : DisbRuleUnverified.Model
     , disbRuleUnverifiedSubmitting : Bool
     , disbRuleUnverifiedModalVisibility : Modal.Visibility
+
+    -- Disb verified
     , disbRuleVerifiedModal : DisbRuleVerified.Model
     , disbRuleVerifiedSubmitting : Bool
     , disbRuleVerifiedModalVisibility : Modal.Visibility
+
+    -- Contrib unverified modal
+    , contribRuleUnverifiedModal : ContribRuleUnverified.Model
+    , contribRuleUnverifiedSubmitting : Bool
+    , contribRuleUnverifiedModalVisibility : Modal.Visibility
+
+    -- Contrib verified
+    , contribRuleVerifiedModal : ContribRuleVerified.Model
+    , contribRuleVerifiedSubmitting : Bool
+    , contribRuleVerifiedModalVisibility : Modal.Visibility
     , config : Config
     }
 
@@ -105,12 +121,26 @@ init config session aggs committee committeeId =
             , createDisbursementModalVisibility = Modal.hidden
             , createDisbursementModal = CreateDisbursement.init committeeId
             , createDisbursementSubmitting = False
+
+            -- Disb rule unverified state
             , disbRuleUnverifiedModal = DisbRuleUnverified.init config [] Transaction.init
             , disbRuleUnverifiedSubmitting = False
             , disbRuleUnverifiedModalVisibility = Modal.hidden
+
+            -- Disb rule verified state
             , disbRuleVerifiedModal = DisbRuleVerified.init Transaction.init
             , disbRuleVerifiedSubmitting = False
             , disbRuleVerifiedModalVisibility = Modal.hidden
+
+            -- Contrib rule unverified state
+            , contribRuleUnverifiedModal = ContribRuleUnverified.init config [] Transaction.init
+            , contribRuleUnverifiedSubmitting = False
+            , contribRuleUnverifiedModalVisibility = Modal.hidden
+
+            -- Contrib rule verified state
+            , contribRuleVerifiedModal = ContribRuleVerified.init Transaction.init
+            , contribRuleVerifiedSubmitting = False
+            , contribRuleVerifiedModalVisibility = Modal.hidden
             , config = config
             }
     in
@@ -133,6 +163,8 @@ loadedView model =
         , createDisbursementModal model
         , disbRuleUnverifiedModal model
         , disbRuleVerifiedModal model
+        , contribRuleUnverifiedModal model
+        , contribRuleVerifiedModal model
         ]
 
 
@@ -170,6 +202,10 @@ createContributionModal model =
         }
 
 
+
+-- Disbursement
+
+
 disbRuleUnverifiedModal : Model -> Html Msg
 disbRuleUnverifiedModal model =
     PlatformModal.view
@@ -201,6 +237,44 @@ disbRuleVerifiedModal model =
         , isSubmitting = model.disbRuleVerifiedSubmitting
         , isSubmitDisabled = model.disbRuleVerifiedModal.isSubmitDisabled
         , visibility = model.disbRuleVerifiedModalVisibility
+        }
+
+
+
+-- Contributions
+
+
+contribRuleUnverifiedModal : Model -> Html Msg
+contribRuleUnverifiedModal model =
+    PlatformModal.view
+        { hideMsg = ContribRuleUnverifiedModalHide
+        , animateMsg = ContribRuleUnverifiedModalAnimate
+        , title = "Reconcile Contribursement"
+        , updateMsg = ContribRuleUnverifiedModalUpdate
+        , subModel = model.contribRuleUnverifiedModal
+        , subView = ContribRuleUnverified.view
+        , submitMsg = ContribRuleUnverifiedSubmit
+        , submitText = "Reconcile"
+        , isSubmitting = model.contribRuleUnverifiedSubmitting
+        , isSubmitDisabled = False -- ContribRuleUnverified.toSubmitDisabled model.contribRuleUnverifiedModal
+        , visibility = model.contribRuleUnverifiedModalVisibility
+        }
+
+
+contribRuleVerifiedModal : Model -> Html Msg
+contribRuleVerifiedModal model =
+    PlatformModal.view
+        { hideMsg = ContribRuleVerifiedModalHide
+        , animateMsg = ContribRuleVerifiedModalAnimate
+        , title = "Contribursement"
+        , updateMsg = ContribRuleVerifiedModalUpdate
+        , subModel = model.contribRuleVerifiedModal
+        , subView = ContribRuleVerified.view
+        , submitMsg = ContribRuleVerifiedSubmit
+        , submitText = "Save"
+        , isSubmitting = model.contribRuleVerifiedSubmitting
+        , isSubmitDisabled = False -- model.contribRuleVerifiedModal.isSubmitDisabled
+        , visibility = model.contribRuleVerifiedModalVisibility
         }
 
 
@@ -359,6 +433,22 @@ openTxnFormModalLoading model txn =
             , getTransaction model txn.id
             )
 
+        TxnForm.ContribRuleUnverified ->
+            ( { model
+                | contribRuleUnverifiedModalVisibility = Modal.shown
+                , contribRuleUnverifiedModal = ContribRuleUnverified.init model.config model.transactions txn
+              }
+            , Cmd.none
+            )
+
+        TxnForm.ContribRuleVerified ->
+            ( { model
+                | contribRuleVerifiedModalVisibility = Modal.shown
+                , contribRuleVerifiedModal = ContribRuleVerified.loadingInit
+              }
+            , getTransaction model txn.id
+            )
+
         _ ->
             ( model, Cmd.none )
 
@@ -428,6 +518,18 @@ type Msg
     | DisbRuleVerifiedSubmit
     | DisbRuleVerifiedGotMutResp (Result Http.Error MutationResponse)
     | ShowTxnFormModal Transaction.Model
+      --- Contrib Unverified
+    | ContribRuleUnverifiedModalHide
+    | ContribRuleUnverifiedModalAnimate Modal.Visibility
+    | ContribRuleUnverifiedModalUpdate ContribRuleUnverified.Msg
+    | ContribRuleUnverifiedSubmit
+    | ContribRuleUnverifiedGotReconcileMutResp (Result Http.Error MutationResponse)
+      -- Contrib Verified Modal
+    | ContribRuleVerifiedModalHide
+    | ContribRuleVerifiedModalAnimate Modal.Visibility
+    | ContribRuleVerifiedModalUpdate ContribRuleVerified.Msg
+    | ContribRuleVerifiedSubmit
+    | ContribRuleVerifiedGotMutResp (Result Http.Error MutationResponse)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -436,7 +538,7 @@ update msg model =
         ShowTxnFormModal txn ->
             openTxnFormModalLoading model txn
 
-        -- Disb Rule Unverified Modal State
+        -- Disb Rule Unverified
         DisbRuleUnverifiedModalAnimate visibility ->
             ( { model | disbRuleUnverifiedModalVisibility = visibility }, Cmd.none )
 
@@ -562,6 +664,134 @@ update msg model =
                     DisbRuleVerified.update subMsg model.disbRuleVerifiedModal
             in
             ( { model | disbRuleVerifiedModal = subModel }, Cmd.map DisbRuleVerifiedModalUpdate subCmd )
+
+        -- Contrib Rule Unverified
+        ContribRuleUnverifiedModalAnimate visibility ->
+            ( { model | contribRuleUnverifiedModalVisibility = visibility }, Cmd.none )
+
+        ContribRuleUnverifiedModalHide ->
+            ( { model
+                | contribRuleUnverifiedModalVisibility = Modal.hidden
+              }
+            , Cmd.none
+            )
+
+        ContribRuleUnverifiedSubmit ->
+            ( { model | contribRuleUnverifiedSubmitting = True }, Cmd.none )
+
+        ContribRuleUnverifiedModalUpdate subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    ContribRuleUnverified.update subMsg model.contribRuleUnverifiedModal
+            in
+            ( { model | contribRuleUnverifiedModal = subModel }, Cmd.map ContribRuleUnverifiedModalUpdate subCmd )
+
+        ContribRuleUnverifiedGotReconcileMutResp res ->
+            case res of
+                Ok mutResp ->
+                    case mutResp of
+                        Success id ->
+                            ( { model
+                                | contribRuleUnverifiedModalVisibility = Modal.hidden
+                                , contribRuleUnverifiedSubmitting = False
+
+                                -- @Todo make this state impossible
+                                , contribRuleUnverifiedModal = ContribRuleUnverified.init model.config [] model.contribRuleUnverifiedModal.bankTxn
+                              }
+                            , getTransactions model Nothing
+                            )
+
+                        ResValidationFailure errList ->
+                            ( { model
+                                | contribRuleUnverifiedModal =
+                                    ContribRuleUnverified.fromError model.contribRuleUnverifiedModal <|
+                                        Maybe.withDefault "Unexplained error" <|
+                                            List.head errList
+                                , contribRuleUnverifiedSubmitting = False
+                              }
+                            , Cmd.none
+                            )
+
+                Err err ->
+                    ( { model
+                        | contribRuleUnverifiedModal =
+                            ContribRuleUnverified.fromError model.contribRuleUnverifiedModal <|
+                                Api.decodeError err
+                        , contribRuleUnverifiedSubmitting = False
+                      }
+                    , Cmd.none
+                    )
+
+        ContribRuleVerifiedGotMutResp res ->
+            case res of
+                Ok mutResp ->
+                    case mutResp of
+                        Success id ->
+                            ( { model
+                                | contribRuleVerifiedModalVisibility = Modal.hidden
+                                , contribRuleVerifiedSubmitting = False
+
+                                -- @Todo make this state impossible
+                                , contribRuleVerifiedModal = ContribRuleVerified.loadingInit
+                              }
+                            , getTransactions model Nothing
+                            )
+
+                        ResValidationFailure errList ->
+                            ( { model
+                                | contribRuleVerifiedModal =
+                                    ContribRuleVerified.fromError model.contribRuleVerifiedModal <|
+                                        Maybe.withDefault "Unexplained error" <|
+                                            List.head errList
+                                , contribRuleVerifiedSubmitting = False
+                              }
+                            , Cmd.none
+                            )
+
+                Err err ->
+                    ( { model
+                        | contribRuleVerifiedModal =
+                            ContribRuleVerified.fromError model.contribRuleVerifiedModal <|
+                                Api.decodeError err
+                        , contribRuleVerifiedSubmitting = False
+                      }
+                    , Cmd.none
+                    )
+
+        -- Contrib Rule Verified Modal State
+        ContribRuleVerifiedModalAnimate visibility ->
+            ( { model | contribRuleVerifiedModalVisibility = visibility }, Cmd.none )
+
+        ContribRuleVerifiedModalHide ->
+            ( { model
+                | contribRuleVerifiedModalVisibility = Modal.hidden
+              }
+            , Cmd.none
+            )
+
+        ContribRuleVerifiedSubmit ->
+            ( model, Cmd.none )
+
+        --case validate ContribRuleVerified.validator model.contribRuleVerifiedModal of
+        --    Err errors ->
+        --        let
+        --            error =
+        --                Maybe.withDefault "Form error" <| List.head errors
+        --        in
+        --        ( { model | contribRuleVerifiedModal = ContribRuleVerified.fromError model.contribRuleVerifiedModal error }, Cmd.none )
+        --
+        --    Ok val ->
+        --        ( { model
+        --            | contribRuleVerifiedSubmitting = True
+        --          }
+        --        , amendContrib model
+        --        )
+        ContribRuleVerifiedModalUpdate subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    ContribRuleVerified.update subMsg model.contribRuleVerifiedModal
+            in
+            ( { model | contribRuleVerifiedModal = subModel }, Cmd.map ContribRuleVerifiedModalUpdate subCmd )
 
         -- Main page stuff
         GotSession session ->
@@ -857,6 +1087,8 @@ subscriptions model =
         , Modal.subscriptions model.createDisbursementModalVisibility CreateDisbursementModalAnimate
         , Modal.subscriptions model.disbRuleUnverifiedModalVisibility DisbRuleUnverifiedModalAnimate
         , Modal.subscriptions model.disbRuleVerifiedModalVisibility DisbRuleVerifiedModalAnimate
+        , Modal.subscriptions model.contribRuleUnverifiedModalVisibility ContribRuleUnverifiedModalAnimate
+        , Modal.subscriptions model.contribRuleVerifiedModalVisibility ContribRuleVerifiedModalAnimate
         ]
 
 
