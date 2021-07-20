@@ -96,7 +96,7 @@ check: build
 build-web: build
 	@echo $(COGNITO_CLIENT_ID)
 	@npm install
-	@npm \
+	npm \
 		--domain=$(COGNITO_DOMAIN) \
 		--redirect=$(COGNITO_REDIRECT_URI) \
 		--apiendpoint=$(API_ENDPOINT) \
