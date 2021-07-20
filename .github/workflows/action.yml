@@ -28,6 +28,9 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 12
+      - name: Cache NPM dependencies:
+        run: |
+          npm install
       - name: Install and set up ELM
         run: |
           npm install elm-app 
