@@ -37,8 +37,9 @@ import LabelWithData exposing (labelWithContent, labelWithData)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
 import SubmitButton exposing (submitButton)
+import Time
 import TimeZone exposing (america__new_york)
-import Timestamp
+import Timestamp exposing (dateStringToMillis)
 import Transaction
 import TransactionType exposing (TransactionType)
 import Transactions
@@ -73,6 +74,7 @@ type alias Model =
     , maybeError : Maybe String
     , config : Config
     , lastCreatedTxnId : String
+    , timezone : Time.Zone
     }
 
 
@@ -93,7 +95,7 @@ init config txns bankTxn =
     , isPartialPayment = Nothing
     , isExistingLiability = Nothing
     , isInKind = Nothing
-    , amount = ""
+    , amount = Cents.toUnsignedDollar bankTxn.amount
     , paymentDate = ""
     , paymentMethod = Just bankTxn.paymentMethod
     , checkNumber = ""
@@ -105,6 +107,7 @@ init config txns bankTxn =
     , maybeError = Nothing
     , config = config
     , lastCreatedTxnId = ""
+    , timezone = america__new_york ()
     }
 
 
@@ -257,7 +260,7 @@ buttonRow hideMsg displayText exitText msg submitting disabled =
         [ Row.betweenXs
         , Row.attrs
             [ Spacing.mt3
-            , Spacing.mb3
+            , Spacing.mb5
             ]
         ]
         [ Grid.col
@@ -499,7 +502,7 @@ fromError model error =
 
 validator : Validator String Model
 validator =
-    Validate.firstError
+    Validate.all
         [ ifBlank .entityName "Entity name is missing."
         , ifBlank .addressLine1 "Address 1 is missing."
         , ifBlank .city "City is missing."
@@ -511,12 +514,28 @@ validator =
         , postalCodeValidator
         , amountValidator
         , isInKindValidator
+        , fromErrors dateMaxToErrors
         ]
 
 
 amountValidator : Validator String Model
 amountValidator =
-    ifBlank .amount "Amount is missing."
+    Validate.all
+        [ ifBlank .amount "Amount is missing."
+        , fromErrors amountMaxToErrors
+        ]
+
+
+dateMaxToErrors : Model -> List String
+dateMaxToErrors model =
+    Errors.fromMaxDate model.timezone
+        model.bankTxn.paymentDate
+        (dateStringToMillis model.paymentDate)
+
+
+amountMaxToErrors : Model -> List String
+amountMaxToErrors model =
+    Errors.fromMaxAmount model.bankTxn.amount model.amount
 
 
 postalCodeValidator : Validator String Model

@@ -1,7 +1,15 @@
-module Errors exposing (fromInKind, fromPostalCode)
+module Errors exposing (fromInKind, fromMaxAmount, fromMaxDate, fromPostalCode)
+
+import Cents
+import Time
+import Timestamp
 
 
-fromInKind : Maybe Bool -> List String
+type alias Errors =
+    List String
+
+
+fromInKind : Maybe Bool -> Errors
 fromInKind isInKind =
     case isInKind of
         Just bool ->
@@ -16,7 +24,7 @@ fromInKind isInKind =
             []
 
 
-fromPostalCode : String -> List String
+fromPostalCode : String -> Errors
 fromPostalCode postalCode =
     let
         length =
@@ -30,3 +38,32 @@ fromPostalCode postalCode =
 
     else
         []
+
+
+fromMaxAmount : Int -> String -> Errors
+fromMaxAmount maxCents valStr =
+    let
+        maybeVal =
+            Cents.fromMaybeDollars valStr
+    in
+    case maybeVal of
+        Just val ->
+            case compare val maxCents of
+                GT ->
+                    [ "Amount exceeds " ++ Cents.toDollar maxCents ]
+
+                _ ->
+                    []
+
+        Nothing ->
+            [ "Amount must be a number" ]
+
+
+fromMaxDate : Time.Zone -> Int -> Int -> Errors
+fromMaxDate timezone max val =
+    case compare val max of
+        GT ->
+            [ "Date must be on or before " ++ Timestamp.format timezone max ]
+
+        _ ->
+            []

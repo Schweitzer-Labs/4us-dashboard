@@ -546,7 +546,7 @@ update msg model =
             ( { model
                 | disbRuleUnverifiedModalVisibility = Modal.hidden
               }
-            , Cmd.none
+            , getTransactions model Nothing
             )
 
         DisbRuleUnverifiedSubmit ->
@@ -673,7 +673,7 @@ update msg model =
             ( { model
                 | contribRuleUnverifiedModalVisibility = Modal.hidden
               }
-            , Cmd.none
+            , getTransactions model Nothing
             )
 
         ContribRuleUnverifiedSubmit ->

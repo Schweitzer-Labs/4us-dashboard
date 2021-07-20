@@ -1,4 +1,10 @@
-module Cents exposing (fromDollars, stringToDollar, toDollar)
+module Cents exposing
+    ( fromDollars
+    , fromMaybeDollars
+    , stringToDollar
+    , toDollar
+    , toUnsignedDollar
+    )
 
 import FormatNumber exposing (format)
 import FormatNumber.Locales as FormatNumber
@@ -16,10 +22,10 @@ toDollar num =
     case maybeTup of
         Just (( firstChar, rest ) as val) ->
             if firstChar == '-' then
-                "-" ++ "$" ++ toUnsignedDollar rest
+                "-" ++ "$" ++ strToUnsignedDollar rest
 
             else
-                "$" ++ toUnsignedDollar numStr
+                "$" ++ strToUnsignedDollar numStr
 
         Nothing ->
             "$"
@@ -34,10 +40,10 @@ stringToDollar str =
     case maybeTup of
         Just (( firstChar, rest ) as val) ->
             if firstChar == '-' then
-                "-" ++ "$" ++ toUnsignedDollar rest
+                "-" ++ "$" ++ strToUnsignedDollar rest
 
             else
-                "$" ++ toUnsignedDollar str
+                "$" ++ strToUnsignedDollar str
 
         Nothing ->
             "$"
@@ -53,11 +59,21 @@ fromDollars amountStr =
             0
 
 
-toUnsignedDollar : String -> String
-toUnsignedDollar cents =
+fromMaybeDollars : String -> Maybe Int
+fromMaybeDollars =
+    String.toFloat >> Maybe.map ((*) 100 >> round)
+
+
+strToUnsignedDollar : String -> String
+strToUnsignedDollar cents =
     case String.toFloat cents of
         Just val ->
             format FormatNumber.usLocale (val / 100)
 
         Nothing ->
             ""
+
+
+toUnsignedDollar : Int -> String
+toUnsignedDollar cents =
+    format FormatNumber.usLocale (toFloat cents / 100)
