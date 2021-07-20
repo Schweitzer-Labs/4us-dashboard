@@ -22,8 +22,8 @@ toString orgOrInd =
             "Individual"
 
 
-row : (Maybe EntityType -> msg) -> Maybe EntityType -> Html msg
-row msg maybeEntityType =
+row : (Maybe EntityType -> msg) -> Maybe EntityType -> Bool -> Html msg
+row msg maybeEntityType disabled =
     let
         orgOrIndStr =
             Maybe.withDefault "" <| Maybe.map EntityType.toOrgOrIndData maybeEntityType
@@ -32,15 +32,15 @@ row msg maybeEntityType =
         []
         [ Grid.col
             []
-            [ selectButton msg "Individual" "Ind" orgOrIndStr ]
+            [ selectButton msg "Individual" "Ind" orgOrIndStr disabled ]
         , Grid.col
             []
-            [ selectButton msg "Organization" "Org" orgOrIndStr ]
+            [ selectButton msg "Organization" "Org" orgOrIndStr disabled ]
         ]
 
 
-selectButton : (Maybe EntityType -> msg) -> String -> String -> String -> Html msg
-selectButton msg displayText value currentVal =
+selectButton : (Maybe EntityType -> msg) -> String -> String -> String -> Bool -> Html msg
+selectButton msg displayText value currentVal disabled =
     let
         selected =
             currentVal == value
@@ -61,6 +61,7 @@ selectButton msg displayText value currentVal =
             , Button.block
             , Button.attrs [ class "font-weight-bold border-round" ]
             , Button.onClick (msg <| Just EntityType.Individual)
+            , Button.disabled disabled
             ]
             [ text <| displayText ]
         ]

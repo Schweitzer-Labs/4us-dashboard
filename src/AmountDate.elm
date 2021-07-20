@@ -11,19 +11,21 @@ import Html exposing (Html)
 type alias Config msg =
     { amount : DataMsg.MsgString msg
     , paymentDate : DataMsg.MsgString msg
+    , disabled : Bool
     }
 
 
 view : Config msg -> List (Html msg)
-view { amount, paymentDate } =
-    [ row amount paymentDate ]
+view { amount, paymentDate, disabled } =
+    [ row amount paymentDate disabled ]
 
 
 row :
     ( String, String -> msg )
     -> ( String, String -> msg )
+    -> Bool
     -> Html msg
-row ( amount, amountMsg ) ( paymentDate, paymentDateMsg ) =
+row ( amount, amountMsg ) ( paymentDate, paymentDateMsg ) disabled =
     Grid.row [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
@@ -32,6 +34,7 @@ row ( amount, amountMsg ) ( paymentDate, paymentDateMsg ) =
                 , Input.onInput amountMsg
                 , Input.value amount
                 , Input.placeholder "Enter amount"
+                , Input.disabled disabled
                 ]
             ]
         , Grid.col
@@ -40,6 +43,7 @@ row ( amount, amountMsg ) ( paymentDate, paymentDateMsg ) =
                 [ Input.id "date"
                 , Input.onInput paymentDateMsg
                 , Input.value paymentDate
+                , Input.disabled disabled
                 ]
             ]
         ]

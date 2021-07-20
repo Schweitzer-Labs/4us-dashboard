@@ -231,14 +231,15 @@ orgSelect entityType currentValue =
         [ text <| toDisplayString entityType ]
 
 
-familyRadioList : (EntityType -> msg) -> Maybe EntityType -> List (Html msg)
-familyRadioList msg currentValue =
+familyRadioList : (EntityType -> msg) -> Maybe EntityType -> Bool -> List (Html msg)
+familyRadioList msg currentValue disabled =
     Radio.radioList "familyOfCandidate"
         [ Radio.createCustom
             [ Radio.id "yes"
             , Radio.inline
             , Radio.onClick (msg Family)
             , Radio.checked (currentValue == Just Family)
+            , Radio.disabled disabled
             ]
             "Yes"
         , Radio.createCustom
@@ -246,6 +247,7 @@ familyRadioList msg currentValue =
             , Radio.inline
             , Radio.onClick (msg Individual)
             , Radio.checked (currentValue == Just Individual)
+            , Radio.disabled disabled
             ]
             "No"
         ]
