@@ -24,10 +24,14 @@ jobs:
       - name: Install Python libs
         run: |
           pip3 install -r requirements.txt
-      - name: Install and set up elm
-        uses: jorelali/setup-elm@v3
+      - name: Setup and configure Node
+        uses: actions/setup-node@v2
         with:
-          elm-version: 0.19.1
+          node-version: 14
+      - name: Install and cache npm modules
+        run: |
+          npm install
+          npm test
       - name: Install and set up elm-app
         run: |
           npm install elm-app 
