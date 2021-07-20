@@ -12,6 +12,7 @@ type alias Model =
     { txn : Transaction.Model
     , loading : Bool
     , submitting : Bool
+    , disabled : Bool
     , errors : List String
     , error : String
     , checkNumber : String
@@ -60,6 +61,7 @@ init txn =
     { txn = txn
     , submitting = False
     , loading = False
+    , disabled = True
     , error = ""
     , errors = []
     , amount = ""
@@ -128,17 +130,16 @@ contribFormRow model =
         , owners = ( model.owners, OwnerAdded )
         , ownerName = ( model.ownerName, OwnerNameUpdated )
         , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
-        , disabled = True
+        , disabled = model.disabled
         , isEditable = True
-        , toggleEdit = NoOp
+        , toggleEdit = ToggleEdit
         , maybeError = model.maybeError
         }
 
 
 type Msg
-    = AmountUpdated String
-    | CheckNumberUpdated String
-    | PaymentDateUpdated String
+    = NoOp
+    | ToggleEdit
       --- Donor Info
     | OrgOrIndUpdated (Maybe OrgOrInd)
     | EmailAddressUpdated String
@@ -164,9 +165,11 @@ type Msg
     | CardYearUpdated String
     | CardMonthUpdated String
     | CardNumberUpdated String
-    | NoOp
     | PaymentMethodUpdated String
     | CVVUpdated String
+    | AmountUpdated String
+    | CheckNumberUpdated String
+    | PaymentDateUpdated String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -264,6 +267,9 @@ update msg model =
 
         PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )
+
+        ToggleEdit ->
+            ( { model | disabled = not model.disabled }, Cmd.none )
 
 
 fromError : Model -> String -> Model
