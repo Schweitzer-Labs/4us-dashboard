@@ -26,7 +26,6 @@
   },
   "devDependencies": {
     "express": "^4.17.1",
-    "query-string": "^7.0.0",
-    "elm": "0.19.0-no-deps"
+    "query-string": "^7.0.0"
   }
 }
