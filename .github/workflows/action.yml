@@ -25,9 +25,8 @@ jobs:
         run: |
           pip3 install -r requirements.txt
       - name: Install and set up ELM
-        uses: jorelali/setup-elm@v3
-        with:
-          elm-version: 0.19.1
+        run: |
+          npm install -g elm-app 
       - name: Assemble and Deploy CloudFormation Stacks
         run: |
           make clean deploy
