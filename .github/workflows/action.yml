@@ -26,7 +26,7 @@ jobs:
           pip3 install -r requirements.txt
       - name: Install and set up ELM
         run: |
-          npm install -g elm-app 
+          npm install elm-app 
       - name: Assemble and Deploy CloudFormation Stacks
         run: |
           make clean deploy
