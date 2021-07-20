@@ -9,13 +9,11 @@ module TxnForm.DisbRuleVerified exposing
     , view
     )
 
-import Address exposing (postalCodeToErrors)
 import Bootstrap.Grid as Grid
 import DisbInfo
-import Disbursement as Disbursement
+import Errors exposing (fromInKind, fromPostalCode)
 import ExpandableBankData
 import Html exposing (Html)
-import Json.Encode as Encode
 import Loading
 import PaymentInfo
 import PaymentMethod exposing (PaymentMethod)
@@ -207,7 +205,7 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, isSubmitDisabled = disableSubmitOnInKind model }, Cmd.none )
+            ( { model | isInKind = bool }, Cmd.none )
 
         BankDataToggled ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
@@ -231,6 +229,7 @@ validator =
         , ifNothing .isPartialPayment "Partial Payment Information is missing"
         , ifNothing .isExistingLiability "Existing Liability Information is missing"
         , postalCodeValidator
+        , isInKindValidator
         ]
 
 
@@ -241,7 +240,7 @@ postalCodeValidator =
 
 postalCodeOnModelToErrors : Model -> List String
 postalCodeOnModelToErrors model =
-    postalCodeToErrors model.postalCode
+    fromPostalCode model.postalCode
 
 
 fromError : Model -> String -> Model
@@ -249,13 +248,11 @@ fromError model error =
     { model | maybeError = Just error }
 
 
-disableSubmitOnInKind : Model -> Bool
-disableSubmitOnInKind model =
-    if model.isInKind == Just True then
-        True
+isInKindValidator : Validator String Model
+isInKindValidator =
+    fromErrors isInKindOnModelToErrors
 
-    else if model.paymentMethod /= Nothing then
-        False
 
-    else
-        model.isSubmitDisabled
+isInKindOnModelToErrors : Model -> List String
+isInKindOnModelToErrors model =
+    fromInKind model.isInKind

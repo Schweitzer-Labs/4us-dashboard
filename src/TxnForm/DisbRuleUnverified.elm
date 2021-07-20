@@ -10,7 +10,6 @@ module TxnForm.DisbRuleUnverified exposing
     , view
     )
 
-import Address exposing (postalCodeToErrors)
 import Api
 import Api.CreateDisb as CreateDisb
 import Api.GetTxns as GetTxns
@@ -29,6 +28,7 @@ import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import DataTable exposing (DataRow)
 import DisbInfo
+import Errors exposing (fromInKind, fromPostalCode)
 import Html exposing (Html, div, h6, input, span, text)
 import Html.Attributes exposing (class, type_)
 import Html.Events exposing (onClick)
@@ -350,7 +350,7 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, isCreateDisbButtonDisabled = disableSubmitOnInKind model }, Cmd.none )
+            ( { model | isInKind = bool }, Cmd.none )
 
         CreateDisbToggled ->
             ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
@@ -438,18 +438,6 @@ fromError model error =
     { model | maybeError = Just error }
 
 
-disableSubmitOnInKind : Model -> Bool
-disableSubmitOnInKind model =
-    if model.isInKind == Just True then
-        True
-
-    else if model.paymentMethod /= Nothing then
-        False
-
-    else
-        model.isCreateDisbButtonDisabled
-
-
 validator : Validator String Model
 validator =
     Validate.firstError
@@ -463,6 +451,7 @@ validator =
         , ifNothing .isExistingLiability "Existing Liability Information is missing"
         , postalCodeValidator
         , amountValidator
+        , isInKindValidator
         ]
 
 
@@ -478,7 +467,17 @@ postalCodeValidator =
 
 postalCodeOnModelToErrors : Model -> List String
 postalCodeOnModelToErrors model =
-    postalCodeToErrors model.postalCode
+    fromPostalCode model.postalCode
+
+
+isInKindValidator : Validator String Model
+isInKindValidator =
+    fromErrors isInKindOnModelToErrors
+
+
+isInKindOnModelToErrors : Model -> List String
+isInKindOnModelToErrors model =
+    fromInKind model.isInKind
 
 
 totalSelectedMatch : Model -> Bool
@@ -491,8 +490,8 @@ totalSelectedMatch model =
 
 
 toSubmitDisabled : Model -> Bool
-toSubmitDisabled =
-    .isReconcileButtonDisabled
+toSubmitDisabled model =
+    model.isReconcileButtonDisabled && totalSelectedMatch model
 
 
 toEncodeModel : Model -> CreateDisb.EncodeModel

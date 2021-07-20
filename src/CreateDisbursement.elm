@@ -9,10 +9,10 @@ module CreateDisbursement exposing
     , view
     )
 
-import Address exposing (postalCodeToErrors)
 import Api.CreateDisb as CreateDisb
 import Bootstrap.Grid as Grid exposing (Column)
 import DisbInfo
+import Errors exposing (fromInKind, fromPostalCode)
 import Html exposing (Html)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
@@ -161,7 +161,6 @@ update msg model =
         IsInKindUpdated bool ->
             ( { model
                 | isInKind = bool
-                , isSubmitDisabled = disableSubmitOnInKind model
               }
             , Cmd.none
             )
@@ -180,6 +179,7 @@ validator =
         , ifNothing .isExistingLiability "Existing Liability Information is missing"
         , postalCodeValidator
         , amountValidator
+        , isInKindValidator
         ]
 
 
@@ -195,7 +195,7 @@ postalCodeValidator =
 
 postalCodeOnModelToErrors : Model -> List String
 postalCodeOnModelToErrors model =
-    postalCodeToErrors model.postalCode
+    fromPostalCode model.postalCode
 
 
 fromError : Model -> String -> Model
@@ -203,16 +203,14 @@ fromError model error =
     { model | maybeError = Just error }
 
 
-disableSubmitOnInKind : Model -> Bool
-disableSubmitOnInKind model =
-    if model.isInKind == Just True then
-        False
+isInKindValidator : Validator String Model
+isInKindValidator =
+    fromErrors isInKindOnModelToErrors
 
-    else if model.paymentMethod /= Nothing then
-        True
 
-    else
-        model.isSubmitDisabled
+isInKindOnModelToErrors : Model -> List String
+isInKindOnModelToErrors model =
+    fromInKind model.isInKind
 
 
 toEncodeModel : Model -> CreateDisb.EncodeModel
