@@ -505,8 +505,8 @@ totalSelectedMatch model =
 
 
 toSubmitDisabled : Model -> Bool
-toSubmitDisabled =
-    .isReconcileButtonDisabled
+toSubmitDisabled model =
+    model.isReconcileButtonDisabled && totalSelectedMatch model
 
 
 toEncodeModel : Model -> CreateDisb.EncodeModel
