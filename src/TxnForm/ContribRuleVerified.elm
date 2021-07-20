@@ -129,7 +129,7 @@ contribFormRow model =
         , ownerName = ( model.ownerName, OwnerNameUpdated )
         , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
         , disabled = False
-        , isEditable = False
+        , isEditable = True
         , toggleEdit = NoOp
         , maybeError = model.maybeError
         }

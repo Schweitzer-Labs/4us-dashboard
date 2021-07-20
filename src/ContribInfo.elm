@@ -3,6 +3,8 @@ module ContribInfo exposing (Config, view)
 import Address
 import AmountDate
 import AppInput exposing (inputEmail, inputText)
+import Asset
+import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid exposing (Column)
@@ -12,6 +14,7 @@ import DataMsg exposing (toData, toMsg)
 import EntityType exposing (EntityType)
 import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
+import Html.Events exposing (onClick)
 import MonthSelector
 import OrgOrInd exposing (OrgOrInd)
 import PaymentMethod
@@ -139,6 +142,20 @@ creditRow { cardNumber, expirationMonth, expirationYear, cvv } =
     ]
 
 
+editRow : msg -> List (Html msg)
+editRow msg =
+    [ Grid.row [ Row.attrs [ class "fade-in" ] ]
+        [ Grid.col
+            []
+            [ text "Edit Info"
+            , span [ class "hover-underline hover-pointer", Spacing.ml2, onClick msg ]
+                [ Asset.editGlyph []
+                ]
+            ]
+        ]
+    ]
+
+
 view : Config msg -> Html msg
 view c =
     Grid.containerFluid
@@ -146,7 +163,12 @@ view c =
     <|
         []
             ++ errorRow c.maybeError
-            ++ labelRow "Payment Info"
+            ++ (if c.isEditable then
+                    editRow c.toggleEdit
+
+                else
+                    labelRow "Payment Info"
+               )
             ++ amountDateRow c
             ++ labelRow "Donor Info"
             ++ donorInfoRows c
