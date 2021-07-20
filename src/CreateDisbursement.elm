@@ -3,14 +3,16 @@ module CreateDisbursement exposing
     , Msg(..)
     , fromError
     , init
+    , toEncodeModel
     , update
     , validator
     , view
     )
 
 import Address exposing (postalCodeToErrors)
+import Api.CreateDisb as CreateDisb
 import Bootstrap.Grid as Grid exposing (Column)
-import DisbursementInfo
+import DisbInfo
 import Html exposing (Html)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
@@ -67,7 +69,7 @@ view model =
     Grid.containerFluid
         []
     <|
-        DisbursementInfo.view
+        DisbInfo.view
             { entityName = ( model.entityName, EntityNameUpdated )
             , addressLine1 = ( model.addressLine1, AddressLine1Updated )
             , addressLine2 = ( model.addressLine2, AddressLine2Updated )
@@ -224,3 +226,24 @@ isInKindToErrors isInKind =
 
         Nothing ->
             []
+
+
+toEncodeModel : Model -> CreateDisb.EncodeModel
+toEncodeModel model =
+    { committeeId = model.committeeId
+    , entityName = model.entityName
+    , addressLine1 = model.addressLine1
+    , addressLine2 = model.addressLine2
+    , city = model.city
+    , state = model.state
+    , postalCode = model.postalCode
+    , purposeCode = model.purposeCode
+    , isSubcontracted = model.isSubcontracted
+    , isPartialPayment = model.isPartialPayment
+    , isExistingLiability = model.isExistingLiability
+    , isInKind = model.isInKind
+    , amount = model.amount
+    , paymentDate = model.paymentDate
+    , paymentMethod = model.paymentMethod
+    , checkNumber = model.checkNumber
+    }

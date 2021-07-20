@@ -11,7 +11,10 @@ module TxnForm.DisbRuleUnverified exposing
     )
 
 import Address exposing (postalCodeToErrors)
-import Api.GraphQL exposing (MutationResponse(..), mutationValidationFailureDecoder)
+import Api
+import Api.CreateDisb as CreateDisb
+import Api.GetTxns as GetTxns
+import Api.GraphQL exposing (MutationResponse(..))
 import Asset
 import BankData
 import Bootstrap.Button as Button
@@ -20,13 +23,16 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
+import Browser.Navigation exposing (load)
 import Cents
+import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import DataTable exposing (DataRow)
-import DisbursementInfo
+import DisbInfo
 import Html exposing (Html, div, h6, input, span, text)
 import Html.Attributes exposing (class, type_)
 import Html.Events exposing (onClick)
+import Http
 import LabelWithData exposing (labelWithContent, labelWithData)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
@@ -34,6 +40,7 @@ import SubmitButton exposing (submitButton)
 import TimeZone exposing (america__new_york)
 import Timestamp
 import Transaction
+import TransactionType exposing (TransactionType)
 import Transactions
 import Validate exposing (Validator, fromErrors, ifBlank, ifNothing, validate)
 
@@ -69,12 +76,12 @@ type alias Model =
 
 
 init : Config -> List Transaction.Model -> Transaction.Model -> Model
-init config txns txn =
+init config txns bankTxn =
     { txns = txns
-    , bankTxn = txn
-    , committeeId = txn.committeeId
+    , bankTxn = bankTxn
+    , committeeId = bankTxn.committeeId
     , selectedTxns = []
-    , related = getRelatedDisb txn txns
+    , related = getRelatedDisb bankTxn txns
     , entityName = ""
     , addressLine1 = ""
     , addressLine2 = ""
@@ -88,7 +95,7 @@ init config txns txn =
     , isInKind = Nothing
     , amount = ""
     , paymentDate = ""
-    , paymentMethod = Just txn.paymentMethod
+    , paymentMethod = Just bankTxn.paymentMethod
     , checkNumber = ""
     , createDisbIsVisible = False
     , isCreateDisbButtonDisabled = True
@@ -189,7 +196,7 @@ addDisbButton =
 disbFormRow : Model -> List (Html Msg)
 disbFormRow model =
     if model.createDisbIsVisible then
-        DisbursementInfo.view
+        DisbInfo.view
             { entityName = ( model.entityName, EntityNameUpdated )
             , addressLine1 = ( model.addressLine1, AddressLine1Updated )
             , addressLine2 = ( model.addressLine2, AddressLine2Updated )
@@ -293,6 +300,8 @@ type Msg
     | CreateDisbToggled
     | CreateDisbSubmitted
     | RelatedTransactionClicked Transaction.Model Bool
+    | CreateDisbGotResp (Result Http.Error MutationResponse)
+    | GetTxnsGotResp (Result Http.Error GetTxns.Model)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -357,7 +366,7 @@ update msg model =
 
                 Ok val ->
                     ( model
-                    , Cmd.none
+                    , createDisb model
                     )
 
         RelatedTransactionClicked clickedTxn isChecked ->
@@ -370,6 +379,50 @@ update msg model =
                         List.filter (\txn -> txn.id /= clickedTxn.id) model.selectedTxns
             in
             ( { model | selectedTxns = selected, createDisbIsVisible = False }, Cmd.none )
+
+        CreateDisbGotResp res ->
+            case res of
+                Ok createDisbResp ->
+                    case createDisbResp of
+                        Success id ->
+                            ( { model
+                                | createDisbIsVisible = False
+                                , isCreateDisbButtonDisabled = False
+                              }
+                            , getTxns model
+                            )
+
+                        ResValidationFailure errList ->
+                            ( { model
+                                | maybeError = List.head errList
+                                , isCreateDisbButtonDisabled = False
+                              }
+                            , Cmd.none
+                            )
+
+                Err err ->
+                    ( { model
+                        | maybeError = Just <| Api.decodeError err
+                        , isCreateDisbButtonDisabled = False
+                      }
+                    , Cmd.none
+                    )
+
+        GetTxnsGotResp res ->
+            case res of
+                Ok body ->
+                    ( { model
+                        | txns = getRelatedDisb model.bankTxn <| GetTxns.toTxns body
+                      }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    let
+                        { cognitoDomain, cognitoClientId, redirectUri } =
+                            model.config
+                    in
+                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
 
         NoOp ->
             ( model, Cmd.none )
@@ -454,3 +507,34 @@ totalSelectedMatch model =
 toSubmitDisabled : Model -> Bool
 toSubmitDisabled =
     .isReconcileButtonDisabled
+
+
+toEncodeModel : Model -> CreateDisb.EncodeModel
+toEncodeModel model =
+    { committeeId = model.committeeId
+    , entityName = model.entityName
+    , addressLine1 = model.addressLine1
+    , addressLine2 = model.addressLine2
+    , city = model.city
+    , state = model.state
+    , postalCode = model.postalCode
+    , purposeCode = model.purposeCode
+    , isSubcontracted = model.isSubcontracted
+    , isPartialPayment = model.isPartialPayment
+    , isExistingLiability = model.isExistingLiability
+    , isInKind = model.isInKind
+    , amount = model.amount
+    , paymentDate = model.paymentDate
+    , paymentMethod = model.paymentMethod
+    , checkNumber = model.checkNumber
+    }
+
+
+createDisb : Model -> Cmd Msg
+createDisb model =
+    CreateDisb.send CreateDisbGotResp model.config <| CreateDisb.encode toEncodeModel model
+
+
+getTxns : Model -> Cmd Msg
+getTxns model =
+    GetTxns.send GetTxnsGotResp model.config <| GetTxns.encode model.committeeId (Just TransactionType.Disbursement)

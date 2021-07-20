@@ -7,20 +7,33 @@ import Transaction
 type Model
     = DisbRuleVerified
     | DisbRuleUnverified
+    | ContribRuleVerified
+    | ContribRuleUnverified
     | NoOp
 
 
 fromTxn : Transaction.Model -> Model
 fromTxn txn =
     case ( txn.direction, txn.ruleVerified, txn.bankVerified ) of
+        -- Disb
         ( Out, True, False ) ->
+            DisbRuleVerified
+
+        ( Out, True, True ) ->
             DisbRuleVerified
 
         ( Out, False, True ) ->
             DisbRuleUnverified
 
-        ( Out, True, True ) ->
-            DisbRuleVerified
+        -- Contrib
+        ( In, True, False ) ->
+            ContribRuleVerified
+
+        ( In, True, True ) ->
+            ContribRuleVerified
+
+        ( In, False, True ) ->
+            ContribRuleUnverified
 
         _ ->
             NoOp

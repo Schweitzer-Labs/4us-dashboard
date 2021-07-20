@@ -1,4 +1,17 @@
-module EntityType exposing (EntityType(..), familyRadioList, fromMaybeToStringWithDefaultInd, fromString, isLLC, llc, orgView, toDataString, toDisplayString, toGridString)
+module EntityType exposing
+    ( EntityType(..)
+    , familyRadioList
+    , fromMaybeToStringWithDefaultInd
+    , fromString
+    , isLLC
+    , llc
+    , orgView
+    , toDataString
+    , toDisplayString
+    , toGridString
+    , toOrgOrIndData
+    , toOrgOrIndDisplay
+    )
 
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Form.Select as Select exposing (Item)
@@ -246,3 +259,29 @@ isLLC contributorType =
 llc : EntityType
 llc =
     LimitedLiabilityCompany
+
+
+toOrgOrIndData : EntityType -> String
+toOrgOrIndData entityType =
+    case entityType of
+        Individual ->
+            "Ind"
+
+        Family ->
+            "Ind"
+
+        _ ->
+            "Org"
+
+
+toOrgOrIndDisplay : EntityType -> String
+toOrgOrIndDisplay entityType =
+    case entityType of
+        Individual ->
+            "Individual"
+
+        Family ->
+            "Individual"
+
+        _ ->
+            "Organization"

@@ -2,6 +2,7 @@ module OrgOrInd exposing (OrgOrInd(..), row)
 
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
+import EntityType exposing (EntityType)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, id)
 
@@ -21,20 +22,24 @@ toString orgOrInd =
             "Individual"
 
 
-row : (Maybe OrgOrInd -> msg) -> Maybe OrgOrInd -> Html msg
-row msg currentValue =
+row : (Maybe EntityType -> msg) -> Maybe EntityType -> Html msg
+row msg maybeEntityType =
+    let
+        orgOrIndStr =
+            Maybe.withDefault "" <| Maybe.map EntityType.toOrgOrIndData maybeEntityType
+    in
     Grid.row
         []
         [ Grid.col
             []
-            [ selectButton msg (toString Ind) (Just Ind) currentValue ]
+            [ selectButton msg "Individual" "Ind" orgOrIndStr ]
         , Grid.col
             []
-            [ selectButton msg (toString Org) (Just Org) currentValue ]
+            [ selectButton msg "Organization" "Org" orgOrIndStr ]
         ]
 
 
-selectButton : (a -> msg) -> String -> a -> a -> Html msg
+selectButton : (Maybe EntityType -> msg) -> String -> String -> String -> Html msg
 selectButton msg displayText value currentVal =
     let
         selected =
@@ -55,7 +60,7 @@ selectButton msg displayText value currentVal =
             , Button.attrs [ id displayText ]
             , Button.block
             , Button.attrs [ class "font-weight-bold border-round" ]
-            , Button.onClick (msg value)
+            , Button.onClick (msg <| Just EntityType.Individual)
             ]
             [ text <| displayText ]
         ]
