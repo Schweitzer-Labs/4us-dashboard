@@ -9,13 +9,11 @@ module TxnForm.DisbRuleVerified exposing
     , view
     )
 
-import Address exposing (postalCodeToErrors)
 import Bootstrap.Grid as Grid
 import DisbInfo
-import Disbursement as Disbursement
+import Errors exposing (fromInKind, fromPostalCode)
 import ExpandableBankData
 import Html exposing (Html)
-import Json.Encode as Encode
 import Loading
 import PaymentInfo
 import PaymentMethod exposing (PaymentMethod)
@@ -242,7 +240,7 @@ postalCodeValidator =
 
 postalCodeOnModelToErrors : Model -> List String
 postalCodeOnModelToErrors model =
-    postalCodeToErrors model.postalCode
+    fromPostalCode model.postalCode
 
 
 fromError : Model -> String -> Model
@@ -257,19 +255,4 @@ isInKindValidator =
 
 isInKindOnModelToErrors : Model -> List String
 isInKindOnModelToErrors model =
-    isInKindToErrors model.isInKind
-
-
-isInKindToErrors : Maybe Bool -> List String
-isInKindToErrors isInKind =
-    case isInKind of
-        Just bool ->
-            case bool of
-                True ->
-                    [ "In-Kind option is currently not supported" ]
-
-                False ->
-                    []
-
-        Nothing ->
-            []
+    fromInKind model.isInKind

@@ -9,10 +9,10 @@ module CreateDisbursement exposing
     , view
     )
 
-import Address exposing (postalCodeToErrors)
 import Api.CreateDisb as CreateDisb
 import Bootstrap.Grid as Grid exposing (Column)
 import DisbInfo
+import Errors exposing (fromInKind, fromPostalCode)
 import Html exposing (Html)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
@@ -195,7 +195,7 @@ postalCodeValidator =
 
 postalCodeOnModelToErrors : Model -> List String
 postalCodeOnModelToErrors model =
-    postalCodeToErrors model.postalCode
+    fromPostalCode model.postalCode
 
 
 fromError : Model -> String -> Model
@@ -210,22 +210,7 @@ isInKindValidator =
 
 isInKindOnModelToErrors : Model -> List String
 isInKindOnModelToErrors model =
-    isInKindToErrors model.isInKind
-
-
-isInKindToErrors : Maybe Bool -> List String
-isInKindToErrors isInKind =
-    case isInKind of
-        Just bool ->
-            case bool of
-                True ->
-                    [ "In-Kind option is currently not supported" ]
-
-                False ->
-                    []
-
-        Nothing ->
-            []
+    fromInKind model.isInKind
 
 
 toEncodeModel : Model -> CreateDisb.EncodeModel
