@@ -829,7 +829,7 @@ update msg model =
                         , committee = GetTxns.toCommittee body
                         , loading = False
                       }
-                    , Cmd.none
+                    , Task.attempt (\_ -> NoOp) scrollToTop
                     )
 
                 Err _ ->

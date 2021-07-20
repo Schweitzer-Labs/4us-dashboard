@@ -46,11 +46,10 @@ import Validate exposing (Validator, fromErrors, ifBlank, ifNothing, validate)
 
 
 type alias Model =
-    { txns : List Transaction.Model
-    , bankTxn : Transaction.Model
+    { bankTxn : Transaction.Model
     , committeeId : String
     , selectedTxns : List Transaction.Model
-    , related : List Transaction.Model
+    , relatedTxns : List Transaction.Model
     , entityName : String
     , addressLine1 : String
     , addressLine2 : String
@@ -68,20 +67,21 @@ type alias Model =
     , checkNumber : String
     , createDisbIsVisible : Bool
     , disabled : Bool
-    , isCreateDisbButtonDisabled : Bool
-    , isReconcileButtonDisabled : Bool
+    , createDisbButtonIsDisabled : Bool
+    , createDisbIsSubmitting : Bool
+    , reconcileButtonIsDisabled : Bool
     , maybeError : Maybe String
     , config : Config
+    , lastCreatedTxnId : String
     }
 
 
 init : Config -> List Transaction.Model -> Transaction.Model -> Model
 init config txns bankTxn =
-    { txns = txns
-    , bankTxn = bankTxn
+    { bankTxn = bankTxn
     , committeeId = bankTxn.committeeId
     , selectedTxns = []
-    , related = getRelatedDisb bankTxn txns
+    , relatedTxns = getRelatedDisb bankTxn txns
     , entityName = ""
     , addressLine1 = ""
     , addressLine2 = ""
@@ -98,11 +98,40 @@ init config txns bankTxn =
     , paymentMethod = Just bankTxn.paymentMethod
     , checkNumber = ""
     , createDisbIsVisible = False
-    , isCreateDisbButtonDisabled = True
+    , createDisbButtonIsDisabled = True
+    , createDisbIsSubmitting = False
     , disabled = True
-    , isReconcileButtonDisabled = True
+    , reconcileButtonIsDisabled = True
     , maybeError = Nothing
     , config = config
+    , lastCreatedTxnId = ""
+    }
+
+
+clearForm : Model -> Model
+clearForm model =
+    { model
+        | entityName = ""
+        , addressLine1 = ""
+        , addressLine2 = ""
+        , city = ""
+        , state = ""
+        , postalCode = ""
+        , purposeCode = Nothing
+        , isSubcontracted = Nothing
+        , isPartialPayment = Nothing
+        , isExistingLiability = Nothing
+        , isInKind = Nothing
+        , amount = ""
+        , paymentDate = ""
+        , checkNumber = ""
+        , createDisbIsVisible = False
+        , createDisbButtonIsDisabled = True
+        , createDisbIsSubmitting = False
+        , disabled = True
+        , reconcileButtonIsDisabled = True
+        , maybeError = Nothing
+        , lastCreatedTxnId = ""
     }
 
 
@@ -124,7 +153,7 @@ view model =
             , addDisbButtonOrHeading model
             ]
                 ++ disbFormRow model
-                ++ [ reconcileItemsTable model.related model.selectedTxns ]
+                ++ [ reconcileItemsTable model.relatedTxns model.selectedTxns ]
         ]
 
 
@@ -216,7 +245,7 @@ disbFormRow model =
             , toggleEdit = NoOp
             , maybeError = model.maybeError
             }
-            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" CreateDisbSubmitted False model.isCreateDisbButtonDisabled ]
+            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" CreateDisbSubmitted model.createDisbIsSubmitting model.createDisbButtonIsDisabled ]
 
     else
         []
@@ -304,6 +333,20 @@ type Msg
     | GetTxnsGotResp (Result Http.Error GetTxns.Model)
 
 
+getTxnById : List Transaction.Model -> String -> Maybe Transaction.Model
+getTxnById txns id =
+    let
+        matches =
+            List.filter (\t -> t.id == id) txns
+    in
+    case matches of
+        [ match ] ->
+            Just match
+
+        _ ->
+            Nothing
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -323,7 +366,7 @@ update msg model =
             ( { model | checkNumber = str }, Cmd.none )
 
         PaymentDateUpdated str ->
-            ( { model | paymentDate = str, isCreateDisbButtonDisabled = False }, Cmd.none )
+            ( { model | paymentDate = str, createDisbButtonIsDisabled = False }, Cmd.none )
 
         AddressLine1Updated str ->
             ( { model | addressLine1 = str }, Cmd.none )
@@ -365,7 +408,7 @@ update msg model =
                     ( fromError model error, Cmd.none )
 
                 Ok val ->
-                    ( model
+                    ( { model | createDisbButtonIsDisabled = True, createDisbIsSubmitting = True }
                     , createDisb model
                     )
 
@@ -385,9 +428,15 @@ update msg model =
                 Ok createDisbResp ->
                     case createDisbResp of
                         Success id ->
-                            ( { model
+                            let
+                                resetFormModel =
+                                    clearForm model
+                            in
+                            ( { resetFormModel
                                 | createDisbIsVisible = False
-                                , isCreateDisbButtonDisabled = False
+                                , createDisbButtonIsDisabled = False
+                                , createDisbIsSubmitting = False
+                                , lastCreatedTxnId = id
                               }
                             , getTxns model
                             )
@@ -395,7 +444,8 @@ update msg model =
                         ResValidationFailure errList ->
                             ( { model
                                 | maybeError = List.head errList
-                                , isCreateDisbButtonDisabled = False
+                                , createDisbButtonIsDisabled = False
+                                , createDisbIsSubmitting = False
                               }
                             , Cmd.none
                             )
@@ -403,7 +453,8 @@ update msg model =
                 Err err ->
                     ( { model
                         | maybeError = Just <| Api.decodeError err
-                        , isCreateDisbButtonDisabled = False
+                        , createDisbButtonIsDisabled = False
+                        , createDisbIsSubmitting = False
                       }
                     , Cmd.none
                     )
@@ -411,8 +462,16 @@ update msg model =
         GetTxnsGotResp res ->
             case res of
                 Ok body ->
+                    let
+                        relatedTxns =
+                            getRelatedDisb model.bankTxn <| GetTxns.toTxns body
+
+                        resTxnOrEmpty =
+                            Maybe.withDefault [] <| Maybe.map List.singleton <| getTxnById relatedTxns model.lastCreatedTxnId
+                    in
                     ( { model
-                        | txns = getRelatedDisb model.bankTxn <| GetTxns.toTxns body
+                        | relatedTxns = getRelatedDisb model.bankTxn <| GetTxns.toTxns body
+                        , selectedTxns = model.selectedTxns ++ resTxnOrEmpty
                       }
                     , Cmd.none
                     )
@@ -491,7 +550,7 @@ totalSelectedMatch model =
 
 toSubmitDisabled : Model -> Bool
 toSubmitDisabled model =
-    model.isReconcileButtonDisabled && totalSelectedMatch model
+    model.reconcileButtonIsDisabled && totalSelectedMatch model
 
 
 toEncodeModel : Model -> CreateDisb.EncodeModel
