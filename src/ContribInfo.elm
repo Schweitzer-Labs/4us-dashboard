@@ -176,9 +176,15 @@ view c =
             ++ amountDateRow c
             ++ labelRow "Donor Info"
             ++ donorInfoRows c
-            ++ labelRow "Processing Info"
-            ++ PaymentMethod.select (toMsg c.paymentMethod) (toData c.paymentMethod) c.disabled
-            ++ processingRow c
+            ++ (if c.isEditable then
+                    []
+
+                else
+                    []
+                        ++ labelRow "Processing Info"
+                        ++ PaymentMethod.select (toMsg c.paymentMethod) (toData c.paymentMethod) c.disabled
+                        ++ processingRow c
+               )
 
 
 entityToOrgOrInd : EntityType -> OrgOrInd
