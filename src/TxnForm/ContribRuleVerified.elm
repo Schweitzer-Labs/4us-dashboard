@@ -1,6 +1,7 @@
 module TxnForm.ContribRuleVerified exposing (Model, Msg(..), fromError, init, loadingInit, update, view)
 
 import Bootstrap.Grid as Grid
+import Cents
 import ContribInfo
 import EntityType exposing (EntityType)
 import ExpandableBankData
@@ -9,6 +10,8 @@ import Loading
 import OrgOrInd exposing (OrgOrInd)
 import Owners exposing (Owner, Owners)
 import PaymentInfo
+import TimeZone exposing (america__new_york)
+import Timestamp
 import Transaction
 
 
@@ -70,23 +73,23 @@ init txn =
     , showBankData = False
     , error = ""
     , errors = []
-    , amount = ""
+    , amount = Cents.stringToDollar <| String.fromInt txn.amount
     , checkNumber = ""
-    , paymentDate = ""
-    , emailAddress = ""
-    , phoneNumber = ""
-    , firstName = ""
-    , middleName = ""
-    , lastName = ""
-    , addressLine1 = ""
-    , addressLine2 = ""
-    , city = ""
-    , state = ""
-    , postalCode = ""
-    , employmentStatus = ""
-    , employer = ""
-    , occupation = ""
-    , entityName = ""
+    , paymentDate = Timestamp.format (america__new_york ()) txn.paymentDate
+    , emailAddress = Maybe.withDefault "" txn.emailAddress
+    , phoneNumber = Maybe.withDefault "" txn.phoneNumber
+    , firstName = Maybe.withDefault "" txn.firstName
+    , middleName = Maybe.withDefault "" txn.middleName
+    , lastName = Maybe.withDefault "" txn.lastName
+    , addressLine1 = Maybe.withDefault "" txn.addressLine1
+    , addressLine2 = Maybe.withDefault "" txn.addressLine2
+    , city = Maybe.withDefault "" txn.city
+    , state = Maybe.withDefault "" txn.state
+    , postalCode = Maybe.withDefault "" txn.postalCode
+    , employmentStatus = Maybe.withDefault "" txn.occupation
+    , employer = Maybe.withDefault "" txn.employer
+    , occupation = Maybe.withDefault "" txn.occupation
+    , entityName = Maybe.withDefault "" txn.entityName
     , maybeEntityType = Just EntityType.Individual
     , maybeOrgOrInd = Nothing
     , cardNumber = ""
