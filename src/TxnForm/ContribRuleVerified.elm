@@ -1,10 +1,14 @@
 module TxnForm.ContribRuleVerified exposing (Model, Msg(..), fromError, init, loadingInit, update, view)
 
+import Bootstrap.Grid as Grid
 import ContribInfo
 import EntityType exposing (EntityType)
+import ExpandableBankData
 import Html exposing (Html, div, text)
+import Loading
 import OrgOrInd exposing (OrgOrInd)
 import Owners exposing (Owner, Owners)
+import PaymentInfo
 import Transaction
 
 
@@ -13,6 +17,7 @@ type alias Model =
     , loading : Bool
     , submitting : Bool
     , disabled : Bool
+    , showBankData : Bool
     , errors : List String
     , error : String
     , checkNumber : String
@@ -62,6 +67,7 @@ init txn =
     , submitting = False
     , loading = False
     , disabled = True
+    , showBankData = False
     , error = ""
     , errors = []
     , amount = ""
@@ -98,7 +104,34 @@ init txn =
 
 view : Model -> Html Msg
 view model =
-    contribFormRow model
+    if model.loading then
+        loadingView
+
+    else
+        loadedView model
+
+
+loadingView : Html msg
+loadingView =
+    Loading.view
+
+
+loadedView : Model -> Html Msg
+loadedView model =
+    let
+        bankData =
+            if model.txn.bankVerified then
+                ExpandableBankData.view model.showBankData model.txn BankDataToggled
+
+            else
+                []
+    in
+    Grid.container
+        []
+        (PaymentInfo.view model.txn
+            ++ [ contribFormRow model ]
+            ++ bankData
+        )
 
 
 contribFormRow : Model -> Html Msg
@@ -140,6 +173,7 @@ contribFormRow model =
 type Msg
     = NoOp
     | ToggleEdit
+    | BankDataToggled
       --- Donor Info
     | OrgOrIndUpdated (Maybe OrgOrInd)
     | EmailAddressUpdated String
@@ -270,6 +304,9 @@ update msg model =
 
         ToggleEdit ->
             ( { model | disabled = not model.disabled }, Cmd.none )
+
+        BankDataToggled ->
+            ( { model | showBankData = not model.showBankData }, Cmd.none )
 
 
 fromError : Model -> String -> Model
