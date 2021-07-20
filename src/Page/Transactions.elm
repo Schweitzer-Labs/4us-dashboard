@@ -472,6 +472,14 @@ openTxnFormModalLoaded model txn =
             , Cmd.none
             )
 
+        TxnForm.ContribRuleVerified ->
+            ( { model
+                | contribRuleVerifiedModalVisibility = Modal.shown
+                , contribRuleVerifiedModal = ContribRuleVerified.init txn
+              }
+            , Cmd.none
+            )
+
         _ ->
             ( model, Cmd.none )
 

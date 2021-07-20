@@ -1,19 +1,16 @@
-module TxnForm.ContribRuleVerified exposing (Model, Msg(..), fromError, init, update, view)
+module TxnForm.ContribRuleVerified exposing (Model, Msg(..), fromError, init, loadingInit, update, view)
 
 import ContribInfo
-import DataMsg
 import EntityType exposing (EntityType)
 import Html exposing (Html, div, text)
 import OrgOrInd exposing (OrgOrInd)
 import Owners exposing (Owner, Owners)
-import PaymentMethod exposing (PaymentMethod)
 import Transaction
 
 
 type alias Model =
     { txn : Transaction.Model
-
-    --, loading: Bool
+    , loading : Bool
     , submitting : Bool
     , errors : List String
     , error : String
@@ -49,21 +46,20 @@ type alias Model =
     }
 
 
-
---
---loadingInit : Model
---loadingInit =
---    let
---        state =
---            init Transaction.init
---    in
---    { state | loading = True }
+loadingInit : Model
+loadingInit =
+    let
+        state =
+            init Transaction.init
+    in
+    { state | loading = True }
 
 
 init : Transaction.Model -> Model
 init txn =
     { txn = txn
     , submitting = False
+    , loading = False
     , error = ""
     , errors = []
     , amount = ""
@@ -98,9 +94,9 @@ init txn =
     }
 
 
-view : Model -> Html msg
+view : Model -> Html Msg
 view model =
-    div [] [ text "hello from verified contrib" ]
+    contribFormRow model
 
 
 contribFormRow : Model -> Html Msg
