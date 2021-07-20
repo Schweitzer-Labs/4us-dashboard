@@ -24,14 +24,11 @@ jobs:
       - name: Install Python libs
         run: |
           pip3 install -r requirements.txt
-      - name: Setup node.js v14
-        uses: actions/setup-node@v2
+      - name: Install and set up elm
+        uses: jorelali/setup-elm@v3
         with:
-          node-version: 14
-      - name: Cache NPM dependencies
-        run: |
-          npm install
-      - name: Install and set up ELM
+          elm-version: 0.19.1
+      - name: Install and set up elm-app
         run: |
           npm install elm-app 
       - name: Assemble and Deploy CloudFormation Stacks
