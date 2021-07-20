@@ -249,7 +249,7 @@ contribRuleUnverifiedModal model =
     PlatformModal.view
         { hideMsg = ContribRuleUnverifiedModalHide
         , animateMsg = ContribRuleUnverifiedModalAnimate
-        , title = "Reconcile Contribursement"
+        , title = "Reconcile Contribution"
         , updateMsg = ContribRuleUnverifiedModalUpdate
         , subModel = model.contribRuleUnverifiedModal
         , subView = ContribRuleUnverified.view
@@ -266,7 +266,7 @@ contribRuleVerifiedModal model =
     PlatformModal.view
         { hideMsg = ContribRuleVerifiedModalHide
         , animateMsg = ContribRuleVerifiedModalAnimate
-        , title = "Contribursement"
+        , title = "Contribution"
         , updateMsg = ContribRuleVerifiedModalUpdate
         , subModel = model.contribRuleVerifiedModal
         , subView = ContribRuleVerified.view

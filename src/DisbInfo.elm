@@ -16,6 +16,7 @@ import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
 import PaymentMethod
 import PurposeCode
+import TxnForm.TxnUtilViews exposing (editHeader)
 import YesOrNo exposing (yesOrNo)
 
 
@@ -56,14 +57,7 @@ view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeC
         ++ [ Grid.row [ Row.attrs [ Spacing.mt2, class "fade-in" ] ]
                 [ Grid.col
                     []
-                    [ Form.label [ for "recipient-name" ]
-                        [ text "Recipient Info"
-                        , if isEditable then
-                            span [ class "hover-underline hover-pointer", Spacing.ml2, onClick toggleEdit ] [ Asset.editGlyph [] ]
-
-                          else
-                            span [] []
-                        ]
+                    [ editHeader isEditable toggleEdit "Recipient Info"
                     , Input.text
                         [ Input.id "recipient-name"
                         , Input.onInput (toMsg entityName)
