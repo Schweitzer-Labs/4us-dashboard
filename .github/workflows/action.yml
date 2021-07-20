@@ -1,4 +1,4 @@
-name: 4US Backend
+name: 4US Dashboard
 on:
   push:
     branches:
