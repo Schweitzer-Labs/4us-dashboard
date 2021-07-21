@@ -4,6 +4,7 @@ import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse)
 import Asset
 import BankData
+import Bootstrap.Button as Button
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
@@ -21,10 +22,9 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Http
 import LabelWithData exposing (labelWithContent, labelWithData)
-import Loading
 import OrgOrInd
 import Owners exposing (Owner, Owners)
-import PaymentInfo
+import SubmitButton exposing (submitButton)
 import Time
 import TimeZone exposing (america__new_york)
 import Timestamp
@@ -75,6 +75,8 @@ type alias Model =
     , lastCreatedTxnId : String
     , timezone : Time.Zone
     , createContribIsVisible : Bool
+    , createContribButtonIsDisabled : Bool
+    , createContribIsSubmitting : Bool
     }
 
 
@@ -86,7 +88,7 @@ init config txns bankTxn =
     , relatedTxns = getRelatedContrib bankTxn txns
     , submitting = False
     , loading = False
-    , disabled = True
+    , disabled = False
     , error = ""
     , errors = []
     , amount = Cents.stringToDollar <| String.fromInt bankTxn.amount
@@ -121,6 +123,8 @@ init config txns bankTxn =
     , lastCreatedTxnId = ""
     , timezone = america__new_york ()
     , createContribIsVisible = False
+    , createContribButtonIsDisabled = True
+    , createContribIsSubmitting = False
     }
 
 
@@ -134,48 +138,55 @@ view model =
             []
           <|
             [ reconcileInfoRow model.bankTxn model.selectedTxns
-            , addDisbButtonOrHeading model
+            , addContribButtonOrHeading model
             ]
-                ++ [ contribFormRow model ]
-                ++ [ reconcileItemsTable model.relatedTxns model.selectedTxns ]
+                ++ contribFormRow model
+
+        --++ reconcileItemsTable model.relatedTxns model.selectedTxns
         ]
 
 
-contribFormRow : Model -> Html Msg
+contribFormRow : Model -> List (Html Msg)
 contribFormRow model =
-    ContribInfo.view
-        { checkNumber = ( model.checkNumber, CheckNumberUpdated )
-        , paymentDate = ( model.paymentDate, PaymentDateUpdated )
-        , paymentMethod = ( model.paymentMethod, PaymentMethodUpdated )
-        , emailAddress = ( model.emailAddress, EmailAddressUpdated )
-        , phoneNumber = ( model.phoneNumber, PhoneNumberUpdated )
-        , firstName = ( model.firstName, FirstNameUpdated )
-        , middleName = ( model.middleName, MiddleNameUpdated )
-        , lastName = ( model.lastName, LastNameUpdated )
-        , addressLine1 = ( model.addressLine1, AddressLine1Updated )
-        , addressLine2 = ( model.addressLine2, AddressLine2Updated )
-        , city = ( model.city, CityUpdated )
-        , state = ( model.state, StateUpdated )
-        , postalCode = ( model.postalCode, PostalCodeUpdated )
-        , employmentStatus = ( model.employmentStatus, EmploymentStatusUpdated )
-        , employer = ( model.employer, EmployerUpdated )
-        , occupation = ( model.occupation, OccupationUpdated )
-        , entityName = ( model.entityName, EntityNameUpdated )
-        , maybeEntityType = ( model.maybeEntityType, EntityTypeUpdated )
-        , maybeOrgOrInd = ( model.maybeOrgOrInd, OrgOrIndUpdated )
-        , cardNumber = ( model.cardNumber, CardNumberUpdated )
-        , expirationMonth = ( model.expirationMonth, CardMonthUpdated )
-        , expirationYear = ( model.expirationYear, CardYearUpdated )
-        , cvv = ( model.cvv, CVVUpdated )
-        , amount = ( model.amount, AmountUpdated )
-        , owners = ( model.owners, OwnerAdded )
-        , ownerName = ( model.ownerName, OwnerNameUpdated )
-        , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
-        , disabled = model.disabled
-        , isEditable = True
-        , toggleEdit = ToggleEdit
-        , maybeError = model.maybeError
-        }
+    if model.createContribIsVisible then
+        [ ContribInfo.view
+            { checkNumber = ( model.checkNumber, CheckNumberUpdated )
+            , paymentDate = ( model.paymentDate, PaymentDateUpdated )
+            , paymentMethod = ( model.paymentMethod, PaymentMethodUpdated )
+            , emailAddress = ( model.emailAddress, EmailAddressUpdated )
+            , phoneNumber = ( model.phoneNumber, PhoneNumberUpdated )
+            , firstName = ( model.firstName, FirstNameUpdated )
+            , middleName = ( model.middleName, MiddleNameUpdated )
+            , lastName = ( model.lastName, LastNameUpdated )
+            , addressLine1 = ( model.addressLine1, AddressLine1Updated )
+            , addressLine2 = ( model.addressLine2, AddressLine2Updated )
+            , city = ( model.city, CityUpdated )
+            , state = ( model.state, StateUpdated )
+            , postalCode = ( model.postalCode, PostalCodeUpdated )
+            , employmentStatus = ( model.employmentStatus, EmploymentStatusUpdated )
+            , employer = ( model.employer, EmployerUpdated )
+            , occupation = ( model.occupation, OccupationUpdated )
+            , entityName = ( model.entityName, EntityNameUpdated )
+            , maybeEntityType = ( model.maybeEntityType, EntityTypeUpdated )
+            , maybeOrgOrInd = ( model.maybeOrgOrInd, OrgOrIndUpdated )
+            , cardNumber = ( model.cardNumber, CardNumberUpdated )
+            , expirationMonth = ( model.expirationMonth, CardMonthUpdated )
+            , expirationYear = ( model.expirationYear, CardYearUpdated )
+            , cvv = ( model.cvv, CVVUpdated )
+            , amount = ( model.amount, AmountUpdated )
+            , owners = ( model.owners, OwnerAdded )
+            , ownerName = ( model.ownerName, OwnerNameUpdated )
+            , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
+            , disabled = model.disabled
+            , isEditable = False
+            , toggleEdit = ToggleEdit
+            , maybeError = model.maybeError
+            }
+        ]
+            ++ [ buttonRow CreateContribToggled "Create" "Cancel" CreateContribSubmitted model.createContribIsSubmitting model.createContribButtonIsDisabled ]
+
+    else
+        []
 
 
 type Msg
@@ -343,7 +354,7 @@ update msg model =
                     ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
 
         CreateContribToggled ->
-            withNone model
+            ( { model | createContribIsVisible = not model.createContribIsVisible }, Cmd.none )
 
         CreateContribSubmitted ->
             withNone model
@@ -409,20 +420,20 @@ reconcileItemsTable relatedTxns selectedTxns =
         List.map (\d -> ( Just selectedTxns, Nothing, d )) relatedTxns
 
 
-addDisbButtonOrHeading : Model -> Html Msg
-addDisbButtonOrHeading model =
+addContribButtonOrHeading : Model -> Html Msg
+addContribButtonOrHeading model =
     if model.createContribIsVisible then
-        div [ Spacing.mt4, class "font-size-large", onClick CreateContribToggled ] [ text "Create Disbursement" ]
+        div [ Spacing.mt4, class "font-size-large", onClick CreateContribToggled ] [ text "Create Contribution" ]
 
     else
-        addDisbButton
+        addContribButton
 
 
-addDisbButton : Html Msg
-addDisbButton =
+addContribButton : Html Msg
+addContribButton =
     div [ Spacing.mt4, class "text-slate-blue font-size-medium hover-underline hover-pointer", onClick CreateContribToggled ]
         [ Asset.plusCircleGlyph [ class "text-slate-blue font-size-22" ]
-        , span [ Spacing.ml1, class "align-middle" ] [ text "Add Disbursement" ]
+        , span [ Spacing.ml1, class "align-middle" ] [ text "Add Contribution" ]
         ]
 
 
@@ -480,3 +491,31 @@ getTxnById txns id =
 
         _ ->
             Nothing
+
+
+buttonRow : msg -> String -> String -> msg -> Bool -> Bool -> Html msg
+buttonRow hideMsg displayText exitText msg submitting disabled =
+    Grid.row
+        [ Row.betweenXs
+        , Row.attrs
+            [ Spacing.mt3
+            , Spacing.mb5
+            ]
+        ]
+        [ Grid.col
+            [ Col.lg4, Col.attrs [ class "text-left" ] ]
+            [ exitButton hideMsg exitText ]
+        , Grid.col
+            [ Col.lg4 ]
+            [ submitButton displayText msg submitting disabled ]
+        ]
+
+
+exitButton : msg -> String -> Html msg
+exitButton hideMsg displayText =
+    Button.button
+        [ Button.outlinePrimary
+        , Button.block
+        , Button.attrs [ onClick hideMsg ]
+        ]
+        [ text displayText ]
