@@ -571,7 +571,7 @@ update msg model =
                                 -- @Todo make this state impossible
                                 , disbRuleUnverifiedModal = DisbRuleUnverified.init model.config [] model.disbRuleUnverifiedModal.bankTxn
                               }
-                            , getTransactions model Nothing
+                            , Cmd.batch [ getTransactions model Nothing, Task.attempt (\_ -> NoOp) scrollToTop ]
                             )
 
                         ResValidationFailure errList ->
@@ -829,7 +829,7 @@ update msg model =
                         , committee = GetTxns.toCommittee body
                         , loading = False
                       }
-                    , Task.attempt (\_ -> NoOp) scrollToTop
+                    , Cmd.none
                     )
 
                 Err _ ->
