@@ -1,6 +1,7 @@
 module Transaction exposing (Model, decoder, init)
 
 import Direction exposing (Direction)
+import EmploymentStatus exposing (EmploymentStatus)
 import EntityType exposing (EntityType)
 import Json.Decode as Decode exposing (Decoder, bool, int, maybe, oneOf, string)
 import Json.Decode.Pipeline exposing (optional, required)
@@ -124,6 +125,10 @@ maybeEntityType name =
 
 maybeTransactionType name =
     optional name (Decode.map TransactionType.fromString string) Nothing
+
+
+maybeEmploymentStatus name =
+    optional name (Decode.map EmploymentStatus.fromString string) Nothing
 
 
 decoder : Decode.Decoder Model

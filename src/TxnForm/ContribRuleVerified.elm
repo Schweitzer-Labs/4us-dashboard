@@ -3,6 +3,7 @@ module TxnForm.ContribRuleVerified exposing (Model, Msg(..), fromError, init, lo
 import Bootstrap.Grid as Grid
 import Cents
 import ContribInfo
+import EmploymentStatus exposing (EmploymentStatus)
 import EntityType exposing (EntityType)
 import ExpandableBankData
 import Html exposing (Html, div, text)
