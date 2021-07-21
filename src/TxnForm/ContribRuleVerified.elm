@@ -7,7 +7,7 @@ import EntityType
 import ExpandableBankData
 import Html exposing (Html, div, text)
 import Loading
-import OrgOrInd exposing (OrgOrInd)
+import OrgOrInd
 import Owners exposing (Owner, Owners)
 import PaymentInfo
 import TimeZone exposing (america__new_york)
@@ -40,7 +40,7 @@ type alias Model =
     , employer : String
     , occupation : String
     , entityName : String
-    , maybeOrgOrInd : Maybe OrgOrInd
+    , maybeOrgOrInd : Maybe OrgOrInd.Model
     , maybeEntityType : Maybe EntityType.Model
     , cardNumber : String
     , expirationMonth : String
@@ -91,7 +91,7 @@ init txn =
     , occupation = Maybe.withDefault "" txn.occupation
     , entityName = Maybe.withDefault "" txn.entityName
     , maybeEntityType = Just EntityType.Individual
-    , maybeOrgOrInd = Nothing
+    , maybeOrgOrInd = Maybe.map OrgOrInd.fromEntityType txn.entityType
     , cardNumber = ""
     , expirationMonth = ""
     , expirationYear = ""
@@ -158,6 +158,7 @@ contribFormRow model =
         , occupation = ( model.occupation, OccupationUpdated )
         , entityName = ( model.entityName, EntityNameUpdated )
         , maybeEntityType = ( model.maybeEntityType, EntityTypeUpdated )
+        , maybeOrgOrInd = ( model.maybeOrgOrInd, OrgOrIndUpdated )
         , cardNumber = ( model.cardNumber, CardNumberUpdated )
         , expirationMonth = ( model.expirationMonth, CardMonthUpdated )
         , expirationYear = ( model.expirationYear, CardYearUpdated )
@@ -178,7 +179,7 @@ type Msg
     | ToggleEdit
     | BankDataToggled
       --- Donor Info
-    | OrgOrIndUpdated (Maybe OrgOrInd)
+    | OrgOrIndUpdated (Maybe OrgOrInd.Model)
     | EmailAddressUpdated String
     | PhoneNumberUpdated String
     | FirstNameUpdated String

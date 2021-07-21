@@ -3,7 +3,7 @@ module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, u
 import Aggregations as Aggregations
 import Api exposing (Token)
 import Api.AmendDisb as AmendDisb
-import Api.CreateContrib as CreateConrib
+import Api.CreateContrib as CreateContrib
 import Api.CreateDisb as CreateDisb
 import Api.GetTxn as GetTxn
 import Api.GetTxns as GetTxns
@@ -1045,7 +1045,7 @@ createDisbursement model =
 
 createContribution : Model -> Cmd Msg
 createContribution model =
-    CreateConrib.send GotCreateContributionResponse model.config <| CreateConrib.encode model.createContributionModal
+    CreateContrib.send GotCreateContributionResponse model.config <| CreateContrib.encode model.createContributionModal
 
 
 reconcileDisb : Model -> Cmd Msg

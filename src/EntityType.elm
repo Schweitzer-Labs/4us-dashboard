@@ -9,8 +9,6 @@ module EntityType exposing
     , toDataString
     , toDisplayString
     , toGridString
-    , toOrgOrIndData
-    , toOrgOrIndDisplay
     )
 
 import Bootstrap.Form.Radio as Radio
@@ -261,29 +259,3 @@ isLLC contributorType =
 llc : Model
 llc =
     LimitedLiabilityCompany
-
-
-toOrgOrIndData : Model -> String
-toOrgOrIndData entityType =
-    case entityType of
-        Individual ->
-            "Ind"
-
-        Family ->
-            "Ind"
-
-        _ ->
-            "Org"
-
-
-toOrgOrIndDisplay : Model -> String
-toOrgOrIndDisplay entityType =
-    case entityType of
-        Individual ->
-            "Individual"
-
-        Family ->
-            "Individual"
-
-        _ ->
-            "Organization"

@@ -16,7 +16,7 @@ import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
 import MonthSelector
-import OrgOrInd exposing (OrgOrInd)
+import OrgOrInd
 import PaymentMethod
 import SelectRadio
 import YearSelector
@@ -41,6 +41,7 @@ type alias Config msg =
     , occupation : DataMsg.MsgString msg
     , entityName : DataMsg.MsgString msg
     , maybeEntityType : DataMsg.MsgMaybeEntityType msg
+    , maybeOrgOrInd : DataMsg.MsgMaybeOrgOrInd msg
     , cardNumber : DataMsg.MsgString msg
     , expirationMonth : DataMsg.MsgString msg
     , expirationYear : DataMsg.MsgString msg
@@ -187,7 +188,7 @@ view c =
                )
 
 
-entityToOrgOrInd : EntityType.Model -> OrgOrInd
+entityToOrgOrInd : EntityType.Model -> OrgOrInd.Model
 entityToOrgOrInd entityType =
     case entityType of
         EntityType.Family ->
@@ -200,16 +201,11 @@ entityToOrgOrInd entityType =
             OrgOrInd.Org
 
 
-maybeEntityTypeToMaybeOrgOrInd : Maybe EntityType.Model -> Maybe OrgOrInd
-maybeEntityTypeToMaybeOrgOrInd maybeEntityType =
-    Maybe.map entityToOrgOrInd maybeEntityType
-
-
 donorInfoRows : Config msg -> List (Html msg)
 donorInfoRows model =
     let
         formRows =
-            case maybeEntityTypeToMaybeOrgOrInd <| toData model.maybeEntityType of
+            case toData model.maybeOrgOrInd of
                 Just OrgOrInd.Org ->
                     orgRows model ++ piiRows model
 
@@ -429,7 +425,7 @@ attestsToBeingAnAdultCitizenRow { maybeEntityType, disabled } =
 
 
 orgOrIndRow : Config msg -> List (Html msg)
-orgOrIndRow { maybeEntityType, disabled } =
+orgOrIndRow { maybeOrgOrInd, disabled } =
     [ Grid.row
         [ Row.attrs [ Spacing.mt2 ] ]
         [ Grid.col
@@ -440,7 +436,7 @@ orgOrIndRow { maybeEntityType, disabled } =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ OrgOrInd.row (toMsg maybeEntityType) (toData maybeEntityType) disabled ]
+            [ OrgOrInd.row (toMsg maybeOrgOrInd) (toData maybeOrgOrInd) disabled ]
         ]
     ]
 
