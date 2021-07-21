@@ -30,7 +30,7 @@ import TimeZone exposing (america__new_york)
 import Timestamp
 import Transaction
 import TransactionType
-import Transactions exposing (labels)
+import Transactions
 
 
 type alias Model =
@@ -421,6 +421,10 @@ labelWithBankVerificationIcon label matchesStatus =
     labelWithContent label (matchesIcon matchesStatus)
 
 
+labels =
+    [ "Selected", "Date", "Entity Name", "Amount", "Entity Type" ]
+
+
 reconcileItemsTable : List Transaction.Model -> List Transaction.Model -> Html Msg
 reconcileItemsTable relatedTxns selectedTxns =
     DataTable.view "Awaiting Transactions." labels transactionRowMap <|
@@ -468,10 +472,10 @@ transactionRowMap ( maybeSelected, maybeMsg, txn ) =
             ]
             ""
         )
-      , ( "Date / Time", text <| Timestamp.format (america__new_york ()) txn.paymentDate )
+      , ( "Date", text <| Timestamp.format (america__new_york ()) txn.paymentDate )
       , ( "Entity Name", name )
       , ( "Amount", amount )
-      , ( "Purpose Code", Transactions.getContext txn )
+      , ( "Entity Type", Transactions.getContext txn )
       ]
     )
 
