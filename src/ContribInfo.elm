@@ -174,7 +174,12 @@ view c =
                 else
                     labelRow "Payment Info"
                )
-            ++ amountDateRow c
+            ++ (if c.isEditable == False then
+                    amountDateRow c
+
+                else
+                    []
+               )
             ++ labelRow "Donor Info"
             ++ donorInfoRows c
             ++ (if c.isEditable then
