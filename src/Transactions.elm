@@ -21,7 +21,7 @@ import Cents
 import Committee
 import DataTable exposing (DataRow)
 import Direction
-import EntityType exposing (EntityType(..))
+import EntityType
 import Html exposing (Html, img, span, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode

@@ -1,27 +1,7 @@
-module AppInput exposing (inputEmail, inputMonth, inputNumber, inputText)
+module AppInput exposing (inputEmail, inputText)
 
 import Bootstrap.Form.Input as Input
 import Html exposing (Html)
-
-
-inputNumber : (String -> msg) -> String -> String -> Bool -> Html msg
-inputNumber msg placeholder val disabled =
-    Input.text
-        [ Input.value val
-        , Input.onInput msg
-        , Input.placeholder placeholder
-        , Input.disabled disabled
-        ]
-
-
-inputMonth : (String -> msg) -> String -> String -> Bool -> Html msg
-inputMonth msg placeholder val disabled =
-    Input.month
-        [ Input.value val
-        , Input.onInput msg
-        , Input.placeholder placeholder
-        , Input.disabled disabled
-        ]
 
 
 inputText : (String -> msg) -> String -> String -> Bool -> Html msg
