@@ -1,18 +1,18 @@
-module OrgOrInd exposing (OrgOrInd(..), row)
+module OrgOrInd exposing (Model(..), fromEntityType, row)
 
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
-import EntityType exposing (EntityType)
+import EntityType
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, id)
 
 
-type OrgOrInd
+type Model
     = Org
     | Ind
 
 
-toString : OrgOrInd -> String
+toString : Model -> String
 toString orgOrInd =
     case orgOrInd of
         Org ->
@@ -22,25 +22,21 @@ toString orgOrInd =
             "Individual"
 
 
-row : (Maybe EntityType -> msg) -> Maybe EntityType -> Html msg
-row msg maybeEntityType =
-    let
-        orgOrIndStr =
-            Maybe.withDefault "" <| Maybe.map EntityType.toOrgOrIndData maybeEntityType
-    in
+row : (Maybe Model -> msg) -> Maybe Model -> Bool -> Html msg
+row msg currentValue disabled =
     Grid.row
         []
         [ Grid.col
             []
-            [ selectButton msg "Individual" "Ind" orgOrIndStr ]
+            [ selectButton msg (toString Ind) (Just Ind) currentValue disabled ]
         , Grid.col
             []
-            [ selectButton msg "Organization" "Org" orgOrIndStr ]
+            [ selectButton msg (toString Org) (Just Org) currentValue disabled ]
         ]
 
 
-selectButton : (Maybe EntityType -> msg) -> String -> String -> String -> Html msg
-selectButton msg displayText value currentVal =
+selectButton : (a -> msg) -> String -> a -> a -> Bool -> Html msg
+selectButton msg displayText value currentVal disabled =
     let
         selected =
             currentVal == value
@@ -60,7 +56,21 @@ selectButton msg displayText value currentVal =
             , Button.attrs [ id displayText ]
             , Button.block
             , Button.attrs [ class "font-weight-bold border-round" ]
-            , Button.onClick (msg <| Just EntityType.Individual)
+            , Button.onClick (msg value)
+            , Button.disabled disabled
             ]
             [ text <| displayText ]
         ]
+
+
+fromEntityType : EntityType.Model -> Model
+fromEntityType entityType =
+    case entityType of
+        EntityType.Individual ->
+            Ind
+
+        EntityType.Family ->
+            Ind
+
+        _ ->
+            Org

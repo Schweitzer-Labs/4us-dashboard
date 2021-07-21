@@ -1,7 +1,8 @@
 module Transaction exposing (Model, decoder, init)
 
 import Direction exposing (Direction)
-import EntityType exposing (EntityType)
+import EmploymentStatus
+import EntityType
 import Json.Decode as Decode exposing (Decoder, bool, int, maybe, oneOf, string)
 import Json.Decode.Pipeline exposing (optional, required)
 import PaymentMethod exposing (PaymentMethod)
@@ -32,8 +33,9 @@ type alias Model =
     , state : Maybe String
     , postalCode : Maybe String
     , employer : Maybe String
+    , employmentStatus : Maybe String
     , occupation : Maybe String
-    , entityType : Maybe EntityType
+    , entityType : Maybe EntityType.Model
     , companyName : Maybe String
     , phoneNumber : Maybe String
     , emailAddress : Maybe String
@@ -78,6 +80,7 @@ init =
     , state = Nothing
     , postalCode = Nothing
     , employer = Nothing
+    , employmentStatus = Nothing
     , occupation = Nothing
     , entityType = Nothing
     , companyName = Nothing
@@ -124,6 +127,10 @@ maybeTransactionType name =
     optional name (Decode.map TransactionType.fromString string) Nothing
 
 
+maybeEmploymentStatus name =
+    optional name (Decode.map EmploymentStatus.fromString string) Nothing
+
+
 decoder : Decode.Decoder Model
 decoder =
     Decode.succeed Model
@@ -149,6 +156,7 @@ decoder =
         |> maybeString "state"
         |> maybeString "postalCode"
         |> maybeString "employer"
+        |> maybeString "employmentStatus"
         |> maybeString "occupation"
         |> maybeEntityType "entityType"
         |> maybeString "companyName"

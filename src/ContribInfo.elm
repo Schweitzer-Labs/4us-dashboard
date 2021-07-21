@@ -3,17 +3,20 @@ module ContribInfo exposing (Config, view)
 import Address
 import AmountDate
 import AppInput exposing (inputEmail, inputText)
+import Asset
+import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
-import EntityType exposing (EntityType)
+import EntityType
 import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
+import Html.Events exposing (onClick)
 import MonthSelector
-import OrgOrInd exposing (OrgOrInd)
+import OrgOrInd
 import PaymentMethod
 import SelectRadio
 import YearSelector
@@ -38,6 +41,7 @@ type alias Config msg =
     , occupation : DataMsg.MsgString msg
     , entityName : DataMsg.MsgString msg
     , maybeEntityType : DataMsg.MsgMaybeEntityType msg
+    , maybeOrgOrInd : DataMsg.MsgMaybeOrgOrInd msg
     , cardNumber : DataMsg.MsgString msg
     , expirationMonth : DataMsg.MsgString msg
     , expirationYear : DataMsg.MsgString msg
@@ -73,15 +77,16 @@ labelRow str =
 
 
 amountDateRow : Config msg -> List (Html msg)
-amountDateRow { amount, paymentDate } =
+amountDateRow { amount, paymentDate, disabled } =
     AmountDate.view
         { amount = ( toData amount, toMsg amount )
         , paymentDate = ( toData paymentDate, toMsg paymentDate )
+        , disabled = disabled
         }
 
 
 checkRow : Config msg -> List (Html msg)
-checkRow { checkNumber } =
+checkRow { checkNumber, disabled } =
     [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
         [ Grid.col
             []
@@ -90,6 +95,7 @@ checkRow { checkNumber } =
                 , Input.onInput <| toMsg checkNumber
                 , Input.value <| toData checkNumber
                 , Input.placeholder "Enter check number"
+                , Input.disabled disabled
                 ]
             ]
         ]
@@ -110,7 +116,7 @@ processingRow c =
 
 
 creditRow : Config msg -> List (Html msg)
-creditRow { cardNumber, expirationMonth, expirationYear, cvv } =
+creditRow { cardNumber, expirationMonth, expirationYear, cvv, disabled } =
     [ Grid.row [ Row.centerLg, Row.attrs [ Spacing.mt3, class "fade-in" ] ]
         [ Grid.col
             []
@@ -119,6 +125,7 @@ creditRow { cardNumber, expirationMonth, expirationYear, cvv } =
                 , Input.onInput <| toMsg cardNumber
                 , Input.value <| toData cardNumber
                 , Input.placeholder "Card number"
+                , Input.disabled disabled
                 ]
             ]
         , Grid.col []
@@ -133,6 +140,21 @@ creditRow { cardNumber, expirationMonth, expirationYear, cvv } =
                 , Input.onInput <| toMsg cvv
                 , Input.value <| toData cvv
                 , Input.placeholder "CVV"
+                , Input.disabled disabled
+                ]
+            ]
+        ]
+    ]
+
+
+editRow : msg -> List (Html msg)
+editRow msg =
+    [ Grid.row [ Row.attrs [ class "fade-in" ] ]
+        [ Grid.col
+            []
+            [ text "Edit Info"
+            , span [ class "hover-underline hover-pointer", Spacing.ml2, onClick msg ]
+                [ Asset.editGlyph []
                 ]
             ]
         ]
@@ -146,16 +168,32 @@ view c =
     <|
         []
             ++ errorRow c.maybeError
-            ++ labelRow "Payment Info"
-            ++ amountDateRow c
+            ++ (if c.isEditable then
+                    editRow c.toggleEdit
+
+                else
+                    labelRow "Payment Info"
+               )
+            ++ (if c.isEditable == False then
+                    amountDateRow c
+
+                else
+                    []
+               )
             ++ labelRow "Donor Info"
             ++ donorInfoRows c
-            ++ labelRow "Processing Info"
-            ++ PaymentMethod.select (toMsg c.paymentMethod) (toData c.paymentMethod)
-            ++ processingRow c
+            ++ (if c.isEditable then
+                    []
+
+                else
+                    []
+                        ++ labelRow "Processing Info"
+                        ++ PaymentMethod.select (toMsg c.paymentMethod) (toData c.paymentMethod) c.disabled
+                        ++ processingRow c
+               )
 
 
-entityToOrgOrInd : EntityType -> OrgOrInd
+entityToOrgOrInd : EntityType.Model -> OrgOrInd.Model
 entityToOrgOrInd entityType =
     case entityType of
         EntityType.Family ->
@@ -168,16 +206,11 @@ entityToOrgOrInd entityType =
             OrgOrInd.Org
 
 
-maybeEntityTypeToMaybeOrgOrInd : Maybe EntityType -> Maybe OrgOrInd
-maybeEntityTypeToMaybeOrgOrInd maybeEntityType =
-    Maybe.map entityToOrgOrInd maybeEntityType
-
-
 donorInfoRows : Config msg -> List (Html msg)
 donorInfoRows model =
     let
         formRows =
-            case maybeEntityTypeToMaybeOrgOrInd <| toData model.maybeEntityType of
+            case toData model.maybeOrgOrInd of
                 Just OrgOrInd.Org ->
                     orgRows model ++ piiRows model
 
@@ -283,12 +316,12 @@ employmentRows c =
 
 
 orgRows : Config msg -> List (Html msg)
-orgRows c =
+orgRows { maybeEntityType, entityName, disabled } =
     [ Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ EntityType.orgView (toMsg c.maybeEntityType) (toData c.maybeEntityType) ]
+            [ EntityType.orgView (toMsg maybeEntityType) (toData maybeEntityType) ]
         ]
     ]
         ++ [ Grid.row
@@ -296,9 +329,10 @@ orgRows c =
                 [ Grid.col
                     []
                     [ Input.text
-                        [ Input.onInput <| toMsg c.entityName
+                        [ Input.onInput <| toMsg entityName
                         , Input.placeholder "Organization Name"
-                        , Input.value <| toData c.entityName
+                        , Input.value <| toData entityName
+                        , Input.disabled disabled
                         ]
                     ]
                 ]
@@ -323,19 +357,19 @@ piiRows c =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputEmail (toMsg c.emailAddress) "Email Address" (toData c.emailAddress) ]
+            [ inputEmail (toMsg c.emailAddress) "Email Address" (toData c.emailAddress) c.disabled ]
         , Grid.col
             []
-            [ inputText (toMsg c.phoneNumber) "Phone Number" (toData c.phoneNumber) ]
+            [ inputText (toMsg c.phoneNumber) "Phone Number" (toData c.phoneNumber) c.disabled ]
         ]
     , Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputText (toMsg c.firstName) "First Name" (toData c.firstName) ]
+            [ inputText (toMsg c.firstName) "First Name" (toData c.firstName) c.disabled ]
         , Grid.col
             []
-            [ inputText (toMsg c.lastName) "Last Name" (toData c.lastName) ]
+            [ inputText (toMsg c.lastName) "Last Name" (toData c.lastName) c.disabled ]
         ]
     ]
         ++ addressRows c
@@ -348,10 +382,10 @@ piiRows c =
 
 
 familyRow : Config msg -> List (Html msg)
-familyRow c =
+familyRow { maybeEntityType, disabled } =
     let
         maybeEntityMsg =
-            toMsg c.maybeEntityType
+            toMsg maybeEntityType
 
         entityMsg =
             Just >> maybeEntityMsg
@@ -367,13 +401,13 @@ familyRow c =
         [ Grid.col
             []
           <|
-            EntityType.familyRadioList entityMsg (toData c.maybeEntityType)
+            EntityType.familyRadioList entityMsg (toData maybeEntityType) disabled
         ]
     ]
 
 
 attestsToBeingAnAdultCitizenRow : Config msg -> List (Html msg)
-attestsToBeingAnAdultCitizenRow c =
+attestsToBeingAnAdultCitizenRow { maybeEntityType, disabled } =
     [ Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
@@ -385,7 +419,7 @@ attestsToBeingAnAdultCitizenRow c =
         [ Grid.col
             []
           <|
-            EntityType.familyRadioList (Just >> toMsg c.maybeEntityType) (toData c.maybeEntityType)
+            EntityType.familyRadioList (Just >> toMsg maybeEntityType) (toData maybeEntityType) disabled
         ]
     ]
 
@@ -396,7 +430,7 @@ attestsToBeingAnAdultCitizenRow c =
 
 
 orgOrIndRow : Config msg -> List (Html msg)
-orgOrIndRow c =
+orgOrIndRow { maybeOrgOrInd, disabled } =
     [ Grid.row
         [ Row.attrs [ Spacing.mt2 ] ]
         [ Grid.col
@@ -407,26 +441,26 @@ orgOrIndRow c =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ OrgOrInd.row (toMsg c.maybeEntityType) (toData c.maybeEntityType) ]
+            [ OrgOrInd.row (toMsg maybeOrgOrInd) (toData maybeOrgOrInd) disabled ]
         ]
     ]
 
 
 employerOccupationRow : Config msg -> Html msg
-employerOccupationRow { occupation, employer } =
+employerOccupationRow { occupation, employer, disabled } =
     Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputText (toMsg employer) "Employer Name" (toData employer) ]
+            [ inputText (toMsg employer) "Employer Name" (toData employer) disabled ]
         , Grid.col
             []
-            [ inputText (toMsg occupation) "Occupation" (toData occupation) ]
+            [ inputText (toMsg occupation) "Occupation" (toData occupation) disabled ]
         ]
 
 
 employmentStatusRows : Config msg -> List (Html msg)
-employmentStatusRows c =
+employmentStatusRows { employmentStatus, disabled } =
     [ Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
@@ -439,10 +473,10 @@ employmentStatusRows c =
             []
           <|
             Radio.radioList "employmentStatus"
-                [ SelectRadio.view (toMsg c.employmentStatus) "employed" "Employed" (toData c.employmentStatus)
-                , SelectRadio.view (toMsg c.employmentStatus) "unemployed" "Unemployed" (toData c.employmentStatus)
-                , SelectRadio.view (toMsg c.employmentStatus) "retired" "Retired" (toData c.employmentStatus)
-                , SelectRadio.view (toMsg c.employmentStatus) "self_employed" "Self Employed" (toData c.employmentStatus)
+                [ SelectRadio.view (toMsg employmentStatus) "Employed" "Employed" (toData employmentStatus) disabled
+                , SelectRadio.view (toMsg employmentStatus) "Unemployed" "Unemployed" (toData employmentStatus) disabled
+                , SelectRadio.view (toMsg employmentStatus) "Retired" "Retired" (toData employmentStatus) disabled
+                , SelectRadio.view (toMsg employmentStatus) "SelfEmployed" "Self Employed" (toData employmentStatus) disabled
                 ]
         ]
     ]

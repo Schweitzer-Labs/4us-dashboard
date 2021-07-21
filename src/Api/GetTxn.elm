@@ -34,6 +34,7 @@ query =
             state
             postalCode
             employer
+            employmentStatus
             occupation
             entityType
             companyName

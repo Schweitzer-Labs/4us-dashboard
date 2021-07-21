@@ -3,7 +3,7 @@ module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, u
 import Aggregations as Aggregations
 import Api exposing (Token)
 import Api.AmendDisb as AmendDisb
-import Api.CreateContrib as CreateConrib
+import Api.CreateContrib as CreateContrib
 import Api.CreateDisb as CreateDisb
 import Api.GetTxn as GetTxn
 import Api.GetTxns as GetTxns
@@ -249,7 +249,7 @@ contribRuleUnverifiedModal model =
     PlatformModal.view
         { hideMsg = ContribRuleUnverifiedModalHide
         , animateMsg = ContribRuleUnverifiedModalAnimate
-        , title = "Reconcile Contribursement"
+        , title = "Reconcile Contribution"
         , updateMsg = ContribRuleUnverifiedModalUpdate
         , subModel = model.contribRuleUnverifiedModal
         , subView = ContribRuleUnverified.view
@@ -266,7 +266,7 @@ contribRuleVerifiedModal model =
     PlatformModal.view
         { hideMsg = ContribRuleVerifiedModalHide
         , animateMsg = ContribRuleVerifiedModalAnimate
-        , title = "Contribursement"
+        , title = "Contribution"
         , updateMsg = ContribRuleVerifiedModalUpdate
         , subModel = model.contribRuleVerifiedModal
         , subView = ContribRuleVerified.view
@@ -468,6 +468,14 @@ openTxnFormModalLoaded model txn =
             ( { model
                 | disbRuleVerifiedModalVisibility = Modal.shown
                 , disbRuleVerifiedModal = DisbRuleVerified.init txn
+              }
+            , Cmd.none
+            )
+
+        TxnForm.ContribRuleVerified ->
+            ( { model
+                | contribRuleVerifiedModalVisibility = Modal.shown
+                , contribRuleVerifiedModal = ContribRuleVerified.init txn
               }
             , Cmd.none
             )
@@ -1037,7 +1045,7 @@ createDisbursement model =
 
 createContribution : Model -> Cmd Msg
 createContribution model =
-    CreateConrib.send GotCreateContributionResponse model.config <| CreateConrib.encode model.createContributionModal
+    CreateContrib.send GotCreateContributionResponse model.config <| CreateContrib.encode model.createContributionModal
 
 
 reconcileDisb : Model -> Cmd Msg
