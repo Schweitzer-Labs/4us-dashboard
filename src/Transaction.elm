@@ -1,7 +1,7 @@
 module Transaction exposing (Model, decoder, init)
 
 import Direction exposing (Direction)
-import EntityType exposing (EntityType)
+import EntityType
 import Json.Decode as Decode exposing (Decoder, bool, int, maybe, oneOf, string)
 import Json.Decode.Pipeline exposing (optional, required)
 import PaymentMethod exposing (PaymentMethod)
@@ -33,7 +33,7 @@ type alias Model =
     , postalCode : Maybe String
     , employer : Maybe String
     , occupation : Maybe String
-    , entityType : Maybe EntityType
+    , entityType : Maybe EntityType.Model
     , companyName : Maybe String
     , phoneNumber : Maybe String
     , emailAddress : Maybe String

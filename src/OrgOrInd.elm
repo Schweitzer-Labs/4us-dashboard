@@ -2,7 +2,7 @@ module OrgOrInd exposing (OrgOrInd(..), row)
 
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
-import EntityType exposing (EntityType)
+import EntityType
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, id)
 
@@ -22,7 +22,7 @@ toString orgOrInd =
             "Individual"
 
 
-row : (Maybe EntityType -> msg) -> Maybe EntityType -> Bool -> Html msg
+row : (Maybe EntityType.Model -> msg) -> Maybe EntityType.Model -> Bool -> Html msg
 row msg maybeEntityType disabled =
     let
         orgOrIndStr =
@@ -39,7 +39,7 @@ row msg maybeEntityType disabled =
         ]
 
 
-selectButton : (Maybe EntityType -> msg) -> String -> String -> String -> Bool -> Html msg
+selectButton : (Maybe EntityType.Model -> msg) -> String -> String -> String -> Bool -> Html msg
 selectButton msg displayText value currentVal disabled =
     let
         selected =

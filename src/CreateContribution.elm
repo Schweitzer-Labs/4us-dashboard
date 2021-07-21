@@ -1,7 +1,7 @@
 module CreateContribution exposing (Model, Msg(..), init, setError, update, view)
 
 import ContribInfo
-import EntityType exposing (EntityType)
+import EntityType
 import Html exposing (Html)
 import OrgOrInd exposing (OrgOrInd(..))
 import Owners exposing (Owners)
@@ -29,7 +29,7 @@ type alias Model =
     , occupation : String
     , entityName : String
     , maybeOrgOrInd : Maybe OrgOrInd
-    , maybeEntityType : Maybe EntityType
+    , maybeEntityType : Maybe EntityType.Model
     , cardNumber : String
     , expirationMonth : String
     , expirationYear : String
@@ -141,8 +141,8 @@ type Msg
     | EmployerUpdated String
     | OccupationUpdated String
     | EntityNameUpdated String
-    | EntityTypeUpdated (Maybe EntityType)
-    | FamilyOrIndividualUpdated EntityType
+    | EntityTypeUpdated (Maybe EntityType.Model)
+    | FamilyOrIndividualUpdated EntityType.Model
     | OwnerAdded
     | OwnerNameUpdated String
     | OwnerOwnershipUpdated String

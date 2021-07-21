@@ -3,7 +3,7 @@ module TxnForm.ContribRuleVerified exposing (Model, Msg(..), fromError, init, lo
 import Bootstrap.Grid as Grid
 import Cents
 import ContribInfo
-import EntityType exposing (EntityType)
+import EntityType
 import ExpandableBankData
 import Html exposing (Html, div, text)
 import Loading
@@ -41,7 +41,7 @@ type alias Model =
     , occupation : String
     , entityName : String
     , maybeOrgOrInd : Maybe OrgOrInd
-    , maybeEntityType : Maybe EntityType
+    , maybeEntityType : Maybe EntityType.Model
     , cardNumber : String
     , expirationMonth : String
     , expirationYear : String
@@ -193,8 +193,8 @@ type Msg
     | EmployerUpdated String
     | OccupationUpdated String
     | EntityNameUpdated String
-    | EntityTypeUpdated (Maybe EntityType)
-    | FamilyOrIndividualUpdated EntityType
+    | EntityTypeUpdated (Maybe EntityType.Model)
+    | FamilyOrIndividualUpdated EntityType.Model
     | OwnerAdded
     | OwnerNameUpdated String
     | OwnerOwnershipUpdated String

@@ -9,7 +9,7 @@ module DataMsg exposing
     , toMsg
     )
 
-import EntityType exposing (EntityType)
+import EntityType
 import Owners exposing (Owner, Owners)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
@@ -28,7 +28,7 @@ type alias MsgMaybeBool msg =
 
 
 type alias MsgMaybeEntityType msg =
-    ( Maybe EntityType, Maybe EntityType -> msg )
+    ( Maybe EntityType.Model, Maybe EntityType.Model -> msg )
 
 
 type alias MsgMaybePaymentMethod msg =

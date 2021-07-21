@@ -1,5 +1,5 @@
 module EntityType exposing
-    ( EntityType(..)
+    ( Model(..)
     , familyRadioList
     , fromMaybeToStringWithDefaultInd
     , fromString
@@ -19,7 +19,7 @@ import Html exposing (Html, text)
 import Html.Attributes exposing (class, selected, value)
 
 
-type EntityType
+type Model
     = Family
     | Individual
     | SoleProprietorship
@@ -34,7 +34,7 @@ type EntityType
     | Other
 
 
-toDataString : EntityType -> String
+toDataString : Model -> String
 toDataString entityType =
     case entityType of
         Family ->
@@ -74,12 +74,12 @@ toDataString entityType =
             "Oth"
 
 
-fromMaybeToStringWithDefaultInd : Maybe EntityType -> String
+fromMaybeToStringWithDefaultInd : Maybe Model -> String
 fromMaybeToStringWithDefaultInd maybeEntityType =
     toDataString <| Maybe.withDefault Individual maybeEntityType
 
 
-fromString : String -> Maybe EntityType
+fromString : String -> Maybe Model
 fromString str =
     case str of
         "Fam" ->
@@ -122,7 +122,7 @@ fromString str =
             Nothing
 
 
-toDisplayString : EntityType -> String
+toDisplayString : Model -> String
 toDisplayString entityType =
     case entityType of
         Family ->
@@ -162,7 +162,7 @@ toDisplayString entityType =
             "Other"
 
 
-toGridString : EntityType -> String
+toGridString : Model -> String
 toGridString entityType =
     case entityType of
         Family ->
@@ -202,7 +202,7 @@ toGridString entityType =
             "Other"
 
 
-orgView : (Maybe EntityType -> msg) -> Maybe EntityType -> Html msg
+orgView : (Maybe Model -> msg) -> Maybe Model -> Html msg
 orgView msg currentValue =
     Select.select
         [ Select.id "entityType"
@@ -222,7 +222,7 @@ orgView msg currentValue =
         ]
 
 
-orgSelect : EntityType -> Maybe EntityType -> Item msg
+orgSelect : Model -> Maybe Model -> Item msg
 orgSelect entityType currentValue =
     Select.item
         [ value <| toDataString entityType
@@ -231,7 +231,7 @@ orgSelect entityType currentValue =
         [ text <| toDisplayString entityType ]
 
 
-familyRadioList : (EntityType -> msg) -> Maybe EntityType -> Bool -> List (Html msg)
+familyRadioList : (Model -> msg) -> Maybe Model -> Bool -> List (Html msg)
 familyRadioList msg currentValue disabled =
     Radio.radioList "familyOfCandidate"
         [ Radio.createCustom
@@ -253,17 +253,17 @@ familyRadioList msg currentValue disabled =
         ]
 
 
-isLLC : EntityType -> Bool
+isLLC : Model -> Bool
 isLLC contributorType =
     contributorType == LimitedLiabilityCompany
 
 
-llc : EntityType
+llc : Model
 llc =
     LimitedLiabilityCompany
 
 
-toOrgOrIndData : EntityType -> String
+toOrgOrIndData : Model -> String
 toOrgOrIndData entityType =
     case entityType of
         Individual ->
@@ -276,7 +276,7 @@ toOrgOrIndData entityType =
             "Org"
 
 
-toOrgOrIndDisplay : EntityType -> String
+toOrgOrIndDisplay : Model -> String
 toOrgOrIndDisplay entityType =
     case entityType of
         Individual ->

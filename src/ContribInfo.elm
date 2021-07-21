@@ -11,7 +11,7 @@ import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
-import EntityType exposing (EntityType)
+import EntityType
 import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
@@ -187,7 +187,7 @@ view c =
                )
 
 
-entityToOrgOrInd : EntityType -> OrgOrInd
+entityToOrgOrInd : EntityType.Model -> OrgOrInd
 entityToOrgOrInd entityType =
     case entityType of
         EntityType.Family ->
@@ -200,7 +200,7 @@ entityToOrgOrInd entityType =
             OrgOrInd.Org
 
 
-maybeEntityTypeToMaybeOrgOrInd : Maybe EntityType -> Maybe OrgOrInd
+maybeEntityTypeToMaybeOrgOrInd : Maybe EntityType.Model -> Maybe OrgOrInd
 maybeEntityTypeToMaybeOrgOrInd maybeEntityType =
     Maybe.map entityToOrgOrInd maybeEntityType
 
