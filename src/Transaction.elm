@@ -32,6 +32,7 @@ type alias Model =
     , state : Maybe String
     , postalCode : Maybe String
     , employer : Maybe String
+    , employmentStatus : Maybe String
     , occupation : Maybe String
     , entityType : Maybe EntityType
     , companyName : Maybe String
@@ -78,6 +79,7 @@ init =
     , state = Nothing
     , postalCode = Nothing
     , employer = Nothing
+    , employmentStatus = Nothing
     , occupation = Nothing
     , entityType = Nothing
     , companyName = Nothing
@@ -149,6 +151,7 @@ decoder =
         |> maybeString "state"
         |> maybeString "postalCode"
         |> maybeString "employer"
+        |> maybeString "employmentStatus"
         |> maybeString "occupation"
         |> maybeEntityType "entityType"
         |> maybeString "companyName"

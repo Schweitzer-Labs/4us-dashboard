@@ -472,10 +472,10 @@ employmentStatusRows { employmentStatus, disabled } =
             []
           <|
             Radio.radioList "employmentStatus"
-                [ SelectRadio.view (toMsg employmentStatus) "employed" "Employed" (toData employmentStatus) disabled
-                , SelectRadio.view (toMsg employmentStatus) "unemployed" "Unemployed" (toData employmentStatus) disabled
-                , SelectRadio.view (toMsg employmentStatus) "retired" "Retired" (toData employmentStatus) disabled
-                , SelectRadio.view (toMsg employmentStatus) "self_employed" "Self Employed" (toData employmentStatus) disabled
+                [ SelectRadio.view (toMsg employmentStatus) "Employed" "Employed" (toData employmentStatus) disabled
+                , SelectRadio.view (toMsg employmentStatus) "Unemployed" "Unemployed" (toData employmentStatus) disabled
+                , SelectRadio.view (toMsg employmentStatus) "Retired" "Retired" (toData employmentStatus) disabled
+                , SelectRadio.view (toMsg employmentStatus) "SelfEmployed" "Self Employed" (toData employmentStatus) disabled
                 ]
         ]
     ]
