@@ -141,8 +141,7 @@ view model =
             , addContribButtonOrHeading model
             ]
                 ++ contribFormRow model
-
-        --++ reconcileItemsTable model.relatedTxns model.selectedTxns
+                ++ [ reconcileItemsTable model.relatedTxns model.selectedTxns ]
         ]
 
 
@@ -359,8 +358,16 @@ update msg model =
         CreateContribSubmitted ->
             withNone model
 
-        RelatedTransactionClicked a bool ->
-            withNone model
+        RelatedTransactionClicked clickedTxn isChecked ->
+            let
+                selected =
+                    if isChecked then
+                        model.selectedTxns ++ [ clickedTxn ]
+
+                    else
+                        List.filter (\txn -> txn.id /= clickedTxn.id) model.selectedTxns
+            in
+            ( { model | selectedTxns = selected, createContribIsVisible = False }, Cmd.none )
 
         CreateContribGotResp result ->
             withNone model
