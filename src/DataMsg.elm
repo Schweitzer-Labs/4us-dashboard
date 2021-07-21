@@ -1,6 +1,7 @@
 module DataMsg exposing
     ( MsgMaybeBool
     , MsgMaybeEntityType
+    , MsgMaybeOrgOrInd
     , MsgMaybePaymentMethod
     , MsgMaybePurposeCode
     , MsgOwner
@@ -9,7 +10,8 @@ module DataMsg exposing
     , toMsg
     )
 
-import EntityType exposing (EntityType)
+import EntityType
+import OrgOrInd
 import Owners exposing (Owner, Owners)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
@@ -28,11 +30,15 @@ type alias MsgMaybeBool msg =
 
 
 type alias MsgMaybeEntityType msg =
-    ( Maybe EntityType, Maybe EntityType -> msg )
+    ( Maybe EntityType.Model, Maybe EntityType.Model -> msg )
 
 
 type alias MsgMaybePaymentMethod msg =
     ( Maybe PaymentMethod, Maybe PaymentMethod -> msg )
+
+
+type alias MsgMaybeOrgOrInd msg =
+    ( Maybe OrgOrInd.Model, Maybe OrgOrInd.Model -> msg )
 
 
 type alias MsgOwner msg =

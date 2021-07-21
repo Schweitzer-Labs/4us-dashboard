@@ -3,11 +3,11 @@ module TxnForm.ContribRuleVerified exposing (Model, Msg(..), fromError, init, lo
 import Bootstrap.Grid as Grid
 import Cents
 import ContribInfo
-import EntityType exposing (EntityType)
+import EntityType
 import ExpandableBankData
 import Html exposing (Html, div, text)
 import Loading
-import OrgOrInd exposing (OrgOrInd)
+import OrgOrInd
 import Owners exposing (Owner, Owners)
 import PaymentInfo
 import TimeZone exposing (america__new_york)
@@ -40,8 +40,8 @@ type alias Model =
     , employer : String
     , occupation : String
     , entityName : String
-    , maybeOrgOrInd : Maybe OrgOrInd
-    , maybeEntityType : Maybe EntityType
+    , maybeOrgOrInd : Maybe OrgOrInd.Model
+    , maybeEntityType : Maybe EntityType.Model
     , cardNumber : String
     , expirationMonth : String
     , expirationYear : String
@@ -91,7 +91,7 @@ init txn =
     , occupation = Maybe.withDefault "" txn.occupation
     , entityName = Maybe.withDefault "" txn.entityName
     , maybeEntityType = Just EntityType.Individual
-    , maybeOrgOrInd = Nothing
+    , maybeOrgOrInd = Maybe.map OrgOrInd.fromEntityType txn.entityType
     , cardNumber = ""
     , expirationMonth = ""
     , expirationYear = ""
@@ -158,6 +158,7 @@ contribFormRow model =
         , occupation = ( model.occupation, OccupationUpdated )
         , entityName = ( model.entityName, EntityNameUpdated )
         , maybeEntityType = ( model.maybeEntityType, EntityTypeUpdated )
+        , maybeOrgOrInd = ( model.maybeOrgOrInd, OrgOrIndUpdated )
         , cardNumber = ( model.cardNumber, CardNumberUpdated )
         , expirationMonth = ( model.expirationMonth, CardMonthUpdated )
         , expirationYear = ( model.expirationYear, CardYearUpdated )
@@ -178,7 +179,7 @@ type Msg
     | ToggleEdit
     | BankDataToggled
       --- Donor Info
-    | OrgOrIndUpdated (Maybe OrgOrInd)
+    | OrgOrIndUpdated (Maybe OrgOrInd.Model)
     | EmailAddressUpdated String
     | PhoneNumberUpdated String
     | FirstNameUpdated String
@@ -193,8 +194,8 @@ type Msg
     | EmployerUpdated String
     | OccupationUpdated String
     | EntityNameUpdated String
-    | EntityTypeUpdated (Maybe EntityType)
-    | FamilyOrIndividualUpdated EntityType
+    | EntityTypeUpdated (Maybe EntityType.Model)
+    | FamilyOrIndividualUpdated EntityType.Model
     | OwnerAdded
     | OwnerNameUpdated String
     | OwnerOwnershipUpdated String
