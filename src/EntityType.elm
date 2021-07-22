@@ -200,11 +200,12 @@ toGridString entityType =
             "Other"
 
 
-orgView : (Maybe Model -> msg) -> Maybe Model -> Html msg
-orgView msg currentValue =
+orgView : (Maybe Model -> msg) -> Maybe Model -> Bool -> Html msg
+orgView msg currentValue disabled =
     Select.select
         [ Select.id "entityType"
         , Select.onChange (fromString >> msg)
+        , Select.disabled disabled
         ]
         [ Select.item [ value "" ] [ text "-- Organization Classification --" ]
         , orgSelect SoleProprietorship currentValue

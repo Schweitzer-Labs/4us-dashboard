@@ -1,5 +1,6 @@
-module TxnForm.ContribRuleVerified exposing (Model, Msg(..), fromError, init, loadingInit, update, view)
+module TxnForm.ContribRuleVerified exposing (Model, Msg(..), amendTxnEncoder, fromError, init, loadingInit, update, view)
 
+import Api.AmendContrib as AmendContrib
 import Bootstrap.Grid as Grid
 import Cents
 import ContribInfo
@@ -319,3 +320,33 @@ update msg model =
 fromError : Model -> String -> Model
 fromError model str =
     model
+
+
+amendTxnEncoder : Model -> AmendContrib.EncodeModel
+amendTxnEncoder model =
+    { txn = model.txn
+    , checkNumber = model.checkNumber
+    , paymentDate = model.paymentDate
+    , paymentMethod = model.txn.paymentMethod
+    , emailAddress = model.emailAddress
+    , phoneNumber = model.phoneNumber
+    , firstName = model.firstName
+    , middleName = model.middleName
+    , lastName = model.lastName
+    , addressLine1 = model.addressLine1
+    , addressLine2 = model.addressLine2
+    , city = model.city
+    , state = model.state
+    , postalCode = model.postalCode
+    , employmentStatus = model.employmentStatus
+    , employer = model.employer
+    , occupation = model.occupation
+    , entityName = model.entityName
+    , maybeOrgOrInd = model.maybeOrgOrInd
+    , maybeEntityType = model.maybeEntityType
+    , amount = model.txn.amount
+    , owners = model.owners
+    , ownerName = model.ownerName
+    , ownerOwnership = model.ownerOwnership
+    , committeeId = model.committeeId
+    }
