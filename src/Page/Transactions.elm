@@ -1045,7 +1045,7 @@ createDisbursement model =
 
 createContribution : Model -> Cmd Msg
 createContribution model =
-    CreateContrib.send GotCreateContributionResponse model.config <| CreateContrib.encode model.createContributionModal
+    CreateContrib.send GotCreateContributionResponse model.config <| CreateContrib.encode CreateContribution.toEncodeModel model.createContributionModal
 
 
 reconcileDisb : Model -> Cmd Msg

@@ -1,9 +1,8 @@
-module Api.CreateContrib exposing (encode, send)
+module Api.CreateContrib exposing (EncodeModel, encode, send)
 
 import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldNotZero, optionalFieldString, optionalFieldStringInt)
 import Cents
 import Config exposing (Config)
-import CreateContribution
 import EntityType
 import Http
 import Json.Decode as Decode
@@ -69,9 +68,40 @@ query =
     """
 
 
-encode : CreateContribution.Model -> Http.Body
-encode model =
+type alias EncodeModel =
+    { committeeId : String
+    , amount : String
+    , paymentMethod : String
+    , firstName : String
+    , lastName : String
+    , addressLine1 : String
+    , city : String
+    , state : String
+    , postalCode : String
+    , maybeEntityType : Maybe EntityType.Model
+    , emailAddress : String
+    , paymentDate : String
+    , cardNumber : String
+    , expirationMonth : String
+    , expirationYear : String
+    , cvv : String
+    , checkNumber : String
+    , entityName : String
+    , employer : String
+    , occupation : String
+    , middleName : String
+    , addressLine2 : String
+    , phoneNumber : String
+    , employmentStatus : String
+    }
+
+
+encode : (a -> EncodeModel) -> a -> Http.Body
+encode mapper val =
     let
+        model =
+            mapper val
+
         variables =
             Encode.object <|
                 [ ( "committeeId", Encode.string model.committeeId )
@@ -98,8 +128,8 @@ encode model =
                     ++ optionalFieldString "occupation" model.occupation
                     ++ optionalFieldString "middleName" model.middleName
                     ++ optionalFieldString "addressLine2" model.addressLine2
-                    ++ optionalFieldString "occupation" model.occupation
                     ++ optionalFieldString "phoneNumber" model.phoneNumber
+                    ++ optionalFieldString "employmentStatus" model.employmentStatus
     in
     encodeQuery query variables
 

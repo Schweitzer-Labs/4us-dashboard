@@ -1,5 +1,6 @@
-module CreateContribution exposing (Model, Msg(..), init, setError, update, view)
+module CreateContribution exposing (Model, Msg(..), init, setError, toEncodeModel, update, view)
 
+import Api.CreateContrib as CreateContrib
 import ContribInfo
 import EntityType
 import Html exposing (Html)
@@ -251,3 +252,32 @@ update msg model =
 
         PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )
+
+
+toEncodeModel : Model -> CreateContrib.EncodeModel
+toEncodeModel model =
+    { committeeId = model.committeeId
+    , amount = model.amount
+    , paymentMethod = model.paymentMethod
+    , firstName = model.firstName
+    , lastName = model.lastName
+    , addressLine1 = model.addressLine1
+    , city = model.city
+    , state = model.state
+    , postalCode = model.postalCode
+    , maybeEntityType = model.maybeEntityType
+    , emailAddress = model.emailAddress
+    , paymentDate = model.paymentDate
+    , cardNumber = model.cardNumber
+    , expirationMonth = model.expirationMonth
+    , expirationYear = model.expirationYear
+    , cvv = model.cvv
+    , checkNumber = model.checkNumber
+    , entityName = model.entityName
+    , employer = model.employer
+    , occupation = model.occupation
+    , middleName = model.middleName
+    , addressLine2 = model.addressLine2
+    , phoneNumber = model.phoneNumber
+    , employmentStatus = model.employmentStatus
+    }

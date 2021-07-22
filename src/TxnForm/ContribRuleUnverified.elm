@@ -1,7 +1,9 @@
 module TxnForm.ContribRuleUnverified exposing (Model, Msg(..), fromError, init, reconcileTxnEncoder, toSubmitDisabled, update, view)
 
+import Api
+import Api.CreateContrib as CreateContrib
 import Api.GetTxns as GetTxns
-import Api.GraphQL exposing (MutationResponse)
+import Api.GraphQL exposing (MutationResponse(..))
 import Api.ReconcileTxn as ReconcileTxn
 import Asset
 import BankData
@@ -97,22 +99,22 @@ init config txns bankTxn =
     , amount = Cents.stringToDollar <| String.fromInt bankTxn.amount
     , checkNumber = ""
     , paymentDate = Timestamp.format (america__new_york ()) bankTxn.paymentDate
-    , emailAddress = Maybe.withDefault "" bankTxn.emailAddress
-    , phoneNumber = Maybe.withDefault "" bankTxn.phoneNumber
-    , firstName = Maybe.withDefault "" bankTxn.firstName
-    , middleName = Maybe.withDefault "" bankTxn.middleName
-    , lastName = Maybe.withDefault "" bankTxn.lastName
-    , addressLine1 = Maybe.withDefault "" bankTxn.addressLine1
-    , addressLine2 = Maybe.withDefault "" bankTxn.addressLine2
-    , city = Maybe.withDefault "" bankTxn.city
-    , state = Maybe.withDefault "" bankTxn.state
-    , postalCode = Maybe.withDefault "" bankTxn.postalCode
-    , employmentStatus = Maybe.withDefault "" bankTxn.employmentStatus
-    , employer = Maybe.withDefault "" bankTxn.employer
-    , occupation = Maybe.withDefault "" bankTxn.occupation
-    , entityName = Maybe.withDefault "" bankTxn.entityName
-    , maybeEntityType = Just EntityType.Individual
-    , maybeOrgOrInd = Maybe.map OrgOrInd.fromEntityType bankTxn.entityType
+    , emailAddress = ""
+    , phoneNumber = ""
+    , firstName = ""
+    , middleName = ""
+    , lastName = ""
+    , addressLine1 = ""
+    , addressLine2 = ""
+    , city = ""
+    , state = ""
+    , postalCode = ""
+    , employmentStatus = ""
+    , employer = ""
+    , occupation = ""
+    , entityName = ""
+    , maybeEntityType = Nothing
+    , maybeOrgOrInd = Nothing
     , cardNumber = ""
     , expirationMonth = ""
     , expirationYear = ""
@@ -121,14 +123,51 @@ init config txns bankTxn =
     , ownerName = ""
     , ownerOwnership = ""
     , paymentMethod = ""
-    , maybeError = Nothing
-    , config = config
-    , lastCreatedTxnId = ""
-    , timezone = america__new_york ()
     , createContribIsVisible = False
     , createContribButtonIsDisabled = True
     , createContribIsSubmitting = False
     , reconcileButtonIsDisabled = True
+    , maybeError = Nothing
+    , config = config
+    , timezone = america__new_york ()
+    , lastCreatedTxnId = ""
+    }
+
+
+clearForm : Model -> Model
+clearForm model =
+    { model
+        | amount = Cents.stringToDollar <| String.fromInt model.bankTxn.amount
+        , checkNumber = ""
+        , paymentDate = Timestamp.format (america__new_york ()) model.bankTxn.paymentDate
+        , emailAddress = ""
+        , phoneNumber = ""
+        , firstName = ""
+        , middleName = ""
+        , lastName = ""
+        , addressLine1 = ""
+        , addressLine2 = ""
+        , city = ""
+        , state = ""
+        , postalCode = ""
+        , employmentStatus = ""
+        , employer = ""
+        , occupation = ""
+        , entityName = ""
+        , maybeEntityType = Nothing
+        , maybeOrgOrInd = Nothing
+        , cardNumber = ""
+        , expirationMonth = ""
+        , expirationYear = ""
+        , cvv = ""
+        , owners = []
+        , ownerName = ""
+        , ownerOwnership = ""
+        , paymentMethod = ""
+        , createContribIsVisible = False
+        , createContribButtonIsDisabled = False
+        , createContribIsSubmitting = False
+        , maybeError = Nothing
     }
 
 
@@ -229,7 +268,7 @@ type Msg
     | CreateContribToggled
     | CreateContribSubmitted
     | RelatedTransactionClicked Transaction.Model Bool
-    | CreateContribGotResp (Result Http.Error MutationResponse)
+    | CreateContribMutResp (Result Http.Error MutationResponse)
     | GetTxnsGotResp (Result Http.Error GetTxns.Model)
 
 
@@ -360,7 +399,18 @@ update msg model =
             ( { model | createContribIsVisible = not model.createContribIsVisible }, Cmd.none )
 
         CreateContribSubmitted ->
-            withNone model
+            --case validate validator model of
+            --    Err errors ->
+            --        let
+            --            error =
+            --                Maybe.withDefault "Form error" <| List.head errors
+            --        in
+            --        ( fromError model error, Cmd.none )
+            --
+            --    Ok val ->
+            ( { model | createContribButtonIsDisabled = True, createContribIsSubmitting = True }
+            , createContrib model
+            )
 
         RelatedTransactionClicked clickedTxn isChecked ->
             let
@@ -373,8 +423,38 @@ update msg model =
             in
             ( { model | selectedTxns = selected, createContribIsVisible = False }, Cmd.none )
 
-        CreateContribGotResp result ->
-            withNone model
+        CreateContribMutResp res ->
+            case res of
+                Ok createContribResp ->
+                    case createContribResp of
+                        Success id ->
+                            let
+                                resetFormModel =
+                                    clearForm model
+                            in
+                            ( { resetFormModel
+                                | lastCreatedTxnId = id
+                              }
+                            , getTxns model
+                            )
+
+                        ResValidationFailure errList ->
+                            ( { model
+                                | maybeError = List.head errList
+                                , createContribButtonIsDisabled = False
+                                , createContribIsSubmitting = False
+                              }
+                            , Cmd.none
+                            )
+
+                Err err ->
+                    ( { model
+                        | maybeError = Just <| Api.decodeError err
+                        , createContribButtonIsDisabled = False
+                        , createContribIsSubmitting = False
+                      }
+                    , Cmd.none
+                    )
 
 
 
@@ -556,3 +636,37 @@ reconcileTxnEncoder model =
     , bankTxn = model.bankTxn
     , committeeId = model.committeeId
     }
+
+
+createContribEncoder : Model -> CreateContrib.EncodeModel
+createContribEncoder model =
+    { committeeId = model.committeeId
+    , amount = model.amount
+    , paymentMethod = model.paymentMethod
+    , firstName = model.firstName
+    , lastName = model.lastName
+    , addressLine1 = model.addressLine1
+    , city = model.city
+    , state = model.state
+    , postalCode = model.postalCode
+    , maybeEntityType = model.maybeEntityType
+    , emailAddress = model.emailAddress
+    , paymentDate = model.paymentDate
+    , cardNumber = model.cardNumber
+    , expirationMonth = model.expirationMonth
+    , expirationYear = model.expirationYear
+    , cvv = model.cvv
+    , checkNumber = model.checkNumber
+    , entityName = model.entityName
+    , employer = model.employer
+    , occupation = model.occupation
+    , middleName = model.middleName
+    , addressLine2 = model.addressLine2
+    , phoneNumber = model.phoneNumber
+    , employmentStatus = model.employmentStatus
+    }
+
+
+createContrib : Model -> Cmd Msg
+createContrib model =
+    CreateContrib.send CreateContribMutResp model.config <| CreateContrib.encode createContribEncoder model
