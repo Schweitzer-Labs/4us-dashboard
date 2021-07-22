@@ -3,6 +3,7 @@ module TxnForm.DisbRuleUnverified exposing
     , Msg(..)
     , fromError
     , init
+    , reconcileTxnEncoder
     , toSubmitDisabled
     , totalSelectedMatch
     , update
@@ -14,6 +15,7 @@ import Api
 import Api.CreateDisb as CreateDisb
 import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse(..))
+import Api.ReconcileTxn as ReconcileTxn
 import Asset
 import BankData
 import Bootstrap.Button as Button
@@ -602,3 +604,11 @@ createDisb model =
 getTxns : Model -> Cmd Msg
 getTxns model =
     GetTxns.send GetTxnsGotResp model.config <| GetTxns.encode model.committeeId (Just TransactionType.Disbursement)
+
+
+reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel
+reconcileTxnEncoder model =
+    { selectedTxns = model.selectedTxns
+    , bankTxn = model.bankTxn
+    , committeeId = model.committeeId
+    }

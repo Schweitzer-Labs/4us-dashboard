@@ -1,7 +1,8 @@
-module TxnForm.ContribRuleUnverified exposing (Model, Msg(..), fromError, init, update, view)
+module TxnForm.ContribRuleUnverified exposing (Model, Msg(..), fromError, init, reconcileTxnEncoder, toSubmitDisabled, update, view)
 
 import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse)
+import Api.ReconcileTxn as ReconcileTxn
 import Asset
 import BankData
 import Bootstrap.Button as Button
@@ -78,6 +79,7 @@ type alias Model =
     , createContribIsVisible : Bool
     , createContribButtonIsDisabled : Bool
     , createContribIsSubmitting : Bool
+    , reconcileButtonIsDisabled : Bool
     }
 
 
@@ -126,6 +128,7 @@ init config txns bankTxn =
     , createContribIsVisible = False
     , createContribButtonIsDisabled = True
     , createContribIsSubmitting = False
+    , reconcileButtonIsDisabled = True
     }
 
 
@@ -505,6 +508,20 @@ getTxnById txns id =
             Nothing
 
 
+totalSelectedMatch : Model -> Bool
+totalSelectedMatch model =
+    if List.foldr (\txn acc -> acc + txn.amount) 0 model.selectedTxns == model.bankTxn.amount then
+        False
+
+    else
+        True
+
+
+toSubmitDisabled : Model -> Bool
+toSubmitDisabled model =
+    model.reconcileButtonIsDisabled && totalSelectedMatch model
+
+
 buttonRow : msg -> String -> String -> msg -> Bool -> Bool -> Html msg
 buttonRow hideMsg displayText exitText msg submitting disabled =
     Grid.row
@@ -531,3 +548,11 @@ exitButton hideMsg displayText =
         , Button.attrs [ onClick hideMsg ]
         ]
         [ text displayText ]
+
+
+reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel
+reconcileTxnEncoder model =
+    { selectedTxns = model.selectedTxns
+    , bankTxn = model.bankTxn
+    , committeeId = model.committeeId
+    }

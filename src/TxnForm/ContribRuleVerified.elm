@@ -52,6 +52,7 @@ type alias Model =
     , ownerName : String
     , ownerOwnership : String
     , committeeId : String
+    , isSubmitDisabled : Bool
     , maybeError : Maybe String
     }
 
@@ -102,6 +103,7 @@ init txn =
     , ownerOwnership = ""
     , paymentMethod = ""
     , committeeId = txn.committeeId
+    , isSubmitDisabled = True
     , maybeError = Nothing
     }
 
