@@ -7,9 +7,11 @@ import EntityType exposing (fromMaybeToStringWithDefaultInd)
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
-import PaymentMethod
+import OrgOrInd
+import Owners exposing (Owners)
+import PaymentMethod exposing (PaymentMethod)
 import Timestamp exposing (dateStringToMillis)
-import TxnForm.ContribRuleVerified as ContribRuleVerified
+import Transaction
 
 
 query : String
@@ -75,9 +77,53 @@ query =
     """
 
 
-encode : ContribRuleVerified.Model -> Http.Body
-encode model =
+type alias EncodeModel =
+    { txn : Transaction.Model
+    , loading : Bool
+    , submitting : Bool
+    , disabled : Bool
+    , showBankData : Bool
+    , errors : List String
+    , error : String
+    , checkNumber : String
+    , paymentDate : String
+    , paymentMethod : PaymentMethod
+    , emailAddress : String
+    , phoneNumber : String
+    , firstName : String
+    , middleName : String
+    , lastName : String
+    , addressLine1 : String
+    , addressLine2 : String
+    , city : String
+    , state : String
+    , postalCode : String
+    , employmentStatus : String
+    , employer : String
+    , occupation : String
+    , entityName : String
+    , maybeOrgOrInd : Maybe OrgOrInd.Model
+    , maybeEntityType : Maybe EntityType.Model
+    , cardNumber : String
+    , expirationMonth : String
+    , expirationYear : String
+    , cvv : String
+    , amount : Int
+    , owners : Owners
+    , ownerName : String
+    , ownerOwnership : String
+    , committeeId : String
+    , isSubmitDisabled : Bool
+    , maybeError : Maybe String
+    }
+
+
+encode : (a -> EncodeModel) -> a -> Http.Body
+encode mapper val =
     let
+        model =
+            mapper val
+
         variables =
             Encode.object <|
                 [ ( "committeeId", Encode.string model.txn.committeeId )

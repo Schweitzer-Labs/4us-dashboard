@@ -1075,7 +1075,7 @@ amendDisb model =
 
 amendContrib : Model -> Cmd Msg
 amendContrib model =
-    AmendContrib.send ContribRuleVerifiedGotMutResp model.config <| AmendContrib.encode model.contribRuleVerifiedModal
+    AmendContrib.send ContribRuleVerifiedGotMutResp model.config <| AmendContrib.encode ContribRuleVerified.amendTxnEncoder model.contribRuleVerifiedModal
 
 
 
