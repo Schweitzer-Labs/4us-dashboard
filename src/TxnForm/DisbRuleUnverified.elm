@@ -3,6 +3,7 @@ module TxnForm.DisbRuleUnverified exposing
     , Msg(..)
     , fromError
     , init
+    , reconcileTxnEncoder
     , toSubmitDisabled
     , totalSelectedMatch
     , update
@@ -14,6 +15,7 @@ import Api
 import Api.CreateDisb as CreateDisb
 import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse(..))
+import Api.ReconcileTxn as ReconcileTxn
 import Asset
 import BankData
 import Bootstrap.Button as Button
@@ -27,6 +29,7 @@ import Cents
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import DataTable exposing (DataRow)
+import Direction
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
 import Html exposing (Html, div, h6, input, span, text)
@@ -140,7 +143,7 @@ clearForm model =
 
 getRelatedDisb : Transaction.Model -> List Transaction.Model -> List Transaction.Model
 getRelatedDisb txn txns =
-    List.filter (\val -> (val.paymentMethod == txn.paymentMethod) && (val.amount <= txn.amount) && not val.bankVerified && val.ruleVerified) txns
+    List.filter (\val -> (val.paymentMethod == txn.paymentMethod) && (val.amount <= txn.amount) && (val.direction == Direction.Out) && not val.bankVerified && val.ruleVerified) txns
 
 
 view : Model -> Html Msg
@@ -601,3 +604,11 @@ createDisb model =
 getTxns : Model -> Cmd Msg
 getTxns model =
     GetTxns.send GetTxnsGotResp model.config <| GetTxns.encode model.committeeId (Just TransactionType.Disbursement)
+
+
+reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel
+reconcileTxnEncoder model =
+    { selectedTxns = model.selectedTxns
+    , bankTxn = model.bankTxn
+    , committeeId = model.committeeId
+    }

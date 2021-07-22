@@ -139,8 +139,10 @@ getContext transaction =
                 missingContent
                 (Maybe.map (text << PurposeCode.toString) transaction.purposeCode)
 
-        _ ->
-            text <| Maybe.withDefault "Home" transaction.refCode
+        Direction.In ->
+            Maybe.withDefault
+                missingContent
+                (Maybe.map (text << EntityType.toDisplayString) transaction.entityType)
 
 
 getAmount : Transaction.Model -> Html msg

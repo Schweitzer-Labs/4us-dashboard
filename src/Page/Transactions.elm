@@ -9,7 +9,7 @@ import Api.CreateDisb as CreateDisb
 import Api.GetTxn as GetTxn
 import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse(..))
-import Api.ReconcileDisb as ReconcileDisb
+import Api.ReconcileTxn as ReconcileTxn
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Grid as Grid exposing (Column)
@@ -257,7 +257,7 @@ contribRuleUnverifiedModal model =
         , submitMsg = ContribRuleUnverifiedSubmit
         , submitText = "Reconcile"
         , isSubmitting = model.contribRuleUnverifiedSubmitting
-        , isSubmitDisabled = False -- ContribRuleUnverified.toSubmitDisabled model.contribRuleUnverifiedModal
+        , isSubmitDisabled = False
         , visibility = model.contribRuleUnverifiedModalVisibility
         }
 
@@ -274,7 +274,7 @@ contribRuleVerifiedModal model =
         , submitMsg = ContribRuleVerifiedSubmit
         , submitText = "Save"
         , isSubmitting = model.contribRuleVerifiedSubmitting
-        , isSubmitDisabled = False -- model.contribRuleVerifiedModal.isSubmitDisabled
+        , isSubmitDisabled = False
         , visibility = model.contribRuleVerifiedModalVisibility
         }
 
@@ -686,7 +686,7 @@ update msg model =
             )
 
         ContribRuleUnverifiedSubmit ->
-            ( { model | contribRuleUnverifiedSubmitting = True }, Cmd.none )
+            ( { model | contribRuleUnverifiedSubmitting = True }, reconcileContrib model )
 
         ContribRuleUnverifiedModalUpdate subMsg ->
             let
@@ -1050,7 +1050,12 @@ createContribution model =
 
 reconcileDisb : Model -> Cmd Msg
 reconcileDisb model =
-    ReconcileDisb.send DisbRuleUnverifiedGotReconcileMutResp model.config <| ReconcileDisb.encode model.disbRuleUnverifiedModal
+    ReconcileTxn.send DisbRuleUnverifiedGotReconcileMutResp model.config <| ReconcileTxn.encode DisbRuleUnverified.reconcileTxnEncoder model.disbRuleUnverifiedModal
+
+
+reconcileContrib : Model -> Cmd Msg
+reconcileContrib model =
+    ReconcileTxn.send ContribRuleUnverifiedGotReconcileMutResp model.config <| ReconcileTxn.encode ContribRuleUnverified.reconcileTxnEncoder model.contribRuleUnverifiedModal
 
 
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg
