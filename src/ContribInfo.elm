@@ -321,7 +321,7 @@ orgRows { maybeEntityType, entityName, disabled } =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ EntityType.orgView (toMsg maybeEntityType) (toData maybeEntityType) ]
+            [ EntityType.orgView (toMsg maybeEntityType) (toData maybeEntityType) disabled ]
         ]
     ]
         ++ [ Grid.row
