@@ -1,10 +1,13 @@
 module Api.AmendContrib exposing (..)
 
-import Api.GraphQL exposing (encodeQuery, optionalFieldNotZero, optionalFieldString, optionalFieldStringInt)
+import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldNotZero, optionalFieldString, optionalFieldStringInt)
 import Cents
+import Config exposing (Config)
 import EntityType exposing (fromMaybeToStringWithDefaultInd)
 import Http
+import Json.Decode as Decode
 import Json.Encode as Encode
+import PaymentMethod
 import Timestamp exposing (dateStringToMillis)
 import TxnForm.ContribRuleVerified as ContribRuleVerified
 
@@ -77,10 +80,10 @@ encode model =
     let
         variables =
             Encode.object <|
-                [ ( "committeeId", Encode.string model.committeeId )
+                [ ( "committeeId", Encode.string model.txn.committeeId )
                 , ( "transactionId", Encode.string model.txn.id )
-                , ( "amount", Encode.int <| Cents.fromDollars model.amount )
-                , ( "paymentMethod", Encode.string model.paymentMethod )
+                , ( "amount", Encode.int <| Cents.fromDollars <| String.fromInt model.txn.amount )
+                , ( "paymentMethod", Encode.string (PaymentMethod.toDataString model.txn.paymentMethod) )
                 , ( "firstName", Encode.string model.firstName )
                 , ( "lastName", Encode.string model.lastName )
                 , ( "addressLine1", Encode.string model.addressLine1 )
@@ -101,3 +104,22 @@ encode model =
                     ++ optionalFieldString "employmentStatus" model.employmentStatus
     in
     encodeQuery query variables
+
+
+decoder : Decode.Decoder MutationResponse
+decoder =
+    Decode.oneOf [ successDecoder, mutationValidationFailureDecoder ]
+
+
+successDecoder : Decode.Decoder MutationResponse
+successDecoder =
+    Decode.map Success <|
+        Decode.field "data" <|
+            Decode.field "amendContribution" <|
+                Decode.field "id" <|
+                    Decode.string
+
+
+send : (Result Http.Error MutationResponse -> msg) -> Config -> Http.Body -> Cmd msg
+send msg config =
+    GraphQL.send decoder msg config

@@ -2,6 +2,7 @@ module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, u
 
 import Aggregations as Aggregations
 import Api exposing (Token)
+import Api.AmendContrib as AmendContrib
 import Api.AmendDisb as AmendDisb
 import Api.CreateContrib as CreateContrib
 import Api.CreateDisb as CreateDisb
@@ -778,22 +779,21 @@ update msg model =
             )
 
         ContribRuleVerifiedSubmit ->
-            ( model, Cmd.none )
+            --case validate ContribRuleVerified.validator model.contribRuleVerifiedModal of
+            --        Err errors ->
+            --                let
+            --                     error =
+            --                       Maybe.withDefault "Form error" <| List.head errors
+            --                in
+            --                    ( { model | contribRuleVerifiedModal = ContribRuleVerified.fromError model.contribRuleVerifiedModal error }, Cmd.none )
+            --
+            --        Ok val ->
+            ( { model
+                | contribRuleVerifiedSubmitting = True
+              }
+            , amendContrib model
+            )
 
-        --case validate ContribRuleVerified.validator model.contribRuleVerifiedModal of
-        --    Err errors ->
-        --        let
-        --            error =
-        --                Maybe.withDefault "Form error" <| List.head errors
-        --        in
-        --        ( { model | contribRuleVerifiedModal = ContribRuleVerified.fromError model.contribRuleVerifiedModal error }, Cmd.none )
-        --
-        --    Ok val ->
-        --        ( { model
-        --            | contribRuleVerifiedSubmitting = True
-        --          }
-        --        , amendContrib model
-        --        )
         ContribRuleVerifiedModalUpdate subMsg ->
             let
                 ( subModel, subCmd ) =
@@ -1066,6 +1066,11 @@ getTransaction model txnId =
 amendDisb : Model -> Cmd Msg
 amendDisb model =
     AmendDisb.send DisbRuleVerifiedGotMutResp model.config <| AmendDisb.encode model.disbRuleVerifiedModal
+
+
+amendContrib : Model -> Cmd Msg
+amendContrib model =
+    AmendContrib.send ContribRuleVerifiedGotMutResp model.config <| AmendContrib.encode model.contribRuleVerifiedModal
 
 
 
