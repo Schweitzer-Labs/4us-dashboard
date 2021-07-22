@@ -79,12 +79,6 @@ query =
 
 type alias EncodeModel =
     { txn : Transaction.Model
-    , loading : Bool
-    , submitting : Bool
-    , disabled : Bool
-    , showBankData : Bool
-    , errors : List String
-    , error : String
     , checkNumber : String
     , paymentDate : String
     , paymentMethod : PaymentMethod
@@ -104,17 +98,11 @@ type alias EncodeModel =
     , entityName : String
     , maybeOrgOrInd : Maybe OrgOrInd.Model
     , maybeEntityType : Maybe EntityType.Model
-    , cardNumber : String
-    , expirationMonth : String
-    , expirationYear : String
-    , cvv : String
     , amount : Int
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
     , committeeId : String
-    , isSubmitDisabled : Bool
-    , maybeError : Maybe String
     }
 
 
