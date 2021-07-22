@@ -27,6 +27,7 @@ import Cents
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import DataTable exposing (DataRow)
+import Direction
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
 import Html exposing (Html, div, h6, input, span, text)
@@ -140,7 +141,7 @@ clearForm model =
 
 getRelatedDisb : Transaction.Model -> List Transaction.Model -> List Transaction.Model
 getRelatedDisb txn txns =
-    List.filter (\val -> (val.paymentMethod == txn.paymentMethod) && (val.amount <= txn.amount) && not val.bankVerified && val.ruleVerified) txns
+    List.filter (\val -> (val.paymentMethod == txn.paymentMethod) && (val.amount <= txn.amount) && (val.direction == Direction.Out) && not val.bankVerified && val.ruleVerified) txns
 
 
 view : Model -> Html Msg
