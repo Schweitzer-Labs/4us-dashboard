@@ -5,6 +5,7 @@ import AmountDate
 import AppInput exposing (inputEmail, inputText)
 import Asset
 import Bootstrap.Form as Form
+import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid exposing (Column)
@@ -540,11 +541,20 @@ employmentStatusRows { employmentStatus, disabled } =
         [ Grid.col
             []
           <|
-            Radio.radioList "employmentStatus"
-                [ SelectRadio.view (toMsg employmentStatus) "Employed" "Employed" (toData employmentStatus) disabled
-                , SelectRadio.view (toMsg employmentStatus) "Unemployed" "Unemployed" (toData employmentStatus) disabled
-                , SelectRadio.view (toMsg employmentStatus) "Retired" "Retired" (toData employmentStatus) disabled
-                , SelectRadio.view (toMsg employmentStatus) "SelfEmployed" "Self Employed" (toData employmentStatus) disabled
+            [ Form.form []
+                [ Fieldset.config
+                    |> Fieldset.asGroup
+                    |> Fieldset.legend [] []
+                    |> Fieldset.children
+                        (Radio.radioList "employmentStatus"
+                            [ SelectRadio.view (toMsg employmentStatus) "Employed" "Employed" (toData employmentStatus) disabled
+                            , SelectRadio.view (toMsg employmentStatus) "Unemployed" "Unemployed" (toData employmentStatus) disabled
+                            , SelectRadio.view (toMsg employmentStatus) "Retired" "Retired" (toData employmentStatus) disabled
+                            , SelectRadio.view (toMsg employmentStatus) "SelfEmployed" "Self Employed" (toData employmentStatus) disabled
+                            ]
+                        )
+                    |> Fieldset.view
                 ]
+            ]
         ]
     ]

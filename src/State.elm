@@ -4,6 +4,7 @@ import Bootstrap.Form.Select as Select
 import Dict
 import Html exposing (Html, text)
 import Html.Attributes exposing (class, selected, value)
+import String exposing (toUpper)
 import String.Extra exposing (toTitleCase)
 
 
@@ -81,6 +82,6 @@ view msg currentValue isDisabled =
         [ Select.item [ value "" ] [ text "-- State --" ] ]
             ++ List.map
                 (\( abbr, whole ) ->
-                    Select.item [ value abbr, selected (currentValue == abbr) ] [ text whole ]
+                    Select.item [ value abbr, selected (currentValue == abbr || toUpper currentValue == abbr) ] [ text whole ]
                 )
                 statesAndAbbrsList

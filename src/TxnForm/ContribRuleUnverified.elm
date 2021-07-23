@@ -578,7 +578,7 @@ getRelatedContrib txn txns =
         filteredtxns =
             List.filter (\val -> (val.amount <= txn.amount) && (val.direction == Direction.In) && not val.bankVerified && val.ruleVerified && val.paymentDate <= txn.paymentDate) txns
     in
-    sortBy .paymentDate filteredtxns
+    sortBy .paymentDate filteredtxns |> List.reverse
 
 
 getTxnById : List Transaction.Model -> String -> Maybe Transaction.Model
