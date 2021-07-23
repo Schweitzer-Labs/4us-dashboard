@@ -2,12 +2,14 @@ module TxnForm.ContribRuleVerified exposing (Model, Msg(..), amendTxnEncoder, fr
 
 import Api.AmendContrib as AmendContrib
 import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Row as Row
+import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import ContribInfo exposing (ContribValidatorModel)
-import EmploymentStatus exposing (EmploymentStatus)
 import EntityType
 import ExpandableBankData
-import Html exposing (Html, div, text)
+import Html exposing (Html, span, text)
+import Html.Attributes exposing (class)
 import Loading
 import OrgOrInd
 import Owners exposing (Owner, Owners)
@@ -135,7 +137,9 @@ loadedView model =
     in
     Grid.container
         []
-        (PaymentInfo.view model.txn
+        ([]
+            ++ errorRow model.maybeError
+            ++ PaymentInfo.view model.txn
             ++ [ contribFormRow model ]
             ++ bankData
         )
@@ -176,6 +180,18 @@ contribFormRow model =
         , toggleEdit = ToggleEdit
         , maybeError = model.maybeError
         }
+
+
+errorRow : Maybe String -> List (Html msg)
+errorRow maybeStr =
+    case maybeStr of
+        Nothing ->
+            []
+
+        Just str ->
+            [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
+                [ Grid.col [] [ span [ class "text-danger" ] [ text str ] ] ]
+            ]
 
 
 type Msg
