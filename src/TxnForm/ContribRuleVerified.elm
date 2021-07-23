@@ -1,9 +1,9 @@
-module TxnForm.ContribRuleVerified exposing (Model, Msg(..), amendTxnEncoder, fromError, init, loadingInit, update, view)
+module TxnForm.ContribRuleVerified exposing (Model, Msg(..), amendTxnEncoder, fromError, init, loadingInit, update, validationMapper, view)
 
 import Api.AmendContrib as AmendContrib
 import Bootstrap.Grid as Grid
 import Cents
-import ContribInfo
+import ContribInfo exposing (ContribValidatorModel)
 import EmploymentStatus exposing (EmploymentStatus)
 import EntityType
 import ExpandableBankData
@@ -318,8 +318,8 @@ update msg model =
 
 
 fromError : Model -> String -> Model
-fromError model str =
-    model
+fromError model error =
+    { model | maybeError = Just error }
 
 
 amendTxnEncoder : Model -> AmendContrib.EncodeModel
@@ -349,4 +349,31 @@ amendTxnEncoder model =
     , ownerName = model.ownerName
     , ownerOwnership = model.ownerOwnership
     , committeeId = model.committeeId
+    }
+
+
+validationMapper : Model -> ContribValidatorModel
+validationMapper model =
+    { checkNumber = model.checkNumber
+    , paymentDate = model.paymentDate
+    , paymentMethod = model.txn.paymentMethod
+    , emailAddress = model.emailAddress
+    , phoneNumber = model.phoneNumber
+    , firstName = model.firstName
+    , middleName = model.middleName
+    , lastName = model.lastName
+    , addressLine1 = model.addressLine1
+    , addressLine2 = model.addressLine2
+    , city = model.city
+    , state = model.state
+    , postalCode = model.postalCode
+    , employmentStatus = model.employmentStatus
+    , employer = model.employer
+    , occupation = model.occupation
+    , entityName = model.entityName
+    , maybeOrgOrInd = model.maybeOrgOrInd
+    , maybeEntityType = model.maybeEntityType
+    , owners = model.owners
+    , ownerName = model.ownerName
+    , ownerOwnership = model.ownerOwnership
     }
