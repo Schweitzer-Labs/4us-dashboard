@@ -11,6 +11,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EntityType
+import Errors exposing (fromPostalCode)
 import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
@@ -19,7 +20,7 @@ import OrgOrInd
 import Owners exposing (Owners)
 import PaymentMethod exposing (PaymentMethod)
 import SelectRadio
-import Validate exposing (Valid, Validator, ifBlank, validate)
+import Validate exposing (Valid, Validator, fromErrors, ifBlank, validate)
 import YearSelector
 
 
@@ -58,6 +59,38 @@ type alias Config msg =
     }
 
 
+view : Config msg -> Html msg
+view c =
+    Grid.containerFluid
+        []
+    <|
+        []
+            ++ errorRow c.maybeError
+            ++ (if c.isEditable then
+                    editRow c.toggleEdit
+
+                else
+                    labelRow "Payment Info"
+               )
+            ++ (if c.isEditable == False then
+                    amountDateRow c
+
+                else
+                    []
+               )
+            ++ labelRow "Donor Info"
+            ++ donorInfoRows c
+            ++ (if c.isEditable then
+                    []
+
+                else
+                    []
+                        ++ labelRow "Processing Info"
+                        ++ PaymentMethod.select (toMsg c.paymentMethod) (toData c.paymentMethod) c.disabled
+                        ++ processingRow c
+               )
+
+
 type alias ContribValidatorModel =
     { checkNumber : String
     , paymentDate : String
@@ -90,6 +123,10 @@ contribInfoValidator =
         [ ifBlank .firstName "First Name is missing"
         , ifBlank .lastName "Last name is missing"
         , ifBlank .city "City is missing"
+        , ifBlank .state "State is missing"
+        , ifBlank .postalCode "Postal Code is missing."
+        , ifBlank .addressLine1 "Address is missing"
+        , postalCodeValidator
         ]
 
 
@@ -102,36 +139,14 @@ validateModel mapper val =
     validate contribInfoValidator model
 
 
-view : Config msg -> Html msg
-view c =
-    Grid.containerFluid
-        []
-    <|
-        []
-            ++ errorRow c.maybeError
-            ++ (if c.isEditable then
-                    editRow c.toggleEdit
+postalCodeValidator : Validator String ContribValidatorModel
+postalCodeValidator =
+    fromErrors postalCodeOnModelToErrors
 
-                else
-                    labelRow "Payment Info"
-               )
-            ++ (if c.isEditable == False then
-                    amountDateRow c
 
-                else
-                    []
-               )
-            ++ labelRow "Donor Info"
-            ++ donorInfoRows c
-            ++ (if c.isEditable then
-                    []
-
-                else
-                    []
-                        ++ labelRow "Processing Info"
-                        ++ PaymentMethod.select (toMsg c.paymentMethod) (toData c.paymentMethod) c.disabled
-                        ++ processingRow c
-               )
+postalCodeOnModelToErrors : ContribValidatorModel -> List String
+postalCodeOnModelToErrors model =
+    fromPostalCode model.postalCode
 
 
 errorRow : Maybe String -> List (Html msg)

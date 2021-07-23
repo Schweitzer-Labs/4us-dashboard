@@ -19,7 +19,7 @@ import PaymentInfo
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
 import Transaction
-import Validate exposing (Valid, Validator, fromErrors, ifBlank, ifNothing)
+import Validate exposing (Validator, fromErrors, ifBlank, ifNothing)
 
 
 type alias Model =
