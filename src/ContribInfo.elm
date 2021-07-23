@@ -65,12 +65,12 @@ view c =
         []
     <|
         []
-            ++ errorRow c.maybeError
             ++ (if c.isEditable then
                     editRow c.toggleEdit
 
                 else
-                    labelRow "Payment Info"
+                    errorRow c.maybeError
+                        ++ labelRow "Payment Info"
                )
             ++ (if c.isEditable == False then
                     amountDateRow c
