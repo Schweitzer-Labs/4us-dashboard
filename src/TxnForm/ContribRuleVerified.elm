@@ -138,7 +138,6 @@ loadedView model =
     Grid.container
         []
         ([]
-            ++ errorRow model.maybeError
             ++ PaymentInfo.view model.txn
             ++ [ contribFormRow model ]
             ++ bankData

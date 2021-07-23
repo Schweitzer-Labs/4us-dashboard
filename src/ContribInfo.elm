@@ -69,8 +69,7 @@ view c =
                     editRow c.toggleEdit
 
                 else
-                    errorRow c.maybeError
-                        ++ labelRow "Payment Info"
+                    labelRow "Payment Info"
                )
             ++ (if c.isEditable == False then
                     amountDateRow c
@@ -79,6 +78,7 @@ view c =
                     []
                )
             ++ labelRow "Donor Info"
+            ++ errorRow c.maybeError
             ++ donorInfoRows c
             ++ (if c.isEditable then
                     []
