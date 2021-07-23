@@ -4,6 +4,7 @@ on:
     branches:
       - qa
       - prod
+      - demo
 jobs:
   deploy:
     runs-on: ubuntu-latest
