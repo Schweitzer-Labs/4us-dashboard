@@ -11,6 +11,8 @@ module EntityType exposing
     , toGridString
     )
 
+import Bootstrap.Form as Form
+import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Form.Select as Select exposing (Item)
 import Html exposing (Html, text)
@@ -232,24 +234,34 @@ orgSelect entityType currentValue =
 
 familyRadioList : (Model -> msg) -> Maybe Model -> Bool -> List (Html msg)
 familyRadioList msg currentValue disabled =
-    Radio.radioList "familyOfCandidate"
-        [ Radio.createCustom
-            [ Radio.id "yes"
-            , Radio.inline
-            , Radio.onClick (msg Family)
-            , Radio.checked (currentValue == Just Family)
-            , Radio.disabled disabled
-            ]
-            "Yes"
-        , Radio.createCustom
-            [ Radio.id "no"
-            , Radio.inline
-            , Radio.onClick (msg Individual)
-            , Radio.checked (currentValue == Just Individual)
-            , Radio.disabled disabled
-            ]
-            "No"
+    [ Form.form []
+        [ Fieldset.config
+            |> Fieldset.asGroup
+            |> Fieldset.legend [] []
+            |> Fieldset.children
+                (Radio.radioList
+                    "familyOfCandidate"
+                    [ Radio.createCustom
+                        [ Radio.id "familyOfCandidate-yes"
+                        , Radio.inline
+                        , Radio.onClick (msg Family)
+                        , Radio.checked (currentValue == Just Family)
+                        , Radio.disabled disabled
+                        ]
+                        "Yes"
+                    , Radio.createCustom
+                        [ Radio.id "familyOfCandidate-no"
+                        , Radio.inline
+                        , Radio.onClick (msg Individual)
+                        , Radio.checked (currentValue == Just Individual)
+                        , Radio.disabled disabled
+                        ]
+                        "No"
+                    ]
+                )
+            |> Fieldset.view
         ]
+    ]
 
 
 isLLC : Model -> Bool

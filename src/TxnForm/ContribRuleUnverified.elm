@@ -21,20 +21,23 @@ import ContribInfo
 import DataTable exposing (DataRow)
 import Direction
 import EntityType
+import Errors exposing (fromPostalCode)
 import Html exposing (Html, div, h6, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Http
 import LabelWithData exposing (labelWithContent, labelWithData)
+import List exposing (sortBy)
 import OrgOrInd
 import Owners exposing (Owner, Owners)
 import SubmitButton exposing (submitButton)
 import Time
 import TimeZone exposing (america__new_york)
-import Timestamp
+import Timestamp exposing (dateStringToMillis)
 import Transaction
 import TransactionType
 import Transactions
+import Validate exposing (Validator, fromErrors, ifBlank, ifNothing, validate)
 
 
 type alias Model =
@@ -96,7 +99,7 @@ init config txns bankTxn =
     , disabled = False
     , error = ""
     , errors = []
-    , amount = Cents.stringToDollar <| String.fromInt bankTxn.amount
+    , amount = Cents.toUnsignedDollar bankTxn.amount
     , checkNumber = ""
     , paymentDate = Timestamp.format (america__new_york ()) bankTxn.paymentDate
     , emailAddress = ""
@@ -124,7 +127,7 @@ init config txns bankTxn =
     , ownerOwnership = ""
     , paymentMethod = ""
     , createContribIsVisible = False
-    , createContribButtonIsDisabled = True
+    , createContribButtonIsDisabled = False
     , createContribIsSubmitting = False
     , reconcileButtonIsDisabled = True
     , maybeError = Nothing
@@ -399,18 +402,18 @@ update msg model =
             ( { model | createContribIsVisible = not model.createContribIsVisible }, Cmd.none )
 
         CreateContribSubmitted ->
-            --case validate validator model of
-            --    Err errors ->
-            --        let
-            --            error =
-            --                Maybe.withDefault "Form error" <| List.head errors
-            --        in
-            --        ( fromError model error, Cmd.none )
-            --
-            --    Ok val ->
-            ( { model | createContribButtonIsDisabled = True, createContribIsSubmitting = True }
-            , createContrib model
-            )
+            case validate validator model of
+                Err errors ->
+                    let
+                        error =
+                            Maybe.withDefault "Form error" <| List.head errors
+                    in
+                    ( fromError model error, Cmd.none )
+
+                Ok val ->
+                    ( { model | createContribButtonIsDisabled = True, createContribIsSubmitting = True }
+                    , createContrib model
+                    )
 
         RelatedTransactionClicked clickedTxn isChecked ->
             let
@@ -472,7 +475,16 @@ getTxns model =
 
 fromError : Model -> String -> Model
 fromError model str =
-    model
+    { model | maybeError = Just str }
+
+
+matchesIcon : Bool -> Html msg
+matchesIcon val =
+    if val then
+        Asset.circleCheckGlyph [ class "text-green font-size-large" ]
+
+    else
+        Asset.timesGlyph [ class "text-danger font-size-large" ]
 
 
 reconcileInfoRow : Transaction.Model -> List Transaction.Model -> Html msg
@@ -489,15 +501,6 @@ reconcileInfoRow bankTxn selectedTxns =
         , Grid.col [ Col.md4 ] [ labelWithData "Total Selected" <| Cents.toDollar selectedTotal ]
         , Grid.col [ Col.md4 ] [ labelWithBankVerificationIcon "Matches" matches ]
         ]
-
-
-matchesIcon : Bool -> Html msg
-matchesIcon val =
-    if val then
-        Asset.circleCheckGlyph [ class "text-green font-size-large" ]
-
-    else
-        Asset.timesGlyph [ class "text-danger font-size-large" ]
 
 
 labelWithBankVerificationIcon : String -> Bool -> Html msg
@@ -571,7 +574,11 @@ isSelected txn selected =
 
 getRelatedContrib : Transaction.Model -> List Transaction.Model -> List Transaction.Model
 getRelatedContrib txn txns =
-    List.filter (\val -> (val.paymentMethod == txn.paymentMethod) && (val.amount <= txn.amount) && (val.direction == Direction.In) && not val.bankVerified && val.ruleVerified) txns
+    let
+        filteredtxns =
+            List.filter (\val -> (val.amount <= txn.amount) && (val.direction == Direction.In) && not val.bankVerified && val.ruleVerified && val.paymentDate <= txn.paymentDate) txns
+    in
+    sortBy .paymentDate filteredtxns
 
 
 getTxnById : List Transaction.Model -> String -> Maybe Transaction.Model
@@ -628,6 +635,50 @@ exitButton hideMsg displayText =
         , Button.attrs [ onClick hideMsg ]
         ]
         [ text displayText ]
+
+
+validator : Validator String Model
+validator =
+    Validate.all
+        [ ifBlank .addressLine1 "Address 1 is missing."
+        , ifBlank .city "City is missing."
+        , ifBlank .state "State is missing."
+        , ifBlank .postalCode "Postal Code is missing."
+        , ifBlank .paymentDate "Date is missing."
+        , postalCodeValidator
+        , amountValidator
+        , fromErrors dateMaxToErrors
+        ]
+
+
+amountValidator : Validator String Model
+amountValidator =
+    Validate.all
+        [ ifBlank .amount "Amount is missing."
+        , fromErrors amountMaxToErrors
+        ]
+
+
+dateMaxToErrors : Model -> List String
+dateMaxToErrors model =
+    Errors.fromMaxDate model.timezone
+        model.bankTxn.paymentDate
+        (dateStringToMillis model.paymentDate)
+
+
+amountMaxToErrors : Model -> List String
+amountMaxToErrors model =
+    Errors.fromMaxAmount model.bankTxn.amount model.amount
+
+
+postalCodeValidator : Validator String Model
+postalCodeValidator =
+    fromErrors postalCodeOnModelToErrors
+
+
+postalCodeOnModelToErrors : Model -> List String
+postalCodeOnModelToErrors model =
+    fromPostalCode model.postalCode
 
 
 reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel
