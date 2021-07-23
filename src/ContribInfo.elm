@@ -4,6 +4,7 @@ import Address
 import AmountDate
 import AppInput exposing (inputEmail, inputText)
 import Asset
+import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid exposing (Column)
@@ -65,19 +66,13 @@ view c =
         []
     <|
         []
-            ++ (if c.isEditable then
-                    editRow c.toggleEdit
-
-                else
-                    labelRow "Payment Info"
-               )
+            ++ donorHeadingRow c.toggleEdit c.isEditable
             ++ (if c.isEditable == False then
                     amountDateRow c
 
                 else
                     []
                )
-            ++ labelRow "Donor Info"
             ++ errorRow c.maybeError
             ++ donorInfoRows c
             ++ (if c.isEditable then
@@ -89,6 +84,19 @@ view c =
                         ++ PaymentMethod.select (toMsg c.paymentMethod) (toData c.paymentMethod) c.disabled
                         ++ processingRow c
                )
+
+
+donorHeadingRow : msg -> Bool -> List (Html msg)
+donorHeadingRow toggleMsg isEditable =
+    [ div [ Spacing.mt3 ]
+        [ h5 [ class "font-weight-bold d-inline" ] [ text "Donor Info" ]
+        , if isEditable then
+            span [ class "hover-underline hover-pointer align-middle", Spacing.ml2, onClick toggleMsg ] [ Asset.editGlyph [] ]
+
+          else
+            span [] []
+        ]
+    ]
 
 
 type alias ContribValidatorModel =
