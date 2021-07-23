@@ -1,10 +1,9 @@
-module ContribInfo exposing (Config, view)
+module ContribInfo exposing (Config, ContribValidatorModel, validateModel, view)
 
 import Address
 import AmountDate
 import AppInput exposing (inputEmail, inputText)
 import Asset
-import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid exposing (Column)
@@ -12,13 +11,16 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EntityType
+import Errors exposing (fromPostalCode)
 import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
 import MonthSelector
 import OrgOrInd
-import PaymentMethod
+import Owners exposing (Owners)
+import PaymentMethod exposing (PaymentMethod)
 import SelectRadio
+import Validate exposing (Valid, Validator, fromErrors, ifBlank, validate)
 import YearSelector
 
 
@@ -55,6 +57,96 @@ type alias Config msg =
     , toggleEdit : msg
     , maybeError : Maybe String
     }
+
+
+view : Config msg -> Html msg
+view c =
+    Grid.containerFluid
+        []
+    <|
+        []
+            ++ (if c.isEditable then
+                    editRow c.toggleEdit
+
+                else
+                    errorRow c.maybeError
+                        ++ labelRow "Payment Info"
+               )
+            ++ (if c.isEditable == False then
+                    amountDateRow c
+
+                else
+                    []
+               )
+            ++ labelRow "Donor Info"
+            ++ donorInfoRows c
+            ++ (if c.isEditable then
+                    []
+
+                else
+                    []
+                        ++ labelRow "Processing Info"
+                        ++ PaymentMethod.select (toMsg c.paymentMethod) (toData c.paymentMethod) c.disabled
+                        ++ processingRow c
+               )
+
+
+type alias ContribValidatorModel =
+    { checkNumber : String
+    , paymentDate : String
+    , paymentMethod : PaymentMethod
+    , emailAddress : String
+    , phoneNumber : String
+    , firstName : String
+    , middleName : String
+    , lastName : String
+    , addressLine1 : String
+    , addressLine2 : String
+    , city : String
+    , state : String
+    , postalCode : String
+    , employmentStatus : String
+    , employer : String
+    , occupation : String
+    , entityName : String
+    , maybeOrgOrInd : Maybe OrgOrInd.Model
+    , maybeEntityType : Maybe EntityType.Model
+    , owners : Owners
+    , ownerName : String
+    , ownerOwnership : String
+    }
+
+
+contribInfoValidator : Validator String ContribValidatorModel
+contribInfoValidator =
+    Validate.firstError
+        [ ifBlank .firstName "First Name is missing"
+        , ifBlank .lastName "Last name is missing"
+        , ifBlank .city "City is missing"
+        , ifBlank .state "State is missing"
+        , ifBlank .postalCode "Postal Code is missing."
+        , ifBlank .addressLine1 "Address is missing"
+        , postalCodeValidator
+        ]
+
+
+validateModel : (a -> ContribValidatorModel) -> a -> Result (List String) (Valid ContribValidatorModel)
+validateModel mapper val =
+    let
+        model =
+            mapper val
+    in
+    validate contribInfoValidator model
+
+
+postalCodeValidator : Validator String ContribValidatorModel
+postalCodeValidator =
+    fromErrors postalCodeOnModelToErrors
+
+
+postalCodeOnModelToErrors : ContribValidatorModel -> List String
+postalCodeOnModelToErrors model =
+    fromPostalCode model.postalCode
 
 
 errorRow : Maybe String -> List (Html msg)
@@ -159,38 +251,6 @@ editRow msg =
             ]
         ]
     ]
-
-
-view : Config msg -> Html msg
-view c =
-    Grid.containerFluid
-        []
-    <|
-        []
-            ++ errorRow c.maybeError
-            ++ (if c.isEditable then
-                    editRow c.toggleEdit
-
-                else
-                    labelRow "Payment Info"
-               )
-            ++ (if c.isEditable == False then
-                    amountDateRow c
-
-                else
-                    []
-               )
-            ++ labelRow "Donor Info"
-            ++ donorInfoRows c
-            ++ (if c.isEditable then
-                    []
-
-                else
-                    []
-                        ++ labelRow "Processing Info"
-                        ++ PaymentMethod.select (toMsg c.paymentMethod) (toData c.paymentMethod) c.disabled
-                        ++ processingRow c
-               )
 
 
 entityToOrgOrInd : EntityType.Model -> OrgOrInd.Model

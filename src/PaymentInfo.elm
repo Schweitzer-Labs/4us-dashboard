@@ -47,6 +47,6 @@ dataView txn =
         , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
             [ Grid.col [] [ verified "Rule Verified" txn.ruleVerified ]
             , Grid.col [] [ verified "Bank Verified" txn.bankVerified ]
-            , Grid.col [] [ labelWithData "Rule Verified" "400" ]
+            , Grid.col [] [ labelWithData "Verification Score" "20" ]
             ]
         ]

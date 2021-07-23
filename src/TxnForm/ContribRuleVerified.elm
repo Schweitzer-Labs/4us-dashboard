@@ -1,13 +1,15 @@
-module TxnForm.ContribRuleVerified exposing (Model, Msg(..), amendTxnEncoder, fromError, init, loadingInit, update, view)
+module TxnForm.ContribRuleVerified exposing (Model, Msg(..), amendTxnEncoder, fromError, init, loadingInit, update, validationMapper, view)
 
 import Api.AmendContrib as AmendContrib
 import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Row as Row
+import Bootstrap.Utilities.Spacing as Spacing
 import Cents
-import ContribInfo
-import EmploymentStatus exposing (EmploymentStatus)
+import ContribInfo exposing (ContribValidatorModel)
 import EntityType
 import ExpandableBankData
-import Html exposing (Html, div, text)
+import Html exposing (Html, span, text)
+import Html.Attributes exposing (class)
 import Loading
 import OrgOrInd
 import Owners exposing (Owner, Owners)
@@ -135,7 +137,9 @@ loadedView model =
     in
     Grid.container
         []
-        (PaymentInfo.view model.txn
+        ([]
+            ++ errorRow model.maybeError
+            ++ PaymentInfo.view model.txn
             ++ [ contribFormRow model ]
             ++ bankData
         )
@@ -176,6 +180,18 @@ contribFormRow model =
         , toggleEdit = ToggleEdit
         , maybeError = model.maybeError
         }
+
+
+errorRow : Maybe String -> List (Html msg)
+errorRow maybeStr =
+    case maybeStr of
+        Nothing ->
+            []
+
+        Just str ->
+            [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
+                [ Grid.col [] [ span [ class "text-danger" ] [ text str ] ] ]
+            ]
 
 
 type Msg
@@ -318,8 +334,8 @@ update msg model =
 
 
 fromError : Model -> String -> Model
-fromError model str =
-    model
+fromError model error =
+    { model | maybeError = Just error }
 
 
 amendTxnEncoder : Model -> AmendContrib.EncodeModel
@@ -349,4 +365,31 @@ amendTxnEncoder model =
     , ownerName = model.ownerName
     , ownerOwnership = model.ownerOwnership
     , committeeId = model.committeeId
+    }
+
+
+validationMapper : Model -> ContribValidatorModel
+validationMapper model =
+    { checkNumber = model.checkNumber
+    , paymentDate = model.paymentDate
+    , paymentMethod = model.txn.paymentMethod
+    , emailAddress = model.emailAddress
+    , phoneNumber = model.phoneNumber
+    , firstName = model.firstName
+    , middleName = model.middleName
+    , lastName = model.lastName
+    , addressLine1 = model.addressLine1
+    , addressLine2 = model.addressLine2
+    , city = model.city
+    , state = model.state
+    , postalCode = model.postalCode
+    , employmentStatus = model.employmentStatus
+    , employer = model.employer
+    , occupation = model.occupation
+    , entityName = model.entityName
+    , maybeOrgOrInd = model.maybeOrgOrInd
+    , maybeEntityType = model.maybeEntityType
+    , owners = model.owners
+    , ownerName = model.ownerName
+    , ownerOwnership = model.ownerOwnership
     }

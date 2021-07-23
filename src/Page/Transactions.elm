@@ -22,6 +22,7 @@ import Browser.Navigation exposing (load)
 import Cognito exposing (loginUrl)
 import Committee
 import Config exposing (Config)
+import ContribInfo
 import CreateContribution
 import CreateDisbursement
 import Delay
@@ -779,20 +780,20 @@ update msg model =
             )
 
         ContribRuleVerifiedSubmit ->
-            --case validate ContribRuleVerified.validator model.contribRuleVerifiedModal of
-            --        Err errors ->
-            --                let
-            --                     error =
-            --                       Maybe.withDefault "Form error" <| List.head errors
-            --                in
-            --                    ( { model | contribRuleVerifiedModal = ContribRuleVerified.fromError model.contribRuleVerifiedModal error }, Cmd.none )
-            --
-            --        Ok val ->
-            ( { model
-                | contribRuleVerifiedSubmitting = True
-              }
-            , amendContrib model
-            )
+            case ContribInfo.validateModel ContribRuleVerified.validationMapper model.contribRuleVerifiedModal of
+                Err errors ->
+                    let
+                        error =
+                            Maybe.withDefault "Form error" <| List.head errors
+                    in
+                    ( { model | contribRuleVerifiedModal = ContribRuleVerified.fromError model.contribRuleVerifiedModal error }, Cmd.none )
+
+                Ok val ->
+                    ( { model
+                        | contribRuleVerifiedSubmitting = True
+                      }
+                    , amendContrib model
+                    )
 
         ContribRuleVerifiedModalUpdate subMsg ->
             let
