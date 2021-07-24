@@ -110,9 +110,6 @@ init config session aggs committee committeeId =
             , transactions = []
             , aggregations = aggs
             , committee = committee
-            , createContributionModalVisibility = Modal.hidden
-            , createContributionModal = CreateContribution.init committeeId
-            , createContributionSubmitting = False
             , generateDisclosureModalVisibility = Modal.hidden
             , actionsDropdown = Dropdown.initialState
             , filtersDropdown = Dropdown.initialState
@@ -120,9 +117,16 @@ init config session aggs committee committeeId =
             , filterTransactionType = Nothing
             , disclosureSubmitting = False
             , disclosureSubmitted = False
-            , createDisbursementModalVisibility = Modal.hidden
+
+            -- Contrib create state
+            , createContributionModalVisibility = Modal.hidden
+            , createContributionModal = CreateContribution.init committeeId
+            , createContributionSubmitting = False
+
+            -- Disb create state
             , createDisbursementModal = CreateDisbursement.init committeeId
             , createDisbursementSubmitting = False
+            , createDisbursementModalVisibility = Modal.hidden
 
             -- Disb rule unverified state
             , disbRuleUnverifiedModal = DisbRuleUnverified.init config [] Transaction.init

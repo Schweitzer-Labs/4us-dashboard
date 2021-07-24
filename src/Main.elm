@@ -43,6 +43,54 @@ init config url navKey =
     ( model, cmdMsg )
 
 
+changeRouteTo : Url -> Config -> Maybe Route -> Model -> ( Model, Cmd Msg )
+changeRouteTo url config maybeRoute model =
+    let
+        session =
+            toSession model
+
+        committeeId =
+            CommitteeId.parse url
+
+        aggregations =
+            toAggregations model
+
+        committee =
+            toCommittee model
+    in
+    case maybeRoute of
+        Nothing ->
+            ( NotFound session, Cmd.none )
+
+        -- rest of the routes
+        Just Route.Home ->
+            Transactions.init
+                config
+                session
+                aggregations
+                committee
+                committeeId
+                |> updateWith Transactions GotTransactionsMsg
+
+        Just Route.Transactions ->
+            Transactions.init
+                config
+                session
+                aggregations
+                committee
+                committeeId
+                |> updateWith Transactions GotTransactionsMsg
+
+        Just Route.LinkBuilder ->
+            LinkBuilder.init
+                config
+                session
+                aggregations
+                committee
+                committeeId
+                |> updateWith LinkBuilder GotLinkBuilderMsg
+
+
 
 ---- UPDATE ----
 
@@ -131,54 +179,6 @@ toConfig page =
             linkBuilder.config
 
 
-changeRouteTo : Url -> Config -> Maybe Route -> Model -> ( Model, Cmd Msg )
-changeRouteTo url config maybeRoute model =
-    let
-        session =
-            toSession model
-
-        committeeId =
-            CommitteeId.parse url
-
-        aggregations =
-            toAggregations model
-
-        committee =
-            toCommittee model
-    in
-    case maybeRoute of
-        Nothing ->
-            ( NotFound session, Cmd.none )
-
-        -- rest of the routes
-        Just Route.Home ->
-            Transactions.init
-                config
-                session
-                aggregations
-                committee
-                committeeId
-                |> updateWith Transactions GotTransactionsMsg model
-
-        Just Route.Transactions ->
-            Transactions.init
-                config
-                session
-                aggregations
-                committee
-                committeeId
-                |> updateWith Transactions GotTransactionsMsg model
-
-        Just Route.LinkBuilder ->
-            LinkBuilder.init
-                config
-                session
-                aggregations
-                committee
-                committeeId
-                |> updateWith LinkBuilder GotLinkBuilderMsg model
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
@@ -212,11 +212,11 @@ update msg model =
 
         ( GotTransactionsMsg subMsg, Transactions home ) ->
             Transactions.update subMsg home
-                |> updateWith Transactions GotTransactionsMsg model
+                |> updateWith Transactions GotTransactionsMsg
 
         ( GotLinkBuilderMsg subMsg, LinkBuilder linkBuilder ) ->
             LinkBuilder.update subMsg linkBuilder
-                |> updateWith LinkBuilder GotLinkBuilderMsg model
+                |> updateWith LinkBuilder GotLinkBuilderMsg
 
         ( GotSession session, Redirect _ ) ->
             ( Redirect session
@@ -228,8 +228,8 @@ update msg model =
             ( model, Cmd.none )
 
 
-updateWith : (subModel -> Model) -> (subMsg -> Msg) -> Model -> ( subModel, Cmd subMsg ) -> ( Model, Cmd Msg )
-updateWith toModel toMsg model ( subModel, subCmd ) =
+updateWith : (subModel -> Model) -> (subMsg -> Msg) -> ( subModel, Cmd subMsg ) -> ( Model, Cmd Msg )
+updateWith toModel toMsg ( subModel, subCmd ) =
     ( toModel subModel
     , Cmd.map toMsg subCmd
     )
@@ -242,9 +242,6 @@ updateWith toModel toMsg model ( subModel, subCmd ) =
 view : Model -> Document Msg
 view model =
     let
-        viewer =
-            Session.viewer (toSession model)
-
         aggregations =
             toAggregations model
 
