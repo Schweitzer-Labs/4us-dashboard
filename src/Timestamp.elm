@@ -1,10 +1,11 @@
-module Timestamp exposing (dateStringToMillis, format, view)
+module Timestamp exposing (dateStringToMillis, formDate, format, view)
 
 import Date
+import DateFormat
 import DateTime
 import Html exposing (Html, span, text)
 import Html.Attributes exposing (class)
-import Time exposing (Month(..))
+import Time exposing (Month(..), Posix, Zone)
 import TimeZone exposing (america__new_york)
 
 
@@ -122,3 +123,22 @@ dateStringToMillis val =
 
             Err a ->
                 0
+
+
+isoFormatter : Zone -> Posix -> String
+isoFormatter =
+    DateFormat.format
+        [ DateFormat.yearNumber
+        , DateFormat.text "-"
+        , DateFormat.monthFixed
+        , DateFormat.text "-"
+        , DateFormat.dayOfMonthFixed
+        ]
+
+
+formDate milliTime =
+    let
+        posixTime =
+            Time.millisToPosix milliTime
+    in
+    isoFormatter (america__new_york ()) posixTime

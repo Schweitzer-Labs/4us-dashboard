@@ -42,7 +42,7 @@ import PurposeCode exposing (PurposeCode)
 import SubmitButton exposing (submitButton)
 import Time
 import TimeZone exposing (america__new_york)
-import Timestamp exposing (dateStringToMillis)
+import Timestamp exposing (dateStringToMillis, formDate)
 import Transaction
 import TransactionType exposing (TransactionType)
 import Transactions
@@ -99,7 +99,7 @@ init config txns bankTxn =
     , isExistingLiability = Nothing
     , isInKind = Nothing
     , amount = Cents.toUnsignedDollar bankTxn.amount
-    , paymentDate = ""
+    , paymentDate = formDate bankTxn.paymentDate
     , paymentMethod = Just bankTxn.paymentMethod
     , checkNumber = ""
     , createDisbIsVisible = False
@@ -129,7 +129,7 @@ clearForm model =
         , isExistingLiability = Nothing
         , isInKind = Nothing
         , amount = ""
-        , paymentDate = ""
+        , paymentDate = formDate model.bankTxn.paymentDate
         , checkNumber = ""
         , createDisbIsVisible = False
         , createDisbButtonIsDisabled = True
