@@ -136,10 +136,10 @@ isoFormatter =
         ]
 
 
-formDate : Int -> String
-formDate milliTime =
+formDate : Zone -> Int -> String
+formDate timezone milliTime =
     let
         posixTime =
             Time.millisToPosix milliTime
     in
-    isoFormatter (america__new_york ()) posixTime
+    isoFormatter timezone posixTime

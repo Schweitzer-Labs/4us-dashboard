@@ -99,7 +99,7 @@ init config txns bankTxn =
     , isExistingLiability = Nothing
     , isInKind = Nothing
     , amount = Cents.toUnsignedDollar bankTxn.amount
-    , paymentDate = formDate bankTxn.paymentDate
+    , paymentDate = ""
     , paymentMethod = Just bankTxn.paymentMethod
     , checkNumber = ""
     , createDisbIsVisible = False
@@ -129,7 +129,7 @@ clearForm model =
         , isExistingLiability = Nothing
         , isInKind = Nothing
         , amount = ""
-        , paymentDate = formDate model.bankTxn.paymentDate
+        , paymentDate = ""
         , checkNumber = ""
         , createDisbIsVisible = False
         , createDisbButtonIsDisabled = True
@@ -244,7 +244,11 @@ disbFormRow model =
             , isExistingLiability = ( model.isExistingLiability, IsExistingLiabilityUpdated )
             , isInKind = ( model.isInKind, IsInKindUpdated )
             , amount = Just ( model.amount, AmountUpdated )
-            , paymentDate = Just ( model.paymentDate, PaymentDateUpdated )
+            , paymentDate =
+                Just
+                    ( dateWithFormat model
+                    , PaymentDateUpdated
+                    )
             , paymentMethod = Nothing
             , disabled = False
             , isEditable = False
@@ -612,3 +616,12 @@ reconcileTxnEncoder model =
     , bankTxn = model.bankTxn
     , committeeId = model.committeeId
     }
+
+
+dateWithFormat : Model -> String
+dateWithFormat model =
+    if model.paymentDate == "" then
+        formDate model.timezone model.bankTxn.paymentDate
+
+    else
+        model.paymentDate
