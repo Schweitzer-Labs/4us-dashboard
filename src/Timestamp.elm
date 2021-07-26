@@ -136,6 +136,7 @@ isoFormatter =
         ]
 
 
+formDate : Int -> String
 formDate milliTime =
     let
         posixTime =
