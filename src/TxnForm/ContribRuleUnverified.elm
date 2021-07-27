@@ -31,7 +31,7 @@ import List exposing (sortBy)
 import OrgOrInd
 import Owners exposing (Owner, Owners)
 import SubmitButton exposing (submitButton)
-import Time
+import Time exposing (utc)
 import TimeZone exposing (america__new_york)
 import Timestamp exposing (dateStringToMillis, formDate)
 import Transaction
@@ -132,7 +132,7 @@ init config txns bankTxn =
     , reconcileButtonIsDisabled = True
     , maybeError = Nothing
     , config = config
-    , timezone = america__new_york ()
+    , timezone = utc
     , lastCreatedTxnId = ""
     }
 

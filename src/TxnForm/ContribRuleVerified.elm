@@ -14,6 +14,7 @@ import Loading
 import OrgOrInd
 import Owners exposing (Owner, Owners)
 import PaymentInfo
+import Time exposing (utc)
 import TimeZone exposing (america__new_york)
 import Timestamp
 import Transaction
@@ -80,7 +81,7 @@ init txn =
     , errors = []
     , amount = Cents.stringToDollar <| String.fromInt txn.amount
     , checkNumber = ""
-    , paymentDate = Timestamp.format (america__new_york ()) txn.paymentDate
+    , paymentDate = Timestamp.format utc txn.paymentDate
     , emailAddress = Maybe.withDefault "" txn.emailAddress
     , phoneNumber = Maybe.withDefault "" txn.phoneNumber
     , firstName = Maybe.withDefault "" txn.firstName

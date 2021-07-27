@@ -29,7 +29,6 @@ import List exposing (sortBy)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode
 import Time exposing (utc)
-import TimeZone exposing (america__new_york)
 import Timestamp
 import Transaction
 
