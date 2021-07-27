@@ -1,102 +1,141 @@
-module EmploymentStatus exposing (..)
+module EmploymentStatus exposing (Model(..), employmentRadioList, fromMaybeToString, fromString, toDataString, toDisplayString)
 
+import Bootstrap.Form as Form
+import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Radio as Radio exposing (Radio)
+import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 
 
-type EmploymentStatus
-    = EMPLOYED
-    | SELFEMPLOYED
-    | RETIRED
-    | UNEMPLOYED
+type Model
+    = Employed
+    | SelfEmployed
+    | Retired
+    | Unemployed
 
 
-fromString : String -> Maybe EmploymentStatus
+fromString : String -> Maybe Model
 fromString str =
     case str of
         "Employed" ->
-            Just EMPLOYED
+            Just Employed
 
         "SelfEmployed" ->
-            Just SELFEMPLOYED
+            Just SelfEmployed
 
         "Retired" ->
-            Just RETIRED
+            Just Retired
 
         "Unemployed" ->
-            Just UNEMPLOYED
+            Just Unemployed
 
         _ ->
             Nothing
 
 
-toDataString : EmploymentStatus -> String
+toDataString : Model -> String
 toDataString src =
     case src of
-        EMPLOYED ->
+        Employed ->
             "Employed"
 
-        SELFEMPLOYED ->
+        SelfEmployed ->
             "SelfEmployed"
 
-        RETIRED ->
+        Retired ->
             "Retired"
 
-        UNEMPLOYED ->
+        Unemployed ->
             "Unemployed"
 
 
-fromMaybeToString : Maybe EmploymentStatus -> String
+fromMaybeToString : Maybe Model -> String
 fromMaybeToString =
     Maybe.withDefault "" << Maybe.map toDataString
 
 
-toDisplayString : EmploymentStatus -> String
+toDisplayString : Model -> String
 toDisplayString src =
     case src of
-        EMPLOYED ->
+        Employed ->
             "Employed"
 
-        SELFEMPLOYED ->
+        SelfEmployed ->
             "Self-Employed"
 
-        RETIRED ->
+        Retired ->
             "Retired"
 
-        UNEMPLOYED ->
+        Unemployed ->
             "Unemployed"
 
 
-decoder : Decoder EmploymentStatus
+decoder : Decoder Model
 decoder =
     Decode.string
         |> Decode.andThen
             (\str ->
                 case str of
                     "Employed" ->
-                        Decode.succeed EMPLOYED
+                        Decode.succeed Employed
 
                     "SelfEmployed" ->
-                        Decode.succeed SELFEMPLOYED
+                        Decode.succeed SelfEmployed
 
                     "Retired" ->
-                        Decode.succeed RETIRED
+                        Decode.succeed Retired
 
                     "Unemployed" ->
-                        Decode.succeed UNEMPLOYED
+                        Decode.succeed Unemployed
 
                     badVal ->
                         Decode.fail <| "Unknown employment status: " ++ badVal
             )
 
 
-employmentRadio : Maybe EmploymentStatus -> (Maybe EmploymentStatus -> msg) -> String -> Bool -> Radio (Maybe EmploymentStatus -> msg)
-employmentRadio maybeData maybeMsg currentValue disabled =
-    Radio.createCustom
-        [ Radio.id <| fromMaybeToString <| fromString currentValue
-        , Radio.inline
-        , Radio.onClick maybeMsg
-        , Radio.checked (maybeData == fromString currentValue)
-        , Radio.disabled disabled
+employmentRadioList : (Model -> msg) -> Maybe Model -> Bool -> List (Html msg)
+employmentRadioList msg currentValue disabled =
+    [ Form.form []
+        [ Fieldset.config
+            |> Fieldset.asGroup
+            |> Fieldset.legend [] []
+            |> Fieldset.children
+                (Radio.radioList
+                    "employmentStatus"
+                    [ Radio.createCustom
+                        [ Radio.id "employmentStatus-employed"
+                        , Radio.inline
+                        , Radio.onClick (msg Employed)
+                        , Radio.checked (currentValue == Just Employed)
+                        , Radio.disabled disabled
+                        ]
+                        "Employed"
+                    , Radio.createCustom
+                        [ Radio.id "familyOfCandidate-unemployed"
+                        , Radio.inline
+                        , Radio.onClick (msg Unemployed)
+                        , Radio.checked (currentValue == Just Unemployed)
+                        , Radio.disabled disabled
+                        ]
+                        "Unemployed"
+                    , Radio.createCustom
+                        [ Radio.id "familyOfCandidate-retired"
+                        , Radio.inline
+                        , Radio.onClick (msg Retired)
+                        , Radio.checked (currentValue == Just Retired)
+                        , Radio.disabled disabled
+                        ]
+                        "Retired"
+                    , Radio.createCustom
+                        [ Radio.id "familyOfCandidate-selfEmployed"
+                        , Radio.inline
+                        , Radio.onClick (msg SelfEmployed)
+                        , Radio.checked (currentValue == Just SelfEmployed)
+                        , Radio.disabled disabled
+                        ]
+                        "Self Employed"
+                    ]
+                )
+            |> Fieldset.view
         ]
-        (fromMaybeToString maybeData)
+    ]

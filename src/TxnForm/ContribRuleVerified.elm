@@ -6,6 +6,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import ContribInfo exposing (ContribValidatorModel)
+import EmploymentStatus
 import EntityType
 import ExpandableBankData
 import Html exposing (Html, span, text)
@@ -41,7 +42,7 @@ type alias Model =
     , city : String
     , state : String
     , postalCode : String
-    , employmentStatus : String
+    , employmentStatus : Maybe EmploymentStatus.Model
     , employer : String
     , occupation : String
     , entityName : String
@@ -92,7 +93,7 @@ init txn =
     , city = Maybe.withDefault "" txn.city
     , state = Maybe.withDefault "" txn.state
     , postalCode = Maybe.withDefault "" txn.postalCode
-    , employmentStatus = Maybe.withDefault "" txn.employmentStatus
+    , employmentStatus = txn.employmentStatus
     , employer = Maybe.withDefault "" txn.employer
     , occupation = Maybe.withDefault "" txn.occupation
     , entityName = Maybe.withDefault "" txn.entityName
@@ -210,7 +211,7 @@ type Msg
     | CityUpdated String
     | StateUpdated String
     | PostalCodeUpdated String
-    | EmploymentStatusUpdated String
+    | EmploymentStatusUpdated (Maybe EmploymentStatus.Model)
     | EmployerUpdated String
     | OccupationUpdated String
     | EntityNameUpdated String

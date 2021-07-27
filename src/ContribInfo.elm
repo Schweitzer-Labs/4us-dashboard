@@ -12,6 +12,7 @@ import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
+import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
 import Errors exposing (fromPostalCode)
 import Html exposing (Html, div, h5, span, text)
@@ -40,7 +41,7 @@ type alias Config msg =
     , city : DataMsg.MsgString msg
     , state : DataMsg.MsgString msg
     , postalCode : DataMsg.MsgString msg
-    , employmentStatus : DataMsg.MsgString msg
+    , employmentStatus : DataMsg.MsgMaybeEmploymentStatus msg
     , employer : DataMsg.MsgString msg
     , occupation : DataMsg.MsgString msg
     , entityName : DataMsg.MsgString msg
@@ -114,7 +115,7 @@ type alias ContribValidatorModel =
     , city : String
     , state : String
     , postalCode : String
-    , employmentStatus : String
+    , employmentStatus : Maybe EmploymentStatus.Model
     , employer : String
     , occupation : String
     , entityName : String
@@ -292,13 +293,13 @@ donorInfoRows model =
     orgOrIndRow model ++ formRows
 
 
-needEmployerName : String -> Bool
+needEmployerName : Maybe EmploymentStatus.Model -> Bool
 needEmployerName status =
     case status of
-        "employed" ->
+        Just Employed ->
             True
 
-        "self_employed" ->
+        Just SelfEmployed ->
             True
 
         _ ->
@@ -530,6 +531,13 @@ employerOccupationRow { occupation, employer, disabled } =
 
 employmentStatusRows : Config msg -> List (Html msg)
 employmentStatusRows { employmentStatus, disabled } =
+    let
+        maybeEmploymentMsg =
+            toMsg employmentStatus
+
+        employmentMsg =
+            Just >> maybeEmploymentMsg
+    in
     [ Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
@@ -541,20 +549,6 @@ employmentStatusRows { employmentStatus, disabled } =
         [ Grid.col
             []
           <|
-            [ Form.form []
-                [ Fieldset.config
-                    |> Fieldset.asGroup
-                    |> Fieldset.legend [] []
-                    |> Fieldset.children
-                        (Radio.radioList "employmentStatus"
-                            [ SelectRadio.view (toMsg employmentStatus) "Employed" "Employed" (toData employmentStatus) disabled
-                            , SelectRadio.view (toMsg employmentStatus) "Unemployed" "Unemployed" (toData employmentStatus) disabled
-                            , SelectRadio.view (toMsg employmentStatus) "Retired" "Retired" (toData employmentStatus) disabled
-                            , SelectRadio.view (toMsg employmentStatus) "SelfEmployed" "Self Employed" (toData employmentStatus) disabled
-                            ]
-                        )
-                    |> Fieldset.view
-                ]
-            ]
+            employmentRadioList employmentMsg (toData employmentStatus) disabled
         ]
     ]

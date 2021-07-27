@@ -11,7 +11,7 @@ module DataMsg exposing
     , toMsg
     )
 
-import EmploymentStatus exposing (EmploymentStatus)
+import EmploymentStatus
 import EntityType
 import OrgOrInd
 import Owners exposing (Owner, Owners)
@@ -40,7 +40,7 @@ type alias MsgMaybePaymentMethod msg =
 
 
 type alias MsgMaybeEmploymentStatus msg =
-    ( Maybe EmploymentStatus, Maybe EmploymentStatus -> msg )
+    ( Maybe EmploymentStatus.Model, Maybe EmploymentStatus.Model -> msg )
 
 
 type alias MsgMaybeOrgOrInd msg =

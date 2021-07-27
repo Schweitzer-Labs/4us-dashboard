@@ -2,6 +2,7 @@ module CreateContribution exposing (Model, Msg(..), init, setError, toEncodeMode
 
 import Api.CreateContrib as CreateContrib
 import ContribInfo
+import EmploymentStatus
 import EntityType
 import Html exposing (Html)
 import OrgOrInd
@@ -25,7 +26,7 @@ type alias Model =
     , city : String
     , state : String
     , postalCode : String
-    , employmentStatus : String
+    , employmentStatus : Maybe EmploymentStatus.Model
     , employer : String
     , occupation : String
     , entityName : String
@@ -62,7 +63,7 @@ init committeeId =
     , city = ""
     , state = ""
     , postalCode = ""
-    , employmentStatus = ""
+    , employmentStatus = Nothing
     , employer = ""
     , occupation = ""
     , entityName = ""
@@ -139,7 +140,7 @@ type Msg
     | CityUpdated String
     | StateUpdated String
     | PostalCodeUpdated String
-    | EmploymentStatusUpdated String
+    | EmploymentStatusUpdated (Maybe EmploymentStatus.Model)
     | EmployerUpdated String
     | OccupationUpdated String
     | EntityNameUpdated String
