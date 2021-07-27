@@ -28,7 +28,7 @@ import Json.Decode as Decode
 import List exposing (sortBy)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode
-import TimeZone exposing (america__new_york)
+import Time exposing (utc)
 import Timestamp
 import Transaction
 
@@ -176,7 +176,7 @@ transactionRowMap committee ( _, maybeMsg, transaction ) =
             getEntityType transaction
     in
     ( maybeMsg
-    , [ ( "Date / Time", text <| Timestamp.format (america__new_york ()) transaction.paymentDate )
+    , [ ( "Date / Time", text <| Timestamp.format utc transaction.paymentDate )
       , ( "Entity Name", name )
       , ( "Context", entityType )
       , ( "Amount", amount )

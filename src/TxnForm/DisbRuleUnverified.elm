@@ -40,7 +40,7 @@ import LabelWithData exposing (labelWithContent, labelWithData)
 import PaymentMethod exposing (PaymentMethod)
 import PurposeCode exposing (PurposeCode)
 import SubmitButton exposing (submitButton)
-import Time
+import Time exposing (utc)
 import TimeZone exposing (america__new_york)
 import Timestamp exposing (dateStringToMillis, formDate)
 import Transaction
@@ -110,7 +110,7 @@ init config txns bankTxn =
     , maybeError = Nothing
     , config = config
     , lastCreatedTxnId = ""
-    , timezone = america__new_york ()
+    , timezone = utc
     }
 
 

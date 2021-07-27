@@ -6,7 +6,6 @@ import DateTime
 import Html exposing (Html, span, text)
 import Html.Attributes exposing (class)
 import Time exposing (Month(..), Posix, Zone)
-import TimeZone exposing (america__new_york)
 
 
 
@@ -103,20 +102,7 @@ dateStringToMillis val =
                 in
                 case DateTime.fromRawParts { day = d, month = m, year = y } { hours = 0, milliseconds = 0, seconds = 0, minutes = 0 } of
                     Just datetime ->
-                        let
-                            dPosix =
-                                DateTime.toPosix datetime
-
-                            offset =
-                                DateTime.getTimezoneOffset (america__new_york ()) dPosix
-
-                            dMillis =
-                                DateTime.toMillis datetime
-
-                            res =
-                                dMillis + offset
-                        in
-                        res
+                        DateTime.toMillis datetime
 
                     Nothing ->
                         0
