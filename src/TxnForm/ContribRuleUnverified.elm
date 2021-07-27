@@ -20,6 +20,7 @@ import Config exposing (Config)
 import ContribInfo
 import DataTable exposing (DataRow)
 import Direction
+import EmploymentStatus
 import EntityType
 import Errors exposing (fromPostalCode)
 import Html exposing (Html, div, h6, span, text)
@@ -63,7 +64,7 @@ type alias Model =
     , city : String
     , state : String
     , postalCode : String
-    , employmentStatus : String
+    , employmentStatus : Maybe EmploymentStatus.Model
     , employer : String
     , occupation : String
     , entityName : String
@@ -112,7 +113,7 @@ init config txns bankTxn =
     , city = ""
     , state = ""
     , postalCode = ""
-    , employmentStatus = ""
+    , employmentStatus = Nothing
     , employer = ""
     , occupation = ""
     , entityName = ""
@@ -153,7 +154,7 @@ clearForm model =
         , city = ""
         , state = ""
         , postalCode = ""
-        , employmentStatus = ""
+        , employmentStatus = Nothing
         , employer = ""
         , occupation = ""
         , entityName = ""
@@ -249,7 +250,7 @@ type Msg
     | CityUpdated String
     | StateUpdated String
     | PostalCodeUpdated String
-    | EmploymentStatusUpdated String
+    | EmploymentStatusUpdated (Maybe EmploymentStatus.Model)
     | EmployerUpdated String
     | OccupationUpdated String
     | EntityNameUpdated String

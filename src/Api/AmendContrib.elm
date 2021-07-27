@@ -3,6 +3,7 @@ module Api.AmendContrib exposing (..)
 import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldNotZero, optionalFieldString, optionalFieldStringInt)
 import Cents
 import Config exposing (Config)
+import EmploymentStatus
 import EntityType exposing (fromMaybeToStringWithDefaultInd)
 import Http
 import Json.Decode as Decode
@@ -92,7 +93,7 @@ type alias EncodeModel =
     , city : String
     , state : String
     , postalCode : String
-    , employmentStatus : String
+    , employmentStatus : Maybe EmploymentStatus.Model
     , employer : String
     , occupation : String
     , entityName : String
@@ -135,7 +136,7 @@ encode mapper val =
                     ++ optionalFieldString "addressLine2" model.addressLine2
                     ++ optionalFieldString "occupation" model.occupation
                     ++ optionalFieldString "phoneNumber" model.phoneNumber
-                    ++ optionalFieldString "employmentStatus" model.employmentStatus
+                    ++ optionalFieldString "employmentStatus" (EmploymentStatus.fromMaybeToString model.employmentStatus)
     in
     encodeQuery query variables
 

@@ -33,7 +33,7 @@ type alias Model =
     , state : Maybe String
     , postalCode : Maybe String
     , employer : Maybe String
-    , employmentStatus : Maybe String
+    , employmentStatus : Maybe EmploymentStatus.Model
     , occupation : Maybe String
     , entityType : Maybe EntityType.Model
     , companyName : Maybe String
@@ -156,7 +156,7 @@ decoder =
         |> maybeString "state"
         |> maybeString "postalCode"
         |> maybeString "employer"
-        |> maybeString "employmentStatus"
+        |> maybeEmploymentStatus "employmentStatus"
         |> maybeString "occupation"
         |> maybeEntityType "entityType"
         |> maybeString "companyName"
