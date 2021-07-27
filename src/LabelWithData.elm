@@ -13,6 +13,7 @@ module LabelWithData exposing
 import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Attribute, Html, div, text)
 import Html.Attributes exposing (class)
+import Time exposing (utc)
 import TimeZone exposing (america__new_york)
 import Timestamp
 
@@ -91,7 +92,7 @@ labelWithMaybeTimeData label data =
         Just a ->
             div []
                 [ dataLabel label
-                , dataText <| Timestamp.format (america__new_york ()) a
+                , dataText <| Timestamp.format utc a
                 ]
 
         Nothing ->
@@ -105,5 +106,5 @@ labelWithTimeData : String -> Int -> Html msg
 labelWithTimeData label data =
     div []
         [ dataLabel label
-        , dataText <| Timestamp.format (america__new_york ()) data
+        , dataText <| Timestamp.format utc data
         ]
