@@ -26,6 +26,7 @@ query =
       $state: String!
       $postalCode: String!
       $entityType: EntityType!
+      $employmentStatus: EmploymentStatus
       $emailAddress: String
       $paymentDate: Float!
       $cardNumber: String
@@ -50,6 +51,7 @@ query =
         state: $state
         postalCode: $postalCode
         entityType: $entityType
+        employmentStatus: $employmentStatus
         emailAddress: $emailAddress
         paymentDate: $paymentDate
         cardNumber: $cardNumber
