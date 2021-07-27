@@ -33,7 +33,7 @@ import Owners exposing (Owner, Owners)
 import SubmitButton exposing (submitButton)
 import Time
 import TimeZone exposing (america__new_york)
-import Timestamp exposing (dateStringToMillis)
+import Timestamp exposing (dateStringToMillis, formDate)
 import Transaction
 import TransactionType
 import Transactions
@@ -101,7 +101,7 @@ init config txns bankTxn =
     , errors = []
     , amount = Cents.toUnsignedDollar bankTxn.amount
     , checkNumber = ""
-    , paymentDate = Timestamp.format (america__new_york ()) bankTxn.paymentDate
+    , paymentDate = ""
     , emailAddress = ""
     , phoneNumber = ""
     , firstName = ""
@@ -142,7 +142,7 @@ clearForm model =
     { model
         | amount = Cents.stringToDollar <| String.fromInt model.bankTxn.amount
         , checkNumber = ""
-        , paymentDate = Timestamp.format (america__new_york ()) model.bankTxn.paymentDate
+        , paymentDate = formDate model.timezone model.bankTxn.paymentDate
         , emailAddress = ""
         , phoneNumber = ""
         , firstName = ""
@@ -196,7 +196,7 @@ contribFormRow model =
     if model.createContribIsVisible then
         [ ContribInfo.view
             { checkNumber = ( model.checkNumber, CheckNumberUpdated )
-            , paymentDate = ( model.paymentDate, PaymentDateUpdated )
+            , paymentDate = ( dateWithFormat model, PaymentDateUpdated )
             , paymentMethod = ( model.paymentMethod, PaymentMethodUpdated )
             , emailAddress = ( model.emailAddress, EmailAddressUpdated )
             , phoneNumber = ( model.phoneNumber, PhoneNumberUpdated )
@@ -721,3 +721,12 @@ createContribEncoder model =
 createContrib : Model -> Cmd Msg
 createContrib model =
     CreateContrib.send CreateContribMutResp model.config <| CreateContrib.encode createContribEncoder model
+
+
+dateWithFormat : Model -> String
+dateWithFormat model =
+    if model.paymentDate == "" then
+        formDate model.timezone model.bankTxn.paymentDate
+
+    else
+        model.paymentDate

@@ -42,7 +42,7 @@ import PurposeCode exposing (PurposeCode)
 import SubmitButton exposing (submitButton)
 import Time
 import TimeZone exposing (america__new_york)
-import Timestamp exposing (dateStringToMillis)
+import Timestamp exposing (dateStringToMillis, formDate)
 import Transaction
 import TransactionType exposing (TransactionType)
 import Transactions
@@ -244,7 +244,11 @@ disbFormRow model =
             , isExistingLiability = ( model.isExistingLiability, IsExistingLiabilityUpdated )
             , isInKind = ( model.isInKind, IsInKindUpdated )
             , amount = Just ( model.amount, AmountUpdated )
-            , paymentDate = Just ( model.paymentDate, PaymentDateUpdated )
+            , paymentDate =
+                Just
+                    ( dateWithFormat model
+                    , PaymentDateUpdated
+                    )
             , paymentMethod = Nothing
             , disabled = False
             , isEditable = False
@@ -612,3 +616,12 @@ reconcileTxnEncoder model =
     , bankTxn = model.bankTxn
     , committeeId = model.committeeId
     }
+
+
+dateWithFormat : Model -> String
+dateWithFormat model =
+    if model.paymentDate == "" then
+        formDate model.timezone model.bankTxn.paymentDate
+
+    else
+        model.paymentDate
