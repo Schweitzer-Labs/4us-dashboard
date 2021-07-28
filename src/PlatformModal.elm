@@ -40,7 +40,7 @@ view config =
         |> Modal.body
             []
             (if config.mutationRespSucceeded then
-                [ successMessage config.title ]
+                [ successMessage ]
 
              else
                 [ Html.map config.updateMsg <|
@@ -83,6 +83,13 @@ exitButton hideMsg =
         [ text "Exit" ]
 
 
-successMessage : String -> Html msg
-successMessage transactionName =
-    h2 [ class "align-middle text-green", Spacing.p3 ] [ Asset.circleCheckGlyph [], span [ class "align-middle text-green", Spacing.ml3 ] [ text <| transactionName ++ " Amended!" ] ]
+successMessage : Html msg
+successMessage =
+    h2 [ class "align-middle text-green", Spacing.p3 ]
+        [ Asset.circleCheckGlyph []
+        , span
+            [ class "align-middle text-green"
+            , Spacing.ml3
+            ]
+            [ text <| " Revision Successful" ]
+        ]

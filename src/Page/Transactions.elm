@@ -95,6 +95,7 @@ type alias Model =
     -- Contrib verified
     , contribRuleVerifiedModal : ContribRuleVerified.Model
     , contribRuleVerifiedSubmitting : Bool
+    , contribRuleVerifiedMutationRespSucceeded : Bool
     , contribRuleVerifiedModalVisibility : Modal.Visibility
     , config : Config
     }
@@ -144,6 +145,7 @@ init config session aggs committee committeeId =
             -- Contrib rule verified state
             , contribRuleVerifiedModal = ContribRuleVerified.init Transaction.init
             , contribRuleVerifiedSubmitting = False
+            , contribRuleVerifiedMutationRespSucceeded = False
             , contribRuleVerifiedModalVisibility = Modal.hidden
             , config = config
             }
@@ -282,7 +284,7 @@ contribRuleVerifiedModal model =
         , submitMsg = ContribRuleVerifiedSubmit
         , submitText = "Save"
         , isSubmitting = model.contribRuleVerifiedSubmitting
-        , mutationRespSucceeded = False
+        , mutationRespSucceeded = model.contribRuleVerifiedMutationRespSucceeded
         , isSubmitDisabled = False
         , visibility = model.contribRuleVerifiedModalVisibility
         }
@@ -747,7 +749,7 @@ update msg model =
                     case mutResp of
                         Success id ->
                             ( { model
-                                | contribRuleVerifiedModalVisibility = Modal.hidden
+                                | contribRuleVerifiedMutationRespSucceeded = True
                                 , contribRuleVerifiedSubmitting = False
 
                                 -- @Todo make this state impossible
