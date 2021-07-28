@@ -1,11 +1,13 @@
 module PlatformModal exposing (MakeModalConfig, view)
 
+import Asset
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
-import Html exposing (Html, text)
+import Bootstrap.Utilities.Spacing as Spacing
+import Html exposing (Html, h2, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import SubmitButton exposing (submitButton)
@@ -22,6 +24,7 @@ type alias MakeModalConfig msg subMsg subModel =
     , submitText : String
     , isSubmitting : Bool
     , isSubmitDisabled : Bool
+    , mutationRespSucceeded : Bool
     , visibility : Modal.Visibility
     }
 
@@ -36,9 +39,14 @@ view config =
         |> Modal.h3 [] [ text config.title ]
         |> Modal.body
             []
-            [ Html.map config.updateMsg <|
-                config.subView config.subModel
-            ]
+            (if config.mutationRespSucceeded then
+                [ successMessage config.title ]
+
+             else
+                [ Html.map config.updateMsg <|
+                    config.subView config.subModel
+                ]
+            )
         |> Modal.footer []
             [ Grid.containerFluid
                 []
@@ -73,3 +81,8 @@ exitButton hideMsg =
         , Button.attrs [ onClick hideMsg ]
         ]
         [ text "Exit" ]
+
+
+successMessage : String -> Html msg
+successMessage transactionName =
+    h2 [ class "align-middle text-green", Spacing.p3 ] [ Asset.circleCheckGlyph [], span [ class "align-middle text-green", Spacing.ml3 ] [ text <| transactionName ++ " Amended!" ] ]
