@@ -191,6 +191,7 @@ createDisbursementModal model =
         , submitText = "Create Disbursement"
         , isSubmitting = model.createDisbursementSubmitting
         , mutationRespSucceeded = False
+        , formType = TxnForm.NoOp
         , isSubmitDisabled = model.createDisbursementModal.isSubmitDisabled
         , visibility = model.createDisbursementModalVisibility
         }
@@ -209,6 +210,7 @@ createContributionModal model =
         , submitText = "Submit"
         , isSubmitting = model.createContributionSubmitting
         , mutationRespSucceeded = False
+        , formType = TxnForm.NoOp
         , isSubmitDisabled = False
         , visibility = model.createContributionModalVisibility
         }
@@ -231,6 +233,7 @@ disbRuleUnverifiedModal model =
         , submitText = "Reconcile"
         , isSubmitting = model.disbRuleUnverifiedSubmitting
         , mutationRespSucceeded = model.disbRuleUnverifiedMutationRespSucceeded
+        , formType = TxnForm.DisbRuleUnverified
         , isSubmitDisabled = DisbRuleUnverified.toSubmitDisabled model.disbRuleUnverifiedModal
         , visibility = model.disbRuleUnverifiedModalVisibility
         }
@@ -249,6 +252,7 @@ disbRuleVerifiedModal model =
         , submitText = "Save"
         , isSubmitting = model.disbRuleVerifiedSubmitting
         , mutationRespSucceeded = model.disbRuleVerifiedMutationRespSucceeded
+        , formType = TxnForm.DisbRuleVerified
         , isSubmitDisabled = model.disbRuleVerifiedModal.isSubmitDisabled
         , visibility = model.disbRuleVerifiedModalVisibility
         }
@@ -271,6 +275,7 @@ contribRuleUnverifiedModal model =
         , submitText = "Reconcile"
         , isSubmitting = model.contribRuleUnverifiedSubmitting
         , mutationRespSucceeded = model.contribRuleUnverifiedMutationRespSucceeded
+        , formType = TxnForm.ContribRuleUnverified
         , isSubmitDisabled = False
         , visibility = model.contribRuleUnverifiedModalVisibility
         }
@@ -289,6 +294,7 @@ contribRuleVerifiedModal model =
         , submitText = "Save"
         , isSubmitting = model.contribRuleVerifiedSubmitting
         , mutationRespSucceeded = model.contribRuleVerifiedMutationRespSucceeded
+        , formType = TxnForm.ContribRuleVerified
         , isSubmitDisabled = False
         , visibility = model.contribRuleVerifiedModalVisibility
         }

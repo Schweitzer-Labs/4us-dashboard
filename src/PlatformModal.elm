@@ -11,6 +11,7 @@ import Html exposing (Html, h2, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import SubmitButton exposing (submitButton)
+import TxnForm exposing (Model(..))
 
 
 type alias MakeModalConfig msg subMsg subModel =
@@ -25,6 +26,7 @@ type alias MakeModalConfig msg subMsg subModel =
     , isSubmitting : Bool
     , isSubmitDisabled : Bool
     , mutationRespSucceeded : Bool
+    , formType : TxnForm.Model
     , visibility : Modal.Visibility
     }
 
@@ -40,7 +42,7 @@ view config =
         |> Modal.body
             []
             (if config.mutationRespSucceeded then
-                [ successMessage ]
+                [ successMessage config.formType ]
 
              else
                 [ Html.map config.updateMsg <|
@@ -50,13 +52,13 @@ view config =
         |> Modal.footer []
             [ Grid.containerFluid
                 []
-                [ buttonRow config.hideMsg config.submitText config.submitMsg config.isSubmitting True config.isSubmitDisabled ]
+                [ buttonRow config.hideMsg config.submitText config.submitMsg config.isSubmitting True config.mutationRespSucceeded config.isSubmitDisabled ]
             ]
         |> Modal.view config.visibility
 
 
-buttonRow : msg -> String -> msg -> Bool -> Bool -> Bool -> Html msg
-buttonRow hideMsg displayText msg submitting enableExit disabled =
+buttonRow : msg -> String -> msg -> Bool -> Bool -> Bool -> Bool -> Html msg
+buttonRow hideMsg displayText msg submitting enableExit disableSave disabled =
     Grid.row
         [ Row.betweenXs ]
         [ Grid.col
@@ -69,7 +71,12 @@ buttonRow hideMsg displayText msg submitting enableExit disabled =
             )
         , Grid.col
             [ Col.lg3 ]
-            [ submitButton displayText msg submitting disabled ]
+            (if disableSave then
+                []
+
+             else
+                [ submitButton displayText msg submitting disabled ]
+            )
         ]
 
 
@@ -83,13 +90,28 @@ exitButton hideMsg =
         [ text "Exit" ]
 
 
-successMessage : Html msg
-successMessage =
+successMessage : TxnForm.Model -> Html msg
+successMessage formType =
     h2 [ class "align-middle text-green", Spacing.p3 ]
         [ Asset.circleCheckGlyph []
         , span
             [ class "align-middle text-green"
             , Spacing.ml3
             ]
-            [ text <| " Revision Successful" ]
+            (case formType of
+                DisbRuleVerified ->
+                    [ text <| " Revised Disbursement Successful" ]
+
+                DisbRuleUnverified ->
+                    [ text <| " Reconciled Disbursement Successful" ]
+
+                ContribRuleVerified ->
+                    [ text <| " Revised Contribution Successful" ]
+
+                ContribRuleUnverified ->
+                    [ text <| " Reconciled Contribution Successful" ]
+
+                NoOp ->
+                    []
+            )
         ]
