@@ -78,6 +78,7 @@ type alias Model =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
+    , inKindDescription : String
     , maybeError : Maybe String
     , config : Config
     , lastCreatedTxnId : String
@@ -126,6 +127,7 @@ init config txns bankTxn =
     , owners = []
     , ownerName = ""
     , ownerOwnership = ""
+    , inKindDescription = ""
     , paymentMethod = ""
     , createContribIsVisible = False
     , createContribButtonIsDisabled = False
@@ -223,6 +225,7 @@ contribFormRow model =
             , owners = ( model.owners, OwnerAdded )
             , ownerName = ( model.ownerName, OwnerNameUpdated )
             , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
+            , inKindDescription = ( model.inKindDescription, InKindDescriptionUpdated )
             , disabled = model.disabled
             , isEditable = False
             , toggleEdit = ToggleEdit
@@ -268,6 +271,7 @@ type Msg
     | AmountUpdated String
     | CheckNumberUpdated String
     | PaymentDateUpdated String
+    | InKindDescriptionUpdated String
       -- Reconcile
     | CreateContribToggled
     | CreateContribSubmitted
@@ -371,6 +375,9 @@ update msg model =
 
         PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )
+
+        InKindDescriptionUpdated str ->
+            ( { model | inKindDescription = str }, Cmd.none )
 
         ToggleEdit ->
             ( { model | disabled = not model.disabled }, Cmd.none )

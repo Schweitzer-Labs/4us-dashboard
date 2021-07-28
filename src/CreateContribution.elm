@@ -40,6 +40,7 @@ type alias Model =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
+    , inKindDescription : String
     , committeeId : String
     , maybeError : Maybe String
     }
@@ -76,6 +77,7 @@ init committeeId =
     , owners = []
     , ownerName = ""
     , ownerOwnership = ""
+    , inKindDescription = ""
     , paymentMethod = ""
     , committeeId = committeeId
     , maybeError = Nothing
@@ -117,6 +119,7 @@ view model =
         , owners = ( model.owners, OwnerAdded )
         , ownerName = ( model.ownerName, OwnerNameUpdated )
         , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
+        , inKindDescription = ( model.inKindDescription, InKindDescriptionUpdated )
         , disabled = False
         , isEditable = False
         , toggleEdit = NoOp
@@ -156,6 +159,7 @@ type Msg
     | NoOp
     | PaymentMethodUpdated String
     | CVVUpdated String
+    | InKindDescriptionUpdated String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -253,6 +257,9 @@ update msg model =
 
         PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )
+
+        InKindDescriptionUpdated str ->
+            ( { model | inKindDescription = str }, Cmd.none )
 
 
 toEncodeModel : Model -> CreateContrib.EncodeModel
