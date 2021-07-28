@@ -55,7 +55,6 @@ type alias Config msg =
     , owners : DataMsg.MsgOwner msg
     , ownerName : DataMsg.MsgString msg
     , ownerOwnership : DataMsg.MsgString msg
-    , inKindDescription : DataMsg.MsgString msg
     , disabled : Bool
     , isEditable : Bool
     , toggleEdit : msg
@@ -205,23 +204,6 @@ checkRow { checkNumber, disabled } =
     ]
 
 
-inKindRow : Config msg -> List (Html msg)
-inKindRow { inKindDescription, disabled } =
-    [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
-        [ Grid.col
-            []
-            [ Input.text
-                [ Input.id "inkind-description"
-                , Input.onInput <| toMsg inKindDescription
-                , Input.value <| toData inKindDescription
-                , Input.placeholder "Description"
-                , Input.disabled disabled
-                ]
-            ]
-        ]
-    ]
-
-
 processingRow : Config msg -> List (Html msg)
 processingRow c =
     case toData c.paymentMethod of
@@ -230,9 +212,6 @@ processingRow c =
 
         "Credit" ->
             creditRow c
-
-        "InKind" ->
-            inKindRow c
 
         _ ->
             []

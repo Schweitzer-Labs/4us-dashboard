@@ -56,7 +56,6 @@ type alias Model =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
-    , inKindDescription : String
     , committeeId : String
     , isSubmitDisabled : Bool
     , maybeError : Maybe String
@@ -107,7 +106,6 @@ init txn =
     , owners = []
     , ownerName = ""
     , ownerOwnership = ""
-    , inKindDescription = ""
     , paymentMethod = ""
     , committeeId = txn.committeeId
     , isSubmitDisabled = True
@@ -178,7 +176,6 @@ contribFormRow model =
         , owners = ( model.owners, OwnerAdded )
         , ownerName = ( model.ownerName, OwnerNameUpdated )
         , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
-        , inKindDescription = ( model.inKindDescription, InKindDescriptionUpdated )
         , disabled = model.disabled
         , isEditable = True
         , toggleEdit = ToggleEdit
@@ -232,7 +229,6 @@ type Msg
     | AmountUpdated String
     | CheckNumberUpdated String
     | PaymentDateUpdated String
-    | InKindDescriptionUpdated String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -330,9 +326,6 @@ update msg model =
 
         PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )
-
-        InKindDescriptionUpdated str ->
-            ( { model | inKindDescription = str }, Cmd.none )
 
         ToggleEdit ->
             ( { model | disabled = not model.disabled }, Cmd.none )
