@@ -15,6 +15,7 @@ import Loading
 import OrgOrInd
 import Owners exposing (Owner, Owners)
 import PaymentInfo
+import PaymentMethod
 import Time exposing (utc)
 import TimeZone exposing (america__new_york)
 import Timestamp
@@ -380,7 +381,7 @@ validationMapper : Model -> ContribValidatorModel
 validationMapper model =
     { checkNumber = model.checkNumber
     , paymentDate = model.paymentDate
-    , paymentMethod = model.txn.paymentMethod
+    , paymentMethod = PaymentMethod.toDataString model.txn.paymentMethod
     , emailAddress = model.emailAddress
     , phoneNumber = model.phoneNumber
     , firstName = model.firstName
@@ -400,4 +401,5 @@ validationMapper model =
     , owners = model.owners
     , ownerName = model.ownerName
     , ownerOwnership = model.ownerOwnership
+    , inKindDescription = model.inKindDescription
     }

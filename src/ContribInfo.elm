@@ -14,7 +14,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromPostalCode)
+import Errors exposing (fromInKindDescription, fromPostalCode)
 import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
@@ -105,7 +105,7 @@ donorHeadingRow toggleMsg isEditable =
 type alias ContribValidatorModel =
     { checkNumber : String
     , paymentDate : String
-    , paymentMethod : PaymentMethod
+    , paymentMethod : String
     , emailAddress : String
     , phoneNumber : String
     , firstName : String
@@ -125,6 +125,7 @@ type alias ContribValidatorModel =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
+    , inKindDescription : String
     }
 
 
@@ -138,6 +139,7 @@ contribInfoValidator =
         , ifBlank .postalCode "Postal Code is missing."
         , ifBlank .addressLine1 "Address is missing"
         , postalCodeValidator
+        , inKindDescriptionValidator
         ]
 
 
@@ -155,9 +157,19 @@ postalCodeValidator =
     fromErrors postalCodeOnModelToErrors
 
 
+inKindDescriptionValidator : Validator String ContribValidatorModel
+inKindDescriptionValidator =
+    fromErrors inKindDescriptionOnModelToErrors
+
+
 postalCodeOnModelToErrors : ContribValidatorModel -> List String
 postalCodeOnModelToErrors model =
     fromPostalCode model.postalCode
+
+
+inKindDescriptionOnModelToErrors : ContribValidatorModel -> List String
+inKindDescriptionOnModelToErrors { paymentMethod, inKindDescription } =
+    fromInKindDescription paymentMethod inKindDescription
 
 
 errorRow : Maybe String -> List (Html msg)
