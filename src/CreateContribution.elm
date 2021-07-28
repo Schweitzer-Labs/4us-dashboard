@@ -291,14 +291,10 @@ toEncodeModel model =
     }
 
 
-fromError : Model -> String -> Model
-fromError model error =
-    { model | maybeError = Just error }
-
-
 validationMapper : Model -> ContribValidatorModel
 validationMapper model =
     { checkNumber = model.checkNumber
+    , amount = model.amount
     , paymentDate = model.paymentDate
     , paymentMethod = model.paymentMethod
     , emailAddress = model.emailAddress
@@ -322,3 +318,8 @@ validationMapper model =
     , ownerOwnership = model.ownerOwnership
     , inKindDescription = model.inKindDescription
     }
+
+
+fromError : Model -> String -> Model
+fromError model error =
+    { model | maybeError = Just error }

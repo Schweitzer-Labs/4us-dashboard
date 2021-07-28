@@ -104,6 +104,7 @@ donorHeadingRow toggleMsg isEditable =
 
 type alias ContribValidatorModel =
     { checkNumber : String
+    , amount : String
     , paymentDate : String
     , paymentMethod : String
     , emailAddress : String
@@ -132,7 +133,9 @@ type alias ContribValidatorModel =
 contribInfoValidator : Validator String ContribValidatorModel
 contribInfoValidator =
     Validate.firstError
-        [ ifBlank .firstName "First Name is missing"
+        [ ifBlank .amount "Payment Amount is missing"
+        , ifBlank .paymentDate "Payment Date is missing"
+        , ifBlank .firstName "First Name is missing"
         , ifBlank .lastName "Last name is missing"
         , ifBlank .city "City is missing"
         , ifBlank .state "State is missing"

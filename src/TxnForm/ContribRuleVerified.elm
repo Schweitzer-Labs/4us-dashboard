@@ -380,6 +380,7 @@ amendTxnEncoder model =
 validationMapper : Model -> ContribValidatorModel
 validationMapper model =
     { checkNumber = model.checkNumber
+    , amount = model.amount
     , paymentDate = model.paymentDate
     , paymentMethod = PaymentMethod.toDataString model.txn.paymentMethod
     , emailAddress = model.emailAddress

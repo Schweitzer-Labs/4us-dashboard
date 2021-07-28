@@ -875,9 +875,9 @@ update msg model =
 
                 Ok val ->
                     ( { model
-                        | contribRuleVerifiedSubmitting = True
+                        | createContributionSubmitting = True
                       }
-                    , amendContrib model
+                    , createContribution model
                     )
 
         AnimateCreateContributionModal visibility ->
