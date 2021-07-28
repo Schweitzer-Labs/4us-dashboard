@@ -79,6 +79,7 @@ type alias Model =
     -- Disb unverified modal
     , disbRuleUnverifiedModal : DisbRuleUnverified.Model
     , disbRuleUnverifiedSubmitting : Bool
+    , disbRuleUnverifiedMutationRespSucceeded : Bool
     , disbRuleUnverifiedModalVisibility : Modal.Visibility
 
     -- Disb verified
@@ -90,6 +91,7 @@ type alias Model =
     -- Contrib unverified modal
     , contribRuleUnverifiedModal : ContribRuleUnverified.Model
     , contribRuleUnverifiedSubmitting : Bool
+    , contribRuleUnverifiedMutationRespSucceeded : Bool
     , contribRuleUnverifiedModalVisibility : Modal.Visibility
 
     -- Contrib verified
@@ -129,6 +131,7 @@ init config session aggs committee committeeId =
             -- Disb rule unverified state
             , disbRuleUnverifiedModal = DisbRuleUnverified.init config [] Transaction.init
             , disbRuleUnverifiedSubmitting = False
+            , disbRuleUnverifiedMutationRespSucceeded = False
             , disbRuleUnverifiedModalVisibility = Modal.hidden
 
             -- Disb rule verified state
@@ -140,6 +143,7 @@ init config session aggs committee committeeId =
             -- Contrib rule unverified state
             , contribRuleUnverifiedModal = ContribRuleUnverified.init config [] Transaction.init
             , contribRuleUnverifiedSubmitting = False
+            , contribRuleUnverifiedMutationRespSucceeded = False
             , contribRuleUnverifiedModalVisibility = Modal.hidden
 
             -- Contrib rule verified state
@@ -226,7 +230,7 @@ disbRuleUnverifiedModal model =
         , submitMsg = DisbRuleUnverifiedSubmit
         , submitText = "Reconcile"
         , isSubmitting = model.disbRuleUnverifiedSubmitting
-        , mutationRespSucceeded = False
+        , mutationRespSucceeded = model.disbRuleUnverifiedMutationRespSucceeded
         , isSubmitDisabled = DisbRuleUnverified.toSubmitDisabled model.disbRuleUnverifiedModal
         , visibility = model.disbRuleUnverifiedModalVisibility
         }
@@ -266,7 +270,7 @@ contribRuleUnverifiedModal model =
         , submitMsg = ContribRuleUnverifiedSubmit
         , submitText = "Reconcile"
         , isSubmitting = model.contribRuleUnverifiedSubmitting
-        , mutationRespSucceeded = False
+        , mutationRespSucceeded = model.contribRuleUnverifiedMutationRespSucceeded
         , isSubmitDisabled = False
         , visibility = model.contribRuleUnverifiedModalVisibility
         }
@@ -565,6 +569,7 @@ update msg model =
         DisbRuleUnverifiedModalHide ->
             ( { model
                 | disbRuleUnverifiedModalVisibility = Modal.hidden
+                , disbRuleUnverifiedMutationRespSucceeded = False
               }
             , getTransactions model Nothing
             )
@@ -585,7 +590,7 @@ update msg model =
                     case mutResp of
                         Success id ->
                             ( { model
-                                | disbRuleUnverifiedModalVisibility = Modal.hidden
+                                | disbRuleUnverifiedMutationRespSucceeded = True
                                 , disbRuleUnverifiedSubmitting = False
 
                                 -- @Todo make this state impossible
@@ -693,6 +698,7 @@ update msg model =
         ContribRuleUnverifiedModalHide ->
             ( { model
                 | contribRuleUnverifiedModalVisibility = Modal.hidden
+                , contribRuleUnverifiedMutationRespSucceeded = False
               }
             , getTransactions model Nothing
             )
@@ -713,7 +719,7 @@ update msg model =
                     case mutResp of
                         Success id ->
                             ( { model
-                                | contribRuleUnverifiedModalVisibility = Modal.hidden
+                                | contribRuleUnverifiedMutationRespSucceeded = True
                                 , contribRuleUnverifiedSubmitting = False
 
                                 -- @Todo make this state impossible
@@ -786,6 +792,7 @@ update msg model =
         ContribRuleVerifiedModalHide ->
             ( { model
                 | contribRuleVerifiedModalVisibility = Modal.hidden
+                , contribRuleVerifiedMutationRespSucceeded = False
               }
             , Cmd.none
             )
