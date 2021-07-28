@@ -1,7 +1,7 @@
-module CreateContribution exposing (Model, Msg(..), init, setError, toEncodeModel, update, view)
+module CreateContribution exposing (Model, Msg(..), fromError, init, setError, toEncodeModel, update, validationMapper, view)
 
 import Api.CreateContrib as CreateContrib
-import ContribInfo
+import ContribInfo exposing (ContribValidatorModel)
 import EmploymentStatus
 import EntityType
 import Html exposing (Html)
@@ -40,6 +40,7 @@ type alias Model =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
+    , inKindDescription : String
     , committeeId : String
     , maybeError : Maybe String
     }
@@ -76,6 +77,7 @@ init committeeId =
     , owners = []
     , ownerName = ""
     , ownerOwnership = ""
+    , inKindDescription = ""
     , paymentMethod = ""
     , committeeId = committeeId
     , maybeError = Nothing
@@ -117,6 +119,7 @@ view model =
         , owners = ( model.owners, OwnerAdded )
         , ownerName = ( model.ownerName, OwnerNameUpdated )
         , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
+        , inKindDescription = ( model.inKindDescription, InKindDescriptionUpdated )
         , disabled = False
         , isEditable = False
         , toggleEdit = NoOp
@@ -156,6 +159,7 @@ type Msg
     | NoOp
     | PaymentMethodUpdated String
     | CVVUpdated String
+    | InKindDescriptionUpdated String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -254,6 +258,9 @@ update msg model =
         PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )
 
+        InKindDescriptionUpdated str ->
+            ( { model | inKindDescription = str }, Cmd.none )
+
 
 toEncodeModel : Model -> CreateContrib.EncodeModel
 toEncodeModel model =
@@ -282,3 +289,37 @@ toEncodeModel model =
     , phoneNumber = model.phoneNumber
     , employmentStatus = model.employmentStatus
     }
+
+
+validationMapper : Model -> ContribValidatorModel
+validationMapper model =
+    { checkNumber = model.checkNumber
+    , amount = model.amount
+    , paymentDate = model.paymentDate
+    , paymentMethod = model.paymentMethod
+    , emailAddress = model.emailAddress
+    , phoneNumber = model.phoneNumber
+    , firstName = model.firstName
+    , middleName = model.middleName
+    , lastName = model.lastName
+    , addressLine1 = model.addressLine1
+    , addressLine2 = model.addressLine2
+    , city = model.city
+    , state = model.state
+    , postalCode = model.postalCode
+    , employmentStatus = model.employmentStatus
+    , employer = model.employer
+    , occupation = model.occupation
+    , entityName = model.entityName
+    , maybeOrgOrInd = model.maybeOrgOrInd
+    , maybeEntityType = model.maybeEntityType
+    , owners = model.owners
+    , ownerName = model.ownerName
+    , ownerOwnership = model.ownerOwnership
+    , inKindDescription = model.inKindDescription
+    }
+
+
+fromError : Model -> String -> Model
+fromError model error =
+    { model | maybeError = Just error }

@@ -14,7 +14,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromPostalCode)
+import Errors exposing (fromInKindDescription, fromPostalCode)
 import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
@@ -55,6 +55,7 @@ type alias Config msg =
     , owners : DataMsg.MsgOwner msg
     , ownerName : DataMsg.MsgString msg
     , ownerOwnership : DataMsg.MsgString msg
+    , inKindDescription : DataMsg.MsgString msg
     , disabled : Bool
     , isEditable : Bool
     , toggleEdit : msg
@@ -103,8 +104,9 @@ donorHeadingRow toggleMsg isEditable =
 
 type alias ContribValidatorModel =
     { checkNumber : String
+    , amount : String
     , paymentDate : String
-    , paymentMethod : PaymentMethod
+    , paymentMethod : String
     , emailAddress : String
     , phoneNumber : String
     , firstName : String
@@ -124,19 +126,23 @@ type alias ContribValidatorModel =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
+    , inKindDescription : String
     }
 
 
 contribInfoValidator : Validator String ContribValidatorModel
 contribInfoValidator =
     Validate.firstError
-        [ ifBlank .firstName "First Name is missing"
+        [ ifBlank .amount "Payment Amount is missing"
+        , ifBlank .paymentDate "Payment Date is missing"
+        , ifBlank .firstName "First Name is missing"
         , ifBlank .lastName "Last name is missing"
         , ifBlank .city "City is missing"
         , ifBlank .state "State is missing"
         , ifBlank .postalCode "Postal Code is missing."
         , ifBlank .addressLine1 "Address is missing"
         , postalCodeValidator
+        , inKindDescriptionValidator
         ]
 
 
@@ -154,9 +160,19 @@ postalCodeValidator =
     fromErrors postalCodeOnModelToErrors
 
 
+inKindDescriptionValidator : Validator String ContribValidatorModel
+inKindDescriptionValidator =
+    fromErrors inKindDescriptionOnModelToErrors
+
+
 postalCodeOnModelToErrors : ContribValidatorModel -> List String
 postalCodeOnModelToErrors model =
     fromPostalCode model.postalCode
+
+
+inKindDescriptionOnModelToErrors : ContribValidatorModel -> List String
+inKindDescriptionOnModelToErrors { paymentMethod, inKindDescription } =
+    fromInKindDescription paymentMethod inKindDescription
 
 
 errorRow : Maybe String -> List (Html msg)
@@ -204,6 +220,23 @@ checkRow { checkNumber, disabled } =
     ]
 
 
+inKindRow : Config msg -> List (Html msg)
+inKindRow { inKindDescription, disabled } =
+    [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
+        [ Grid.col
+            []
+            [ Input.text
+                [ Input.id "inkind-description"
+                , Input.onInput <| toMsg inKindDescription
+                , Input.value <| toData inKindDescription
+                , Input.placeholder "Description"
+                , Input.disabled disabled
+                ]
+            ]
+        ]
+    ]
+
+
 processingRow : Config msg -> List (Html msg)
 processingRow c =
     case toData c.paymentMethod of
@@ -212,6 +245,9 @@ processingRow c =
 
         "Credit" ->
             creditRow c
+
+        "InKind" ->
+            inKindRow c
 
         _ ->
             []

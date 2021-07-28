@@ -15,6 +15,7 @@ import Loading
 import OrgOrInd
 import Owners exposing (Owner, Owners)
 import PaymentInfo
+import PaymentMethod
 import Time exposing (utc)
 import TimeZone exposing (america__new_york)
 import Timestamp
@@ -56,6 +57,7 @@ type alias Model =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
+    , inKindDescription : String
     , committeeId : String
     , isSubmitDisabled : Bool
     , maybeError : Maybe String
@@ -106,6 +108,7 @@ init txn =
     , owners = []
     , ownerName = ""
     , ownerOwnership = ""
+    , inKindDescription = ""
     , paymentMethod = ""
     , committeeId = txn.committeeId
     , isSubmitDisabled = True
@@ -176,6 +179,7 @@ contribFormRow model =
         , owners = ( model.owners, OwnerAdded )
         , ownerName = ( model.ownerName, OwnerNameUpdated )
         , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
+        , inKindDescription = ( model.inKindDescription, InKindDescriptionUpdated )
         , disabled = model.disabled
         , isEditable = True
         , toggleEdit = ToggleEdit
@@ -229,6 +233,7 @@ type Msg
     | AmountUpdated String
     | CheckNumberUpdated String
     | PaymentDateUpdated String
+    | InKindDescriptionUpdated String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -327,6 +332,9 @@ update msg model =
         PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )
 
+        InKindDescriptionUpdated str ->
+            ( { model | inKindDescription = str }, Cmd.none )
+
         ToggleEdit ->
             ( { model | disabled = not model.disabled }, Cmd.none )
 
@@ -372,8 +380,9 @@ amendTxnEncoder model =
 validationMapper : Model -> ContribValidatorModel
 validationMapper model =
     { checkNumber = model.checkNumber
+    , amount = model.amount
     , paymentDate = model.paymentDate
-    , paymentMethod = model.txn.paymentMethod
+    , paymentMethod = PaymentMethod.toDataString model.txn.paymentMethod
     , emailAddress = model.emailAddress
     , phoneNumber = model.phoneNumber
     , firstName = model.firstName
@@ -393,4 +402,5 @@ validationMapper model =
     , owners = model.owners
     , ownerName = model.ownerName
     , ownerOwnership = model.ownerOwnership
+    , inKindDescription = model.inKindDescription
     }

@@ -865,11 +865,20 @@ update msg model =
             )
 
         SubmitCreateContribution ->
-            ( { model
-                | createContributionSubmitting = True
-              }
-            , createContribution model
-            )
+            case ContribInfo.validateModel CreateContribution.validationMapper model.createContributionModal of
+                Err errors ->
+                    let
+                        error =
+                            Maybe.withDefault "Form error" <| List.head errors
+                    in
+                    ( { model | createContributionModal = CreateContribution.fromError model.createContributionModal error }, Cmd.none )
+
+                Ok val ->
+                    ( { model
+                        | createContributionSubmitting = True
+                      }
+                    , createContribution model
+                    )
 
         AnimateCreateContributionModal visibility ->
             ( { model | createContributionModalVisibility = visibility }, Cmd.none )

@@ -1,4 +1,4 @@
-module Errors exposing (fromInKind, fromMaxAmount, fromMaxDate, fromPostalCode)
+module Errors exposing (fromInKind, fromInKindDescription, fromMaxAmount, fromMaxDate, fromPostalCode)
 
 import Cents
 import Time
@@ -38,6 +38,24 @@ fromPostalCode postalCode =
 
     else
         []
+
+
+fromInKindDescription : String -> String -> Errors
+fromInKindDescription payMethod str =
+    case payMethod of
+        "InKind" ->
+            let
+                length =
+                    String.length <| str
+            in
+            if length < 3 then
+                [ "Description is missing" ]
+
+            else
+                []
+
+        _ ->
+            []
 
 
 fromMaxAmount : Int -> String -> Errors
