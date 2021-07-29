@@ -101,7 +101,7 @@ init config txns bankTxn =
     , disabled = False
     , error = ""
     , errors = []
-    , amount = Cents.toUnsignedDollar bankTxn.amount
+    , amount = String.replace "," "" <| Cents.toUnsignedDollar bankTxn.amount
     , checkNumber = ""
     , paymentDate = ""
     , emailAddress = ""
@@ -143,7 +143,7 @@ init config txns bankTxn =
 clearForm : Model -> Model
 clearForm model =
     { model
-        | amount = Cents.stringToDollar <| String.fromInt model.bankTxn.amount
+        | amount = String.replace "," "" <| Cents.toUnsignedDollar model.bankTxn.amount
         , checkNumber = ""
         , paymentDate = formDate model.timezone model.bankTxn.paymentDate
         , emailAddress = ""
