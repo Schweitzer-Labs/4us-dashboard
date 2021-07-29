@@ -25,8 +25,8 @@ type alias MakeModalConfig msg subMsg subModel =
     , submitText : String
     , isSubmitting : Bool
     , isSubmitDisabled : Bool
-    , mutationRespSucceeded : Bool
-    , formType : TxnForm.Model
+    , successViewActive : Bool
+    , successViewMessage : String
     , visibility : Modal.Visibility
     }
 
@@ -41,8 +41,8 @@ view config =
         |> Modal.h3 [] [ text config.title ]
         |> Modal.body
             []
-            (if config.mutationRespSucceeded then
-                [ successMessage config.formType ]
+            (if config.successViewActive then
+                [ successMessage config.successViewMessage ]
 
              else
                 [ Html.map config.updateMsg <|
@@ -52,7 +52,7 @@ view config =
         |> Modal.footer []
             [ Grid.containerFluid
                 []
-                [ buttonRow config.hideMsg config.submitText config.submitMsg config.isSubmitting True config.mutationRespSucceeded config.isSubmitDisabled ]
+                [ buttonRow config.hideMsg config.submitText config.submitMsg config.isSubmitting True config.successViewActive config.isSubmitDisabled ]
             ]
         |> Modal.view config.visibility
 
@@ -90,28 +90,31 @@ exitButton hideMsg =
         [ text "Exit" ]
 
 
-successMessage : TxnForm.Model -> Html msg
-successMessage formType =
+successMessage : String -> Html msg
+successMessage successViewMessage =
     h2 [ class "align-middle text-green", Spacing.p3 ]
         [ Asset.circleCheckGlyph []
         , span
             [ class "align-middle text-green"
             , Spacing.ml3
             ]
-            (case formType of
-                DisbRuleVerified ->
-                    [ text <| " Revised Disbursement Successful" ]
+            (case successViewMessage of
+                "DisbRuleVerified" ->
+                    [ text <| " Revision Successful!" ]
 
-                DisbRuleUnverified ->
-                    [ text <| " Reconciled Disbursement Successful" ]
+                "DisbRuleUnverified" ->
+                    [ text <| " Reconciliation Successful!" ]
 
-                ContribRuleVerified ->
-                    [ text <| " Revised Contribution Successful" ]
+                "ContribRuleVerified" ->
+                    [ text <| " Revision Successful!" ]
 
-                ContribRuleUnverified ->
-                    [ text <| " Reconciled Contribution Successful" ]
+                "ContribRuleUnverified" ->
+                    [ text <| " Reconciliation Successful!" ]
 
-                NoOp ->
+                "" ->
+                    []
+
+                _ ->
                     []
             )
         ]

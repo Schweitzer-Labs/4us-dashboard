@@ -79,25 +79,25 @@ type alias Model =
     -- Disb unverified modal
     , disbRuleUnverifiedModal : DisbRuleUnverified.Model
     , disbRuleUnverifiedSubmitting : Bool
-    , disbRuleUnverifiedMutationRespSucceeded : Bool
+    , disbRuleUnverifiedSuccessViewActive : Bool
     , disbRuleUnverifiedModalVisibility : Modal.Visibility
 
     -- Disb verified
     , disbRuleVerifiedModal : DisbRuleVerified.Model
     , disbRuleVerifiedSubmitting : Bool
-    , disbRuleVerifiedMutationRespSucceeded : Bool
+    , disbRuleVerifiedSuccessViewActive : Bool
     , disbRuleVerifiedModalVisibility : Modal.Visibility
 
     -- Contrib unverified modal
     , contribRuleUnverifiedModal : ContribRuleUnverified.Model
     , contribRuleUnverifiedSubmitting : Bool
-    , contribRuleUnverifiedMutationRespSucceeded : Bool
+    , contribRuleUnverifiedSuccessViewActive : Bool
     , contribRuleUnverifiedModalVisibility : Modal.Visibility
 
     -- Contrib verified
     , contribRuleVerifiedModal : ContribRuleVerified.Model
     , contribRuleVerifiedSubmitting : Bool
-    , contribRuleVerifiedMutationRespSucceeded : Bool
+    , contribRuleVerifiedSuccessViewActive : Bool
     , contribRuleVerifiedModalVisibility : Modal.Visibility
     , config : Config
     }
@@ -131,25 +131,25 @@ init config session aggs committee committeeId =
             -- Disb rule unverified state
             , disbRuleUnverifiedModal = DisbRuleUnverified.init config [] Transaction.init
             , disbRuleUnverifiedSubmitting = False
-            , disbRuleUnverifiedMutationRespSucceeded = False
+            , disbRuleUnverifiedSuccessViewActive = False
             , disbRuleUnverifiedModalVisibility = Modal.hidden
 
             -- Disb rule verified state
             , disbRuleVerifiedModal = DisbRuleVerified.init Transaction.init
             , disbRuleVerifiedSubmitting = False
-            , disbRuleVerifiedMutationRespSucceeded = False
+            , disbRuleVerifiedSuccessViewActive = False
             , disbRuleVerifiedModalVisibility = Modal.hidden
 
             -- Contrib rule unverified state
             , contribRuleUnverifiedModal = ContribRuleUnverified.init config [] Transaction.init
             , contribRuleUnverifiedSubmitting = False
-            , contribRuleUnverifiedMutationRespSucceeded = False
+            , contribRuleUnverifiedSuccessViewActive = False
             , contribRuleUnverifiedModalVisibility = Modal.hidden
 
             -- Contrib rule verified state
             , contribRuleVerifiedModal = ContribRuleVerified.init Transaction.init
             , contribRuleVerifiedSubmitting = False
-            , contribRuleVerifiedMutationRespSucceeded = False
+            , contribRuleVerifiedSuccessViewActive = False
             , contribRuleVerifiedModalVisibility = Modal.hidden
             , config = config
             }
@@ -190,8 +190,8 @@ createDisbursementModal model =
         , submitMsg = CreateDisbursementSubmit
         , submitText = "Create Disbursement"
         , isSubmitting = model.createDisbursementSubmitting
-        , mutationRespSucceeded = False
-        , formType = TxnForm.NoOp
+        , successViewActive = False
+        , successViewMessage = ""
         , isSubmitDisabled = model.createDisbursementModal.isSubmitDisabled
         , visibility = model.createDisbursementModalVisibility
         }
@@ -209,8 +209,8 @@ createContributionModal model =
         , submitMsg = SubmitCreateContribution
         , submitText = "Submit"
         , isSubmitting = model.createContributionSubmitting
-        , mutationRespSucceeded = False
-        , formType = TxnForm.NoOp
+        , successViewActive = False
+        , successViewMessage = ""
         , isSubmitDisabled = False
         , visibility = model.createContributionModalVisibility
         }
@@ -232,8 +232,8 @@ disbRuleUnverifiedModal model =
         , submitMsg = DisbRuleUnverifiedSubmit
         , submitText = "Reconcile"
         , isSubmitting = model.disbRuleUnverifiedSubmitting
-        , mutationRespSucceeded = model.disbRuleUnverifiedMutationRespSucceeded
-        , formType = TxnForm.DisbRuleUnverified
+        , successViewActive = model.disbRuleUnverifiedSuccessViewActive
+        , successViewMessage = "DisbRuleUnverified"
         , isSubmitDisabled = DisbRuleUnverified.toSubmitDisabled model.disbRuleUnverifiedModal
         , visibility = model.disbRuleUnverifiedModalVisibility
         }
@@ -251,8 +251,8 @@ disbRuleVerifiedModal model =
         , submitMsg = DisbRuleVerifiedSubmit
         , submitText = "Save"
         , isSubmitting = model.disbRuleVerifiedSubmitting
-        , mutationRespSucceeded = model.disbRuleVerifiedMutationRespSucceeded
-        , formType = TxnForm.DisbRuleVerified
+        , successViewActive = model.disbRuleVerifiedSuccessViewActive
+        , successViewMessage = "DisbRuleVerified"
         , isSubmitDisabled = model.disbRuleVerifiedModal.isSubmitDisabled
         , visibility = model.disbRuleVerifiedModalVisibility
         }
@@ -274,8 +274,8 @@ contribRuleUnverifiedModal model =
         , submitMsg = ContribRuleUnverifiedSubmit
         , submitText = "Reconcile"
         , isSubmitting = model.contribRuleUnverifiedSubmitting
-        , mutationRespSucceeded = model.contribRuleUnverifiedMutationRespSucceeded
-        , formType = TxnForm.ContribRuleUnverified
+        , successViewActive = model.contribRuleVerifiedSuccessViewActive
+        , successViewMessage = "ContribRuleUnverified"
         , isSubmitDisabled = False
         , visibility = model.contribRuleUnverifiedModalVisibility
         }
@@ -293,8 +293,8 @@ contribRuleVerifiedModal model =
         , submitMsg = ContribRuleVerifiedSubmit
         , submitText = "Save"
         , isSubmitting = model.contribRuleVerifiedSubmitting
-        , mutationRespSucceeded = model.contribRuleVerifiedMutationRespSucceeded
-        , formType = TxnForm.ContribRuleVerified
+        , successViewActive = model.contribRuleVerifiedSuccessViewActive
+        , successViewMessage = "ContribRuleVerified"
         , isSubmitDisabled = False
         , visibility = model.contribRuleVerifiedModalVisibility
         }
@@ -575,7 +575,7 @@ update msg model =
         DisbRuleUnverifiedModalHide ->
             ( { model
                 | disbRuleUnverifiedModalVisibility = Modal.hidden
-                , disbRuleUnverifiedMutationRespSucceeded = False
+                , disbRuleUnverifiedSuccessViewActive = False
               }
             , getTransactions model Nothing
             )
@@ -596,7 +596,7 @@ update msg model =
                     case mutResp of
                         Success id ->
                             ( { model
-                                | disbRuleUnverifiedMutationRespSucceeded = True
+                                | disbRuleUnverifiedSuccessViewActive = True
                                 , disbRuleUnverifiedSubmitting = False
 
                                 -- @Todo make this state impossible
@@ -632,7 +632,7 @@ update msg model =
                     case mutResp of
                         Success id ->
                             ( { model
-                                | disbRuleVerifiedMutationRespSucceeded = True
+                                | disbRuleVerifiedSuccessViewActive = True
                                 , disbRuleVerifiedSubmitting = False
 
                                 -- @Todo make this state impossible
@@ -669,7 +669,7 @@ update msg model =
         DisbRuleVerifiedModalHide ->
             ( { model
                 | disbRuleVerifiedModalVisibility = Modal.hidden
-                , disbRuleVerifiedMutationRespSucceeded = False
+                , disbRuleVerifiedSuccessViewActive = False
               }
             , Cmd.none
             )
@@ -704,7 +704,7 @@ update msg model =
         ContribRuleUnverifiedModalHide ->
             ( { model
                 | contribRuleUnverifiedModalVisibility = Modal.hidden
-                , contribRuleUnverifiedMutationRespSucceeded = False
+                , contribRuleUnverifiedSuccessViewActive = False
               }
             , getTransactions model Nothing
             )
@@ -725,7 +725,7 @@ update msg model =
                     case mutResp of
                         Success id ->
                             ( { model
-                                | contribRuleUnverifiedMutationRespSucceeded = True
+                                | contribRuleUnverifiedSuccessViewActive = True
                                 , contribRuleUnverifiedSubmitting = False
 
                                 -- @Todo make this state impossible
@@ -761,7 +761,7 @@ update msg model =
                     case mutResp of
                         Success id ->
                             ( { model
-                                | contribRuleVerifiedMutationRespSucceeded = True
+                                | contribRuleVerifiedSuccessViewActive = True
                                 , contribRuleVerifiedSubmitting = False
 
                                 -- @Todo make this state impossible
@@ -798,7 +798,7 @@ update msg model =
         ContribRuleVerifiedModalHide ->
             ( { model
                 | contribRuleVerifiedModalVisibility = Modal.hidden
-                , contribRuleVerifiedMutationRespSucceeded = False
+                , contribRuleVerifiedSuccessViewActive = False
               }
             , Cmd.none
             )
