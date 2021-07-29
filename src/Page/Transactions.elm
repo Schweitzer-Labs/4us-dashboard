@@ -233,7 +233,7 @@ disbRuleUnverifiedModal model =
         , submitText = "Reconcile"
         , isSubmitting = model.disbRuleUnverifiedSubmitting
         , successViewActive = model.disbRuleUnverifiedSuccessViewActive
-        , successViewMessage = "DisbRuleUnverified"
+        , successViewMessage = " Reconciliation Successful!"
         , isSubmitDisabled = DisbRuleUnverified.toSubmitDisabled model.disbRuleUnverifiedModal
         , visibility = model.disbRuleUnverifiedModalVisibility
         }
@@ -252,7 +252,7 @@ disbRuleVerifiedModal model =
         , submitText = "Save"
         , isSubmitting = model.disbRuleVerifiedSubmitting
         , successViewActive = model.disbRuleVerifiedSuccessViewActive
-        , successViewMessage = "DisbRuleVerified"
+        , successViewMessage = " Revision Successful!"
         , isSubmitDisabled = model.disbRuleVerifiedModal.isSubmitDisabled
         , visibility = model.disbRuleVerifiedModalVisibility
         }
@@ -274,8 +274,8 @@ contribRuleUnverifiedModal model =
         , submitMsg = ContribRuleUnverifiedSubmit
         , submitText = "Reconcile"
         , isSubmitting = model.contribRuleUnverifiedSubmitting
-        , successViewActive = model.contribRuleVerifiedSuccessViewActive
-        , successViewMessage = "ContribRuleUnverified"
+        , successViewActive = model.contribRuleUnverifiedSuccessViewActive
+        , successViewMessage = " Reconciliation Successful!"
         , isSubmitDisabled = False
         , visibility = model.contribRuleUnverifiedModalVisibility
         }
@@ -294,7 +294,7 @@ contribRuleVerifiedModal model =
         , submitText = "Save"
         , isSubmitting = model.contribRuleVerifiedSubmitting
         , successViewActive = model.contribRuleVerifiedSuccessViewActive
-        , successViewMessage = "ContribRuleVerified"
+        , successViewMessage = " Revision Successful!"
         , isSubmitDisabled = False
         , visibility = model.contribRuleVerifiedModalVisibility
         }

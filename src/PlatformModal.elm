@@ -98,23 +98,5 @@ successMessage successViewMessage =
             [ class "align-middle text-green"
             , Spacing.ml3
             ]
-            (case successViewMessage of
-                "DisbRuleVerified" ->
-                    [ text <| " Revision Successful!" ]
-
-                "DisbRuleUnverified" ->
-                    [ text <| " Reconciliation Successful!" ]
-
-                "ContribRuleVerified" ->
-                    [ text <| " Revision Successful!" ]
-
-                "ContribRuleUnverified" ->
-                    [ text <| " Reconciliation Successful!" ]
-
-                "" ->
-                    []
-
-                _ ->
-                    []
-            )
+            [ text <| successViewMessage ]
         ]
