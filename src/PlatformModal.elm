@@ -52,30 +52,50 @@ view config =
         |> Modal.footer []
             [ Grid.containerFluid
                 []
-                [ buttonRow config.hideMsg config.submitText config.submitMsg config.isSubmitting True config.successViewActive config.isSubmitDisabled ]
+                [ buttonRow
+                    { submitText = config.submitText
+                    , submitting = config.isSubmitting
+                    , enableExit = True
+                    , disableSave = config.successViewActive
+                    , disabled = config.isSubmitDisabled
+                    , hideMsg = config.hideMsg
+                    , submitMsg = config.submitMsg
+                    }
+                ]
             ]
         |> Modal.view config.visibility
 
 
-buttonRow : msg -> String -> msg -> Bool -> Bool -> Bool -> Bool -> Html msg
-buttonRow hideMsg displayText msg submitting enableExit disableSave disabled =
+type alias ButtonRowConfig hideMsg submitMsg =
+    { hideMsg : hideMsg
+    , submitText : String
+    , submitMsg : submitMsg
+    , submitting : Bool
+    , enableExit : Bool
+    , disableSave : Bool
+    , disabled : Bool
+    }
+
+
+buttonRow : ButtonRowConfig msg msg -> Html msg
+buttonRow config =
     Grid.row
         [ Row.betweenXs ]
         [ Grid.col
             [ Col.lg3, Col.attrs [ class "text-left" ] ]
-            (if enableExit then
-                [ exitButton hideMsg ]
+            (if config.enableExit then
+                [ exitButton config.hideMsg ]
 
              else
                 []
             )
         , Grid.col
             [ Col.lg3 ]
-            (if disableSave then
+            (if config.disableSave then
                 []
 
              else
-                [ submitButton displayText msg submitting disabled ]
+                [ submitButton config.submitText config.submitMsg config.submitting config.disabled ]
             )
         ]
 
