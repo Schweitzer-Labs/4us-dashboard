@@ -99,7 +99,7 @@ init config txns bankTxn =
     , isExistingLiability = Nothing
     , isInKind = Nothing
     , amount = String.replace "," "" <| Cents.toUnsignedDollar bankTxn.amount
-    , paymentDate = ""
+    , paymentDate = formDate utc bankTxn.paymentDate
     , paymentMethod = Just bankTxn.paymentMethod
     , checkNumber = ""
     , createDisbIsVisible = False
@@ -376,7 +376,7 @@ update msg model =
             ( { model | checkNumber = str }, Cmd.none )
 
         PaymentDateUpdated str ->
-            ( { model | paymentDate = str, createDisbButtonIsDisabled = False }, Cmd.none )
+            ( { model | paymentDate = str }, Cmd.none )
 
         AddressLine1Updated str ->
             ( { model | addressLine1 = str }, Cmd.none )
@@ -403,7 +403,7 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool }, Cmd.none )
+            ( { model | isInKind = bool, createDisbButtonIsDisabled = False }, Cmd.none )
 
         CreateDisbToggled ->
             ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
