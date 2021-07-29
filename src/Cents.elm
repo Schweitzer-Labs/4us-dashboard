@@ -3,6 +3,7 @@ module Cents exposing
     , fromMaybeDollars
     , stringToDollar
     , toDollar
+    , toDollarData
     , toUnsignedDollar
     )
 
@@ -77,3 +78,8 @@ strToUnsignedDollar cents =
 toUnsignedDollar : Int -> String
 toUnsignedDollar cents =
     format FormatNumber.usLocale (toFloat cents / 100)
+
+
+toDollarData : Int -> String
+toDollarData cents =
+    String.replace "," "" <| toUnsignedDollar cents

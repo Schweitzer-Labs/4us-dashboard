@@ -14,7 +14,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Navigation exposing (load)
-import Cents
+import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import ContribInfo
@@ -101,7 +101,7 @@ init config txns bankTxn =
     , disabled = False
     , error = ""
     , errors = []
-    , amount = String.replace "," "" <| Cents.toUnsignedDollar bankTxn.amount
+    , amount = toDollarData bankTxn.amount
     , checkNumber = ""
     , paymentDate = formDate utc bankTxn.paymentDate
     , emailAddress = ""
@@ -143,7 +143,7 @@ init config txns bankTxn =
 clearForm : Model -> Model
 clearForm model =
     { model
-        | amount = String.replace "," "" <| Cents.toUnsignedDollar model.bankTxn.amount
+        | amount = toDollarData model.bankTxn.amount
         , checkNumber = ""
         , paymentDate = formDate model.timezone model.bankTxn.paymentDate
         , emailAddress = ""
