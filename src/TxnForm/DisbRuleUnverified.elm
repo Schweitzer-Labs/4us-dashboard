@@ -98,8 +98,8 @@ init config txns bankTxn =
     , isPartialPayment = Nothing
     , isExistingLiability = Nothing
     , isInKind = Nothing
-    , amount = Cents.toUnsignedDollar bankTxn.amount
-    , paymentDate = ""
+    , amount = String.replace "," "" <| Cents.toUnsignedDollar bankTxn.amount
+    , paymentDate = formDate utc bankTxn.paymentDate
     , paymentMethod = Just bankTxn.paymentMethod
     , checkNumber = ""
     , createDisbIsVisible = False
@@ -197,7 +197,7 @@ transactionRowMap ( maybeSelected, maybeMsg, txn ) =
             ]
             ""
         )
-      , ( "Date / Time", text <| Timestamp.format (america__new_york ()) txn.paymentDate )
+      , ( "Date / Time", text <| Timestamp.format utc txn.paymentDate )
       , ( "Entity Name", name )
       , ( "Amount", amount )
       , ( "Purpose Code", Transactions.getContext txn )
@@ -376,7 +376,7 @@ update msg model =
             ( { model | checkNumber = str }, Cmd.none )
 
         PaymentDateUpdated str ->
-            ( { model | paymentDate = str, createDisbButtonIsDisabled = False }, Cmd.none )
+            ( { model | paymentDate = str }, Cmd.none )
 
         AddressLine1Updated str ->
             ( { model | addressLine1 = str }, Cmd.none )
@@ -403,7 +403,7 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool }, Cmd.none )
+            ( { model | isInKind = bool, createDisbButtonIsDisabled = False }, Cmd.none )
 
         CreateDisbToggled ->
             ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
@@ -621,7 +621,7 @@ reconcileTxnEncoder model =
 dateWithFormat : Model -> String
 dateWithFormat model =
     if model.paymentDate == "" then
-        formDate model.timezone model.bankTxn.paymentDate
+        formDate utc model.bankTxn.paymentDate
 
     else
         model.paymentDate

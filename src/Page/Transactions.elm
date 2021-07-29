@@ -6,6 +6,7 @@ import Api.AmendContrib as AmendContrib
 import Api.AmendDisb as AmendDisb
 import Api.CreateContrib as CreateContrib
 import Api.CreateDisb as CreateDisb
+import Api.GetReport as GetReport
 import Api.GetTxn as GetTxn
 import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse(..))
@@ -520,6 +521,7 @@ type Msg
     | GotCreateContributionResponse (Result Http.Error MutationResponse)
     | GotCreateDisbursementResponse (Result Http.Error MutationResponse)
     | GotTransactionData (Result Http.Error GetTxn.Model)
+    | GotReportData (Result Http.Error GetReport.Model)
     | SubmitCreateContribution
     | ToggleActionsDropdown Dropdown.State
     | ToggleFiltersDropdown Dropdown.State
@@ -832,11 +834,23 @@ update msg model =
 
         GenerateReport format ->
             case format of
+                FileFormat.CSV ->
+                    ( model, getReport model )
+
                 FileFormat.PDF ->
                     ( model, Download.string "2021-periodic-report-july.pdf" "text/pdf" "2021-periodic-report-july" )
 
-                FileFormat.CSV ->
-                    ( model, Download.string "2021-periodic-report-july.csv" "text/csv" "2021-periodic-report-july" )
+        GotReportData res ->
+            case res of
+                Ok body ->
+                    ( model, Download.string "report.csv" "text/csv" <| GetReport.toCsvData body )
+
+                Err _ ->
+                    let
+                        { cognitoDomain, cognitoClientId, redirectUri } =
+                            model.config
+                    in
+                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
 
         AnimateGenerateDisclosureModal visibility ->
             ( { model | generateDisclosureModalVisibility = visibility }, Cmd.none )
@@ -1100,6 +1114,11 @@ getTransactions model maybeTxnType =
 getTransaction : Model -> String -> Cmd Msg
 getTransaction model txnId =
     GetTxn.send GotTransactionData model.config <| GetTxn.encode model.committeeId txnId
+
+
+getReport : Model -> Cmd Msg
+getReport model =
+    GetReport.send GotReportData model.config <| GetReport.encode model.committeeId
 
 
 amendDisb : Model -> Cmd Msg
