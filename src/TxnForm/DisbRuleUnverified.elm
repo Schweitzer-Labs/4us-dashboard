@@ -197,7 +197,7 @@ transactionRowMap ( maybeSelected, maybeMsg, txn ) =
             ]
             ""
         )
-      , ( "Date / Time", text <| Timestamp.format (america__new_york ()) txn.paymentDate )
+      , ( "Date / Time", text <| Timestamp.format utc txn.paymentDate )
       , ( "Entity Name", name )
       , ( "Amount", amount )
       , ( "Purpose Code", Transactions.getContext txn )
@@ -621,7 +621,7 @@ reconcileTxnEncoder model =
 dateWithFormat : Model -> String
 dateWithFormat model =
     if model.paymentDate == "" then
-        formDate model.timezone model.bankTxn.paymentDate
+        formDate utc model.bankTxn.paymentDate
 
     else
         model.paymentDate
