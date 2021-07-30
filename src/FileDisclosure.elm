@@ -26,11 +26,11 @@ type alias DropdownConfig msg =
     ( Dropdown.State -> msg, Dropdown.State )
 
 
-view : Aggregations.Model -> DropdownConfig msg -> (FileFormat -> msg) -> Bool -> Html msg
-view aggs dropdownConfig downloadMsg submitted =
+view : Aggregations.Model -> DropdownConfig msg -> (FileFormat -> msg) -> msg -> Bool -> Html msg
+view aggs dropdownConfig downloadMsg goToNeedsReviewMsg submitted =
     let
         summary =
-            warningRows aggs ++ titleRows ++ aggregateRows aggs ++ downloadRows dropdownConfig downloadMsg
+            warningRows goToNeedsReviewMsg aggs ++ titleRows ++ aggregateRows aggs ++ downloadRows dropdownConfig downloadMsg
 
         rows =
             if submitted then
@@ -50,8 +50,8 @@ successRows =
     ]
 
 
-warningRows : Aggregations.Model -> List (Html msg)
-warningRows aggs =
+warningRows : msg -> Aggregations.Model -> List (Html msg)
+warningRows goToNeedsReviewMsg aggs =
     if aggs.needsReviewCount == 0 then
         []
 
@@ -59,19 +59,19 @@ warningRows aggs =
         let
             transactionsAre =
                 if aggs.needsReviewCount == 1 then
-                    " transaction is "
+                    " transaction needs "
 
                 else
-                    " transactions are "
+                    " transactions need "
 
             errorMessage =
-                String.fromInt aggs.needsReviewCount ++ transactionsAre ++ " missing required disclosure fields"
+                String.fromInt aggs.needsReviewCount ++ transactionsAre ++ " to be reviewed."
         in
         [ Grid.row
             [ Row.attrs [] ]
             [ Grid.col
                 []
-                [ a [ Route.href Route.Transactions ] [ AppDialogue.warning <| text errorMessage ]
+                [ span [ onClick goToNeedsReviewMsg, class "hover-underline-red hover-pointer" ] [ AppDialogue.warning <| text errorMessage ]
                 ]
             ]
         ]

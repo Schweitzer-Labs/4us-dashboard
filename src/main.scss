@@ -154,6 +154,11 @@ body {
   cursor: pointer;
 }
 
+.hover-underline-red:hover {
+  @extend .hover-underline;
+  text-decoration-color: $danger
+}
+
 .header-info-bank-logo {
   width: 70px;
 }
