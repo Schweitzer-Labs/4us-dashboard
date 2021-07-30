@@ -25,7 +25,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Navigation exposing (load)
-import Cents
+import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import DataTable exposing (DataRow)
@@ -98,7 +98,7 @@ init config txns bankTxn =
     , isPartialPayment = Nothing
     , isExistingLiability = Nothing
     , isInKind = Nothing
-    , amount = String.replace "," "" <| Cents.toUnsignedDollar bankTxn.amount
+    , amount = toDollarData bankTxn.amount
     , paymentDate = formDate utc bankTxn.paymentDate
     , paymentMethod = Just bankTxn.paymentMethod
     , checkNumber = ""
@@ -128,7 +128,7 @@ clearForm model =
         , isPartialPayment = Nothing
         , isExistingLiability = Nothing
         , isInKind = Nothing
-        , amount = ""
+        , amount = toDollarData model.bankTxn.amount
         , paymentDate = ""
         , checkNumber = ""
         , createDisbIsVisible = False
