@@ -1,7 +1,6 @@
-module Api.AmendContrib exposing (..)
+module Api.AmendContrib exposing (EncodeModel, decoder, encode, query, send, successDecoder)
 
 import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldNotZero, optionalFieldString, optionalFieldStringInt)
-import Cents
 import Config exposing (Config)
 import EmploymentStatus
 import EntityType exposing (fromMaybeToStringWithDefaultInd)

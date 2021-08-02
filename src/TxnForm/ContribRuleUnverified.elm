@@ -14,7 +14,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Navigation exposing (load)
-import Cents
+import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import ContribInfo
@@ -101,9 +101,9 @@ init config txns bankTxn =
     , disabled = False
     , error = ""
     , errors = []
-    , amount = Cents.toUnsignedDollar bankTxn.amount
+    , amount = toDollarData bankTxn.amount
     , checkNumber = ""
-    , paymentDate = ""
+    , paymentDate = formDate utc bankTxn.paymentDate
     , emailAddress = ""
     , phoneNumber = ""
     , firstName = ""
@@ -143,7 +143,7 @@ init config txns bankTxn =
 clearForm : Model -> Model
 clearForm model =
     { model
-        | amount = Cents.stringToDollar <| String.fromInt model.bankTxn.amount
+        | amount = toDollarData model.bankTxn.amount
         , checkNumber = ""
         , paymentDate = formDate model.timezone model.bankTxn.paymentDate
         , emailAddress = ""
@@ -567,7 +567,7 @@ transactionRowMap ( maybeSelected, maybeMsg, txn ) =
             ]
             ""
         )
-      , ( "Date", text <| Timestamp.format (america__new_york ()) txn.paymentDate )
+      , ( "Date", text <| Timestamp.format utc txn.paymentDate )
       , ( "Entity Name", name )
       , ( "Amount", amount )
       , ( "Entity Type", Transactions.getContext txn )
@@ -734,7 +734,7 @@ createContrib model =
 dateWithFormat : Model -> String
 dateWithFormat model =
     if model.paymentDate == "" then
-        formDate model.timezone model.bankTxn.paymentDate
+        formDate utc model.bankTxn.paymentDate
 
     else
         model.paymentDate

@@ -6,6 +6,7 @@ import Api.AmendContrib as AmendContrib
 import Api.AmendDisb as AmendDisb
 import Api.CreateContrib as CreateContrib
 import Api.CreateDisb as CreateDisb
+import Api.GetReport as GetReport
 import Api.GetTxn as GetTxn
 import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse(..))
@@ -57,6 +58,7 @@ import Validate exposing (validate)
 type alias Model =
     { session : Session
     , loading : Bool
+    , heading : String
     , committeeId : String
     , timeZone : Time.Zone
     , transactions : Transactions.Model
@@ -70,6 +72,7 @@ type alias Model =
     , actionsDropdown : Dropdown.State
     , filtersDropdown : Dropdown.State
     , filterTransactionType : Maybe TransactionType
+    , filterNeedsReview : Bool
     , disclosureSubmitting : Bool
     , disclosureSubmitted : Bool
     , createDisbursementModalVisibility : Modal.Visibility
@@ -109,6 +112,7 @@ init config session aggs committee committeeId =
         initModel =
             { session = session
             , loading = True
+            , heading = "All Transactions"
             , committeeId = committeeId
             , timeZone = Time.utc
             , transactions = []
@@ -122,6 +126,7 @@ init config session aggs committee committeeId =
             , filtersDropdown = Dropdown.initialState
             , generateDisclosureModalDownloadDropdownState = Dropdown.initialState
             , filterTransactionType = Nothing
+            , filterNeedsReview = False
             , disclosureSubmitting = False
             , disclosureSubmitted = False
             , createDisbursementModalVisibility = Modal.hidden
@@ -328,9 +333,7 @@ dropdowns model =
                 [ Col.attrs [ class "text-center" ] ]
                 [ h2
                     []
-                    [ text <|
-                        Maybe.withDefault "All Transactions" <|
-                            Maybe.map TransactionType.toDisplayString model.filterTransactionType
+                    [ text <| model.heading
                     ]
                 ]
             , Grid.col
@@ -355,7 +358,7 @@ actionsDropdown model =
             , items =
                 [ Dropdown.buttonItem [ onClick ShowCreateContributionModal ] [ text "Create Contribution" ]
                 , Dropdown.buttonItem [ onClick CreateDisbursementModalShow ] [ text "Create Disbursement" ]
-                , Dropdown.buttonItem [ onClick ShowGenerateDisclosureModal ] [ text "File Disclosure" ]
+                , Dropdown.buttonItem [ onClick ShowGenerateDisclosureModal ] [ text "Get Disclosure" ]
                 ]
             }
 
@@ -373,7 +376,8 @@ filtersDropdown model =
             , toggleButton =
                 Dropdown.toggle [ Button.success, Button.attrs [ Spacing.pl3, Spacing.pr3 ] ] [ text "Filters" ]
             , items =
-                [ Dropdown.buttonItem [ onClick FilterByContributions ] [ text "Contributions" ]
+                [ Dropdown.buttonItem [ onClick FilterNeedsReview ] [ text "Needs Review" ]
+                , Dropdown.buttonItem [ onClick FilterByContributions ] [ text "Contributions" ]
                 , Dropdown.buttonItem [ onClick FilterByDisbursements ] [ text "Disbursements" ]
                 , Dropdown.buttonItem [ onClick FilterAll ] [ text "All Transactions" ]
                 ]
@@ -389,7 +393,7 @@ generateDisclosureModal model =
         |> Modal.withAnimation AnimateGenerateDisclosureModal
         |> Modal.large
         |> Modal.hideOnBackdropClick True
-        |> Modal.h3 [] [ text "File Disclosure" ]
+        |> Modal.h3 [] [ text "Get Disclosure" ]
         |> Modal.body
             []
             [ FileDisclosure.view
@@ -398,12 +402,13 @@ generateDisclosureModal model =
                 , model.generateDisclosureModalDownloadDropdownState
                 )
                 GenerateReport
+                FilterNeedsReview
                 model.disclosureSubmitted
             ]
         |> Modal.footer []
             [ Grid.containerFluid
                 []
-                [ buttonRow "File" FileDisclosure model.disclosureSubmitting False model.disclosureSubmitted ]
+                [ buttonRow "File" FileDisclosure model.disclosureSubmitting False True ]
             ]
         |> Modal.view model.generateDisclosureModalVisibility
 
@@ -520,6 +525,7 @@ type Msg
     | GotCreateContributionResponse (Result Http.Error MutationResponse)
     | GotCreateDisbursementResponse (Result Http.Error MutationResponse)
     | GotTransactionData (Result Http.Error GetTxn.Model)
+    | GotReportData (Result Http.Error GetReport.Model)
     | SubmitCreateContribution
     | ToggleActionsDropdown Dropdown.State
     | ToggleFiltersDropdown Dropdown.State
@@ -528,6 +534,7 @@ type Msg
     | FileDisclosureDelayed
     | FilterByContributions
     | FilterByDisbursements
+    | FilterNeedsReview
     | NoOp
     | FilterAll
     | CreateDisbursementModalHide
@@ -832,11 +839,23 @@ update msg model =
 
         GenerateReport format ->
             case format of
+                FileFormat.CSV ->
+                    ( model, getReport model )
+
                 FileFormat.PDF ->
                     ( model, Download.string "2021-periodic-report-july.pdf" "text/pdf" "2021-periodic-report-july" )
 
-                FileFormat.CSV ->
-                    ( model, Download.string "2021-periodic-report-july.csv" "text/csv" "2021-periodic-report-july" )
+        GotReportData res ->
+            case res of
+                Ok body ->
+                    ( model, Download.string "report.csv" "text/csv" <| GetReport.toCsvData body )
+
+                Err _ ->
+                    let
+                        { cognitoDomain, cognitoClientId, redirectUri } =
+                            model.config
+                    in
+                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
 
         AnimateGenerateDisclosureModal visibility ->
             ( { model | generateDisclosureModalVisibility = visibility }, Cmd.none )
@@ -856,10 +875,20 @@ update msg model =
         GotTransactionsData res ->
             case res of
                 Ok body ->
+                    let
+                        txns =
+                            applyNeedsReviewFilter model <| GetTxns.toTxns body
+
+                        aggs =
+                            GetTxns.toAggs body
+
+                        committee =
+                            GetTxns.toCommittee body
+                    in
                     ( { model
-                        | transactions = GetTxns.toTxns body
-                        , aggregations = GetTxns.toAggs body
-                        , committee = GetTxns.toCommittee body
+                        | transactions = txns
+                        , aggregations = aggs
+                        , committee = committee
                         , loading = False
                       }
                     , Cmd.none
@@ -1005,17 +1034,22 @@ update msg model =
             ( { model | generateDisclosureModalDownloadDropdownState = state }, Cmd.none )
 
         FilterByContributions ->
-            ( { model | filterTransactionType = Just TransactionType.Contribution }
+            ( { model | filterTransactionType = Just TransactionType.Contribution, filterNeedsReview = False, heading = "Contributions" }
             , getTransactions model (Just TransactionType.Contribution)
             )
 
         FilterByDisbursements ->
-            ( { model | filterTransactionType = Just TransactionType.Disbursement }
+            ( { model | filterTransactionType = Just TransactionType.Disbursement, filterNeedsReview = False, heading = "Disbursements" }
             , getTransactions model (Just TransactionType.Disbursement)
             )
 
+        FilterNeedsReview ->
+            ( { model | filterNeedsReview = True, heading = "Needs Review (" ++ String.fromInt model.aggregations.needsReviewCount ++ ")", generateDisclosureModalVisibility = Modal.hidden }
+            , getTransactions model Nothing
+            )
+
         FilterAll ->
-            ( { model | filterTransactionType = Nothing }
+            ( { model | filterTransactionType = Nothing, filterNeedsReview = False, heading = "All Transactions" }
             , getTransactions model Nothing
             )
 
@@ -1102,6 +1136,11 @@ getTransaction model txnId =
     GetTxn.send GotTransactionData model.config <| GetTxn.encode model.committeeId txnId
 
 
+getReport : Model -> Cmd Msg
+getReport model =
+    GetReport.send GotReportData model.config <| GetReport.encode model.committeeId
+
+
 amendDisb : Model -> Cmd Msg
 amendDisb model =
     AmendDisb.send DisbRuleVerifiedGotMutResp model.config <| AmendDisb.encode model.disbRuleVerifiedModal
@@ -1151,3 +1190,21 @@ subscriptions model =
 toSession : Model -> Session
 toSession model =
     model.session
+
+
+
+-- Utils
+
+
+isNeedsReviewTxn : Transaction.Model -> Bool
+isNeedsReviewTxn txn =
+    (not txn.ruleVerified && txn.bankVerified) || (txn.ruleVerified && not txn.bankVerified)
+
+
+applyNeedsReviewFilter : Model -> Transactions.Model -> Transactions.Model
+applyNeedsReviewFilter model txns =
+    if model.filterNeedsReview then
+        List.filter isNeedsReviewTxn txns
+
+    else
+        txns

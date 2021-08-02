@@ -7216,11 +7216,14 @@ body {
   font-size: 28px;
   color: #adb5bd; }
 
-.hover-underline:hover {
+.hover-underline:hover, .hover-underline-red:hover {
   text-decoration: underline; }
 
 .hover-pointer:hover {
   cursor: pointer; }
+
+.hover-underline-red:hover {
+  text-decoration-color: #FF0A03; }
 
 .header-info-bank-logo {
   width: 70px; }
