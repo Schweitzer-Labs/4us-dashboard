@@ -58,10 +58,18 @@ jobs:
         if: endsWith(github.ref, '/demo')
         run: |
           echo "RUNENV=demo" >> $GITHUB_ENV
-      - name: Assemble and Deploy CloudFormation Stacks
-        id: deploy-to-aws
+      - name: Assemble CloudFormation Stack
+        id: assemble-cloudformation-stack
         run: |
-          make RUNENV=${{ env.RUNENV }} clean deploy
+          make RUNENV=${{ env.RUNENV }} clean build-stacks
+      - name: Generate and Upload CloudFormation Package
+        id: generate-and-upload-cloudformation-package
+        run: |
+          make RUNENV=${{ env.RUNENV }} package
+      - name: Deploy CloudFormation Package
+        id: deploy-cloudformation-package-to-aws
+        run: |
+          make RUNENV=${{ env.RUNENV }} deploy
       - uses: act10ns/slack@v1
         with:
           status: ${{ job.status }}
