@@ -83,8 +83,10 @@ all: build
 dep:
 	@pip3 install jinja2 cfn_flip boto3
 
-build: $(BUILD_DIR)
-	@$(MAKE) -C $(CFN_SRC_DIR) $@
+build: $(BUILD_DIR) build-stacks build-web
+
+build-stacks: $(BUILD_DIR)
+	@$(MAKE) -C $(CFN_SRC_DIR) build
 
 $(BUILD_DIR):
 	@mkdir -p $@
@@ -93,7 +95,7 @@ check: build
 	@$(MAKE) -C $(CFN_SRC_DIR) $@
 
 
-build-web: build
+build-web: build-stacks
 	@echo $(COGNITO_CLIENT_ID)
 	@npm install
 	npm \
@@ -119,7 +121,7 @@ package: build
 	@$(MAKE) -C $(CFN_SRC_DIR) $@
 
 deploy-infra: package
-	@$(MAKE) -C $(CFN_SRC_DIR) $@
+	@$(MAKE) -C $(CFN_SRC_DIR) deploy
 
 deploy: deploy-infra deploy-web
 
