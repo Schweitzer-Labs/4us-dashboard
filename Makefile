@@ -44,7 +44,7 @@ endif
 export STACK		:= $(RUNENV)-$(PRODUCT)-$(SUBDOMAIN)
 
 export DATE		:= $(shell date)
-export NONCE		= $(shell uuidgen | cut -d\- -f1)
+export NONCE = $(eval NONCE := $(shell uuidgen | cut -d\- -f1))$(NONCE)
 
 export ENDPOINT		:= https://cloudformation-fips.$(REGION).amazonaws.com
 
