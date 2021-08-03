@@ -44,7 +44,7 @@ endif
 export STACK		:= $(RUNENV)-$(PRODUCT)-$(SUBDOMAIN)
 
 export DATE		:= $(shell date)
-export NONCE		:= $(shell uuidgen | cut -d\- -f1)
+export NONCE		= $(shell uuidgen | cut -d\- -f1)
 
 export ENDPOINT		:= https://cloudformation-fips.$(REGION).amazonaws.com
 
@@ -72,8 +72,9 @@ COGNITO_REDIRECT_URI	:= https://$(SUBDOMAIN).$(DOMAIN).$(TLD)
 DONOR_URL		:= https://donate.$(DOMAIN).$(TLD)
 API_ENDPOINT		:= https://$(SUBDOMAIN).$(DOMAIN).$(TLD)/api/committee/graphql
 
-COGNITO_USER_POOL	:= $(shell aws cognito-idp list-user-pools --region $(REGION) --max-results 10 --query 'UserPools[?starts_with(Name, `PlatformUserPool`)].Id' --output text)
-COGNITO_CLIENT_ID	:= $(shell aws cognito-idp list-user-pool-clients --region $(REGION) --user-pool-id $(COGNITO_USER_POOL) --query 'UserPoolClients[*].ClientId' --output text)
+COGNITO_USER_POOL = $(eval COGNITO_USER_POOL := $$(shell aws cognito-idp list-user-pools --region $(REGION) --max-results 10 --query 'UserPools[?starts_with(Name, `PlatformUserPool`)].Id' --output text))$(COGNITO_USER_POOL)
+
+COGNITO_CLIENT_ID = $(eval COGNITO_CLIENT_ID := $$(shell aws cognito-idp list-user-pool-clients --region $(REGION) --user-pool-id $(COGNITO_USER_POOL) --query 'UserPoolClients[*].ClientId' --output text))$(COGNITO_CLIENT_ID)
 
 .PHONY: all dep build build-web check import package deploy deploy-web clean realclean
 
