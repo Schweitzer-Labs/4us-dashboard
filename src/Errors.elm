@@ -47,10 +47,10 @@ fromInKindDescription payMethod desc =
         "InKindDesc" ->
             case desc of
                 Just a ->
-                    [ "In-Kind Description Missing" ]
+                    []
 
                 Nothing ->
-                    []
+                    [ "In-Kind Description Missing" ]
 
         _ ->
             []
