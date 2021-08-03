@@ -32,7 +32,7 @@ jobs:
       - name: Install Python libs
         id: install-python-libs
         run: |
-          pip3 install -r requirements.txt
+          pip3 install -r build-reqs.txt
       - name: Install and set up elm
         id: install-elm
         uses: jorelali/setup-elm@v3
