@@ -1,5 +1,6 @@
 RecordSet:
   Type: AWS::Route53::RecordSet
+  Condition: NonCloudFlare
   Properties:
     Name: !Sub ${SubDomain}.${Domain}.${TLD}
     Type: A

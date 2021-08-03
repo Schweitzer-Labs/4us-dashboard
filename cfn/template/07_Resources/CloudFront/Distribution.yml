@@ -1,5 +1,6 @@
 Distribution:
   Type: AWS::CloudFront::Distribution
+  Condition: NonCloudFlare
   Properties:
     DistributionConfig:
       Comment: !Sub Deployed via ${AWS::StackName}

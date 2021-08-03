@@ -1,5 +1,6 @@
 SecureHeadersFunction:
   Type: AWS::CloudFront::Function
+  Condition: NonCloudFlare
   Properties:
     AutoPublish: true
     Name: !Sub SecureHeaders-${AWS::StackName}
