@@ -27,7 +27,6 @@ export NONCE		:= $(shell uuidgen | cut -d\- -f1)
 export ENDPOINT		:= https://cloudformation-fips.$(REGION).amazonaws.com
 export BUCKET		:= 4us-cfn-templates-$(REGION)
 
-export STACK_PARAMS	:= Nonce=$(NONCE)
 STACK_PARAMS		+= LambdaRunEnvironment=$(RUNENV)
 
 export TEMPLATE		:= template.yml
