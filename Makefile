@@ -84,7 +84,7 @@ install-build-tools: install-aws-cli
 	@npm install create-elm-app
 
 install-aws-cli: awscliv2.zip
-	@sudo ./aws/install
+	@./aws/install
 
 awscliv2.zip:
 	@curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o $@
