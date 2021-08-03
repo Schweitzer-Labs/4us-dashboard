@@ -6,3 +6,5 @@ Dev:
   !Equals [!Ref RunEnvironment, dev]
 NonProduction:
   !Not [Condition: Production]
+NonCloudFlare:
+  !Or [Condition: Production, Condition: QA]
