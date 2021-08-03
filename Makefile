@@ -83,6 +83,16 @@ all: build
 dep:
 	@pip3 install jinja2 cfn_flip boto3
 
+install-build-tools: install-aws-cli
+	@npm install create-elm-app
+
+install-aws-cli: awscliv2.zip
+	@sudo ./aws/install
+
+awscliv2.zip:
+	@curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o $@
+	@unzip $@
+
 clean:
 	@rm -f $(BUILD_DIR)/*.yml
 
