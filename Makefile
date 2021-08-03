@@ -83,7 +83,15 @@ all: build
 dep:
 	@pip3 install jinja2 cfn_flip boto3
 
-build: $(BUILD_DIR) build-stacks build-web
+clean:
+	@rm -f $(BUILD_DIR)/*.yml
+
+realclean: clean
+	@rm -rf $(BUILD_DIR)
+	@rm -rf build
+	@rm -rf node_modules
+
+build: build-stacks build-web
 
 build-stacks: $(BUILD_DIR)
 	@$(MAKE) -C $(CFN_SRC_DIR) build
@@ -91,11 +99,7 @@ build-stacks: $(BUILD_DIR)
 $(BUILD_DIR):
 	@mkdir -p $@
 
-check: build
-	@$(MAKE) -C $(CFN_SRC_DIR) $@
-
-
-build-web: build-stacks
+build-web: $(BUILD_DIR)
 	@echo $(COGNITO_CLIENT_ID)
 	@npm install
 	npm \
@@ -106,22 +110,17 @@ build-web: build-stacks
 		--clientid=$(COGNITO_CLIENT_ID) \
 		run build
 
-deploy-web: build-web
-	aws s3 sync build/ s3://$(WEB_BUCKET)/
-
-clean:
-	@rm -f $(BUILD_DIR)/*.yml
-
-realclean: clean
-	@rm -rf $(BUILD_DIR)
-	@rm -rf build
-	@rm -rf node_modules
+check: build
+	@$(MAKE) -C $(CFN_SRC_DIR) $@
 
 package: build
 	@$(MAKE) -C $(CFN_SRC_DIR) $@
 
 deploy-infra: package
 	@$(MAKE) -C $(CFN_SRC_DIR) deploy
+
+deploy-web: build-web
+	aws s3 sync build/ s3://$(WEB_BUCKET)/
 
 deploy: deploy-infra deploy-web
 
