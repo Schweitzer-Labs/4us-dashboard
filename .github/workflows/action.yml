@@ -4,7 +4,6 @@ on:
     branches:
       - qa
       - prod
-      - demo
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -53,11 +52,6 @@ jobs:
         if: endsWith(github.ref, '/prod')
         run: |
           echo "RUNENV=prod" >> $GITHUB_ENV
-      - name: Set environment to Demo
-        id: set-deployment-target-to-demo
-        if: endsWith(github.ref, '/demo')
-        run: |
-          echo "RUNENV=demo" >> $GITHUB_ENV
       - name: Assemble CloudFormation Stack
         id: assemble-cloudformation-stack
         run: |
@@ -70,6 +64,10 @@ jobs:
         id: deploy-cloudformation-package-to-aws
         run: |
           make RUNENV=${{ env.RUNENV }} deploy-infra
+      - name: Deploy Static Web Assets to S3
+        id: deploy-web-assets-to-s3
+        run: |
+          make RUNENV=${{ env.RUNENV }} deploy-web
       - uses: act10ns/slack@v1
         with:
           status: ${{ job.status }}
