@@ -62,7 +62,6 @@ export WEB_BUCKET	:= $(SUBDOMAIN)-$(RUNENV).$(DOMAIN).$(TLD)-$(REGION)
 export CREPES_PARAMS	:= --region $(REGION)
 export CREPES_PARAMS	+= --subdomain $(SUBDOMAIN) --domain $(DOMAIN) --tld $(TLD) --runenv $(RUNENV) --product $(PRODUCT)
 
-
 COGNITO_DOMAIN	:= https://platform-user-$(PRODUCT)-$(RUNENV).auth.$(REGION).amazoncognito.com
 COGNITO_REDIRECT_URI	:= https://$(SUBDOMAIN).$(DOMAIN).$(TLD)
 DONOR_URL		:= https://donate.$(DOMAIN).$(TLD)
@@ -84,7 +83,7 @@ install-build-tools: install-aws-cli
 	@npm install create-elm-app
 
 install-aws-cli: awscliv2.zip
-	@./aws/install
+	@./aws/install -i ~/.local/aws-cli -b ~/.local/bin
 
 awscliv2.zip:
 	@curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o $@
@@ -97,6 +96,7 @@ realclean: clean
 	@rm -rf $(BUILD_DIR)
 	@rm -rf build
 	@rm -rf node_modules
+	@rm -rf aws*
 
 build: build-stacks build-web
 
