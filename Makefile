@@ -90,8 +90,8 @@ install-aws-cli: awscliv2.zip
 	@sudo ./aws/install
 
 awscliv2.zip:
-	@curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o $@
-	@unzip $@
+	@curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o $@
+	@unzip -q $@
 
 clean:
 	@rm -f $(BUILD_DIR)/*.yml
