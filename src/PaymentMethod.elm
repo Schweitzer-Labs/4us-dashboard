@@ -40,7 +40,7 @@ toDataString method =
             "Credit"
 
         InKind ->
-            "InKind"
+            "InKindDesc"
 
         Transfer ->
             "Transfer"
@@ -70,7 +70,7 @@ decoder =
                     "Debit" ->
                         Decode.succeed Debit
 
-                    "InKind" ->
+                    "InKindDesc" ->
                         Decode.succeed InKind
 
                     "Transfer" ->
@@ -150,7 +150,7 @@ fromString str =
         "Transfer" ->
             Just Transfer
 
-        "InKind" ->
+        "InKindDesc" ->
             Just InKind
 
         "Other" ->

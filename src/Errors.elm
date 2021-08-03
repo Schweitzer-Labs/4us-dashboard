@@ -1,6 +1,7 @@
 module Errors exposing (fromInKind, fromInKindDescription, fromMaxAmount, fromMaxDate, fromPostalCode)
 
 import Cents
+import InKindDesc
 import Time
 import Timestamp
 
@@ -40,19 +41,16 @@ fromPostalCode postalCode =
         []
 
 
-fromInKindDescription : String -> String -> Errors
-fromInKindDescription payMethod str =
+fromInKindDescription : String -> Maybe InKindDesc.Model -> Errors
+fromInKindDescription payMethod desc =
     case payMethod of
-        "InKind" ->
-            let
-                length =
-                    String.length <| str
-            in
-            if length < 3 then
-                [ "Description is missing" ]
+        "InKindDesc" ->
+            case desc of
+                Just a ->
+                    [ "In-Kind Description Missing" ]
 
-            else
-                []
+                Nothing ->
+                    []
 
         _ ->
             []
