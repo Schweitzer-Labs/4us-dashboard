@@ -16,7 +16,7 @@ type Model
 fromString : String -> Maybe Model
 fromString str =
     case str of
-        "Services/Facilities Provided" ->
+        "ServicesFacilities Provided" ->
             Just ServicesFacilitiesProvided
 
         "Campaign Expenses Paid" ->
@@ -33,7 +33,7 @@ toDataString : Model -> String
 toDataString src =
     case src of
         ServicesFacilitiesProvided ->
-            "Services/FacilitiesProvided"
+            "ServicesFacilitiesProvided"
 
         CampaignExpensesPaid ->
             "CampaignExpensesPaid"
@@ -53,7 +53,7 @@ decoder =
         |> Decode.andThen
             (\str ->
                 case str of
-                    "Services/FacilitiesProvided" ->
+                    "ServicesFacilitiesProvided" ->
                         Decode.succeed ServicesFacilitiesProvided
 
                     "CampaignExpensesPaid" ->
