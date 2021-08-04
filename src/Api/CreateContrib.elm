@@ -23,7 +23,7 @@ query =
       $lastName: String!
       $addressLine1: String!
       $city: String!
-      $state: String!
+      $state: State!
       $postalCode: String!
       $entityType: EntityType!
       $employmentStatus: EmploymentStatus
