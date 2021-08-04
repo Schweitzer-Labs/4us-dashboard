@@ -1,4 +1,7 @@
 # DANGER: DO NOT execute these targets on your local machine. These are for CloudFlare's build system only
+
+export PATH := $(PATH):$(HOME)/.local/bin
+
 cloudflare-install-build-tools: cloudflare-configure-aws-cli
 	@npm install create-elm-app
 
@@ -14,7 +17,5 @@ awscliv2.zip:
 	@unzip -q $@
 
 build-cloudflare-web: cloudflare-install-build-tools build-web
-
-export PATH := $(PATH):~/.local/bin
 
 include Makefile
