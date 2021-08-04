@@ -13,4 +13,8 @@ awscliv2.zip:
 	@curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o $@
 	@unzip -q $@
 
+build-cloudflare-web: cloudflare-install-build-tools build-web
+
+export PATH := $(PATH):~/.local/bin
+
 include Makefile
