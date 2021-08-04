@@ -2,6 +2,8 @@
 
 export PATH := $(PATH):$(HOME)/.local/bin
 
+include Makefile
+
 cloudflare-install-build-tools: cloudflare-configure-aws-cli
 	@npm install create-elm-app
 
@@ -17,5 +19,3 @@ awscliv2.zip:
 	@unzip -q $@
 
 build-cloudflare-web: cloudflare-install-build-tools build-web
-
-include Makefile
