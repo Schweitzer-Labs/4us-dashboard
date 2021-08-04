@@ -76,19 +76,6 @@ COGNITO_CLIENT_ID = $(eval COGNITO_CLIENT_ID := $$(shell aws cognito-idp list-us
 # Make targets
 all: build
 
-dep:
-	@pip3 install jinja2 cfn_flip boto3
-
-install-build-tools: install-aws-cli
-	@npm install create-elm-app
-
-install-aws-cli: awscliv2.zip
-	@./aws/install -i ~/.local/aws-cli -b ~/.local/bin
-
-awscliv2.zip:
-	@curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o $@
-	@unzip -q $@
-
 clean:
 	@rm -f $(BUILD_DIR)/*.yml
 
@@ -96,7 +83,12 @@ realclean: clean
 	@rm -rf $(BUILD_DIR)
 	@rm -rf build
 	@rm -rf node_modules
-	@rm -rf aws*
+
+dep:
+	@pip3 install jinja2 cfn_flip boto3
+
+install-build-deps: $(BUILD_DIR)
+	@npm install
 
 build: build-stacks build-web
 
@@ -106,9 +98,8 @@ build-stacks: $(BUILD_DIR)
 $(BUILD_DIR):
 	@mkdir -p $@
 
-build-web: $(BUILD_DIR)
-	@echo $(COGNITO_CLIENT_ID)
-	@npm install
+build-web: install-build-deps
+	echo $(COGNITO_USER_POOL) $(COGNITO_CLIENT_ID)
 	npm \
 		--domain=$(COGNITO_DOMAIN) \
 		--redirect=$(COGNITO_REDIRECT_URI) \
@@ -139,3 +130,4 @@ import: $(BUILD_DIR)
 
 replication:
 	@$(MAKE) -C cfn/replication deploy
+
