@@ -1,4 +1,4 @@
-SHELL			:= bash
+export SHELL		:= env PATH=$(PATH) bash
 export CREPES		:= $(PWD)/cfn/bin/crepes.py
 export SUBDOMAIN	:= dashboard
 
