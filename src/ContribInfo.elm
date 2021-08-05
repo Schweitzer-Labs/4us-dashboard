@@ -4,10 +4,7 @@ import Address
 import AmountDate
 import AppInput exposing (inputEmail, inputText)
 import Asset
-import Bootstrap.Form as Form
-import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Input as Input
-import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
@@ -18,11 +15,11 @@ import Errors exposing (fromInKindDescription, fromPostalCode)
 import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
+import InKindDesc exposing (Model(..), inKindDescRadioList)
 import MonthSelector
 import OrgOrInd
 import Owners exposing (Owners)
 import PaymentMethod exposing (PaymentMethod)
-import SelectRadio
 import Validate exposing (Valid, Validator, fromErrors, ifBlank, validate)
 import YearSelector
 
@@ -55,7 +52,7 @@ type alias Config msg =
     , owners : DataMsg.MsgOwner msg
     , ownerName : DataMsg.MsgString msg
     , ownerOwnership : DataMsg.MsgString msg
-    , inKindDescription : DataMsg.MsgString msg
+    , inKindDescription : DataMsg.MsgMaybeInKindDesc msg
     , disabled : Bool
     , isEditable : Bool
     , toggleEdit : msg
@@ -126,7 +123,7 @@ type alias ContribValidatorModel =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
-    , inKindDescription : String
+    , inKindDescription : Maybe InKindDesc.Model
     }
 
 
@@ -222,17 +219,18 @@ checkRow { checkNumber, disabled } =
 
 inKindRow : Config msg -> List (Html msg)
 inKindRow { inKindDescription, disabled } =
+    let
+        maybeMsg =
+            toMsg inKindDescription
+
+        msg =
+            Just >> maybeMsg
+    in
     [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
         [ Grid.col
             []
-            [ Input.text
-                [ Input.id "inkind-description"
-                , Input.onInput <| toMsg inKindDescription
-                , Input.value <| toData inKindDescription
-                , Input.placeholder "Description"
-                , Input.disabled disabled
-                ]
-            ]
+          <|
+            inKindDescRadioList msg (toData inKindDescription) disabled
         ]
     ]
 
@@ -246,7 +244,7 @@ processingRow c =
         "Credit" ->
             creditRow c
 
-        "InKind" ->
+        "InKindDesc" ->
             inKindRow c
 
         _ ->

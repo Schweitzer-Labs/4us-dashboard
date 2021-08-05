@@ -20,7 +20,7 @@ query =
       $addressLine1: String
       $addressLine2: String
       $city: String
-      $state: String
+      $state: State
       $postalCode: String
       $paymentDate: Float
       $checkNumber: String

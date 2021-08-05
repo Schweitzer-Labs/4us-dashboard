@@ -11,6 +11,7 @@ import EntityType
 import ExpandableBankData
 import Html exposing (Html, span, text)
 import Html.Attributes exposing (class)
+import InKindDesc
 import Loading
 import OrgOrInd
 import Owners exposing (Owner, Owners)
@@ -57,7 +58,7 @@ type alias Model =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
-    , inKindDescription : String
+    , inKindDescription : Maybe InKindDesc.Model
     , committeeId : String
     , isSubmitDisabled : Bool
     , maybeError : Maybe String
@@ -108,7 +109,7 @@ init txn =
     , owners = []
     , ownerName = ""
     , ownerOwnership = ""
-    , inKindDescription = ""
+    , inKindDescription = Nothing
     , paymentMethod = ""
     , committeeId = txn.committeeId
     , isSubmitDisabled = True
@@ -233,7 +234,7 @@ type Msg
     | AmountUpdated String
     | CheckNumberUpdated String
     | PaymentDateUpdated String
-    | InKindDescriptionUpdated String
+    | InKindDescriptionUpdated (Maybe InKindDesc.Model)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -332,8 +333,8 @@ update msg model =
         PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )
 
-        InKindDescriptionUpdated str ->
-            ( { model | inKindDescription = str }, Cmd.none )
+        InKindDescriptionUpdated desc ->
+            ( { model | inKindDescription = desc }, Cmd.none )
 
         ToggleEdit ->
             ( { model | disabled = not model.disabled }, Cmd.none )

@@ -5,6 +5,7 @@ import ContribInfo exposing (ContribValidatorModel)
 import EmploymentStatus
 import EntityType
 import Html exposing (Html)
+import InKindDesc
 import OrgOrInd
 import Owners exposing (Owners)
 
@@ -40,7 +41,7 @@ type alias Model =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
-    , inKindDescription : String
+    , inKindDescription : Maybe InKindDesc.Model
     , committeeId : String
     , maybeError : Maybe String
     }
@@ -77,7 +78,7 @@ init committeeId =
     , owners = []
     , ownerName = ""
     , ownerOwnership = ""
-    , inKindDescription = ""
+    , inKindDescription = Nothing
     , paymentMethod = ""
     , committeeId = committeeId
     , maybeError = Nothing
@@ -159,7 +160,7 @@ type Msg
     | NoOp
     | PaymentMethodUpdated String
     | CVVUpdated String
-    | InKindDescriptionUpdated String
+    | InKindDescriptionUpdated (Maybe InKindDesc.Model)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -258,8 +259,8 @@ update msg model =
         PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )
 
-        InKindDescriptionUpdated str ->
-            ( { model | inKindDescription = str }, Cmd.none )
+        InKindDescriptionUpdated desc ->
+            ( { model | inKindDescription = desc }, Cmd.none )
 
 
 toEncodeModel : Model -> CreateContrib.EncodeModel

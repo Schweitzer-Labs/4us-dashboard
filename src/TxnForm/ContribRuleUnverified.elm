@@ -27,6 +27,7 @@ import Html exposing (Html, div, h6, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Http
+import InKindDesc
 import LabelWithData exposing (labelWithContent, labelWithData)
 import List exposing (sortBy)
 import OrgOrInd
@@ -78,7 +79,7 @@ type alias Model =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
-    , inKindDescription : String
+    , inKindDescription : Maybe InKindDesc.Model
     , maybeError : Maybe String
     , config : Config
     , lastCreatedTxnId : String
@@ -127,7 +128,7 @@ init config txns bankTxn =
     , owners = []
     , ownerName = ""
     , ownerOwnership = ""
-    , inKindDescription = ""
+    , inKindDescription = Nothing
     , paymentMethod = ""
     , createContribIsVisible = False
     , createContribButtonIsDisabled = False
@@ -271,7 +272,7 @@ type Msg
     | AmountUpdated String
     | CheckNumberUpdated String
     | PaymentDateUpdated String
-    | InKindDescriptionUpdated String
+    | InKindDescriptionUpdated (Maybe InKindDesc.Model)
       -- Reconcile
     | CreateContribToggled
     | CreateContribSubmitted
@@ -376,8 +377,8 @@ update msg model =
         PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )
 
-        InKindDescriptionUpdated str ->
-            ( { model | inKindDescription = str }, Cmd.none )
+        InKindDescriptionUpdated desc ->
+            ( { model | inKindDescription = desc }, Cmd.none )
 
         ToggleEdit ->
             ( { model | disabled = not model.disabled }, Cmd.none )
