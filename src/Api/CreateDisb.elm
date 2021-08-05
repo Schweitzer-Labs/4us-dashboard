@@ -22,7 +22,7 @@ query =
       $entityName: String!
       $addressLine1: String!
       $city: String!
-      $state: String!
+      $state: State!
       $postalCode: String!
       $isSubcontracted: Boolean!
       $isPartialPayment: Boolean!

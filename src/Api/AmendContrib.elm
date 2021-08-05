@@ -19,15 +19,15 @@ query =
     """
     mutation(
       $committeeId: String!
-      $transactionId: String!
-      $amount: Float!
-      $paymentMethod: PaymentMethod!
-      $firstName: String!
-      $lastName: String!
-      $addressLine1: String!
-      $city: String!
-      $state: String!
-      $postalCode: String!
+      $transactionId: String
+      $amount: Float
+      $paymentMethod: PaymentMethod
+      $firstName: String
+      $lastName: String
+      $addressLine1: String
+      $city: String
+      $state: State
+      $postalCode: String
       $entityType: EntityType
       $emailAddress: String
       $paymentDate: Float
