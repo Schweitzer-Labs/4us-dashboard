@@ -1,4 +1,4 @@
-SHELL			:= bash
+export SHELL		:= env PATH=$(PATH) bash
 export CREPES		:= $(PWD)/cfn/bin/crepes.py
 export SUBDOMAIN	:= dashboard
 
@@ -44,12 +44,8 @@ endif
 export STACK		:= $(RUNENV)-$(PRODUCT)-$(SUBDOMAIN)
 
 export DATE		:= $(shell date)
-export NONCE		:= $(shell uuidgen | cut -d\- -f1)
 
 export ENDPOINT		:= https://cloudformation-fips.$(REGION).amazonaws.com
-
-export STACK_PARAMS	:= Nonce=$(NONCE)
-export STACK_IMPORT_PARAMS	+= ParameterKey=Nonce,ParameterValue=$(NONCE)
 
 export BUILD_DIR	:= $(PWD)/.build
 
@@ -66,46 +62,19 @@ export WEB_BUCKET	:= $(SUBDOMAIN)-$(RUNENV).$(DOMAIN).$(TLD)-$(REGION)
 export CREPES_PARAMS	:= --region $(REGION)
 export CREPES_PARAMS	+= --subdomain $(SUBDOMAIN) --domain $(DOMAIN) --tld $(TLD) --runenv $(RUNENV) --product $(PRODUCT)
 
-
 COGNITO_DOMAIN	:= https://platform-user-$(PRODUCT)-$(RUNENV).auth.$(REGION).amazoncognito.com
 COGNITO_REDIRECT_URI	:= https://$(SUBDOMAIN).$(DOMAIN).$(TLD)
 DONOR_URL		:= https://donate.$(DOMAIN).$(TLD)
 API_ENDPOINT		:= https://$(SUBDOMAIN).$(DOMAIN).$(TLD)/api/committee/graphql
 
-COGNITO_USER_POOL	:= $(shell aws cognito-idp list-user-pools --region $(REGION) --max-results 10 --query 'UserPools[?starts_with(Name, `PlatformUserPool`)].Id' --output text)
-COGNITO_CLIENT_ID	:= $(shell aws cognito-idp list-user-pool-clients --region $(REGION) --user-pool-id $(COGNITO_USER_POOL) --query 'UserPoolClients[*].ClientId' --output text)
+COGNITO_USER_POOL = $(eval COGNITO_USER_POOL := $$(shell aws cognito-idp list-user-pools --region $(REGION) --max-results 10 --query 'UserPools[?starts_with(Name, `PlatformUserPool`)].Id' --output text))$(COGNITO_USER_POOL)
+
+COGNITO_CLIENT_ID = $(eval COGNITO_CLIENT_ID := $$(shell aws cognito-idp list-user-pool-clients --region $(REGION) --user-pool-id $(COGNITO_USER_POOL) --query 'UserPoolClients[*].ClientId' --output text))$(COGNITO_CLIENT_ID)
 
 .PHONY: all dep build build-web check import package deploy deploy-web clean realclean
 
 # Make targets
 all: build
-
-dep:
-	@pip3 install jinja2 cfn_flip boto3
-
-build: $(BUILD_DIR)
-	@$(MAKE) -C $(CFN_SRC_DIR) build
-
-$(BUILD_DIR):
-	@mkdir -p $@
-
-check: build
-	@$(MAKE) -C $(CFN_SRC_DIR) check
-
-
-build-web: build
-	@echo $(COGNITO_CLIENT_ID)
-	@npm install
-	npm \
-		--domain=$(COGNITO_DOMAIN) \
-		--redirect=$(COGNITO_REDIRECT_URI) \
-		--apiendpoint=$(API_ENDPOINT) \
-		--donorurl=$(DONOR_URL) \
-		--clientid=$(COGNITO_CLIENT_ID) \
-		run build
-
-deploy-web: build-web
-	aws s3 sync build/ s3://$(WEB_BUCKET)/
 
 clean:
 	@rm -f $(BUILD_DIR)/*.yml
@@ -115,19 +84,50 @@ realclean: clean
 	@rm -rf build
 	@rm -rf node_modules
 
+dep:
+	@pip3 install jinja2 cfn_flip boto3
+
+install-build-deps: $(BUILD_DIR)
+	@npm install
+
+build: build-stacks build-web
+
+build-stacks: $(BUILD_DIR)
+	@$(MAKE) -C $(CFN_SRC_DIR) build
+
+$(BUILD_DIR):
+	@mkdir -p $@
+
+build-web: install-build-deps
+	echo $(COGNITO_USER_POOL) $(COGNITO_CLIENT_ID)
+	npm \
+		--domain=$(COGNITO_DOMAIN) \
+		--redirect=$(COGNITO_REDIRECT_URI) \
+		--apiendpoint=$(API_ENDPOINT) \
+		--donorurl=$(DONOR_URL) \
+		--clientid=$(COGNITO_CLIENT_ID) \
+		run build
+
+check: build
+	@$(MAKE) -C $(CFN_SRC_DIR) $@
+
 package: build
-	@$(MAKE) -C $(CFN_SRC_DIR) package
+	@$(MAKE) -C $(CFN_SRC_DIR) $@
 
 deploy-infra: package
 	@$(MAKE) -C $(CFN_SRC_DIR) deploy
 
+deploy-web: build-web
+	aws s3 sync build/ s3://$(WEB_BUCKET)/
+
 deploy: deploy-infra deploy-web
 
 buildimports: $(BUILD_DIR)
-	@$(MAKE) -C $(CFN_SRC_DIR) buildimports
+	@$(MAKE) -C $(CFN_SRC_DIR) $@
 
 import: $(BUILD_DIR)
-	@$(MAKE) -C $(CFN_SRC_DIR) import
+	@$(MAKE) -C $(CFN_SRC_DIR) $@
 
 replication:
 	@$(MAKE) -C cfn/replication deploy
+

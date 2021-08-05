@@ -1,5 +1,6 @@
 WebsiteBucket:
   Type: AWS::S3::Bucket
+  Condition: NonCloudFlare
   DeletionPolicy: Retain
   Properties:
     BucketName: !Sub ${SubDomain}-${RunEnvironment}.${Domain}.${TLD}-${AWS::Region}
@@ -33,6 +34,7 @@ WebsiteBucket:
 
 WebsiteBucketPolicy:
   Type: AWS::S3::BucketPolicy
+  Condition: NonCloudFlare
   DependsOn: OAI
   Properties:
     Bucket: !Ref WebsiteBucket
