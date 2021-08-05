@@ -25,7 +25,6 @@ type Model
     | SoleProprietorship
     | PartnershipIncludingLLPs
     | Corporation
-    | Committee
     | Union
     | Association
     | LimitedLiabilityCompany
@@ -51,9 +50,6 @@ toDataString entityType =
 
         Corporation ->
             "Corp"
-
-        Committee ->
-            "Comm"
 
         Union ->
             "Union"
@@ -97,9 +93,6 @@ fromString str =
         "Corp" ->
             Just Corporation
 
-        "Comm" ->
-            Just Committee
-
         "Union" ->
             Just Union
 
@@ -140,9 +133,6 @@ toDisplayString entityType =
         Corporation ->
             "Corporation"
 
-        Committee ->
-            "Committee"
-
         Union ->
             "Union"
 
@@ -180,9 +170,6 @@ toGridString entityType =
         Corporation ->
             "Corporation"
 
-        Committee ->
-            "Committee"
-
         Union ->
             "Union"
 
@@ -213,7 +200,6 @@ orgView msg currentValue disabled =
         , orgSelect SoleProprietorship currentValue
         , orgSelect PartnershipIncludingLLPs currentValue
         , orgSelect Corporation currentValue
-        , orgSelect Committee currentValue
         , orgSelect Union currentValue
         , orgSelect Association currentValue
         , orgSelect LimitedLiabilityCompany currentValue
