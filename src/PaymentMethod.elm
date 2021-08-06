@@ -70,7 +70,7 @@ decoder =
                     "Debit" ->
                         Decode.succeed Debit
 
-                    "InKindDesc" ->
+                    "InKind" ->
                         Decode.succeed InKind
 
                     "Transfer" ->
@@ -146,6 +146,9 @@ fromString str =
 
         "Debit" ->
             Just Debit
+
+        "InKind" ->
+            Just InKind
 
         "Transfer" ->
             Just Transfer
