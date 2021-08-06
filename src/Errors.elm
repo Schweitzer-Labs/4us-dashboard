@@ -1,7 +1,7 @@
-module Errors exposing (fromInKind, fromInKindDescription, fromMaxAmount, fromMaxDate, fromPostalCode)
+module Errors exposing (fromInKind, fromInKindType, fromMaxAmount, fromMaxDate, fromPostalCode)
 
 import Cents
-import InKindDesc
+import InKindType
 import Time
 import Timestamp
 
@@ -41,8 +41,8 @@ fromPostalCode postalCode =
         []
 
 
-fromInKindDescription : String -> Maybe InKindDesc.Model -> Errors
-fromInKindDescription payMethod desc =
+fromInKindType : String -> Maybe InKindType.Model -> Errors
+fromInKindType payMethod desc =
     case payMethod of
         "InKindDesc" ->
             case desc of

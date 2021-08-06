@@ -7,7 +7,6 @@ import Bootstrap.Form.Select as Select
 import Html exposing (Html, text)
 import Html.Attributes as Attribute exposing (for, value)
 import Json.Decode as Decode exposing (Decoder)
-import SelectRadio
 
 
 type PaymentMethod
@@ -40,7 +39,7 @@ toDataString method =
             "Credit"
 
         InKind ->
-            "InKindDesc"
+            "InKind"
 
         Transfer ->
             "Transfer"
@@ -152,9 +151,6 @@ fromString str =
 
         "Transfer" ->
             Just Transfer
-
-        "InKindDesc" ->
-            Just InKind
 
         "Other" ->
             Just Other

@@ -27,14 +27,13 @@ import Html exposing (Html, div, h6, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Http
-import InKindDesc
+import InKindType
 import LabelWithData exposing (labelWithContent, labelWithData)
 import List exposing (sortBy)
 import OrgOrInd
 import Owners exposing (Owner, Owners)
 import SubmitButton exposing (submitButton)
 import Time exposing (utc)
-import TimeZone exposing (america__new_york)
 import Timestamp exposing (dateStringToMillis, formDate)
 import Transaction
 import TransactionType
@@ -79,7 +78,8 @@ type alias Model =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
-    , inKindDescription : Maybe InKindDesc.Model
+    , inKindDesc : String
+    , inKindType : Maybe InKindType.Model
     , maybeError : Maybe String
     , config : Config
     , lastCreatedTxnId : String
@@ -128,7 +128,8 @@ init config txns bankTxn =
     , owners = []
     , ownerName = ""
     , ownerOwnership = ""
-    , inKindDescription = Nothing
+    , inKindType = Nothing
+    , inKindDesc = ""
     , paymentMethod = ""
     , createContribIsVisible = False
     , createContribButtonIsDisabled = False
@@ -226,7 +227,8 @@ contribFormRow model =
             , owners = ( model.owners, OwnerAdded )
             , ownerName = ( model.ownerName, OwnerNameUpdated )
             , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
-            , inKindDescription = ( model.inKindDescription, InKindDescriptionUpdated )
+            , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
+            , inKindType = ( model.inKindType, InKindTypeUpdated )
             , disabled = model.disabled
             , isEditable = False
             , toggleEdit = ToggleEdit
@@ -272,7 +274,8 @@ type Msg
     | AmountUpdated String
     | CheckNumberUpdated String
     | PaymentDateUpdated String
-    | InKindDescriptionUpdated (Maybe InKindDesc.Model)
+    | InKindTypeUpdated (Maybe InKindType.Model)
+    | InKindDescUpdated String
       -- Reconcile
     | CreateContribToggled
     | CreateContribSubmitted
@@ -377,8 +380,11 @@ update msg model =
         PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )
 
-        InKindDescriptionUpdated desc ->
-            ( { model | inKindDescription = desc }, Cmd.none )
+        InKindDescUpdated desc ->
+            ( { model | inKindDesc = desc }, Cmd.none )
+
+        InKindTypeUpdated t ->
+            ( { model | inKindType = t }, Cmd.none )
 
         ToggleEdit ->
             ( { model | disabled = not model.disabled }, Cmd.none )
@@ -724,6 +730,8 @@ createContribEncoder model =
     , addressLine2 = model.addressLine2
     , phoneNumber = model.phoneNumber
     , employmentStatus = model.employmentStatus
+    , inKindDesc = model.inKindDesc
+    , inKindType = model.inKindType
     }
 
 

@@ -11,7 +11,7 @@ import EntityType
 import ExpandableBankData
 import Html exposing (Html, span, text)
 import Html.Attributes exposing (class)
-import InKindDesc
+import InKindType
 import Loading
 import OrgOrInd
 import Owners exposing (Owner, Owners)
@@ -58,7 +58,8 @@ type alias Model =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
-    , inKindDescription : Maybe InKindDesc.Model
+    , inKindType : Maybe InKindType.Model
+    , inKindDesc : String
     , committeeId : String
     , isSubmitDisabled : Bool
     , maybeError : Maybe String
@@ -109,8 +110,9 @@ init txn =
     , owners = []
     , ownerName = ""
     , ownerOwnership = ""
-    , inKindDescription = Nothing
-    , paymentMethod = ""
+    , inKindType = txn.inKindType
+    , inKindDesc = Maybe.withDefault "" txn.inKindDescription
+    , paymentMethod = PaymentMethod.toDataString txn.paymentMethod
     , committeeId = txn.committeeId
     , isSubmitDisabled = True
     , maybeError = Nothing
@@ -180,7 +182,8 @@ contribFormRow model =
         , owners = ( model.owners, OwnerAdded )
         , ownerName = ( model.ownerName, OwnerNameUpdated )
         , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
-        , inKindDescription = ( model.inKindDescription, InKindDescriptionUpdated )
+        , inKindType = ( model.inKindType, InKindTypeUpdated )
+        , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
         , disabled = model.disabled
         , isEditable = True
         , toggleEdit = ToggleEdit
@@ -234,7 +237,8 @@ type Msg
     | AmountUpdated String
     | CheckNumberUpdated String
     | PaymentDateUpdated String
-    | InKindDescriptionUpdated (Maybe InKindDesc.Model)
+    | InKindDescUpdated String
+    | InKindTypeUpdated (Maybe InKindType.Model)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -333,8 +337,11 @@ update msg model =
         PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )
 
-        InKindDescriptionUpdated desc ->
-            ( { model | inKindDescription = desc }, Cmd.none )
+        InKindDescUpdated desc ->
+            ( { model | inKindDesc = desc }, Cmd.none )
+
+        InKindTypeUpdated t ->
+            ( { model | inKindType = t }, Cmd.none )
 
         ToggleEdit ->
             ( { model | disabled = not model.disabled }, Cmd.none )
@@ -375,6 +382,8 @@ amendTxnEncoder model =
     , ownerName = model.ownerName
     , ownerOwnership = model.ownerOwnership
     , committeeId = model.committeeId
+    , inKindType = model.inKindType
+    , inKindDesc = model.inKindDesc
     }
 
 
@@ -403,5 +412,6 @@ validationMapper model =
     , owners = model.owners
     , ownerName = model.ownerName
     , ownerOwnership = model.ownerOwnership
-    , inKindDescription = model.inKindDescription
+    , inKindDesc = model.inKindDesc
+    , inKindType = model.inKindType
     }

@@ -11,11 +11,11 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromInKindDescription, fromPostalCode)
+import Errors exposing (fromInKindType, fromPostalCode)
 import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
-import InKindDesc exposing (Model(..), inKindDescRadioList)
+import InKindType exposing (Model(..))
 import MonthSelector
 import OrgOrInd
 import Owners exposing (Owners)
@@ -52,7 +52,8 @@ type alias Config msg =
     , owners : DataMsg.MsgOwner msg
     , ownerName : DataMsg.MsgString msg
     , ownerOwnership : DataMsg.MsgString msg
-    , inKindDescription : DataMsg.MsgMaybeInKindDesc msg
+    , inKindType : DataMsg.MsgMaybeInKindType msg
+    , inKindDesc : DataMsg.MsgString msg
     , disabled : Bool
     , isEditable : Bool
     , toggleEdit : msg
@@ -76,7 +77,11 @@ view c =
             ++ errorRow c.maybeError
             ++ donorInfoRows c
             ++ (if c.isEditable then
-                    []
+                    if toData c.paymentMethod == "InKind" then
+                        inKindRow c
+
+                    else
+                        []
 
                 else
                     []
@@ -123,7 +128,8 @@ type alias ContribValidatorModel =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
-    , inKindDescription : Maybe InKindDesc.Model
+    , inKindType : Maybe InKindType.Model
+    , inKindDesc : String
     }
 
 
@@ -139,7 +145,7 @@ contribInfoValidator =
         , ifBlank .postalCode "Postal Code is missing."
         , ifBlank .addressLine1 "Address is missing"
         , postalCodeValidator
-        , inKindDescriptionValidator
+        , inKindTypeValidator
         ]
 
 
@@ -157,9 +163,9 @@ postalCodeValidator =
     fromErrors postalCodeOnModelToErrors
 
 
-inKindDescriptionValidator : Validator String ContribValidatorModel
-inKindDescriptionValidator =
-    fromErrors inKindDescriptionOnModelToErrors
+inKindTypeValidator : Validator String ContribValidatorModel
+inKindTypeValidator =
+    fromErrors inKindTypeOnModelToErrors
 
 
 postalCodeOnModelToErrors : ContribValidatorModel -> List String
@@ -167,9 +173,9 @@ postalCodeOnModelToErrors model =
     fromPostalCode model.postalCode
 
 
-inKindDescriptionOnModelToErrors : ContribValidatorModel -> List String
-inKindDescriptionOnModelToErrors { paymentMethod, inKindDescription } =
-    fromInKindDescription paymentMethod inKindDescription
+inKindTypeOnModelToErrors : ContribValidatorModel -> List String
+inKindTypeOnModelToErrors { paymentMethod, inKindType } =
+    fromInKindType paymentMethod inKindType
 
 
 errorRow : Maybe String -> List (Html msg)
@@ -218,21 +224,23 @@ checkRow { checkNumber, disabled } =
 
 
 inKindRow : Config msg -> List (Html msg)
-inKindRow { inKindDescription, disabled } =
+inKindRow { inKindType, inKindDesc, disabled } =
     let
         maybeMsg =
-            toMsg inKindDescription
+            toMsg inKindType
 
         msg =
             Just >> maybeMsg
     in
-    [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
-        [ Grid.col
-            []
-          <|
-            inKindDescRadioList msg (toData inKindDescription) disabled
-        ]
-    ]
+    labelRow "In-kind Info"
+        ++ [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
+                [ Grid.col
+                    []
+                  <|
+                    InKindType.radioList msg (toData inKindType) disabled
+                        ++ [ inputText (toMsg inKindDesc) "Description" (toData inKindDesc) disabled ]
+                ]
+           ]
 
 
 processingRow : Config msg -> List (Html msg)
@@ -244,7 +252,7 @@ processingRow c =
         "Credit" ->
             creditRow c
 
-        "InKindDesc" ->
+        "InKind" ->
             inKindRow c
 
         _ ->
