@@ -137,7 +137,7 @@ loadedView : Model -> Html Msg
 loadedView model =
     let
         bankData =
-            if model.txn.bankVerified then
+            if model.txn.bankVerified && model.txn.paymentMethod /= PaymentMethod.InKind then
                 ExpandableBankData.view model.showBankData model.txn BankDataToggled
 
             else
