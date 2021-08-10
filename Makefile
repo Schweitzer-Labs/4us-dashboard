@@ -1,14 +1,12 @@
 export SHELL		:= env PATH=$(PATH) bash
 export CREPES		:= $(PWD)/cfn/bin/crepes.py
 export SUBDOMAIN	:= dashboard
+export PRODUCT		:= 4us
 
 ifeq ($(RUNENV), )
        export RUNENV	:= qa
 endif
 
-ifeq ($(PRODUCT), )
-	export PRODUCT	:= 4us
-endif
 
 # Deduce the Domain related parameters based on the RUNENV and PRODUCT params
 ifeq ($(RUNENV), qa)
