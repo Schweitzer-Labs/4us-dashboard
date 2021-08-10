@@ -20,7 +20,7 @@ query =
     """
     mutation(
       $committeeId: String!
-      $transactionId: String
+      $transactionId: String!
       $amount: Float
       $paymentMethod: PaymentMethod
       $firstName: String
