@@ -107,7 +107,6 @@ type alias Model =
 
     -- Transaction Feed Pagination Setting
     , fromId : Maybe String
-    , infiniteScroll : InfiniteScroll.Model Msg
     }
 
 
@@ -165,7 +164,6 @@ init config session aggs committee committeeId =
 
             -- Pagination Settings
             , fromId = Nothing
-            , infiniteScroll = InfiniteScroll.init loadMore
             }
     in
     ( initModel
@@ -576,8 +574,10 @@ type Msg
     | ContribRuleVerifiedModalUpdate ContribRuleVerified.Msg
     | ContribRuleVerifiedSubmit
     | ContribRuleVerifiedGotMutResp (Result Http.Error MutationResponse)
-      -- Feed pagination
-    | InfiniteScrollMsg InfiniteScroll.Msg
+
+
+
+-- Feed pagination
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -1107,14 +1107,6 @@ update msg model =
                     CreateDisbursement.update subMsg model.createDisbursementModal
             in
             ( { model | createDisbursementModal = subModel }, Cmd.map CreateDisbursementModalUpdate subCmd )
-
-        -- Pagination
-        InfiniteScrollMsg msg_ ->
-            let
-                ( infiniteScroll, cmd ) =
-                    InfiniteScroll.update InfiniteScrollMsg msg_ model.infiniteScroll
-            in
-            ( { model | infiniteScroll = infiniteScroll }, cmd )
 
 
 generateReport : Cmd msg
