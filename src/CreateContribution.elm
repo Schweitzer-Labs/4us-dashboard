@@ -129,6 +129,7 @@ view model =
         , isEditable = False
         , toggleEdit = NoOp
         , maybeError = model.maybeError
+        , txnId = Nothing
         }
 
 

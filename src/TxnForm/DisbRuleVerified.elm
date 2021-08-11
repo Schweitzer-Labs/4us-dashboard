@@ -135,6 +135,7 @@ disbFormRow model =
         , isEditable = True
         , toggleEdit = EditFormToggled
         , maybeError = model.maybeError
+        , txnID = Just model.txn.id
         }
 
 

@@ -164,8 +164,12 @@ type AccountType
     | Saving
 
 
-select : (Model -> msg) -> Maybe Model -> Bool -> List (Html msg)
-select msg currentValue disabled =
+select : (Model -> msg) -> Maybe Model -> Bool -> Maybe String -> List (Html msg)
+select msg currentValue disabled txnId =
+    let
+        id =
+            Maybe.withDefault "" txnId
+    in
     [ Form.form []
         [ Fieldset.config
             |> Fieldset.asGroup
@@ -174,7 +178,7 @@ select msg currentValue disabled =
                 (Radio.radioList
                     "paymentMethod"
                     [ Radio.createCustom
-                        [ Radio.id "paymentMethod-check"
+                        [ Radio.id <| id ++ "paymentMethod-check"
                         , Radio.inline
                         , Radio.onClick (msg Check)
                         , Radio.checked (currentValue == Just Check)
@@ -182,7 +186,7 @@ select msg currentValue disabled =
                         ]
                         "Check"
                     , Radio.createCustom
-                        [ Radio.id "paymentMethod-credit"
+                        [ Radio.id <| id ++ "paymentMethod-credit"
                         , Radio.inline
                         , Radio.onClick (msg Credit)
                         , Radio.checked (currentValue == Just Credit)
@@ -190,7 +194,7 @@ select msg currentValue disabled =
                         ]
                         "Credit"
                     , Radio.createCustom
-                        [ Radio.id "familyOfCandidate-retired"
+                        [ Radio.id <| id ++ "paymentMethodInKind-retired"
                         , Radio.inline
                         , Radio.onClick (msg InKind)
                         , Radio.checked (currentValue == Just InKind)

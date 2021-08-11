@@ -254,6 +254,7 @@ disbFormRow model =
             , isEditable = False
             , toggleEdit = NoOp
             , maybeError = model.maybeError
+            , txnID = Just model.bankTxn.id
             }
             ++ [ buttonRow CreateDisbToggled "Create" "Cancel" CreateDisbSubmitted model.createDisbIsSubmitting model.createDisbButtonIsDisabled ]
 

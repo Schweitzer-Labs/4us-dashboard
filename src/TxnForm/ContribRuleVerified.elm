@@ -188,6 +188,7 @@ contribFormRow model =
         , isEditable = True
         , toggleEdit = ToggleEdit
         , maybeError = model.maybeError
+        , txnId = Just model.txn.id
         }
 
 

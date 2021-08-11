@@ -218,8 +218,12 @@ orgSelect entityType currentValue =
         [ text <| toDisplayString entityType ]
 
 
-familyRadioList : (Model -> msg) -> Maybe Model -> Bool -> List (Html msg)
-familyRadioList msg currentValue disabled =
+familyRadioList : (Model -> msg) -> Maybe Model -> Bool -> Maybe String -> List (Html msg)
+familyRadioList msg currentValue disabled txnId =
+    let
+        id =
+            Maybe.withDefault "" txnId
+    in
     [ Form.form []
         [ Fieldset.config
             |> Fieldset.asGroup
@@ -228,7 +232,7 @@ familyRadioList msg currentValue disabled =
                 (Radio.radioList
                     "familyOfCandidate"
                     [ Radio.createCustom
-                        [ Radio.id "familyOfCandidate-yes"
+                        [ Radio.id <| id ++ "familyOfCandidate-yes"
                         , Radio.inline
                         , Radio.onClick (msg Family)
                         , Radio.checked (currentValue == Just Family)
@@ -236,7 +240,7 @@ familyRadioList msg currentValue disabled =
                         ]
                         "Yes"
                     , Radio.createCustom
-                        [ Radio.id "familyOfCandidate-no"
+                        [ Radio.id <| id ++ "familyOfCandidate-no"
                         , Radio.inline
                         , Radio.onClick (msg Individual)
                         , Radio.checked (currentValue == Just Individual)

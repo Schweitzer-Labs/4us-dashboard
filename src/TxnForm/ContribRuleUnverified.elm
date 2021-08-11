@@ -234,6 +234,7 @@ contribFormRow model =
             , isEditable = False
             , toggleEdit = ToggleEdit
             , maybeError = model.maybeError
+            , txnId = Just model.bankTxn.id
             }
         ]
             ++ [ buttonRow CreateContribToggled "Create" "Cancel" CreateContribSubmitted model.createContribIsSubmitting model.createContribButtonIsDisabled ]

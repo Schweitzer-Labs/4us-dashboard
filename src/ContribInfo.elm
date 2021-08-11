@@ -58,6 +58,7 @@ type alias Config msg =
     , isEditable : Bool
     , toggleEdit : msg
     , maybeError : Maybe String
+    , txnId : Maybe String
     }
 
 
@@ -93,7 +94,7 @@ view c =
                 else
                     []
                         ++ labelRow "Processing Info"
-                        ++ PaymentMethod.select msg (toData c.paymentMethod) c.disabled
+                        ++ PaymentMethod.select msg (toData c.paymentMethod) c.disabled c.txnId
                         ++ processingRow c
                )
 
@@ -501,7 +502,7 @@ piiRows c =
 
 
 familyRow : Config msg -> List (Html msg)
-familyRow { maybeEntityType, disabled } =
+familyRow { maybeEntityType, disabled, txnId } =
     let
         maybeEntityMsg =
             toMsg maybeEntityType
@@ -520,13 +521,13 @@ familyRow { maybeEntityType, disabled } =
         [ Grid.col
             []
           <|
-            EntityType.familyRadioList entityMsg (toData maybeEntityType) disabled
+            EntityType.familyRadioList entityMsg (toData maybeEntityType) disabled txnId
         ]
     ]
 
 
 attestsToBeingAnAdultCitizenRow : Config msg -> List (Html msg)
-attestsToBeingAnAdultCitizenRow { maybeEntityType, disabled } =
+attestsToBeingAnAdultCitizenRow { maybeEntityType, disabled, txnId } =
     [ Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
@@ -538,7 +539,7 @@ attestsToBeingAnAdultCitizenRow { maybeEntityType, disabled } =
         [ Grid.col
             []
           <|
-            EntityType.familyRadioList (Just >> toMsg maybeEntityType) (toData maybeEntityType) disabled
+            EntityType.familyRadioList (Just >> toMsg maybeEntityType) (toData maybeEntityType) disabled txnId
         ]
     ]
 
@@ -579,7 +580,7 @@ employerOccupationRow { occupation, employer, disabled } =
 
 
 employmentStatusRows : Config msg -> List (Html msg)
-employmentStatusRows { employmentStatus, disabled } =
+employmentStatusRows { employmentStatus, disabled, txnId } =
     let
         maybeEmploymentMsg =
             toMsg employmentStatus
@@ -598,6 +599,6 @@ employmentStatusRows { employmentStatus, disabled } =
         [ Grid.col
             []
           <|
-            employmentRadioList employmentMsg (toData employmentStatus) disabled
+            employmentRadioList employmentMsg (toData employmentStatus) disabled txnId
         ]
     ]

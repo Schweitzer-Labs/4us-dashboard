@@ -38,11 +38,12 @@ type alias Config msg =
     , isEditable : Bool
     , toggleEdit : msg
     , maybeError : Maybe String
+    , txnID : Maybe String
     }
 
 
 view : Config msg -> List (Html msg)
-view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable, toggleEdit, maybeError } =
+view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable, toggleEdit, maybeError, txnID } =
     let
         errorContent =
             case maybeError of
@@ -85,10 +86,10 @@ view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeC
         ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ PurposeCode.select (toData purposeCode) (toMsg purposeCode) disabled ] ]
            ]
         ++ [ Grid.row []
-                [ yesOrNo "Is expenditure subcontracted?" isSubcontracted entityName disabled
-                , yesOrNo "Is expenditure a partial payment?" isPartialPayment entityName disabled
-                , yesOrNo "Is this an existing Liability?" isExistingLiability entityName disabled
-                , yesOrNo "Is this an In-Kind payment?" isInKind entityName disabled
+                [ yesOrNo "Is expenditure subcontracted?" isSubcontracted txnID disabled
+                , yesOrNo "Is expenditure a partial payment?" isPartialPayment txnID disabled
+                , yesOrNo "Is this an existing Liability?" isExistingLiability txnID disabled
+                , yesOrNo "Is this an In-Kind payment?" isInKind txnID disabled
                 ]
            ]
         ++ (case ( amount, paymentDate, paymentMethod ) of
