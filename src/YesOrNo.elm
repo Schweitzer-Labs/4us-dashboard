@@ -29,7 +29,7 @@ yesOrNo question data entityName disabled =
                 |> Fieldset.legend [ class "font-size-18" ] [ text question ]
                 |> Fieldset.children
                     (Radio.radioList "radios"
-                        [ Radio.create
+                        [ Radio.createCustom
                             [ Radio.id <| toData entityName ++ question ++ "yes"
                             , Radio.inline
                             , Radio.onClick (msg <| Just True)
@@ -38,7 +38,7 @@ yesOrNo question data entityName disabled =
                             , Radio.danger
                             ]
                             "Yes"
-                        , Radio.create
+                        , Radio.createCustom
                             [ Radio.id <| toData entityName ++ question ++ "no"
                             , Radio.inline
                             , Radio.onClick (msg <| Just False)
