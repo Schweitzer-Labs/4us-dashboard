@@ -234,7 +234,7 @@ scrollToTop =
 
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg
 getTransactions model maybeTxnType =
-    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType
+    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
 
 
 

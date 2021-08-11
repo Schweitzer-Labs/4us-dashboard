@@ -103,6 +103,9 @@ type alias Model =
     , contribRuleVerifiedSuccessViewActive : Bool
     , contribRuleVerifiedModalVisibility : Modal.Visibility
     , config : Config
+
+    -- Transaction Feed Pagination Setting
+    , fromId : Maybe String
     }
 
 
@@ -157,6 +160,9 @@ init config session aggs committee committeeId =
             , contribRuleVerifiedSuccessViewActive = False
             , contribRuleVerifiedModalVisibility = Modal.hidden
             , config = config
+
+            -- Pagination Settings
+            , fromId = Nothing
             }
     in
     ( initModel
@@ -1129,7 +1135,7 @@ reconcileContrib model =
 
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg
 getTransactions model maybeTxnType =
-    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType
+    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
 
 
 getTransaction : Model -> String -> Cmd Msg
