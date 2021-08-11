@@ -7,7 +7,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Attribute, Html, div, h5, h6, text)
 import Html.Attributes exposing (class)
 import LabelWithData exposing (labelWithData, labelWithMaybeData, labelWithMaybeLongData, labelWithMaybeTimeData, labelWithTimeData)
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import Transaction
 
 

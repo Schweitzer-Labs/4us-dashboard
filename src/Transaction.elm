@@ -6,7 +6,7 @@ import EntityType
 import InKindType
 import Json.Decode as Decode exposing (Decoder, bool, int, maybe, oneOf, string)
 import Json.Decode.Pipeline exposing (optional, required)
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 import TransactionType exposing (TransactionType)
 
@@ -16,7 +16,7 @@ type alias Model =
     , committeeId : String
     , direction : Direction
     , amount : Int
-    , paymentMethod : PaymentMethod
+    , paymentMethod : PaymentMethod.Model
     , bankVerified : Bool
     , ruleVerified : Bool
     , initiatedTimestamp : Int

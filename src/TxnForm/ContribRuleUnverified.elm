@@ -32,6 +32,7 @@ import LabelWithData exposing (labelWithContent, labelWithData)
 import List exposing (sortBy)
 import OrgOrInd
 import Owners exposing (Owner, Owners)
+import PaymentMethod
 import SubmitButton exposing (submitButton)
 import Time exposing (utc)
 import Timestamp exposing (dateStringToMillis, formDate)
@@ -53,7 +54,7 @@ type alias Model =
     , error : String
     , checkNumber : String
     , paymentDate : String
-    , paymentMethod : String
+    , paymentMethod : Maybe PaymentMethod.Model
     , emailAddress : String
     , phoneNumber : String
     , firstName : String
@@ -130,7 +131,7 @@ init config txns bankTxn =
     , ownerOwnership = ""
     , inKindType = Nothing
     , inKindDesc = ""
-    , paymentMethod = ""
+    , paymentMethod = Nothing
     , createContribIsVisible = False
     , createContribButtonIsDisabled = False
     , createContribIsSubmitting = False
@@ -171,7 +172,7 @@ clearForm model =
         , owners = []
         , ownerName = ""
         , ownerOwnership = ""
-        , paymentMethod = ""
+        , paymentMethod = Nothing
         , createContribIsVisible = False
         , createContribButtonIsDisabled = False
         , createContribIsSubmitting = False
@@ -269,7 +270,7 @@ type Msg
     | CardYearUpdated String
     | CardMonthUpdated String
     | CardNumberUpdated String
-    | PaymentMethodUpdated String
+    | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CVVUpdated String
     | AmountUpdated String
     | CheckNumberUpdated String

@@ -8,6 +8,7 @@ import Html exposing (Html)
 import InKindType
 import OrgOrInd
 import Owners exposing (Owners)
+import PaymentMethod
 
 
 type alias Model =
@@ -16,7 +17,7 @@ type alias Model =
     , error : String
     , checkNumber : String
     , paymentDate : String
-    , paymentMethod : String
+    , paymentMethod : Maybe PaymentMethod.Model
     , emailAddress : String
     , phoneNumber : String
     , firstName : String
@@ -81,7 +82,7 @@ init committeeId =
     , ownerOwnership = ""
     , inKindType = Nothing
     , inKindDesc = ""
-    , paymentMethod = ""
+    , paymentMethod = Nothing
     , committeeId = committeeId
     , maybeError = Nothing
     }
@@ -161,7 +162,7 @@ type Msg
     | CardMonthUpdated String
     | CardNumberUpdated String
     | NoOp
-    | PaymentMethodUpdated String
+    | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CVVUpdated String
     | InKindTypeUpdated (Maybe InKindType.Model)
     | InKindDescUpdated String

@@ -37,7 +37,7 @@ import Html.Attributes exposing (class, type_)
 import Html.Events exposing (onClick)
 import Http
 import LabelWithData exposing (labelWithContent, labelWithData)
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 import SubmitButton exposing (submitButton)
 import Time exposing (utc)
@@ -67,7 +67,7 @@ type alias Model =
     , isInKind : Maybe Bool
     , amount : String
     , paymentDate : String
-    , paymentMethod : Maybe PaymentMethod
+    , paymentMethod : Maybe PaymentMethod.Model
     , checkNumber : String
     , createDisbIsVisible : Bool
     , disabled : Bool
@@ -334,7 +334,7 @@ type Msg
     | IsInKindUpdated (Maybe Bool)
     | AmountUpdated String
     | PaymentDateUpdated String
-    | PaymentMethodUpdated (Maybe PaymentMethod)
+    | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CheckNumberUpdated String
     | CreateDisbToggled
     | CreateDisbSubmitted

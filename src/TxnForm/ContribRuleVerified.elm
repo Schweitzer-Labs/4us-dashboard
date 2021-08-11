@@ -33,7 +33,7 @@ type alias Model =
     , error : String
     , checkNumber : String
     , paymentDate : String
-    , paymentMethod : String
+    , paymentMethod : Maybe PaymentMethod.Model
     , emailAddress : String
     , phoneNumber : String
     , firstName : String
@@ -112,7 +112,7 @@ init txn =
     , ownerOwnership = ""
     , inKindType = txn.inKindType
     , inKindDesc = Maybe.withDefault "" txn.inKindDescription
-    , paymentMethod = PaymentMethod.toDataString txn.paymentMethod
+    , paymentMethod = Nothing
     , committeeId = txn.committeeId
     , isSubmitDisabled = True
     , maybeError = Nothing
@@ -232,7 +232,7 @@ type Msg
     | CardYearUpdated String
     | CardMonthUpdated String
     | CardNumberUpdated String
-    | PaymentMethodUpdated String
+    | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CVVUpdated String
     | AmountUpdated String
     | CheckNumberUpdated String
@@ -392,7 +392,7 @@ validationMapper model =
     { checkNumber = model.checkNumber
     , amount = model.amount
     , paymentDate = model.paymentDate
-    , paymentMethod = PaymentMethod.toDataString model.txn.paymentMethod
+    , paymentMethod = model.paymentMethod
     , emailAddress = model.emailAddress
     , phoneNumber = model.phoneNumber
     , firstName = model.firstName

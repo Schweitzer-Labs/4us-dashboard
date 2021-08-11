@@ -10,7 +10,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import OrgOrInd
 import Owners exposing (Owners)
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import Timestamp exposing (dateStringToMillis)
 import Transaction
 
@@ -82,7 +82,7 @@ type alias EncodeModel =
     { txn : Transaction.Model
     , checkNumber : String
     , paymentDate : String
-    , paymentMethod : PaymentMethod
+    , paymentMethod : PaymentMethod.Model
     , emailAddress : String
     , phoneNumber : String
     , firstName : String

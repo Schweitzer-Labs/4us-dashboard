@@ -6,7 +6,7 @@ import Config exposing (Config)
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 import Timestamp exposing (dateStringToMillis)
 import TransactionType
@@ -70,7 +70,7 @@ type alias EncodeModel =
     , isInKind : Maybe Bool
     , amount : String
     , paymentDate : String
-    , paymentMethod : Maybe PaymentMethod
+    , paymentMethod : Maybe PaymentMethod.Model
     , checkNumber : String
     }
 

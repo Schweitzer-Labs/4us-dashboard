@@ -19,7 +19,7 @@ import InKindType exposing (Model(..))
 import MonthSelector
 import OrgOrInd
 import Owners exposing (Owners)
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import Validate exposing (Valid, Validator, fromErrors, ifBlank, validate)
 import YearSelector
 
@@ -27,7 +27,7 @@ import YearSelector
 type alias Config msg =
     { checkNumber : DataMsg.MsgString msg
     , paymentDate : DataMsg.MsgString msg
-    , paymentMethod : DataMsg.MsgString msg
+    , paymentMethod : DataMsg.MsgMaybePaymentMethod msg
     , emailAddress : DataMsg.MsgString msg
     , phoneNumber : DataMsg.MsgString msg
     , firstName : DataMsg.MsgString msg
@@ -63,6 +63,13 @@ type alias Config msg =
 
 view : Config msg -> Html msg
 view c =
+    let
+        maybeMsg =
+            toMsg c.paymentMethod
+
+        msg =
+            Just >> maybeMsg
+    in
     Grid.containerFluid
         []
     <|
@@ -77,7 +84,7 @@ view c =
             ++ errorRow c.maybeError
             ++ donorInfoRows c
             ++ (if c.isEditable then
-                    if toData c.paymentMethod == "InKind" then
+                    if toData c.paymentMethod == Just PaymentMethod.InKind then
                         inKindRow c
 
                     else
@@ -86,7 +93,7 @@ view c =
                 else
                     []
                         ++ labelRow "Processing Info"
-                        ++ PaymentMethod.select (toMsg c.paymentMethod) (toData c.paymentMethod) c.disabled
+                        ++ PaymentMethod.select msg (toData c.paymentMethod) c.disabled
                         ++ processingRow c
                )
 
@@ -108,7 +115,7 @@ type alias ContribValidatorModel =
     { checkNumber : String
     , amount : String
     , paymentDate : String
-    , paymentMethod : String
+    , paymentMethod : Maybe PaymentMethod.Model
     , emailAddress : String
     , phoneNumber : String
     , firstName : String
@@ -246,13 +253,13 @@ inKindRow { inKindType, inKindDesc, disabled } =
 processingRow : Config msg -> List (Html msg)
 processingRow c =
     case toData c.paymentMethod of
-        "Check" ->
+        Just PaymentMethod.Check ->
             checkRow c
 
-        "Credit" ->
+        Just PaymentMethod.Credit ->
             creditRow c
 
-        "InKind" ->
+        Just PaymentMethod.InKind ->
             inKindRow c
 
         _ ->

@@ -2,6 +2,7 @@ module Errors exposing (fromInKind, fromInKindType, fromMaxAmount, fromMaxDate, 
 
 import Cents
 import InKindType
+import PaymentMethod
 import Time
 import Timestamp
 
@@ -41,10 +42,10 @@ fromPostalCode postalCode =
         []
 
 
-fromInKindType : String -> Maybe InKindType.Model -> Errors
+fromInKindType : Maybe PaymentMethod.Model -> Maybe InKindType.Model -> Errors
 fromInKindType payMethod desc =
     case payMethod of
-        "InKindDesc" ->
+        Just PaymentMethod.InKind ->
             case desc of
                 Just a ->
                     []
