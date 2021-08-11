@@ -111,7 +111,7 @@ employmentRadioList msg currentValue disabled =
                         ]
                         "Employed"
                     , Radio.createCustom
-                        [ Radio.id "familyOfCandidate-unemployed"
+                        [ Radio.id "employmentStatus-unemployed"
                         , Radio.inline
                         , Radio.onClick (msg Unemployed)
                         , Radio.checked (currentValue == Just Unemployed)
@@ -119,7 +119,7 @@ employmentRadioList msg currentValue disabled =
                         ]
                         "Unemployed"
                     , Radio.createCustom
-                        [ Radio.id "familyOfCandidate-retired"
+                        [ Radio.id "employmentStatus-retired"
                         , Radio.inline
                         , Radio.onClick (msg Retired)
                         , Radio.checked (currentValue == Just Retired)
@@ -127,7 +127,7 @@ employmentRadioList msg currentValue disabled =
                         ]
                         "Retired"
                     , Radio.createCustom
-                        [ Radio.id "familyOfCandidate-selfEmployed"
+                        [ Radio.id "employmentStatus-selfEmployed"
                         , Radio.inline
                         , Radio.onClick (msg SelfEmployed)
                         , Radio.checked (currentValue == Just SelfEmployed)

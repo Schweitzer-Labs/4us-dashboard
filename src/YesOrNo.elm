@@ -35,7 +35,6 @@ yesOrNo question data entityName disabled =
                             , Radio.onClick (msg <| Just True)
                             , Radio.checked <| "Yes" == state
                             , Radio.disabled disabled
-                            , Radio.danger
                             ]
                             "Yes"
                         , Radio.createCustom
@@ -44,7 +43,6 @@ yesOrNo question data entityName disabled =
                             , Radio.onClick (msg <| Just False)
                             , Radio.checked <| "No" == state
                             , Radio.disabled disabled
-                            , Radio.danger
                             ]
                             "No"
                         ]
