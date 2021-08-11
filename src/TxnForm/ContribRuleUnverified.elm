@@ -486,7 +486,7 @@ withNone model =
 
 getTxns : Model -> Cmd Msg
 getTxns model =
-    GetTxns.send GetTxnsGotResp model.config <| GetTxns.encode model.committeeId (Just TransactionType.Contribution)
+    GetTxns.send GetTxnsGotResp model.config <| GetTxns.encode model.committeeId (Just TransactionType.Contribution) Nothing Nothing
 
 
 fromError : Model -> String -> Model
@@ -592,7 +592,16 @@ getRelatedContrib : Transaction.Model -> List Transaction.Model -> List Transact
 getRelatedContrib txn txns =
     let
         filteredtxns =
-            List.filter (\val -> (val.amount <= txn.amount) && (val.direction == Direction.In) && not val.bankVerified && val.ruleVerified && val.paymentDate <= txn.paymentDate) txns
+            List.filter
+                (\val ->
+                    (val.amount <= txn.amount)
+                        && (val.direction == Direction.In)
+                        && not val.bankVerified
+                        && val.ruleVerified
+                        && val.paymentDate
+                        <= txn.paymentDate
+                )
+                txns
     in
     sortBy .paymentDate filteredtxns |> List.reverse
 
