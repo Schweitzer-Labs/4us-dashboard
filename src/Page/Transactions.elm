@@ -34,7 +34,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (on, onClick)
 import Http
-import List exposing (concat, head, reverse)
+import List exposing (concat, head, length, reverse)
 import Loading
 import Pagination
 import PlatformModal
@@ -109,6 +109,7 @@ type alias Model =
     -- Transaction Feed Pagination Setting
     , fromId : Maybe String
     , moreLoading : Bool
+    , moreDisabled : Bool
     }
 
 
@@ -167,6 +168,7 @@ init config session aggs committee committeeId =
             -- Pagination Settings
             , fromId = Nothing
             , moreLoading = False
+            , moreDisabled = False
             }
     in
     ( initModel
@@ -178,11 +180,15 @@ init config session aggs committee committeeId =
 -- VIEW
 
 
-moreTxnsButton : Bool -> Html Msg
-moreTxnsButton loading =
-    div [ class "text-center" ]
-        [ SubmitButton.custom [ Spacing.pl5, Spacing.pr5 ] "Load More" MoreTxnsClicked loading loading
-        ]
+moreTxnsButton : Model -> Html Msg
+moreTxnsButton model =
+    div [ class "text-center" ] <|
+        if model.moreDisabled then
+            []
+
+        else
+            [ SubmitButton.custom [ Spacing.pl5, Spacing.pr5 ] "Load More" MoreTxnsClicked model.moreLoading model.moreLoading
+            ]
 
 
 loadedView : Model -> Html Msg
@@ -190,7 +196,7 @@ loadedView model =
     div [ class "fade-in" ]
         [ dropdowns model
         , Transactions.viewInteractive model.committee ShowTxnFormModal model.transactions
-        , moreTxnsButton model.moreLoading
+        , moreTxnsButton model
         , createContributionModal model
         , generateDisclosureModal model
         , createDisbursementModal model
@@ -1123,14 +1129,7 @@ update msg model =
 
         -- Feed pagination
         MoreTxnsClicked ->
-            let
-                fromId =
-                    Maybe.map (\txn -> txn.id) <| head <| reverse model.transactions
-
-                newModel =
-                    { model | fromId = fromId, moreLoading = True }
-            in
-            ( newModel, getNextTxnsSet newModel )
+            ( { model | moreLoading = True }, getNextTxnsSet model )
 
         GotTxnSet res ->
             case res of
@@ -1138,6 +1137,12 @@ update msg model =
                     let
                         txns =
                             applyNeedsReviewFilter model <| GetTxns.toTxns body
+
+                        moreDisabled =
+                            length txns == 0
+
+                        fromId =
+                            Maybe.map (\txn -> txn.id) <| head <| reverse txns
 
                         aggs =
                             GetTxns.toAggs body
@@ -1151,6 +1156,8 @@ update msg model =
                         , committee = committee
                         , moreLoading = False
                         , loading = False
+                        , moreDisabled = moreDisabled
+                        , fromId = fromId
                       }
                     , Cmd.none
                     )
