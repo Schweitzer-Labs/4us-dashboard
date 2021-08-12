@@ -1,7 +1,9 @@
-module Errors exposing (fromInKind, fromInKindType, fromMaxAmount, fromMaxDate, fromPostalCode)
+module Errors exposing (fromInKind, fromInKindType, fromMaxAmount, fromMaxDate, fromOrgType, fromPostalCode)
 
 import Cents
+import EntityType
 import InKindType
+import OrgOrInd
 import PaymentMethod
 import Time
 import Timestamp
@@ -52,6 +54,21 @@ fromInKindType payMethod desc =
 
                 Nothing ->
                     [ "In-Kind Description Missing" ]
+
+        _ ->
+            []
+
+
+fromOrgType : Maybe OrgOrInd.Model -> Maybe EntityType.Model -> Errors
+fromOrgType orgType entity =
+    case orgType of
+        Just OrgOrInd.Org ->
+            case entity of
+                Just a ->
+                    []
+
+                Nothing ->
+                    [ "Org Classification is missing" ]
 
         _ ->
             []

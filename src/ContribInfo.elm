@@ -11,7 +11,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromInKindType, fromPostalCode)
+import Errors exposing (fromInKindType, fromOrgType, fromPostalCode)
 import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
@@ -154,6 +154,7 @@ contribInfoValidator =
         , ifBlank .addressLine1 "Address is missing"
         , postalCodeValidator
         , inKindTypeValidator
+        , orgTypeValidator
         ]
 
 
@@ -176,6 +177,11 @@ inKindTypeValidator =
     fromErrors inKindTypeOnModelToErrors
 
 
+orgTypeValidator : Validator String ContribValidatorModel
+orgTypeValidator =
+    fromErrors orgTypeOnModelToErrors
+
+
 postalCodeOnModelToErrors : ContribValidatorModel -> List String
 postalCodeOnModelToErrors model =
     fromPostalCode model.postalCode
@@ -184,6 +190,11 @@ postalCodeOnModelToErrors model =
 inKindTypeOnModelToErrors : ContribValidatorModel -> List String
 inKindTypeOnModelToErrors { paymentMethod, inKindType } =
     fromInKindType paymentMethod inKindType
+
+
+orgTypeOnModelToErrors : ContribValidatorModel -> List String
+orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType } =
+    fromOrgType maybeOrgOrInd maybeEntityType
 
 
 errorRow : Maybe String -> List (Html msg)
