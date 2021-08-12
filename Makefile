@@ -1,14 +1,12 @@
 export SHELL		:= env PATH=$(PATH) bash
 export CREPES		:= $(PWD)/cfn/bin/crepes.py
 export SUBDOMAIN	:= dashboard
+export PRODUCT		:= 4us
 
 ifeq ($(RUNENV), )
        export RUNENV	:= qa
 endif
 
-ifeq ($(PRODUCT), )
-	export PRODUCT	:= 4us
-endif
 
 # Deduce the Domain related parameters based on the RUNENV and PRODUCT params
 ifeq ($(RUNENV), qa)
@@ -65,7 +63,7 @@ export CREPES_PARAMS	+= --subdomain $(SUBDOMAIN) --domain $(DOMAIN) --tld $(TLD)
 COGNITO_DOMAIN	:= https://platform-user-$(PRODUCT)-$(RUNENV).auth.$(REGION).amazoncognito.com
 COGNITO_REDIRECT_URI	:= https://$(SUBDOMAIN).$(DOMAIN).$(TLD)
 DONOR_URL		:= https://donate.$(DOMAIN).$(TLD)
-API_ENDPOINT		:= https://$(SUBDOMAIN).$(DOMAIN).$(TLD)/api/committee/graphql
+API_ENDPOINT		:= https://committee-api.$(DOMAIN).$(TLD)/api/committee/graphql
 
 COGNITO_USER_POOL = $(eval COGNITO_USER_POOL := $$(shell aws cognito-idp list-user-pools --region $(REGION) --max-results 10 --query 'UserPools[?starts_with(Name, `PlatformUserPool`)].Id' --output text))$(COGNITO_USER_POOL)
 
