@@ -95,7 +95,7 @@ view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeC
         ++ (case ( amount, paymentDate, paymentMethod ) of
                 ( Just a, Just p, Just pm ) ->
                     AmountDate.view { amount = a, paymentDate = p, disabled = disabled }
-                        ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] (PaymentMethod.dropdown (toData pm) (toMsg pm)) ]
+                        ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] (PaymentMethod.dropdown (toData pm) (toMsg pm) True) ]
                            ]
 
                 ( Just a, Just p, _ ) ->

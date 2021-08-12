@@ -208,8 +208,8 @@ select msg currentValue disabled txnId =
     ]
 
 
-dropdown : Maybe Model -> (Maybe Model -> msg) -> List (Html msg)
-dropdown maybePaymentMethod updateMsg =
+dropdown : Maybe Model -> (Maybe Model -> msg) -> Bool -> List (Html msg)
+dropdown maybePaymentMethod updateMsg isDisbursement =
     [ Form.group
         []
         [ Form.label [ for "paymentMethod" ] [ text "Payment Method" ]
@@ -235,6 +235,11 @@ dropdown maybePaymentMethod updateMsg =
                             ]
                             [ text (toDisplayString paymentMethod) ]
                     )
-                    paymentMethods
+                <|
+                    if isDisbursement == True then
+                        List.filter (\payMethod -> payMethod /= InKind) paymentMethods
+
+                    else
+                        paymentMethods
         ]
     ]
