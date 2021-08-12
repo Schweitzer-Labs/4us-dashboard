@@ -70,7 +70,8 @@ view model =
         []
     <|
         DisbInfo.view
-            { entityName = ( model.entityName, EntityNameUpdated )
+            { checkNumber = ( model.checkNumber, CheckNumberUpdated )
+            , entityName = ( model.entityName, EntityNameUpdated )
             , addressLine1 = ( model.addressLine1, AddressLine1Updated )
             , addressLine2 = ( model.addressLine2, AddressLine2Updated )
             , city = ( model.city, CityUpdated )
