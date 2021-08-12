@@ -108,6 +108,7 @@ type alias Model =
 
     -- Transaction Feed Pagination Setting
     , fromId : Maybe String
+    , moreLoading : Bool
     }
 
 
@@ -165,6 +166,7 @@ init config session aggs committee committeeId =
 
             -- Pagination Settings
             , fromId = Nothing
+            , moreLoading = False
             }
     in
     ( initModel
@@ -176,9 +178,11 @@ init config session aggs committee committeeId =
 -- VIEW
 
 
-moreTxnsButton : Html Msg
-moreTxnsButton =
-    div [ class "text-center" ] [ Button.button [ Button.outlinePrimary, Button.onClick MoreTxnsClicked, Button.attrs [ Spacing.pl5, Spacing.pr5 ] ] [ text "more" ] ]
+moreTxnsButton : Bool -> Html Msg
+moreTxnsButton loading =
+    div [ class "text-center" ]
+        [ SubmitButton.custom [ Spacing.pl5, Spacing.pr5 ] "Load More" MoreTxnsClicked loading loading
+        ]
 
 
 loadedView : Model -> Html Msg
@@ -186,7 +190,7 @@ loadedView model =
     div [ class "fade-in" ]
         [ dropdowns model
         , Transactions.viewInteractive model.committee ShowTxnFormModal model.transactions
-        , moreTxnsButton
+        , moreTxnsButton model.moreLoading
         , createContributionModal model
         , generateDisclosureModal model
         , createDisbursementModal model
@@ -1124,7 +1128,7 @@ update msg model =
                     Maybe.map (\txn -> txn.id) <| head <| reverse model.transactions
 
                 newModel =
-                    { model | fromId = fromId }
+                    { model | fromId = fromId, moreLoading = True }
             in
             ( newModel, getNextTxnsSet newModel )
 
@@ -1140,14 +1144,12 @@ update msg model =
 
                         committee =
                             GetTxns.toCommittee body
-
-                        fromId =
-                            Maybe.map (\txn -> txn.id) <| head <| reverse txns
                     in
                     ( { model
                         | transactions = concat [ model.transactions, txns ]
                         , aggregations = aggs
                         , committee = committee
+                        , moreLoading = False
                         , loading = False
                       }
                     , Cmd.none
