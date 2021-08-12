@@ -7,4 +7,4 @@ Dev:
 NonProduction:
   !Not [Condition: Production]
 NonCloudFlare:
-  !Or [Condition: Production, Condition: QA]
+  !Equals [!Ref RunEnvironment, prod]
