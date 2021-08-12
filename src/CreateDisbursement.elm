@@ -14,7 +14,7 @@ import Bootstrap.Grid as Grid exposing (Column)
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
 import Html exposing (Html)
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 import Validate exposing (Validator, fromErrors, ifBlank, ifNothing)
 
@@ -34,7 +34,7 @@ type alias Model =
     , isInKind : Maybe Bool
     , amount : String
     , paymentDate : String
-    , paymentMethod : Maybe PaymentMethod
+    , paymentMethod : Maybe PaymentMethod.Model
     , checkNumber : String
     , maybeError : Maybe String
     , isSubmitDisabled : Bool
@@ -88,6 +88,7 @@ view model =
             , isEditable = False
             , toggleEdit = NoOp
             , maybeError = model.maybeError
+            , txnID = Nothing
             }
 
 
@@ -106,7 +107,7 @@ type Msg
     | IsInKindUpdated (Maybe Bool)
     | AmountUpdated String
     | PaymentDateUpdated String
-    | PaymentMethodUpdated (Maybe PaymentMethod)
+    | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CheckNumberUpdated String
 
 

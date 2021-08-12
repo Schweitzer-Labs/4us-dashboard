@@ -1,4 +1,4 @@
-module PaymentMethod exposing (PaymentMethod(..), decoder, dropdown, fromMaybeToString, select, toDataString, toDisplayString)
+module PaymentMethod exposing (Model(..), decoder, dropdown, fromMaybeToString, select, toDataString, toDisplayString)
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Fieldset as Fieldset
@@ -9,7 +9,7 @@ import Html.Attributes as Attribute exposing (for, value)
 import Json.Decode as Decode exposing (Decoder)
 
 
-type PaymentMethod
+type Model
     = Ach
     | Wire
     | Check
@@ -20,7 +20,7 @@ type PaymentMethod
     | Other
 
 
-toDataString : PaymentMethod -> String
+toDataString : Model -> String
 toDataString method =
     case method of
         Ach ->
@@ -48,7 +48,7 @@ toDataString method =
             "Other"
 
 
-decoder : Decoder PaymentMethod
+decoder : Decoder Model
 decoder =
     Decode.string
         |> Decode.andThen
@@ -83,7 +83,7 @@ decoder =
             )
 
 
-paymentMethods : List PaymentMethod
+paymentMethods : List Model
 paymentMethods =
     [ Ach
     , Wire
@@ -95,7 +95,7 @@ paymentMethods =
     ]
 
 
-toDisplayString : PaymentMethod -> String
+toDisplayString : Model -> String
 toDisplayString src =
     case src of
         Ach ->
@@ -123,12 +123,12 @@ toDisplayString src =
             "Other"
 
 
-fromMaybeToString : Maybe PaymentMethod -> String
+fromMaybeToString : Maybe Model -> String
 fromMaybeToString =
     Maybe.withDefault "---" << Maybe.map toDataString
 
 
-fromString : String -> Maybe PaymentMethod
+fromString : String -> Maybe Model
 fromString str =
     case str of
         "Ach" ->
@@ -164,17 +164,43 @@ type AccountType
     | Saving
 
 
-select : (String -> msg) -> String -> Bool -> List (Html msg)
-select msg val disabled =
+select : (Model -> msg) -> Maybe Model -> Bool -> Maybe String -> List (Html msg)
+select msg currentValue disabled txnId =
+    let
+        id =
+            Maybe.withDefault "" txnId
+    in
     [ Form.form []
         [ Fieldset.config
             |> Fieldset.asGroup
             |> Fieldset.legend [] []
             |> Fieldset.children
-                (Radio.radioList "Payment Method"
-                    [ radio msg Check val disabled
-                    , radio msg Credit val disabled
-                    , radio msg InKind val disabled
+                (Radio.radioList
+                    "paymentMethod"
+                    [ Radio.createCustom
+                        [ Radio.id <| id ++ "paymentMethod-check"
+                        , Radio.inline
+                        , Radio.onClick (msg Check)
+                        , Radio.checked (currentValue == Just Check)
+                        , Radio.disabled disabled
+                        ]
+                        "Check"
+                    , Radio.createCustom
+                        [ Radio.id <| id ++ "paymentMethod-credit"
+                        , Radio.inline
+                        , Radio.onClick (msg Credit)
+                        , Radio.checked (currentValue == Just Credit)
+                        , Radio.disabled disabled
+                        ]
+                        "Credit"
+                    , Radio.createCustom
+                        [ Radio.id <| id ++ "paymentMethodInKind-retired"
+                        , Radio.inline
+                        , Radio.onClick (msg InKind)
+                        , Radio.checked (currentValue == Just InKind)
+                        , Radio.disabled disabled
+                        ]
+                        "In-Kind"
                     ]
                 )
             |> Fieldset.view
@@ -182,22 +208,7 @@ select msg val disabled =
     ]
 
 
-radio : (String -> msg) -> PaymentMethod -> String -> Bool -> Radio msg
-radio msg paymentMethod val disabled =
-    let
-        checked =
-            Maybe.withDefault False <| Maybe.map ((==) paymentMethod) (fromString val)
-    in
-    Radio.create
-        [ Radio.inline
-        , Radio.onClick <| msg (toDataString paymentMethod)
-        , Radio.disabled disabled
-        , Radio.checked checked
-        ]
-        (toDisplayString paymentMethod)
-
-
-dropdown : Maybe PaymentMethod -> (Maybe PaymentMethod -> msg) -> List (Html msg)
+dropdown : Maybe Model -> (Maybe Model -> msg) -> List (Html msg)
 dropdown maybePaymentMethod updateMsg =
     [ Form.group
         []

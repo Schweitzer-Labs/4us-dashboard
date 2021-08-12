@@ -16,7 +16,7 @@ import ExpandableBankData
 import Html exposing (Html)
 import Loading
 import PaymentInfo
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 import Transaction
 import Validate exposing (Validator, fromErrors, ifBlank, ifNothing)
@@ -37,7 +37,7 @@ type alias Model =
     , isInKind : Maybe Bool
     , amount : String
     , paymentDate : String
-    , paymentMethod : Maybe PaymentMethod
+    , paymentMethod : Maybe PaymentMethod.Model
     , checkNumber : String
     , showBankData : Bool
     , loading : Bool
@@ -135,6 +135,7 @@ disbFormRow model =
         , isEditable = True
         , toggleEdit = EditFormToggled
         , maybeError = model.maybeError
+        , txnID = Just model.txn.id
         }
 
 
@@ -153,7 +154,7 @@ type Msg
     | IsInKindUpdated (Maybe Bool)
     | AmountUpdated String
     | PaymentDateUpdated String
-    | PaymentMethodUpdated (Maybe PaymentMethod)
+    | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CheckNumberUpdated String
     | EditFormToggled
     | BankDataToggled

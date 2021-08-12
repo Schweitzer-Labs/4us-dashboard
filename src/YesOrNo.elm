@@ -9,8 +9,8 @@ import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 
 
-yesOrNo : String -> DataMsg.MsgMaybeBool msg -> DataMsg.MsgString msg -> Bool -> Column msg
-yesOrNo question data entityName disabled =
+yesOrNo : String -> DataMsg.MsgMaybeBool msg -> Maybe String -> Bool -> Column msg
+yesOrNo question data txnID disabled =
     let
         bool =
             toData data
@@ -20,6 +20,9 @@ yesOrNo question data entityName disabled =
 
         msg =
             toMsg data
+
+        id =
+            Maybe.withDefault "" txnID
     in
     Grid.col
         []
@@ -29,22 +32,20 @@ yesOrNo question data entityName disabled =
                 |> Fieldset.legend [ class "font-size-18" ] [ text question ]
                 |> Fieldset.children
                     (Radio.radioList "radios"
-                        [ Radio.create
-                            [ Radio.id <| toData entityName ++ question ++ "yes"
+                        [ Radio.createCustom
+                            [ Radio.id (id ++ question ++ "yes")
                             , Radio.inline
                             , Radio.onClick (msg <| Just True)
                             , Radio.checked <| "Yes" == state
                             , Radio.disabled disabled
-                            , Radio.danger
                             ]
                             "Yes"
-                        , Radio.create
-                            [ Radio.id <| toData entityName ++ question ++ "no"
+                        , Radio.createCustom
+                            [ Radio.id (id ++ question ++ "no")
                             , Radio.inline
                             , Radio.onClick (msg <| Just False)
                             , Radio.checked <| "No" == state
                             , Radio.disabled disabled
-                            , Radio.danger
                             ]
                             "No"
                         ]

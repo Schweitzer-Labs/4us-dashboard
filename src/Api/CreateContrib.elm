@@ -9,6 +9,7 @@ import Http
 import InKindType
 import Json.Decode as Decode
 import Json.Encode as Encode
+import PaymentMethod
 import Timestamp exposing (dateStringToMillis)
 import TransactionType
 
@@ -79,7 +80,7 @@ query =
 type alias EncodeModel =
     { committeeId : String
     , amount : String
-    , paymentMethod : String
+    , paymentMethod : Maybe PaymentMethod.Model
     , firstName : String
     , lastName : String
     , addressLine1 : String
@@ -116,7 +117,7 @@ encode mapper val =
             Encode.object <|
                 [ ( "committeeId", Encode.string model.committeeId )
                 , ( "amount", Encode.int <| Cents.fromDollars model.amount )
-                , ( "paymentMethod", Encode.string model.paymentMethod )
+                , ( "paymentMethod", Encode.string <| PaymentMethod.fromMaybeToString model.paymentMethod )
                 , ( "firstName", Encode.string model.firstName )
                 , ( "lastName", Encode.string model.lastName )
                 , ( "addressLine1", Encode.string model.addressLine1 )

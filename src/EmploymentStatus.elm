@@ -93,8 +93,12 @@ decoder =
             )
 
 
-employmentRadioList : (Model -> msg) -> Maybe Model -> Bool -> List (Html msg)
-employmentRadioList msg currentValue disabled =
+employmentRadioList : (Model -> msg) -> Maybe Model -> Bool -> Maybe String -> List (Html msg)
+employmentRadioList msg currentValue disabled txnId =
+    let
+        id =
+            Maybe.withDefault "" txnId
+    in
     [ Form.form []
         [ Fieldset.config
             |> Fieldset.asGroup
@@ -103,7 +107,7 @@ employmentRadioList msg currentValue disabled =
                 (Radio.radioList
                     "employmentStatus"
                     [ Radio.createCustom
-                        [ Radio.id "employmentStatus-employed"
+                        [ Radio.id <| id ++ "employmentStatus-employed"
                         , Radio.inline
                         , Radio.onClick (msg Employed)
                         , Radio.checked (currentValue == Just Employed)
@@ -111,7 +115,7 @@ employmentRadioList msg currentValue disabled =
                         ]
                         "Employed"
                     , Radio.createCustom
-                        [ Radio.id "familyOfCandidate-unemployed"
+                        [ Radio.id <| id ++ "employmentStatus-unemployed"
                         , Radio.inline
                         , Radio.onClick (msg Unemployed)
                         , Radio.checked (currentValue == Just Unemployed)
@@ -119,7 +123,7 @@ employmentRadioList msg currentValue disabled =
                         ]
                         "Unemployed"
                     , Radio.createCustom
-                        [ Radio.id "familyOfCandidate-retired"
+                        [ Radio.id <| id ++ "employmentStatus-retired"
                         , Radio.inline
                         , Radio.onClick (msg Retired)
                         , Radio.checked (currentValue == Just Retired)
@@ -127,7 +131,7 @@ employmentRadioList msg currentValue disabled =
                         ]
                         "Retired"
                     , Radio.createCustom
-                        [ Radio.id "familyOfCandidate-selfEmployed"
+                        [ Radio.id <| id ++ "employmentStatus-selfEmployed"
                         , Radio.inline
                         , Radio.onClick (msg SelfEmployed)
                         , Radio.checked (currentValue == Just SelfEmployed)

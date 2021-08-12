@@ -26,7 +26,7 @@ import Html exposing (Html, img, span, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode
 import List exposing (sortBy)
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import PurposeCode
 import Time exposing (utc)
 import Timestamp
