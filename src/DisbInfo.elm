@@ -2,6 +2,7 @@ module DisbInfo exposing (Config, view)
 
 import Address
 import AmountDate
+import AppInput exposing (inputText)
 import Asset
 import Bootstrap.Form as Form
 import Bootstrap.Form.Fieldset as Fieldset
@@ -20,7 +21,8 @@ import YesOrNo exposing (yesOrNo)
 
 
 type alias Config msg =
-    { entityName : DataMsg.MsgString msg
+    { checkNumber : DataMsg.MsgString msg
+    , entityName : DataMsg.MsgString msg
     , addressLine1 : DataMsg.MsgString msg
     , addressLine2 : DataMsg.MsgString msg
     , city : DataMsg.MsgString msg
@@ -43,7 +45,7 @@ type alias Config msg =
 
 
 view : Config msg -> List (Html msg)
-view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable, toggleEdit, maybeError, txnID } =
+view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable, toggleEdit, maybeError, txnID } =
     let
         errorContent =
             case maybeError of
@@ -97,6 +99,16 @@ view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeC
                     AmountDate.view { amount = a, paymentDate = p, disabled = disabled }
                         ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] (PaymentMethod.dropdown (toData pm) (toMsg pm) True) ]
                            ]
+                        ++ (if toData pm == Just PaymentMethod.Check then
+                                [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
+                                    [ Grid.col []
+                                        [ inputText (toMsg checkNumber) "Check Number" (toData checkNumber) False ]
+                                    ]
+                                ]
+
+                            else
+                                []
+                           )
 
                 ( Just a, Just p, _ ) ->
                     AmountDate.view { amount = a, paymentDate = p, disabled = disabled }

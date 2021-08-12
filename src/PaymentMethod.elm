@@ -236,8 +236,8 @@ dropdown maybePaymentMethod updateMsg isDisbursement =
                             [ text (toDisplayString paymentMethod) ]
                     )
                 <|
-                    if isDisbursement == True then
-                        List.filter (\payMethod -> payMethod /= InKind) paymentMethods
+                    if isDisbursement then
+                        List.filter (\paymentMethod -> paymentMethod /= InKind) paymentMethods
 
                     else
                         paymentMethods
