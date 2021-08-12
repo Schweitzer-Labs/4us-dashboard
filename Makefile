@@ -85,9 +85,6 @@ realclean: clean
 dep:
 	@pip3 install jinja2 cfn_flip boto3
 
-blah:
-	echo $(COGNITO_USER_POOL) $(COGNITO_CLIENT_ID)
-
 install-build-deps: $(BUILD_DIR)
 	@npm install
 
