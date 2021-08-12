@@ -53,6 +53,8 @@ query =
             isSubcontracted
             isPartialPayment
             isExistingLiability
+            inKindDescription
+            inKindType
           }
         }
     """

@@ -1,4 +1,4 @@
-module InKindDesc exposing (Model(..), inKindDescRadioList)
+module InKindType exposing (Model(..), fromDataString, radioList, toDataString)
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Fieldset as Fieldset
@@ -13,16 +13,16 @@ type Model
     | PropertyGiven
 
 
-fromString : String -> Maybe Model
-fromString str =
+fromDataString : String -> Maybe Model
+fromDataString str =
     case str of
-        "ServicesFacilities Provided" ->
+        "ServicesFacilitiesProvided" ->
             Just ServicesFacilitiesProvided
 
-        "Campaign Expenses Paid" ->
+        "CampaignExpensesPaid" ->
             Just CampaignExpensesPaid
 
-        "Property Given" ->
+        "PropertyGiven" ->
             Just PropertyGiven
 
         _ ->
@@ -67,17 +67,17 @@ decoder =
             )
 
 
-inKindDescRadioList : (Model -> msg) -> Maybe Model -> Bool -> List (Html msg)
-inKindDescRadioList msg currentValue disabled =
+radioList : (Model -> msg) -> Maybe Model -> Bool -> List (Html msg)
+radioList msg currentValue disabled =
     [ Form.form []
         [ Fieldset.config
             |> Fieldset.asGroup
             |> Fieldset.legend [] []
             |> Fieldset.children
                 (Radio.radioList
-                    "inKindDescription"
+                    "inKindType"
                     [ Radio.createCustom
-                        [ Radio.id "inKindDesc-servicesFacilitiesProvided"
+                        [ Radio.id "inKindType-servicesFacilitiesProvided"
                         , Radio.inline
                         , Radio.onClick (msg ServicesFacilitiesProvided)
                         , Radio.checked (currentValue == Just ServicesFacilitiesProvided)
@@ -85,7 +85,7 @@ inKindDescRadioList msg currentValue disabled =
                         ]
                         "Service/Facilities Provided"
                     , Radio.createCustom
-                        [ Radio.id "inKindDesc-campaignExpensesPaid"
+                        [ Radio.id "inKindType-campaignExpensesPaid"
                         , Radio.inline
                         , Radio.onClick (msg CampaignExpensesPaid)
                         , Radio.checked (currentValue == Just CampaignExpensesPaid)
@@ -93,7 +93,7 @@ inKindDescRadioList msg currentValue disabled =
                         ]
                         "Campaign Expenses Paid"
                     , Radio.createCustom
-                        [ Radio.id "inKindDesc-propertyGiven"
+                        [ Radio.id "inKindType-propertyGiven"
                         , Radio.inline
                         , Radio.onClick (msg PropertyGiven)
                         , Radio.checked (currentValue == Just PropertyGiven)

@@ -14,7 +14,7 @@ import Transactions
 committeeQuery : String
 committeeQuery =
     """
-    query CommitteeQuery($committeeId: String!, $transactionType: String) {
+    query CommitteeQuery($committeeId: String!, $transactionType: String, $take: Float, $fromId: String) {
             aggregations(committeeId: $committeeId) {
               balance
               totalSpent
@@ -37,7 +37,7 @@ query : String
 query =
     committeeQuery
         ++ """
-        transactions(committeeId: $committeeId, transactionType: $transactionType) {
+        transactions(committeeId: $committeeId, transactionType: $transactionType, take: $take, fromId: $fromId, order: Desc) {
           id
           committeeId
           direction
@@ -79,8 +79,8 @@ query =
     """
 
 
-encode : String -> Maybe TransactionType -> Http.Body
-encode committeeId maybeTxnType =
+encode : String -> Maybe TransactionType -> Maybe Int -> Maybe String -> Http.Body
+encode committeeId maybeTxnType maybeTake maybeFromId =
     let
         txnTypeFilter =
             case maybeTxnType of
@@ -90,11 +90,29 @@ encode committeeId maybeTxnType =
                 Nothing ->
                     []
 
+        takeFilter =
+            case maybeTake of
+                Just take ->
+                    [ ( "take", Encode.int take ) ]
+
+                Nothing ->
+                    []
+
+        fromIdFilter =
+            case maybeFromId of
+                Just fromId ->
+                    [ ( "fromId", Encode.string fromId ) ]
+
+                Nothing ->
+                    []
+
         variables =
             Encode.object <|
                 [ ( "committeeId", Encode.string committeeId )
                 ]
                     ++ txnTypeFilter
+                    ++ takeFilter
+                    ++ fromIdFilter
     in
     encodeQuery query variables
 

@@ -5,6 +5,7 @@ import Config exposing (Config)
 import EmploymentStatus
 import EntityType exposing (fromMaybeToStringWithDefaultInd)
 import Http
+import InKindType
 import Json.Decode as Decode
 import Json.Encode as Encode
 import OrgOrInd
@@ -19,7 +20,7 @@ query =
     """
     mutation(
       $committeeId: String!
-      $transactionId: String
+      $transactionId: String!
       $amount: Float
       $paymentMethod: PaymentMethod
       $firstName: String
@@ -103,6 +104,8 @@ type alias EncodeModel =
     , ownerName : String
     , ownerOwnership : String
     , committeeId : String
+    , inKindDesc : String
+    , inKindType : Maybe InKindType.Model
     }
 
 

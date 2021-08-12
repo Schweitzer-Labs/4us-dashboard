@@ -3,6 +3,7 @@ module Transaction exposing (Model, decoder, init)
 import Direction exposing (Direction)
 import EmploymentStatus
 import EntityType
+import InKindType
 import Json.Decode as Decode exposing (Decoder, bool, int, maybe, oneOf, string)
 import Json.Decode.Pipeline exposing (optional, required)
 import PaymentMethod exposing (PaymentMethod)
@@ -53,6 +54,8 @@ type alias Model =
     , finicityTransactionDate : Maybe Int
     , finicityNormalizedPayeeName : Maybe String
     , finicityDescription : Maybe String
+    , inKindDescription : Maybe String
+    , inKindType : Maybe InKindType.Model
     }
 
 
@@ -100,6 +103,8 @@ init =
     , finicityTransactionDate = Nothing
     , finicityNormalizedPayeeName = Nothing
     , finicityDescription = Nothing
+    , inKindDescription = Nothing
+    , inKindType = Nothing
     }
 
 
@@ -117,6 +122,10 @@ maybeBool name =
 
 maybePurposeCode name =
     optional name (Decode.map PurposeCode.fromString string) Nothing
+
+
+maybeInKindType name =
+    optional name (Decode.map InKindType.fromDataString string) Nothing
 
 
 maybeEntityType name =
@@ -176,3 +185,5 @@ decoder =
         |> maybeInt "finicityTransactionDate"
         |> maybeString "finicityNormalizedPayeeName"
         |> maybeString "finicityDescription"
+        |> maybeString "inKindDescription"
+        |> maybeInKindType "inKindType"

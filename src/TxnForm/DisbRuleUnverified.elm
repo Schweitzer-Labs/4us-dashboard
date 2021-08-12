@@ -607,7 +607,7 @@ createDisb model =
 
 getTxns : Model -> Cmd Msg
 getTxns model =
-    GetTxns.send GetTxnsGotResp model.config <| GetTxns.encode model.committeeId (Just TransactionType.Disbursement)
+    GetTxns.send GetTxnsGotResp model.config <| GetTxns.encode model.committeeId (Just TransactionType.Disbursement) Nothing Nothing
 
 
 reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel

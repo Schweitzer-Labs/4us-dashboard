@@ -31,10 +31,12 @@ import File.Download as Download
 import FileDisclosure
 import FileFormat exposing (FileFormat)
 import Html exposing (..)
-import Html.Attributes exposing (class)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (class, style)
+import Html.Events exposing (on, onClick)
 import Http
+import List exposing (concat, head, reverse)
 import Loading
+import Pagination
 import PlatformModal
 import Session exposing (Session)
 import SubmitButton exposing (submitButton)
@@ -103,6 +105,9 @@ type alias Model =
     , contribRuleVerifiedSuccessViewActive : Bool
     , contribRuleVerifiedModalVisibility : Modal.Visibility
     , config : Config
+
+    -- Transaction Feed Pagination Setting
+    , fromId : Maybe String
     }
 
 
@@ -157,10 +162,13 @@ init config session aggs committee committeeId =
             , contribRuleVerifiedSuccessViewActive = False
             , contribRuleVerifiedModalVisibility = Modal.hidden
             , config = config
+
+            -- Pagination Settings
+            , fromId = Nothing
             }
     in
     ( initModel
-    , getTransactions initModel Nothing
+    , getNextTxnsSet initModel
     )
 
 
@@ -168,11 +176,17 @@ init config session aggs committee committeeId =
 -- VIEW
 
 
+moreTxnsButton : Html Msg
+moreTxnsButton =
+    div [ class "text-center" ] [ Button.button [ Button.outlinePrimary, Button.onClick MoreTxnsClicked, Button.attrs [ Spacing.pl5, Spacing.pr5 ] ] [ text "more" ] ]
+
+
 loadedView : Model -> Html Msg
 loadedView model =
     div [ class "fade-in" ]
         [ dropdowns model
         , Transactions.viewInteractive model.committee ShowTxnFormModal model.transactions
+        , moreTxnsButton
         , createContributionModal model
         , generateDisclosureModal model
         , createDisbursementModal model
@@ -567,6 +581,13 @@ type Msg
     | ContribRuleVerifiedModalUpdate ContribRuleVerified.Msg
     | ContribRuleVerifiedSubmit
     | ContribRuleVerifiedGotMutResp (Result Http.Error MutationResponse)
+      -- Feed pagination
+    | MoreTxnsClicked
+    | GotTxnSet (Result Http.Error GetTxns.Model)
+
+
+
+-- Feed pagination
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -1096,6 +1117,49 @@ update msg model =
             in
             ( { model | createDisbursementModal = subModel }, Cmd.map CreateDisbursementModalUpdate subCmd )
 
+        -- Feed pagination
+        MoreTxnsClicked ->
+            let
+                fromId =
+                    Maybe.map (\txn -> txn.id) <| head <| reverse model.transactions
+
+                newModel =
+                    { model | fromId = fromId }
+            in
+            ( newModel, getNextTxnsSet newModel )
+
+        GotTxnSet res ->
+            case res of
+                Ok body ->
+                    let
+                        txns =
+                            applyNeedsReviewFilter model <| GetTxns.toTxns body
+
+                        aggs =
+                            GetTxns.toAggs body
+
+                        committee =
+                            GetTxns.toCommittee body
+
+                        fromId =
+                            Maybe.map (\txn -> txn.id) <| head <| reverse txns
+                    in
+                    ( { model
+                        | transactions = concat [ model.transactions, txns ]
+                        , aggregations = aggs
+                        , committee = committee
+                        , loading = False
+                      }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    let
+                        { cognitoDomain, cognitoClientId, redirectUri } =
+                            model.config
+                    in
+                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+
 
 generateReport : Cmd msg
 generateReport =
@@ -1126,9 +1190,21 @@ reconcileContrib model =
     ReconcileTxn.send ContribRuleUnverifiedGotReconcileMutResp model.config <| ReconcileTxn.encode ContribRuleUnverified.reconcileTxnEncoder model.contribRuleUnverifiedModal
 
 
+getNextTxnsSet : Model -> Cmd Msg
+getNextTxnsSet model =
+    GetTxns.send
+        GotTxnSet
+        model.config
+    <|
+        GetTxns.encode model.committeeId
+            model.filterTransactionType
+            (Just Pagination.size)
+            model.fromId
+
+
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg
 getTransactions model maybeTxnType =
-    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType
+    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
 
 
 getTransaction : Model -> String -> Cmd Msg

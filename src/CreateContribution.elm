@@ -5,7 +5,7 @@ import ContribInfo exposing (ContribValidatorModel)
 import EmploymentStatus
 import EntityType
 import Html exposing (Html)
-import InKindDesc
+import InKindType
 import OrgOrInd
 import Owners exposing (Owners)
 
@@ -41,7 +41,8 @@ type alias Model =
     , owners : Owners
     , ownerName : String
     , ownerOwnership : String
-    , inKindDescription : Maybe InKindDesc.Model
+    , inKindType : Maybe InKindType.Model
+    , inKindDesc : String
     , committeeId : String
     , maybeError : Maybe String
     }
@@ -78,7 +79,8 @@ init committeeId =
     , owners = []
     , ownerName = ""
     , ownerOwnership = ""
-    , inKindDescription = Nothing
+    , inKindType = Nothing
+    , inKindDesc = ""
     , paymentMethod = ""
     , committeeId = committeeId
     , maybeError = Nothing
@@ -120,7 +122,8 @@ view model =
         , owners = ( model.owners, OwnerAdded )
         , ownerName = ( model.ownerName, OwnerNameUpdated )
         , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
-        , inKindDescription = ( model.inKindDescription, InKindDescriptionUpdated )
+        , inKindType = ( model.inKindType, InKindTypeUpdated )
+        , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
         , disabled = False
         , isEditable = False
         , toggleEdit = NoOp
@@ -160,7 +163,8 @@ type Msg
     | NoOp
     | PaymentMethodUpdated String
     | CVVUpdated String
-    | InKindDescriptionUpdated (Maybe InKindDesc.Model)
+    | InKindTypeUpdated (Maybe InKindType.Model)
+    | InKindDescUpdated String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -259,8 +263,11 @@ update msg model =
         PaymentMethodUpdated str ->
             ( { model | paymentMethod = str }, Cmd.none )
 
-        InKindDescriptionUpdated desc ->
-            ( { model | inKindDescription = desc }, Cmd.none )
+        InKindTypeUpdated t ->
+            ( { model | inKindType = t }, Cmd.none )
+
+        InKindDescUpdated t ->
+            ( { model | inKindDesc = t }, Cmd.none )
 
 
 toEncodeModel : Model -> CreateContrib.EncodeModel
@@ -289,6 +296,8 @@ toEncodeModel model =
     , addressLine2 = model.addressLine2
     , phoneNumber = model.phoneNumber
     , employmentStatus = model.employmentStatus
+    , inKindType = model.inKindType
+    , inKindDesc = model.inKindDesc
     }
 
 
@@ -317,7 +326,8 @@ validationMapper model =
     , owners = model.owners
     , ownerName = model.ownerName
     , ownerOwnership = model.ownerOwnership
-    , inKindDescription = model.inKindDescription
+    , inKindDesc = model.inKindDesc
+    , inKindType = model.inKindType
     }
 
 

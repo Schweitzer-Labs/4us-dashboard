@@ -6,6 +6,7 @@ import Config exposing (Config)
 import EmploymentStatus
 import EntityType
 import Http
+import InKindType
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Timestamp exposing (dateStringToMillis)
@@ -39,6 +40,8 @@ query =
       $occupation: String
       $middleName: String
       $refCode: String
+      $inKindDescription: String
+      $inKindType: InKindType
     ) {
       createContribution(createContributionData: {
         committeeId: $committeeId
@@ -64,6 +67,8 @@ query =
         occupation: $occupation
         middleName: $middleName
         refCode: $refCode
+        inKindDescription: $inKindDescription
+        inKindType: $inKindType
       }) {
         id
       }
@@ -96,6 +101,8 @@ type alias EncodeModel =
     , addressLine2 : String
     , phoneNumber : String
     , employmentStatus : Maybe EmploymentStatus.Model
+    , inKindType : Maybe InKindType.Model
+    , inKindDesc : String
     }
 
 
@@ -133,6 +140,8 @@ encode mapper val =
                     ++ optionalFieldString "addressLine2" model.addressLine2
                     ++ optionalFieldString "phoneNumber" model.phoneNumber
                     ++ optionalFieldString "employmentStatus" (EmploymentStatus.fromMaybeToString model.employmentStatus)
+                    ++ optionalFieldString "inKindDescription" model.inKindDesc
+                    ++ optionalFieldString "inKindType" (Maybe.withDefault "" <| Maybe.map InKindType.toDataString model.inKindType)
     in
     encodeQuery query variables
 
