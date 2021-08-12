@@ -37,7 +37,7 @@ query : String
 query =
     committeeQuery
         ++ """
-        transactions(committeeId: $committeeId, transactionType: $transactionType, take: $take, fromId: $fromId) {
+        transactions(committeeId: $committeeId, transactionType: $transactionType, take: $take, fromId: $fromId, order: Desc) {
           id
           committeeId
           direction
