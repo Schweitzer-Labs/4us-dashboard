@@ -2,7 +2,6 @@ name: 4US Dashboard
 on:
   push:
     branches:
-      - qa
       - prod
 jobs:
   deploy:
@@ -42,11 +41,6 @@ jobs:
         id: install-elm-app
         run: |
           npm install create-elm-app
-      - name: Set environment to QA
-        id: set-deployment-target-to-qa
-        if: endsWith(github.ref, '/qa')
-        run: |
-          echo "RUNENV=qa" >> $GITHUB_ENV
       - name: Set environment to Production
         id: set-deployment-target-to-prod
         if: endsWith(github.ref, '/prod')
