@@ -1,21 +1,38 @@
 # DANGER: DO NOT execute these targets on your local machine. These are for CloudFlare's build system only
 
-export PATH := $(PATH):$(HOME)/.local/bin
+
+export LOCAL_BIN	:= $(HOME)/.local/bin
+export PATH 		:= $(PATH):$(LOCAL_BIN)
+
+
+ifeq ($(CF_PAGES_BRANCH), demo)
+	export RUNENV			:= $(CF_PAGES_BRANCH)
+	export AWS_ACCESS_KEY_ID	:= $(AWS_ACCESS_KEY_ID_DEMO)
+	export AWS_SECRET_ACCESS_KEY	:= $(AWS_SECRET_ACCESS_KEY_DEMO)
+else ifeq ($(CF_PAGES_BRANCH), prod)
+	export RUNENV			:= $(CF_PAGES_BRANCH)
+else
+	export RUNENV			:= qa
+	export AWS_ACCESS_KEY_ID	:= $(AWS_ACCESS_KEY_ID_QA)
+	export AWS_SECRET_ACCESS_KEY	:= $(AWS_SECRET_ACCESS_KEY_QA)
+endif
+
+
 
 include Makefile
 
-cloudflare-install-build-tools: cloudflare-configure-aws-cli
-	npm install create-elm-app
+awscliv2.zip:
+	@curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o $@
+	@unzip -q $@
 
 cloudflare-install-aws-cli: awscliv2.zip
-	./aws/install -i ~/.local/aws-cli -b ~/.local/bin
+	./aws/install -i ~/.local/aws-cli -b $(LOCAL_BIN)
 
 cloudflare-configure-aws-cli: cloudflare-install-aws-cli
 	aws configure set aws_access_key_id $(AWS_ACCESS_KEY_ID)
 	aws configure set aws_secret_access_key $(AWS_SECRET_ACCESS_KEY)
 
-awscliv2.zip:
-	@curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o $@
-	@unzip -q $@
+cloudflare-install-build-tools: cloudflare-configure-aws-cli
+	npm install create-elm-app
 
 build-cloudflare-web: cloudflare-install-build-tools build-web
