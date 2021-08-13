@@ -214,7 +214,7 @@ reconcileItemsTable relatedTxns selectedTxns =
 addDisbButtonOrHeading : Model -> Html Msg
 addDisbButtonOrHeading model =
     if model.createDisbIsVisible then
-        div [ Spacing.mt4, class "font-size-large", onClick CreateDisbToggled ] [ text "Create Disbursement" ]
+        div [ Spacing.mt4, class "font-size-large", onClick NoOp ] [ text "Create Disbursement" ]
 
     else
         addDisbButton
@@ -408,7 +408,13 @@ update msg model =
             ( { model | isInKind = bool, createDisbButtonIsDisabled = False }, Cmd.none )
 
         CreateDisbToggled ->
-            ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
+            ( let
+                resetFormModel =
+                    clearForm model
+              in
+              { resetFormModel | createDisbIsVisible = not model.createDisbIsVisible }
+            , Cmd.none
+            )
 
         CreateDisbSubmitted ->
             case validate validator model of
