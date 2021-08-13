@@ -408,7 +408,13 @@ update msg model =
             ( { model | isInKind = bool, createDisbButtonIsDisabled = False }, Cmd.none )
 
         CreateDisbToggled ->
-            ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
+            ( let
+                resetFormModel =
+                    clearForm model
+              in
+              { resetFormModel | createDisbIsVisible = not model.createDisbIsVisible }
+            , Cmd.none
+            )
 
         CreateDisbSubmitted ->
             case validate validator model of
