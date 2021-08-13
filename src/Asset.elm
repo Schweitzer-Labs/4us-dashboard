@@ -297,3 +297,8 @@ timesGlyph =
 plusCircleGlyph : List (Attribute msg) -> Html msg
 plusCircleGlyph =
     glyph "fa fa-plus-circle"
+
+
+redoGlyph : List (Attribute msg) -> Html msg
+redoGlyph =
+    glyph "fas fa-redo"
