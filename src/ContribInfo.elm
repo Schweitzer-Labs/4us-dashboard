@@ -75,7 +75,7 @@ view c =
         []
     <|
         []
-            ++ donorHeadingRow c.toggleEdit c.isEditable
+            ++ donorHeadingRow c.toggleEdit c.disabled c.isEditable
             ++ (if c.isEditable == False then
                     amountDateRow c
 
@@ -99,12 +99,18 @@ view c =
                )
 
 
-donorHeadingRow : msg -> Bool -> List (Html msg)
-donorHeadingRow toggleMsg isEditable =
+donorHeadingRow : msg -> Bool -> Bool -> List (Html msg)
+donorHeadingRow toggleMsg disabled isEditable =
     [ div [ Spacing.mt3 ]
         [ h5 [ class "font-weight-bold d-inline" ] [ text "Donor Info" ]
         , if isEditable then
-            span [ class "hover-underline hover-pointer align-middle", Spacing.ml2, onClick toggleMsg ] [ Asset.editGlyph [] ]
+            span [ class "hover-underline hover-pointer align-middle", Spacing.ml2, onClick toggleMsg ]
+                [ if disabled == True then
+                    Asset.editGlyph []
+
+                  else
+                    Asset.redoGlyph []
+                ]
 
           else
             span [] []

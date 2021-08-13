@@ -31,6 +31,7 @@ module Asset exposing
     , monthlyContributionsByReferenceCode
     , person
     , plusCircleGlyph
+    , redoGlyph
     , sackDollarGlyph
     , search
     , searchDollarGlyph
