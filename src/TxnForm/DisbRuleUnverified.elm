@@ -214,7 +214,7 @@ reconcileItemsTable relatedTxns selectedTxns =
 addDisbButtonOrHeading : Model -> Html Msg
 addDisbButtonOrHeading model =
     if model.createDisbIsVisible then
-        div [ Spacing.mt4, class "font-size-large", onClick CreateDisbToggled ] [ text "Create Disbursement" ]
+        div [ Spacing.mt4, class "font-size-large", onClick NoOp ] [ text "Create Disbursement" ]
 
     else
         addDisbButton
