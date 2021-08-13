@@ -62,7 +62,13 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
                     [ Form.label [ for "recipient-name" ]
                         [ text "Recipient Info"
                         , if isEditable then
-                            span [ class "hover-underline hover-pointer", Spacing.ml2, onClick toggleEdit ] [ Asset.editGlyph [] ]
+                            span [ class "hover-underline hover-pointer", Spacing.ml2, onClick toggleEdit ]
+                                [ if disabled == True then
+                                    Asset.editGlyph []
+
+                                  else
+                                    Asset.redoGlyph []
+                                ]
 
                           else
                             span [] []

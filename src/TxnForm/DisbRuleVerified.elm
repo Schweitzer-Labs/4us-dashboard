@@ -213,7 +213,16 @@ update msg model =
             ( { model | showBankData = not model.showBankData }, Cmd.none )
 
         EditFormToggled ->
-            ( { model | formDisabled = not model.formDisabled, isSubmitDisabled = False }, Cmd.none )
+            case model.formDisabled of
+                True ->
+                    ( { model | formDisabled = False, isSubmitDisabled = False }, Cmd.none )
+
+                False ->
+                    let
+                        state =
+                            init model.txn
+                    in
+                    ( { state | formDisabled = True, isSubmitDisabled = True }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
