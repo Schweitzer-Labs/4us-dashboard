@@ -324,7 +324,7 @@ contribRuleVerifiedModal model =
         , isSubmitting = model.contribRuleVerifiedSubmitting
         , successViewActive = model.contribRuleVerifiedSuccessViewActive
         , successViewMessage = " Revision Successful!"
-        , isSubmitDisabled = False
+        , isSubmitDisabled = model.contribRuleVerifiedModal.isSubmitDisabled
         , visibility = model.contribRuleVerifiedModalVisibility
         }
 
