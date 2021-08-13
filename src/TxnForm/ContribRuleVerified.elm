@@ -345,7 +345,16 @@ update msg model =
             ( { model | inKindType = t }, Cmd.none )
 
         ToggleEdit ->
-            ( { model | disabled = not model.disabled }, Cmd.none )
+            case model.disabled of
+                True ->
+                    ( { model | disabled = False, isSubmitDisabled = False }, Cmd.none )
+
+                False ->
+                    let
+                        state =
+                            init model.txn
+                    in
+                    ( { state | disabled = True, isSubmitDisabled = True }, Cmd.none )
 
         BankDataToggled ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
