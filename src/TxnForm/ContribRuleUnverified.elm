@@ -416,7 +416,13 @@ update msg model =
                     ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
 
         CreateContribToggled ->
-            ( { model | createContribIsVisible = not model.createContribIsVisible }, Cmd.none )
+            ( let
+                resetFormModel =
+                    clearForm model
+              in
+              { resetFormModel | createContribIsVisible = not model.createContribIsVisible }
+            , Cmd.none
+            )
 
         CreateContribSubmitted ->
             case validate validator model of
@@ -538,7 +544,7 @@ reconcileItemsTable relatedTxns selectedTxns =
 addContribButtonOrHeading : Model -> Html Msg
 addContribButtonOrHeading model =
     if model.createContribIsVisible then
-        div [ Spacing.mt4, class "font-size-large", onClick CreateContribToggled ] [ text "Create Contribution" ]
+        div [ Spacing.mt4, class "font-size-large", onClick NoOp ] [ text "Create Contribution" ]
 
     else
         addContribButton
