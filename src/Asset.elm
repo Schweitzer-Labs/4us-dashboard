@@ -25,6 +25,7 @@ module Asset exposing
     , gearHires
     , genderNeutral
     , house
+    , infoCircleGlyph
     , linkGlyph
     , loading
     , minusCircleGlyph
@@ -303,3 +304,8 @@ plusCircleGlyph =
 redoGlyph : List (Attribute msg) -> Html msg
 redoGlyph =
     glyph "fas fa-redo"
+
+
+infoCircleGlyph : List (Attribute msg) -> Html msg
+infoCircleGlyph =
+    glyph "fas fa-info-circle"

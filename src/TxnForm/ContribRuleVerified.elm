@@ -1,15 +1,17 @@
 module TxnForm.ContribRuleVerified exposing (Model, Msg(..), amendTxnEncoder, fromError, init, loadingInit, update, validationMapper, view)
 
 import Api.AmendContrib as AmendContrib
+import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
+import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import ContribInfo exposing (ContribValidatorModel)
 import EmploymentStatus
 import EntityType
 import ExpandableBankData
-import Html exposing (Html, span, text)
+import Html exposing (Html, p, span, text)
 import Html.Attributes exposing (class)
 import InKindType
 import Loading
@@ -63,6 +65,7 @@ type alias Model =
     , committeeId : String
     , isSubmitDisabled : Bool
     , maybeError : Maybe String
+    , popoverState : Popover.State
     }
 
 
@@ -116,6 +119,7 @@ init txn =
     , committeeId = txn.committeeId
     , isSubmitDisabled = True
     , maybeError = Nothing
+    , popoverState = Popover.initialState
     }
 
 
@@ -146,10 +150,19 @@ loadedView model =
     Grid.container
         []
         ([]
-            ++ PaymentInfo.view model.txn
+            ++ [ dialogueBox ]
+            ++ PaymentInfo.view model.txn model.popoverState PopoverMsg
             ++ [ contribFormRow model ]
             ++ bankData
         )
+
+
+dialogueBox : Html Msg
+dialogueBox =
+    Alert.simpleInfo []
+        [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
+        , text "At urna condimentum mattis pellentesque id nibh tortor id aliquet."
+        ]
 
 
 contribFormRow : Model -> Html Msg
@@ -208,6 +221,7 @@ type Msg
     = NoOp
     | ToggleEdit
     | BankDataToggled
+    | PopoverMsg Popover.State
       --- Donor Info
     | OrgOrIndUpdated (Maybe OrgOrInd.Model)
     | EmailAddressUpdated String
@@ -358,6 +372,9 @@ update msg model =
 
         BankDataToggled ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
+
+        PopoverMsg state ->
+            ( { model | popoverState = state }, Cmd.none )
 
 
 fromError : Model -> String -> Model
