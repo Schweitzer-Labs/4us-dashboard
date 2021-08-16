@@ -195,8 +195,8 @@ postalCodeOnModelToErrors model =
 
 
 inKindTypeOnModelToErrors : ContribValidatorModel -> List String
-inKindTypeOnModelToErrors { paymentMethod, inKindType } =
-    fromInKindType paymentMethod inKindType
+inKindTypeOnModelToErrors { paymentMethod, inKindType, inKindDesc } =
+    fromInKindType paymentMethod inKindType inKindDesc
 
 
 orgTypeOnModelToErrors : ContribValidatorModel -> List String

@@ -44,16 +44,21 @@ fromPostalCode postalCode =
         []
 
 
-fromInKindType : Maybe PaymentMethod.Model -> Maybe InKindType.Model -> Errors
-fromInKindType payMethod desc =
+fromInKindType : Maybe PaymentMethod.Model -> Maybe InKindType.Model -> String -> Errors
+fromInKindType payMethod inKindType desc =
     case payMethod of
         Just PaymentMethod.InKind ->
-            case desc of
+            case inKindType of
                 Just a ->
-                    []
+                    case desc of
+                        "" ->
+                            [ "In-Kind Description is missing" ]
+
+                        _ ->
+                            []
 
                 Nothing ->
-                    [ "In-Kind Description Missing" ]
+                    [ "In-Kind Info is missing" ]
 
         _ ->
             []
