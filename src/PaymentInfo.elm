@@ -7,6 +7,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Popover as Popover exposing (State)
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
+import Copy exposing (verificationScore)
 import Html exposing (Html, div, h4, h6, span, text)
 import Html.Attributes exposing (class)
 import LabelWithData exposing (labelWithContent, labelWithData, labelWithTimeData)
@@ -74,5 +75,5 @@ infoPopover popoverState msg =
         )
         |> Popover.bottom
         |> Popover.content []
-            [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit." ]
+            [ text verificationScore ]
         |> Popover.view popoverState

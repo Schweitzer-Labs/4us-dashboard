@@ -8,6 +8,7 @@ import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import ContribInfo exposing (ContribValidatorModel)
+import Copy exposing (contribRuleVerifiedInfo)
 import EmploymentStatus
 import EntityType
 import ExpandableBankData
@@ -159,10 +160,7 @@ loadedView model =
 
 dialogueBox : Html Msg
 dialogueBox =
-    Alert.simpleInfo []
-        [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-        , text "At urna condimentum mattis pellentesque id nibh tortor id aliquet."
-        ]
+    Alert.simpleInfo [] contribRuleVerifiedInfo
 
 
 contribFormRow : Model -> Html Msg
