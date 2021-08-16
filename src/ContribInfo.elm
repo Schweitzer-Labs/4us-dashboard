@@ -20,7 +20,7 @@ import MonthSelector
 import OrgOrInd
 import Owners exposing (Owners)
 import PaymentMethod
-import Validate exposing (Valid, Validator, fromErrors, ifBlank, validate)
+import Validate exposing (Valid, Validator, fromErrors, ifBlank, ifNothing, validate)
 import YearSelector
 
 
@@ -152,6 +152,7 @@ contribInfoValidator =
     Validate.firstError
         [ ifBlank .amount "Payment Amount is missing"
         , ifBlank .paymentDate "Payment Date is missing"
+        , ifNothing .paymentMethod "Processing Info is missing"
         , ifBlank .firstName "First Name is missing"
         , ifBlank .lastName "Last name is missing"
         , ifBlank .city "City is missing"
@@ -194,8 +195,8 @@ postalCodeOnModelToErrors model =
 
 
 inKindTypeOnModelToErrors : ContribValidatorModel -> List String
-inKindTypeOnModelToErrors { paymentMethod, inKindType } =
-    fromInKindType paymentMethod inKindType
+inKindTypeOnModelToErrors { paymentMethod, inKindType, inKindDesc } =
+    fromInKindType paymentMethod inKindType inKindDesc
 
 
 orgTypeOnModelToErrors : ContribValidatorModel -> List String
