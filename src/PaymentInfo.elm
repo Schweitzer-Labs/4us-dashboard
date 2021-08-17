@@ -73,7 +73,7 @@ infoPopover popoverState msg =
             )
             [ Asset.infoCircleGlyph [] ]
         )
-        |> Popover.bottom
+        |> Popover.top
         |> Popover.content []
             [ text verificationScore ]
         |> Popover.view popoverState
