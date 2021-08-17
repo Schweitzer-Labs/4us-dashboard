@@ -1,8 +1,12 @@
-module Errors exposing (fromInKind, fromInKindType, fromMaxAmount, fromMaxDate, fromOrgType, fromPostalCode)
+module Errors exposing (fromInKind, fromInKindType, fromMaxAmount, fromMaxDate, fromOrgType, fromPostalCode, view)
 
+import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import EntityType
+import Html exposing (Html, div, text)
+import Html.Attributes exposing (class)
 import InKindType
+import List exposing (singleton)
 import OrgOrInd
 import PaymentMethod
 import Time
@@ -106,3 +110,13 @@ fromMaxDate timezone max val =
 
         _ ->
             []
+
+
+view : Errors -> List (Html msg)
+view errors =
+    case errors of
+        [] ->
+            []
+
+        x :: xs ->
+            singleton <| div [ Spacing.mt2, Spacing.mb2, class "text-danger" ] [ text x ]
