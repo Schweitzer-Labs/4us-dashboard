@@ -26,11 +26,11 @@ type alias DropdownConfig msg =
     ( Dropdown.State -> msg, Dropdown.State )
 
 
-view : Aggregations.Model -> DropdownConfig msg -> (FileFormat -> msg) -> msg -> Bool -> Html msg
-view aggs dropdownConfig downloadMsg goToNeedsReviewMsg submitted =
+view : Aggregations.Model -> DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> msg) -> msg -> Bool -> Html msg
+view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsReviewMsg submitted =
     let
         summary =
-            warningRows goToNeedsReviewMsg aggs ++ titleRows ++ aggregateRows aggs ++ downloadRows dropdownConfig downloadMsg
+            warningRows goToNeedsReviewMsg aggs ++ titleRows ++ aggregateRows aggs ++ downloadRows dropdownDownloadConfig dropdownPreviewConfig downloadMsg
 
         rows =
             if submitted then
@@ -112,8 +112,8 @@ aggregateCol name data =
         ]
 
 
-downloadRows : DropdownConfig msg -> (FileFormat -> msg) -> List (Html msg)
-downloadRows ( dropdownToggleMsg, dropdownState ) downloadMsg =
+downloadRows : DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> msg) -> List (Html msg)
+downloadRows ( dropdownToggleDownloadMsg, dropdownDownloadState ) ( dropdownTogglePreviewMsg, dropdownTogglePreviewState ) downloadMsg =
     let
         pdfMsg =
             downloadMsg FileFormat.PDF
@@ -126,11 +126,22 @@ downloadRows ( dropdownToggleMsg, dropdownState ) downloadMsg =
         [ Grid.col
             []
             [ Dropdown.dropdown
-                dropdownState
+                dropdownDownloadState
                 { options = []
-                , toggleMsg = dropdownToggleMsg
+                , toggleMsg = dropdownToggleDownloadMsg
                 , toggleButton =
                     Dropdown.toggle [ Button.outlineSuccess, Button.attrs [ Spacing.mb3, Spacing.mt4 ] ] [ text "Download as " ]
+                , items =
+                    [ Dropdown.buttonItem [ onClick csvMsg ] [ text "CSV" ]
+                    , Dropdown.buttonItem [ onClick pdfMsg ] [ text "PDF" ]
+                    ]
+                }
+            , Dropdown.dropdown
+                dropdownTogglePreviewState
+                { options = []
+                , toggleMsg = dropdownTogglePreviewMsg
+                , toggleButton =
+                    Dropdown.toggle [ Button.outlineSuccess, Button.attrs [ Spacing.mb3, Spacing.mt4 ] ] [ text "Preview" ]
                 , items =
                     [ Dropdown.buttonItem [ onClick csvMsg ] [ text "CSV" ]
                     , Dropdown.buttonItem [ onClick pdfMsg ] [ text "PDF" ]

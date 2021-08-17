@@ -71,6 +71,7 @@ type alias Model =
     , createContributionSubmitting : Bool
     , generateDisclosureModalVisibility : Modal.Visibility
     , generateDisclosureModalDownloadDropdownState : Dropdown.State
+    , generateDisclosureModalPreviewDropdownState : Dropdown.State
     , actionsDropdown : Dropdown.State
     , filtersDropdown : Dropdown.State
     , filterTransactionType : Maybe TransactionType
@@ -132,6 +133,7 @@ init config session aggs committee committeeId =
             , actionsDropdown = Dropdown.initialState
             , filtersDropdown = Dropdown.initialState
             , generateDisclosureModalDownloadDropdownState = Dropdown.initialState
+            , generateDisclosureModalPreviewDropdownState = Dropdown.initialState
             , filterTransactionType = Nothing
             , filterNeedsReview = False
             , disclosureSubmitting = False
@@ -425,6 +427,9 @@ generateDisclosureModal model =
                 ( ToggleGenerateDisclosureModalDownloadDropdown
                 , model.generateDisclosureModalDownloadDropdownState
                 )
+                ( ToggleGenerateDisclosureModalPreviewDropdown
+                , model.generateDisclosureModalPreviewDropdownState
+                )
                 GenerateReport
                 FilterNeedsReview
                 model.disclosureSubmitted
@@ -554,6 +559,7 @@ type Msg
     | ToggleActionsDropdown Dropdown.State
     | ToggleFiltersDropdown Dropdown.State
     | ToggleGenerateDisclosureModalDownloadDropdown Dropdown.State
+    | ToggleGenerateDisclosureModalPreviewDropdown Dropdown.State
     | FileDisclosure
     | FileDisclosureDelayed
     | FilterByContributions
@@ -1064,6 +1070,9 @@ update msg model =
         ToggleGenerateDisclosureModalDownloadDropdown state ->
             ( { model | generateDisclosureModalDownloadDropdownState = state }, Cmd.none )
 
+        ToggleGenerateDisclosureModalPreviewDropdown state ->
+            ( { model | generateDisclosureModalPreviewDropdownState = state }, Cmd.none )
+
         FilterByContributions ->
             ( { model | filterTransactionType = Just TransactionType.Contribution, filterNeedsReview = False, heading = "Contributions" }
             , getTransactions model (Just TransactionType.Contribution)
@@ -1260,6 +1269,7 @@ subscriptions model =
         , Dropdown.subscriptions model.actionsDropdown ToggleActionsDropdown
         , Dropdown.subscriptions model.filtersDropdown ToggleFiltersDropdown
         , Dropdown.subscriptions model.generateDisclosureModalDownloadDropdownState ToggleGenerateDisclosureModalDownloadDropdown
+        , Dropdown.subscriptions model.generateDisclosureModalPreviewDropdownState ToggleGenerateDisclosureModalPreviewDropdown
         , Modal.subscriptions model.createDisbursementModalVisibility CreateDisbursementModalAnimate
         , Modal.subscriptions model.disbRuleUnverifiedModalVisibility DisbRuleUnverifiedModalAnimate
         , Modal.subscriptions model.disbRuleVerifiedModalVisibility DisbRuleVerifiedModalAnimate
