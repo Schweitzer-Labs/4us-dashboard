@@ -72,6 +72,8 @@ type alias Model =
     , generateDisclosureModalVisibility : Modal.Visibility
     , generateDisclosureModalDownloadDropdownState : Dropdown.State
     , generateDisclosureModalPreviewDropdownState : Dropdown.State
+    , generateDisclosureModalContext : DiscDropdownContext
+    , generateDisclosureModalPreview : Maybe String
     , actionsDropdown : Dropdown.State
     , filtersDropdown : Dropdown.State
     , filterTransactionType : Maybe TransactionType
@@ -134,6 +136,8 @@ init config session aggs committee committeeId =
             , filtersDropdown = Dropdown.initialState
             , generateDisclosureModalDownloadDropdownState = Dropdown.initialState
             , generateDisclosureModalPreviewDropdownState = Dropdown.initialState
+            , generateDisclosureModalContext = Closed
+            , generateDisclosureModalPreview = Nothing
             , filterTransactionType = Nothing
             , filterNeedsReview = False
             , disclosureSubmitting = False
@@ -419,6 +423,7 @@ generateDisclosureModal model =
         |> Modal.withAnimation AnimateGenerateDisclosureModal
         |> Modal.large
         |> Modal.hideOnBackdropClick True
+        |> Modal.scrollableBody True
         |> Modal.h3 [] [ text "Get Disclosure" ]
         |> Modal.body
             []
@@ -433,6 +438,7 @@ generateDisclosureModal model =
                 GenerateReport
                 FilterNeedsReview
                 model.disclosureSubmitted
+                model.generateDisclosureModalPreview
             ]
         |> Modal.footer []
             [ Grid.containerFluid
@@ -883,16 +889,37 @@ update msg model =
                     ( model, Download.string "2021-periodic-report-july.pdf" "text/pdf" "2021-periodic-report-july" )
 
         GotReportData res ->
-            case res of
-                Ok body ->
-                    ( model, Download.string "report.csv" "text/csv" <| GetReport.toCsvData body )
+            case model.generateDisclosureModalContext of
+                Download ->
+                    case res of
+                        Ok body ->
+                            ( model, Download.string "report.csv" "text/csv" <| GetReport.toCsvData body )
 
-                Err _ ->
-                    let
-                        { cognitoDomain, cognitoClientId, redirectUri } =
-                            model.config
-                    in
-                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                        Err _ ->
+                            let
+                                { cognitoDomain, cognitoClientId, redirectUri } =
+                                    model.config
+                            in
+                            ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+
+                Preview ->
+                    case res of
+                        Ok body ->
+                            let
+                                _ =
+                                    Debug.log "response" <| GetReport.toCsvData body
+                            in
+                            ( { model | generateDisclosureModalPreview = Just (GetReport.toCsvData body) }, Cmd.none )
+
+                        Err _ ->
+                            let
+                                { cognitoDomain, cognitoClientId, redirectUri } =
+                                    model.config
+                            in
+                            ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+
+                Closed ->
+                    ( model, Cmd.none )
 
         AnimateGenerateDisclosureModal visibility ->
             ( { model | generateDisclosureModalVisibility = visibility }, Cmd.none )
@@ -1068,10 +1095,20 @@ update msg model =
             ( { model | filtersDropdown = state }, Cmd.none )
 
         ToggleGenerateDisclosureModalDownloadDropdown state ->
-            ( { model | generateDisclosureModalDownloadDropdownState = state }, Cmd.none )
+            ( { model
+                | generateDisclosureModalDownloadDropdownState = state
+                , generateDisclosureModalContext = Download
+              }
+            , Cmd.none
+            )
 
         ToggleGenerateDisclosureModalPreviewDropdown state ->
-            ( { model | generateDisclosureModalPreviewDropdownState = state }, Cmd.none )
+            ( { model
+                | generateDisclosureModalPreviewDropdownState = state
+                , generateDisclosureModalContext = Preview
+              }
+            , Cmd.none
+            )
 
         FilterByContributions ->
             ( { model | filterTransactionType = Just TransactionType.Contribution, filterNeedsReview = False, heading = "Contributions" }
@@ -1303,3 +1340,9 @@ applyNeedsReviewFilter model txns =
 
     else
         txns
+
+
+type DiscDropdownContext
+    = Download
+    | Preview
+    | Closed

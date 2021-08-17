@@ -3,6 +3,7 @@ module FileDisclosure exposing (aggregateCol, aggregateRows, downloadRows, title
 import Aggregations
 import AppDialogue
 import Asset
+import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Grid as Grid exposing (Column)
@@ -12,7 +13,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import File.Download as Download
 import FileFormat exposing (FileFormat)
-import Html exposing (Html, a, div, h2, h3, h4, h5, h6, span, text)
+import Html exposing (Html, a, div, h2, h3, h4, h5, h6, p, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Route
@@ -26,22 +27,35 @@ type alias DropdownConfig msg =
     ( Dropdown.State -> msg, Dropdown.State )
 
 
-view : Aggregations.Model -> DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> msg) -> msg -> Bool -> Html msg
-view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsReviewMsg submitted =
-    let
-        summary =
-            warningRows goToNeedsReviewMsg aggs ++ titleRows ++ aggregateRows aggs ++ downloadRows dropdownDownloadConfig dropdownPreviewConfig downloadMsg
+view : Aggregations.Model -> DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> msg) -> msg -> Bool -> Maybe String -> Html msg
+view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsReviewMsg submitted preview =
+    case preview of
+        Just a ->
+            Grid.containerFluid []
+                [ Grid.row []
+                    [ Grid.col []
+                        [ div [ class "text-break" ]
+                            [ Alert.simpleSecondary [] [ p [ class "text-break" ] [ text a ] ]
+                            ]
+                        ]
+                    ]
+                ]
 
-        rows =
-            if submitted then
-                successRows
+        Nothing ->
+            let
+                summary =
+                    warningRows goToNeedsReviewMsg aggs ++ titleRows ++ aggregateRows aggs ++ downloadRows dropdownDownloadConfig dropdownPreviewConfig downloadMsg
 
-            else
-                summary
-    in
-    Grid.containerFluid
-        []
-        rows
+                rows =
+                    if submitted then
+                        successRows
+
+                    else
+                        summary
+            in
+            Grid.containerFluid
+                []
+                rows
 
 
 successRows : List (Html msg)
