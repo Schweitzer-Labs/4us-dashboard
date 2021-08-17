@@ -10,6 +10,7 @@ import Config exposing (Config)
 import Html exposing (Html)
 import Page
 import Page.Blank as Blank
+import Page.Demo as Demo
 import Page.LinkBuilder as LinkBuilder
 import Page.NotFound as NotFound
 import Page.Transactions as Transactions
@@ -28,6 +29,7 @@ type Model
     | Redirect Session
     | LinkBuilder LinkBuilder.Model
     | Transactions Transactions.Model
+    | Demo Demo.Model
 
 
 init : Config -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -53,6 +55,7 @@ type Msg
     | GotLinkBuilderMsg LinkBuilder.Msg
     | GotSession Session
     | GotTransactionsMsg Transactions.Msg
+    | GotDemoMsg Demo.Msg
 
 
 toSession : Model -> Session
@@ -70,6 +73,9 @@ toSession page =
         LinkBuilder session ->
             LinkBuilder.toSession session
 
+        Demo session ->
+            Demo.toSession session
+
 
 toAggregations : Model -> Aggregations.Model
 toAggregations page =
@@ -86,6 +92,9 @@ toAggregations page =
         LinkBuilder linkBuilder ->
             linkBuilder.aggregations
 
+        Demo demo ->
+            demo.aggregations
+
 
 toCommittee : Model -> Committee.Model
 toCommittee page =
@@ -101,6 +110,9 @@ toCommittee page =
 
         LinkBuilder linkBuilder ->
             linkBuilder.committee
+
+        Demo demo ->
+            demo.committee
 
 
 toConfig : Model -> Config
@@ -129,6 +141,9 @@ toConfig page =
 
         LinkBuilder linkBuilder ->
             linkBuilder.config
+
+        Demo demo ->
+            demo.config
 
 
 changeRouteTo : Url -> Config -> Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -178,6 +193,15 @@ changeRouteTo url config maybeRoute model =
                 committeeId
                 |> updateWith LinkBuilder GotLinkBuilderMsg model
 
+        Just Route.Demo ->
+            Demo.init
+                config
+                session
+                aggregations
+                committee
+                committeeId
+                |> updateWith Demo GotDemoMsg model
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -217,6 +241,10 @@ update msg model =
         ( GotLinkBuilderMsg subMsg, LinkBuilder linkBuilder ) ->
             LinkBuilder.update subMsg linkBuilder
                 |> updateWith LinkBuilder GotLinkBuilderMsg model
+
+        ( GotDemoMsg subMsg, Demo demo ) ->
+            Demo.update subMsg demo
+                |> updateWith Demo GotDemoMsg model
 
         ( GotSession session, Redirect _ ) ->
             ( Redirect session
@@ -276,6 +304,9 @@ view model =
         LinkBuilder linkBuilder ->
             viewPage Page.LinkBuilder GotLinkBuilderMsg (LinkBuilder.view linkBuilder)
 
+        Demo demo ->
+            viewPage Page.Demo GotDemoMsg (Demo.view demo)
+
 
 
 ---- PROGRAM ----
@@ -289,6 +320,9 @@ subscriptions model =
 
         LinkBuilder linkBuilder ->
             Sub.map GotLinkBuilderMsg (LinkBuilder.subscriptions linkBuilder)
+
+        Demo demo ->
+            Sub.map GotDemoMsg (Demo.subscriptions demo)
 
         _ ->
             Sub.none

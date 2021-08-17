@@ -15,6 +15,7 @@ type Route
     = Home
     | LinkBuilder
     | Transactions
+    | Demo
 
 
 parser : Parser (Route -> a) a
@@ -23,6 +24,7 @@ parser =
         [ Parser.map Home Parser.top
         , Parser.map Transactions (s "transactions")
         , Parser.map LinkBuilder (s "link-builder")
+        , Parser.map Demo (s "demo")
         ]
 
 
@@ -69,3 +71,6 @@ routeToPieces page =
 
         LinkBuilder ->
             [ "link-builder" ]
+
+        Demo ->
+            [ "demo" ]
