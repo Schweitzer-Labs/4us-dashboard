@@ -141,7 +141,7 @@ downloadRows ( dropdownToggleDownloadMsg, dropdownDownloadState ) ( dropdownTogg
                 { options = []
                 , toggleMsg = dropdownTogglePreviewMsg
                 , toggleButton =
-                    Dropdown.toggle [ Button.outlineSuccess, Button.attrs [ Spacing.mb3, Spacing.mt4 ] ] [ text "Preview" ]
+                    Dropdown.toggle [ Button.outlineSuccess, Button.attrs [ Spacing.mb3, Spacing.mt4, Spacing.ml2 ] ] [ text "Preview" ]
                 , items =
                     [ Dropdown.buttonItem [ onClick csvMsg ] [ text "CSV" ]
                     , Dropdown.buttonItem [ onClick pdfMsg ] [ text "PDF" ]
