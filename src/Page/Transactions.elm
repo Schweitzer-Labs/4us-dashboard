@@ -905,10 +905,6 @@ update msg model =
                 Preview ->
                     case res of
                         Ok body ->
-                            let
-                                _ =
-                                    Debug.log "response" <| GetReport.toCsvData body
-                            in
                             ( { model | generateDisclosureModalPreview = Just (GetReport.toCsvData body) }, Cmd.none )
 
                         Err _ ->

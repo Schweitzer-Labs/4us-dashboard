@@ -30,8 +30,12 @@ type alias DropdownConfig msg =
     ( Dropdown.State -> msg, Dropdown.State )
 
 
-disclosureRowMap : ( Maybe a, Maybe msg, String ) -> ( Maybe msg, DataRow msg )
+disclosureRowMap : ( Maybe a, Maybe msg, List DiscCsv.Model ) -> ( Maybe msg, DataRow msg )
 disclosureRowMap ( _, maybeMsg, d ) =
+    let
+        _ =
+            Debug.log "list of models " d
+    in
     ( maybeMsg
     , [ ( "Date / Time", text "Test" )
       , ( "Entity Name", text "Test" )
@@ -50,10 +54,15 @@ view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsRevi
     case preview of
         Just a ->
             let
-                _ =
-                    Debug.log "DiscCsv ID's" (Decode.decodeCsv Decode.FieldNamesFromFirstRow DiscCsv.decoder a)
+                decodedCsv =
+                    Decode.decodeCsv Decode.FieldNamesFromFirstRow DiscCsv.decoder a
             in
-            DataTable.view "..." DiscCsv.labels disclosureRowMap <| List.map (\d -> ( Nothing, Nothing, d )) [ a ]
+            case decodedCsv of
+                Ok value ->
+                    DataTable.view "..." DiscCsv.labels disclosureRowMap <| List.map (\d -> ( Nothing, Nothing, d )) [ value ]
+
+                Err error ->
+                    text ""
 
         Nothing ->
             let
