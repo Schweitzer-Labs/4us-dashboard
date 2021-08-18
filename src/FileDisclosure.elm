@@ -12,6 +12,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import Csv.Decode as Decode exposing (FieldNames(..), string)
+import DataTable exposing (DataRow)
 import DiscCsv
 import File.Download as Download
 import FileFormat exposing (FileFormat)
@@ -29,6 +30,21 @@ type alias DropdownConfig msg =
     ( Dropdown.State -> msg, Dropdown.State )
 
 
+disclosureRowMap : ( Maybe a, Maybe msg, String ) -> ( Maybe msg, DataRow msg )
+disclosureRowMap ( _, maybeMsg, d ) =
+    ( maybeMsg
+    , [ ( "Date / Time", text "Test" )
+      , ( "Entity Name", text "Test" )
+      , ( "Context", text "Test" )
+      , ( "Amount", text "Test" )
+      , ( "Verified", text "Test" )
+      , ( "Payment Method", text "Test" )
+      , ( "Processor", text "Test" )
+      , ( "Status", text "Test" )
+      ]
+    )
+
+
 view : Aggregations.Model -> DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> msg) -> msg -> Bool -> Maybe String -> Html msg
 view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsReviewMsg submitted preview =
     case preview of
@@ -37,15 +53,7 @@ view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsRevi
                 _ =
                     Debug.log "DiscCsv ID's" (Decode.decodeCsv Decode.FieldNamesFromFirstRow DiscCsv.decoder a)
             in
-            Grid.containerFluid []
-                [ Grid.row []
-                    [ Grid.col []
-                        [ div [ class "text-break" ]
-                            [ Alert.simpleSecondary [] [ p [ class "text-break" ] [ text a ] ]
-                            ]
-                        ]
-                    ]
-                ]
+            DataTable.view "..." DiscCsv.labels disclosureRowMap <| List.map (\d -> ( Nothing, Nothing, d )) [ a ]
 
         Nothing ->
             let
