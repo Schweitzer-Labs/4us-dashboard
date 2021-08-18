@@ -7,6 +7,7 @@ import Api.GraphQL exposing (MutationResponse(..))
 import Api.ReconcileTxn as ReconcileTxn
 import Asset
 import BankData
+import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
@@ -18,6 +19,7 @@ import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import ContribInfo
+import Copy
 import DataTable exposing (DataRow)
 import Direction
 import EmploymentStatus
@@ -183,8 +185,9 @@ clearForm model =
 view : Model -> Html Msg
 view model =
     div
-        [ Spacing.mt4 ]
-        [ BankData.view True model.bankTxn
+        []
+        [ dialogueBox
+        , BankData.view True model.bankTxn
         , h6 [ Spacing.mt4 ] [ text "Reconcile" ]
         , Grid.containerFluid
             []
@@ -195,6 +198,11 @@ view model =
                 ++ contribFormRow model
                 ++ [ reconcileItemsTable model.relatedTxns model.selectedTxns ]
         ]
+
+
+dialogueBox : Html Msg
+dialogueBox =
+    Alert.simpleInfo [] Copy.contribUnverifiedDialogue
 
 
 contribFormRow : Model -> List (Html Msg)
@@ -235,6 +243,7 @@ contribFormRow model =
             , toggleEdit = ToggleEdit
             , maybeError = model.maybeError
             , txnId = Just model.bankTxn.id
+            , processPayment = False
             }
         ]
             ++ [ buttonRow CreateContribToggled "Create" "Cancel" CreateContribSubmitted model.createContribIsSubmitting model.createContribButtonIsDisabled ]
@@ -749,6 +758,7 @@ createContribEncoder model =
     , employmentStatus = model.employmentStatus
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
+    , processPayment = False
     }
 
 

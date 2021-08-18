@@ -74,6 +74,8 @@ query =
           finicityTransactionDate
           finicityNormalizedPayeeName
           finicityDescription
+          finicityPaymentMethod
+          donorVerificationScore
         }
       }
     """

@@ -145,6 +145,15 @@ getContext transaction =
                 (Maybe.map (text << EntityType.toDisplayString) transaction.entityType)
 
 
+getPaymentMethod : Transaction.Model -> String
+getPaymentMethod txn =
+    case ( txn.paymentMethod, txn.stripePaymentIntentId ) of
+        --( _, Just a ) ->
+        --    "Online Processor"
+        _ ->
+            PaymentMethod.toDisplayString txn.paymentMethod
+
+
 getAmount : Transaction.Model -> Html msg
 getAmount transaction =
     case transaction.direction of
@@ -181,7 +190,7 @@ transactionRowMap committee ( _, maybeMsg, transaction ) =
       , ( "Context", entityType )
       , ( "Amount", amount )
       , ( "Verified", verifiedContent <| transaction.ruleVerified )
-      , ( "Payment Method", text <| PaymentMethod.toDisplayString transaction.paymentMethod )
+      , ( "Payment Method", text <| getPaymentMethod transaction )
       , ( "Processor", processor committee transaction )
       , ( "Status", getStatus transaction )
       ]

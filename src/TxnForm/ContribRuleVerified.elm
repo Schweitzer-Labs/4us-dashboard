@@ -3,13 +3,14 @@ module TxnForm.ContribRuleVerified exposing (Model, Msg(..), amendTxnEncoder, fr
 import Api.AmendContrib as AmendContrib
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
+import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import ContribInfo exposing (ContribValidatorModel)
 import EmploymentStatus
 import EntityType
 import ExpandableBankData
-import Html exposing (Html, span, text)
+import Html exposing (Html, p, span, text)
 import Html.Attributes exposing (class)
 import InKindType
 import Loading
@@ -63,6 +64,7 @@ type alias Model =
     , committeeId : String
     , isSubmitDisabled : Bool
     , maybeError : Maybe String
+    , popoverState : Popover.State
     }
 
 
@@ -116,6 +118,7 @@ init txn =
     , committeeId = txn.committeeId
     , isSubmitDisabled = True
     , maybeError = Nothing
+    , popoverState = Popover.initialState
     }
 
 
@@ -189,6 +192,7 @@ contribFormRow model =
         , toggleEdit = ToggleEdit
         , maybeError = model.maybeError
         , txnId = Just model.txn.id
+        , processPayment = False
         }
 
 
@@ -208,6 +212,7 @@ type Msg
     = NoOp
     | ToggleEdit
     | BankDataToggled
+    | PopoverMsg Popover.State
       --- Donor Info
     | OrgOrIndUpdated (Maybe OrgOrInd.Model)
     | EmailAddressUpdated String
@@ -358,6 +363,9 @@ update msg model =
 
         BankDataToggled ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
+
+        PopoverMsg state ->
+            ( { model | popoverState = state }, Cmd.none )
 
 
 fromError : Model -> String -> Model

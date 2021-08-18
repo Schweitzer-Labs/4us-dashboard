@@ -9,7 +9,9 @@ module TxnForm.DisbRuleVerified exposing
     , view
     )
 
+import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
+import Bootstrap.Popover as Popover
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
 import ExpandableBankData
@@ -44,6 +46,7 @@ type alias Model =
     , isSubmitDisabled : Bool
     , maybeError : Maybe String
     , formDisabled : Bool
+    , popoverState : Popover.State
     }
 
 
@@ -79,6 +82,7 @@ init txn =
     , formDisabled = True
     , isSubmitDisabled = True
     , maybeError = Nothing
+    , popoverState = Popover.initialState
     }
 
 
@@ -108,7 +112,8 @@ loadedView model =
     in
     Grid.container
         []
-        (PaymentInfo.view model.txn
+        ([]
+            ++ PaymentInfo.view model.txn
             ++ disbFormRow model
             ++ bankData
         )
@@ -142,6 +147,7 @@ disbFormRow model =
 
 type Msg
     = NoOp
+    | PopoverMsg Popover.State
     | EntityNameUpdated String
     | AddressLine1Updated String
     | AddressLine2Updated String
@@ -226,6 +232,9 @@ update msg model =
 
         NoOp ->
             ( model, Cmd.none )
+
+        PopoverMsg state ->
+            ( { model | popoverState = state }, Cmd.none )
 
 
 validator : Validator String Model

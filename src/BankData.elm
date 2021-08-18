@@ -1,5 +1,6 @@
 module BankData exposing (formLabelRow, view)
 
+import Asset
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
@@ -31,7 +32,7 @@ bankDataRows data =
         ]
     , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
         [ Grid.col [] [ labelWithMaybeLongData "Description" data.finicityDescription ]
-        , Grid.col [] [ labelWithData "Payment Type" <| PaymentMethod.toDisplayString data.paymentMethod ]
+        , Grid.col [] [ labelWithData "Payment Type" <| Maybe.withDefault "N/A" <| Maybe.map PaymentMethod.toDisplayString data.finicityPaymentMethod ]
         ]
     , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
         [ Grid.col [] [ Maybe.withDefault (text "N/A") <| Maybe.map (labelWithTimeData "Posted Date") data.finicityPostedDate ]
