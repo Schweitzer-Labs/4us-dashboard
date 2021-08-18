@@ -59,6 +59,7 @@ type alias Config msg =
     , toggleEdit : msg
     , maybeError : Maybe String
     , txnId : Maybe String
+    , processPayment : Bool
     }
 
 
@@ -94,7 +95,7 @@ view c =
                 else
                     []
                         ++ labelRow "Processing Info"
-                        ++ PaymentMethod.select msg (toData c.paymentMethod) c.disabled c.txnId
+                        ++ PaymentMethod.select c.processPayment msg (toData c.paymentMethod) c.disabled c.txnId
                         ++ processingRow c
                )
 
@@ -271,14 +272,14 @@ inKindRow { inKindType, inKindDesc, disabled } =
 
 processingRow : Config msg -> List (Html msg)
 processingRow c =
-    case toData c.paymentMethod of
-        Just PaymentMethod.Check ->
-            checkRow c
-
-        Just PaymentMethod.Credit ->
+    case ( toData c.paymentMethod, c.processPayment ) of
+        ( Just PaymentMethod.Credit, True ) ->
             creditRow c
 
-        Just PaymentMethod.InKind ->
+        ( Just PaymentMethod.Check, _ ) ->
+            checkRow c
+
+        ( Just PaymentMethod.InKind, _ ) ->
             inKindRow c
 
         _ ->
