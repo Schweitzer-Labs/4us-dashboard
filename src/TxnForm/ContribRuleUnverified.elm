@@ -19,7 +19,7 @@ import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import ContribInfo
-import Copy exposing (contribRuleVerifiedInfo)
+import Copy
 import DataTable exposing (DataRow)
 import Direction
 import EmploymentStatus
@@ -202,7 +202,7 @@ view model =
 
 dialogueBox : Html Msg
 dialogueBox =
-    Alert.simpleInfo [] contribRuleVerifiedInfo
+    Alert.simpleInfo [] Copy.contribUnverifiedDialogue
 
 
 contribFormRow : Model -> List (Html Msg)
