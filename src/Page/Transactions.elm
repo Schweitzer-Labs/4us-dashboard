@@ -1006,6 +1006,7 @@ update msg model =
         HideGenerateDisclosureModal ->
             ( { model
                 | generateDisclosureModalVisibility = Modal.hidden
+                , generateDisclosureModalPreview = Nothing
               }
             , Cmd.none
             )
