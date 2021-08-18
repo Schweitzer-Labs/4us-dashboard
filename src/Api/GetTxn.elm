@@ -11,7 +11,7 @@ import Transaction
 query : String
 query =
     """
-        query TransactionQuery($committeeId: String!, $id: String) {
+        query TransactionQuery($committeeId: String!, $id: String!) {
           transaction(committeeId: $committeeId, id: $id) {
             id
             committeeId
@@ -55,6 +55,7 @@ query =
             isExistingLiability
             inKindDescription
             inKindType
+            finicityPaymentMethod
           }
         }
     """

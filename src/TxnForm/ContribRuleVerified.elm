@@ -192,6 +192,7 @@ contribFormRow model =
         , toggleEdit = ToggleEdit
         , maybeError = model.maybeError
         , txnId = Just model.txn.id
+        , processPayment = False
         }
 
 

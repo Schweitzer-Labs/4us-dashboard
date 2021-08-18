@@ -1,4 +1,4 @@
-module PaymentMethod exposing (Model(..), decoder, dropdown, fromMaybeToString, select, toDataString, toDisplayString)
+module PaymentMethod exposing (Model(..), decoder, dropdown, fromMaybeToString, fromString, select, toDataString, toDisplayString)
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Fieldset as Fieldset
@@ -17,6 +17,7 @@ type Model
     | InKind
     | Debit
     | Transfer
+    | OnlineProcessor
     | Other
 
 
@@ -43,6 +44,9 @@ toDataString method =
 
         Transfer ->
             "Transfer"
+
+        OnlineProcessor ->
+            "OnlineProcessor"
 
         Other ->
             "Other"
@@ -74,6 +78,9 @@ decoder =
 
                     "Transfer" ->
                         Decode.succeed Transfer
+
+                    "OnlineProcessor" ->
+                        Decode.succeed OnlineProcessor
 
                     "Other" ->
                         Decode.succeed Other
@@ -113,11 +120,14 @@ toDisplayString src =
         Debit ->
             "Debit"
 
+        InKind ->
+            "In-kind"
+
         Transfer ->
             "Transfer"
 
-        InKind ->
-            "In-kind"
+        OnlineProcessor ->
+            "Online Processor"
 
         Other ->
             "Other"
@@ -152,6 +162,9 @@ fromString str =
         "Transfer" ->
             Just Transfer
 
+        "OnlineProcessor" ->
+            Just OnlineProcessor
+
         "Other" ->
             Just Other
 
@@ -164,11 +177,26 @@ type AccountType
     | Saving
 
 
-select : (Model -> msg) -> Maybe Model -> Bool -> Maybe String -> List (Html msg)
-select msg currentValue disabled txnId =
+select : Bool -> (Model -> msg) -> Maybe Model -> Bool -> Maybe String -> List (Html msg)
+select processPayment msg currentValue disabled txnId =
     let
         id =
             Maybe.withDefault "" txnId
+
+        inKindRadio =
+            if processPayment then
+                [ Radio.createCustom
+                    [ Radio.id <| id ++ "paymentMethodInKind-retired"
+                    , Radio.inline
+                    , Radio.onClick (msg InKind)
+                    , Radio.checked (currentValue == Just InKind)
+                    , Radio.disabled disabled
+                    ]
+                    "In-Kind"
+                ]
+
+            else
+                []
     in
     [ Form.form []
         [ Fieldset.config
@@ -177,6 +205,7 @@ select msg currentValue disabled txnId =
             |> Fieldset.children
                 (Radio.radioList
                     "paymentMethod"
+                 <|
                     [ Radio.createCustom
                         [ Radio.id <| id ++ "paymentMethod-check"
                         , Radio.inline
@@ -193,15 +222,8 @@ select msg currentValue disabled txnId =
                         , Radio.disabled disabled
                         ]
                         "Credit"
-                    , Radio.createCustom
-                        [ Radio.id <| id ++ "paymentMethodInKind-retired"
-                        , Radio.inline
-                        , Radio.onClick (msg InKind)
-                        , Radio.checked (currentValue == Just InKind)
-                        , Radio.disabled disabled
-                        ]
-                        "In-Kind"
                     ]
+                        ++ inKindRadio
                 )
             |> Fieldset.view
         ]
