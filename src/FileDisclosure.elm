@@ -30,25 +30,6 @@ type alias DropdownConfig msg =
     ( Dropdown.State -> msg, Dropdown.State )
 
 
-disclosureRowMap : ( Maybe a, Maybe msg, List DiscCsv.Model ) -> ( Maybe msg, DataRow msg )
-disclosureRowMap ( _, maybeMsg, d ) =
-    let
-        _ =
-            Debug.log "list of models " d
-    in
-    ( maybeMsg
-    , [ ( "Date / Time", text "Test" )
-      , ( "Entity Name", text "Test" )
-      , ( "Context", text "Test" )
-      , ( "Amount", text "Test" )
-      , ( "Verified", text "Test" )
-      , ( "Payment Method", text "Test" )
-      , ( "Processor", text "Test" )
-      , ( "Status", text "Test" )
-      ]
-    )
-
-
 view : Aggregations.Model -> DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> msg) -> msg -> Bool -> Maybe String -> Html msg
 view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsReviewMsg submitted preview =
     case preview of
@@ -59,7 +40,7 @@ view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsRevi
             in
             case decodedCsv of
                 Ok value ->
-                    DataTable.view "..." DiscCsv.labels disclosureRowMap <| List.map (\d -> ( Nothing, Nothing, d )) [ value ]
+                    DataTable.view "..." DiscCsv.labels DiscCsv.disclosureRowMap <| List.map (\d -> ( Nothing, Nothing, d )) value
 
                 Err error ->
                     text ""
