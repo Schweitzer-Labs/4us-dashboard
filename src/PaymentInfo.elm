@@ -3,7 +3,7 @@ module PaymentInfo exposing (dataView, view)
 import Asset
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
-import Bootstrap.Popover as Popover exposing (State)
+import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import Html exposing (Html, div, h4, h6, span, text)
