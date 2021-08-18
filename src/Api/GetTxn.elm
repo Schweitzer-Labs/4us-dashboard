@@ -56,6 +56,7 @@ query =
             inKindDescription
             inKindType
             finicityPaymentMethod
+            donorVerificationScore
           }
         }
     """

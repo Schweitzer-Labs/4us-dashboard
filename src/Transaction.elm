@@ -57,6 +57,7 @@ type alias Model =
     , inKindDescription : Maybe String
     , inKindType : Maybe InKindType.Model
     , finicityPaymentMethod : Maybe PaymentMethod.Model
+    , donorVerificationScore : Maybe Int
     }
 
 
@@ -107,6 +108,7 @@ init =
     , inKindDescription = Nothing
     , inKindType = Nothing
     , finicityPaymentMethod = Nothing
+    , donorVerificationScore = Nothing
     }
 
 
@@ -194,3 +196,4 @@ decoder =
         |> maybeString "inKindDescription"
         |> maybeInKindType "inKindType"
         |> maybePaymentMethod "finicityPaymentMethod"
+        |> maybeInt "donorVerificationScore"
