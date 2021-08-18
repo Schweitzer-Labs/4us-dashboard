@@ -50,30 +50,22 @@ dataView txn popoverState popoverMsg =
         , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
             [ Grid.col [] [ verified "Rule Verified" txn.ruleVerified ]
             , Grid.col [] [ verified "Bank Verified" txn.bankVerified ]
-            , Grid.col []
-                [ Grid.row []
-                    [ Grid.col [ Col.sm4 ]
-                        [ labelWithData "Verification Score" "20"
-                        ]
-                    , Grid.col [ Col.smAuto ]
-                        [ infoPopover popoverState popoverMsg
-                        ]
-                    ]
-                ]
+            , Grid.col [] [ labelWithData "Verification Score" "20" ]
             ]
         ]
 
 
-infoPopover : State -> (State -> msg) -> Html msg
-infoPopover popoverState msg =
-    Popover.config
-        (span
-            ([ class "hover-underline hover-pointer align-middle", Spacing.ml3 ]
-                ++ Popover.onClick popoverState msg
-            )
-            [ Asset.infoCircleGlyph [] ]
-        )
-        |> Popover.top
-        |> Popover.content []
-            [ text verificationScore ]
-        |> Popover.view popoverState
+
+--infoPopover : State -> (State -> msg) -> Html msg
+--infoPopover popoverState msg =
+--    Popover.config
+--        (span
+--            ([ class "hover-underline hover-pointer align-middle", Spacing.ml3 ]
+--                ++ Popover.onClick popoverState msg
+--            )
+--            [ Asset.infoCircleGlyph [] ]
+--        )
+--        |> Popover.top
+--        |> Popover.content []
+--            [ text verificationScore ]
+--        |> Popover.view popoverState
