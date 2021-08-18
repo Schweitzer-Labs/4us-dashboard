@@ -48,9 +48,14 @@ dataView txn =
         , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
             [ Grid.col [] [ verified "Rule Verified" txn.ruleVerified ]
             , Grid.col [] [ verified "Bank Verified" txn.bankVerified ]
-            , Grid.col [] [ labelWithData "Verification Score" "20" ]
+            , Grid.col [] [ labelWithData "Verification Score" <| toDisplayScore txn.donorVerificationScore ]
             ]
         ]
+
+
+toDisplayScore : Maybe Int -> String
+toDisplayScore =
+    Maybe.withDefault "N/A" << Maybe.map String.fromInt
 
 
 
