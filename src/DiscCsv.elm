@@ -1,9 +1,9 @@
-module DiscCsv exposing (Disclosure, decoder)
+module DiscCsv exposing (Model, decoder, labels)
 
 import Csv.Decode as Decode exposing (Decoder, FieldNames(..))
 
 
-type alias Disclosure =
+type alias Model =
     { filerId : String
     , filingPeriodId : String
     , filingCatId : String
@@ -65,9 +65,72 @@ type alias Disclosure =
     }
 
 
-decoder : Decoder Disclosure
+labels : List String
+labels =
+    [ "FILER_ID"
+    , "FILING_PERIOD_ID"
+    , "FILING_CAT_ID"
+    , "RESIG_TERM_TYPE_ID"
+    , "R_FILING_DATE"
+    , "FILING_SCHED_ID"
+    , "LOAN_LIB_NUMBER"
+    , "TRANS_NUMBER"
+    , "TRANS_MAPPING"
+    , "SCHED_DATE"
+    , "ORG_DATE"
+    , "CNTRBR_TYPE_ID"
+    , "CNTRBN_TYPE_ID"
+    , "TRANSFER_TYPE_ID"
+    , "RECEIPT_TYPE_ID"
+    , "RECEIPT_CODE_ID"
+    , "PURPOSE_CODE_ID"
+    , "Is Expenditure Subcontracted?"
+    , "Is Expenditure a Partial Payment?"
+    , "Is this existing Liability?"
+    , "Is Liability a Partial Forgiven?"
+    , "FLNG_ENT_NAME"
+    , "FLNG_ENT_FIRST_NAME"
+    , "FLNG_ENT_MIDDLE_NAME"
+    , "FLNG_ENT_LAST_NAME"
+    , "FLNG_ENT_ADD1"
+    , "FLNG_ENT_CITY"
+    , "FLNG_ENT_STATE"
+    , "FLNG_ENT_ZIP"
+    , "FLNG_ENT_COUNTRY"
+    , "PAYMENT_TYPE_ID"
+    , "PAY_NUMBER"
+    , "OWED_AMT"
+    , "ORG_AMT"
+    , "TRANS_EXPLNTN"
+    , "LOAN_OTHER_ID"
+    , "R_ITEMIZED"
+    , "R_LIABILITY"
+    , "ELECTION_DATE"
+    , "ELECTION_TYPE"
+    , "ELECTION_YEAR"
+    , "TREAS_ID"
+    , "TREAS_OCCUPATION"
+    , "TREAS_EMPLOYER"
+    , "TREAS_ADD1"
+    , "TREAS_CITY"
+    , "TREAS_STATE"
+    , "TREAS_ZIP"
+    , "PART_FLNG_ENT_ID"
+    , "OFFICE_ID"
+    , "DISTRICT"
+    , "DIST_OFF_CAND_BAL_PROP"
+    , "IE_CNTRBR_OCC"
+    , "IE_CNTRBR_EMP"
+    , "IE_DESC"
+    , "R_IE_SUPPORTED"
+    , "R_IE_INCLUDED"
+    , "R_PARENT"
+    ]
+
+
+decoder : Decoder Model
 decoder =
-    Decode.into Disclosure
+    Decode.into Model
         |> Decode.pipeline (Decode.field "FILER_ID" Decode.string)
         |> Decode.pipeline (Decode.field "FILING_PERIOD_ID" Decode.string)
         |> Decode.pipeline (Decode.field "FILING_CAT_ID" Decode.string)
