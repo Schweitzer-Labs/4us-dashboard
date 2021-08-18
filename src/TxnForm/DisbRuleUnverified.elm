@@ -151,7 +151,7 @@ getRelatedDisb txn txns =
 view : Model -> Html Msg
 view model =
     div
-        [ Spacing.mt4 ]
+        []
         [ dialogueBox
         , BankData.view True model.bankTxn
         , h6 [ Spacing.mt4 ] [ text "Reconcile" ]
