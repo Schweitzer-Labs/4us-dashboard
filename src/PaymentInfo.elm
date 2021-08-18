@@ -3,9 +3,10 @@ module PaymentInfo exposing (dataView, view)
 import Asset
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
+import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
-import Html exposing (Html, div, h4, h6, text)
+import Html exposing (Html, div, h4, h6, span, text)
 import Html.Attributes exposing (class)
 import LabelWithData exposing (labelWithContent, labelWithData, labelWithTimeData)
 import PaymentMethod
@@ -41,7 +42,7 @@ dataView txn =
     Grid.container []
         [ Grid.row [ Row.attrs [ Spacing.mt4 ] ]
             [ Grid.col [] [ labelWithData "Amount" <| Cents.toDollar txn.amount ]
-            , Grid.col [] [ labelWithTimeData "Date Initiated" <| txn.paymentDate ]
+            , Grid.col [] [ Grid.row [] [ Grid.col [] [ labelWithTimeData "Date Initiated" <| txn.paymentDate ] ] ]
             , Grid.col [] [ labelWithData "Payment Type" <| PaymentMethod.toDisplayString txn.paymentMethod ]
             ]
         , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
@@ -50,3 +51,19 @@ dataView txn =
             , Grid.col [] [ labelWithData "Verification Score" "20" ]
             ]
         ]
+
+
+
+--infoPopover : State -> (State -> msg) -> Html msg
+--infoPopover popoverState msg =
+--    Popover.config
+--        (span
+--            ([ class "hover-underline hover-pointer align-middle", Spacing.ml3 ]
+--                ++ Popover.onClick popoverState msg
+--            )
+--            [ Asset.infoCircleGlyph [] ]
+--        )
+--        |> Popover.top
+--        |> Popover.content []
+--            [ text verificationScore ]
+--        |> Popover.view popoverState
