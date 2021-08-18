@@ -243,6 +243,7 @@ contribFormRow model =
             , toggleEdit = ToggleEdit
             , maybeError = model.maybeError
             , txnId = Just model.bankTxn.id
+            , processPayment = False
             }
         ]
             ++ [ buttonRow CreateContribToggled "Create" "Cancel" CreateContribSubmitted model.createContribIsSubmitting model.createContribButtonIsDisabled ]
@@ -757,6 +758,7 @@ createContribEncoder model =
     , employmentStatus = model.employmentStatus
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
+    , processPayment = False
     }
 
 

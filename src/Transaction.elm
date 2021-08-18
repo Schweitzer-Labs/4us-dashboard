@@ -56,6 +56,7 @@ type alias Model =
     , finicityDescription : Maybe String
     , inKindDescription : Maybe String
     , inKindType : Maybe InKindType.Model
+    , finicityPaymentMethod : Maybe PaymentMethod.Model
     }
 
 
@@ -105,6 +106,7 @@ init =
     , finicityDescription = Nothing
     , inKindDescription = Nothing
     , inKindType = Nothing
+    , finicityPaymentMethod = Nothing
     }
 
 
@@ -122,6 +124,10 @@ maybeBool name =
 
 maybePurposeCode name =
     optional name (Decode.map PurposeCode.fromString string) Nothing
+
+
+maybePaymentMethod name =
+    optional name (Decode.map PaymentMethod.fromString string) Nothing
 
 
 maybeInKindType name =
@@ -187,3 +193,4 @@ decoder =
         |> maybeString "finicityDescription"
         |> maybeString "inKindDescription"
         |> maybeInKindType "inKindType"
+        |> maybePaymentMethod "finicityPaymentMethod"

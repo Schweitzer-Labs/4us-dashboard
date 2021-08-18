@@ -43,6 +43,7 @@ query =
       $refCode: String
       $inKindDescription: String
       $inKindType: InKindType
+      $processPayment: Boolean!
     ) {
       createContribution(createContributionData: {
         committeeId: $committeeId
@@ -70,6 +71,7 @@ query =
         refCode: $refCode
         inKindDescription: $inKindDescription
         inKindType: $inKindType
+        processPayment: $processPayment
       }) {
         id
       }
@@ -104,6 +106,7 @@ type alias EncodeModel =
     , employmentStatus : Maybe EmploymentStatus.Model
     , inKindType : Maybe InKindType.Model
     , inKindDesc : String
+    , processPayment : Bool
     }
 
 
@@ -126,6 +129,7 @@ encode mapper val =
                 , ( "postalCode", Encode.string model.postalCode )
                 , ( "entityType", Encode.string <| EntityType.fromMaybeToStringWithDefaultInd model.maybeEntityType )
                 , ( "transactionType", Encode.string <| TransactionType.toString TransactionType.Contribution )
+                , ( "processPayment", Encode.bool <| model.processPayment )
                 ]
                     ++ optionalFieldString "emailAddress" model.emailAddress
                     ++ optionalFieldNotZero "paymentDate" (dateStringToMillis model.paymentDate)

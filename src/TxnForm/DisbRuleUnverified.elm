@@ -145,7 +145,7 @@ clearForm model =
 
 getRelatedDisb : Transaction.Model -> List Transaction.Model -> List Transaction.Model
 getRelatedDisb txn txns =
-    List.filter (\val -> (val.paymentMethod == txn.paymentMethod) && (val.amount <= txn.amount) && (val.direction == Direction.Out) && not val.bankVerified && val.ruleVerified) txns
+    List.filter (\val -> (val.paymentMethod /= PaymentMethod.InKind) && (val.amount <= txn.amount) && (val.direction == Direction.Out) && not val.bankVerified && val.ruleVerified) txns
 
 
 view : Model -> Html Msg
@@ -258,7 +258,7 @@ disbFormRow model =
                     ( dateWithFormat model
                     , PaymentDateUpdated
                     )
-            , paymentMethod = Nothing
+            , paymentMethod = Just ( model.paymentMethod, PaymentMethodUpdated )
             , disabled = False
             , isEditable = False
             , toggleEdit = NoOp
