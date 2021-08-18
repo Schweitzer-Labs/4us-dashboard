@@ -11,6 +11,8 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
+import Csv.Decode as Decode exposing (FieldNames(..), string)
+import DiscCsv
 import File.Download as Download
 import FileFormat exposing (FileFormat)
 import Html exposing (Html, a, div, h2, h3, h4, h5, h6, p, span, text)
@@ -31,6 +33,10 @@ view : Aggregations.Model -> DropdownConfig msg -> DropdownConfig msg -> (FileFo
 view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsReviewMsg submitted preview =
     case preview of
         Just a ->
+            let
+                _ =
+                    Debug.log "DiscCsv ID's" (Decode.decodeCsv Decode.FieldNamesFromFirstRow DiscCsv.decoder a)
+            in
             Grid.containerFluid []
                 [ Grid.row []
                     [ Grid.col []
