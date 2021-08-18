@@ -1,14 +1,12 @@
 module TxnForm.ContribRuleVerified exposing (Model, Msg(..), amendTxnEncoder, fromError, init, loadingInit, update, validationMapper, view)
 
 import Api.AmendContrib as AmendContrib
-import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import ContribInfo exposing (ContribValidatorModel)
-import Copy exposing (contribRuleVerifiedInfo)
 import EmploymentStatus
 import EntityType
 import ExpandableBankData
@@ -151,16 +149,10 @@ loadedView model =
     Grid.container
         []
         ([]
-            ++ [ dialogueBox ]
-            ++ PaymentInfo.view model.txn model.popoverState PopoverMsg
+            ++ PaymentInfo.view model.txn
             ++ [ contribFormRow model ]
             ++ bankData
         )
-
-
-dialogueBox : Html Msg
-dialogueBox =
-    Alert.simpleInfo [] contribRuleVerifiedInfo
 
 
 contribFormRow : Model -> Html Msg

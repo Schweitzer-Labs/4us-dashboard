@@ -29,7 +29,7 @@ import Browser.Navigation exposing (load)
 import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
-import Copy exposing (contribRuleVerifiedInfo)
+import Copy
 import DataTable exposing (DataRow)
 import Direction
 import DisbInfo
@@ -168,7 +168,7 @@ view model =
 
 dialogueBox : Html Msg
 dialogueBox =
-    Alert.simpleInfo [] contribRuleVerifiedInfo
+    Alert.simpleInfo [] Copy.disbUnverifiedDialogue
 
 
 labels : List String
