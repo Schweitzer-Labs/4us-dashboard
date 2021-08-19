@@ -20,6 +20,7 @@ import Html exposing (Html, a, div, h2, h3, h4, h5, h6, p, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Route
+import SubmitButton
 
 
 
@@ -30,8 +31,8 @@ type alias DropdownConfig msg =
     ( Dropdown.State -> msg, Dropdown.State )
 
 
-view : Aggregations.Model -> DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> msg) -> msg -> Bool -> Maybe String -> Html msg
-view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsReviewMsg submitted preview =
+view : Aggregations.Model -> DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> msg) -> msg -> Bool -> Maybe String -> msg -> Html msg
+view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsReviewMsg submitted preview backMsg =
     case preview of
         Just a ->
             let
@@ -40,10 +41,17 @@ view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsRevi
             in
             case decodedCsv of
                 Ok value ->
-                    DataTable.view "..." DiscCsv.labels DiscCsv.disclosureRowMap <| List.map (\d -> ( Nothing, Nothing, d )) value
+                    Grid.row []
+                        [ Grid.col []
+                            [ Grid.row [ Row.attrs [ Spacing.mb2 ] ]
+                                [ Grid.col [ Col.sm2 ] [ backButton backMsg ]
+                                ]
+                            , Grid.row [] [ Grid.col [] [ DataTable.view "" DiscCsv.labels DiscCsv.disclosureRowMap <| List.map (\d -> ( Nothing, Nothing, d )) value ] ]
+                            ]
+                        ]
 
                 Err error ->
-                    text ""
+                    text "Something went wrong"
 
         Nothing ->
             let
@@ -60,6 +68,16 @@ view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsRevi
             Grid.containerFluid
                 []
                 rows
+
+
+backButton : msg -> Html msg
+backButton backMsg =
+    Button.button
+        [ Button.outlinePrimary
+        , Button.block
+        , Button.attrs [ onClick backMsg ]
+        ]
+        [ text "Back" ]
 
 
 successRows : List (Html msg)

@@ -439,6 +439,7 @@ generateDisclosureModal model =
                 FilterNeedsReview
                 model.disclosureSubmitted
                 model.generateDisclosureModalPreview
+                ReturnFromGenerateDisclosureModalPreview
             ]
         |> Modal.footer []
             [ Grid.containerFluid
@@ -566,6 +567,7 @@ type Msg
     | ToggleFiltersDropdown Dropdown.State
     | ToggleGenerateDisclosureModalDownloadDropdown Dropdown.State
     | ToggleGenerateDisclosureModalPreviewDropdown Dropdown.State
+    | ReturnFromGenerateDisclosureModalPreview
     | FileDisclosure
     | FileDisclosureDelayed
     | FilterByContributions
@@ -1104,6 +1106,11 @@ update msg model =
                 | generateDisclosureModalPreviewDropdownState = state
                 , generateDisclosureModalContext = Preview
               }
+            , Cmd.none
+            )
+
+        ReturnFromGenerateDisclosureModalPreview ->
+            ( { model | generateDisclosureModalPreview = Nothing }
             , Cmd.none
             )
 
