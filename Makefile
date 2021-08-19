@@ -55,7 +55,6 @@ CFN_SRC_DIR		:= $(PWD)/cfn/template
 SRCS			:= $(shell find $(CFN_SRC_DIR)/0* -name '*.yml' -o -name '*.txt')
 
 export CFN_BUCKET	:= $(PRODUCT)-cfn-templates-$(REGION)
-export WEB_BUCKET	:= $(SUBDOMAIN)-$(RUNENV).$(DOMAIN).$(TLD)-$(REGION)
 
 export CREPES_PARAMS	:= --region $(REGION)
 export CREPES_PARAMS	+= --subdomain $(SUBDOMAIN) --domain $(DOMAIN) --tld $(TLD) --runenv $(RUNENV) --product $(PRODUCT)
@@ -114,9 +113,6 @@ package: build
 
 deploy-infra: package
 	@$(MAKE) -C $(CFN_SRC_DIR) deploy
-
-deploy-web: build-web
-	aws s3 sync build/ s3://$(WEB_BUCKET)/
 
 deploy: deploy-infra deploy-web
 

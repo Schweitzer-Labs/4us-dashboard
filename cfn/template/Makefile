@@ -22,15 +22,11 @@ STACK_PARAMS += TLD=$(TLD)
 CREPES_PARAMS	:= --region $(REGION)
 CREPES_PARAMS	+= --subdomain $(SUBDOMAIN) --domain $(DOMAIN) --tld $(TLD) --runenv $(RUNENV) --product $(PRODUCT)
 
-ASSETS_BUCKET	:= s3-$(WEB_BUCKET)
-TEMPLATE_BUCKET	:= s3-$(CFN_BUCKET)
-
 .PHONY: build buildimports import check deploy
 
-preimport: $(ASSETS_BUCKET) $(TEMPLATE_BUCKET)
-	@echo created $(WEB_BUCKET)
+preimport: $(CFN_BUCKET)
 
-s3-%:
+$(CFN_BUCKET):
 	@echo Checking if s3:/$* exists
 	@echo Please ignore any "404 HeadBucket operation Not Found" errors
 	@aws s3api head-bucket --region $(REGION) --bucket $* \
