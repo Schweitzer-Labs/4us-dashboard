@@ -27,6 +27,7 @@ type Page
     | Home
     | LinkBuilder
     | Transactions
+    | Demo
 
 
 {-| Take a page's Html and frames it with a header and footer.

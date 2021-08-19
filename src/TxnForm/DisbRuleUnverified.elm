@@ -18,6 +18,7 @@ import Api.GraphQL exposing (MutationResponse(..))
 import Api.ReconcileTxn as ReconcileTxn
 import Asset
 import BankData
+import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
@@ -28,6 +29,7 @@ import Browser.Navigation exposing (load)
 import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
+import Copy
 import DataTable exposing (DataRow)
 import Direction
 import DisbInfo
@@ -129,7 +131,7 @@ clearForm model =
         , isExistingLiability = Nothing
         , isInKind = Nothing
         , amount = toDollarData model.bankTxn.amount
-        , paymentDate = ""
+        , paymentDate = formDate model.timezone model.bankTxn.paymentDate
         , checkNumber = ""
         , createDisbIsVisible = False
         , createDisbButtonIsDisabled = True
@@ -143,14 +145,15 @@ clearForm model =
 
 getRelatedDisb : Transaction.Model -> List Transaction.Model -> List Transaction.Model
 getRelatedDisb txn txns =
-    List.filter (\val -> (val.paymentMethod == txn.paymentMethod) && (val.amount <= txn.amount) && (val.direction == Direction.Out) && not val.bankVerified && val.ruleVerified) txns
+    List.filter (\val -> (val.paymentMethod /= PaymentMethod.InKind) && (val.amount <= txn.amount) && (val.direction == Direction.Out) && not val.bankVerified && val.ruleVerified) txns
 
 
 view : Model -> Html Msg
 view model =
     div
-        [ Spacing.mt4 ]
-        [ BankData.view True model.bankTxn
+        []
+        [ dialogueBox
+        , BankData.view True model.bankTxn
         , h6 [ Spacing.mt4 ] [ text "Reconcile" ]
         , Grid.containerFluid
             []
@@ -161,6 +164,11 @@ view model =
                 ++ disbFormRow model
                 ++ [ reconcileItemsTable model.relatedTxns model.selectedTxns ]
         ]
+
+
+dialogueBox : Html Msg
+dialogueBox =
+    Alert.simpleInfo [] Copy.disbUnverifiedDialogue
 
 
 labels : List String
@@ -250,7 +258,7 @@ disbFormRow model =
                     ( dateWithFormat model
                     , PaymentDateUpdated
                     )
-            , paymentMethod = Nothing
+            , paymentMethod = Just ( model.paymentMethod, PaymentMethodUpdated )
             , disabled = False
             , isEditable = False
             , toggleEdit = NoOp

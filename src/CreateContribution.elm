@@ -130,6 +130,7 @@ view model =
         , toggleEdit = NoOp
         , maybeError = model.maybeError
         , txnId = Nothing
+        , processPayment = True
         }
 
 
@@ -300,6 +301,7 @@ toEncodeModel model =
     , employmentStatus = model.employmentStatus
     , inKindType = model.inKindType
     , inKindDesc = model.inKindDesc
+    , processPayment = True
     }
 
 
