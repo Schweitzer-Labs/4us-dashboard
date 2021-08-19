@@ -1,4 +1,15 @@
-module TxnForm.ContribRuleVerified exposing (Model, Msg(..), amendTxnEncoder, fromError, init, loadingInit, update, validationMapper, view)
+module TxnForm.ContribRuleVerified exposing
+    ( Model
+    , Msg(..)
+    , amendTxnEncoder
+    , fromError
+    , init
+    , loadingInit
+    , toTxn
+    , update
+    , validationMapper
+    , view
+    )
 
 import Api.AmendContrib as AmendContrib
 import Bootstrap.Grid as Grid
@@ -19,7 +30,6 @@ import Owners exposing (Owner, Owners)
 import PaymentInfo
 import PaymentMethod
 import Time exposing (utc)
-import TimeZone exposing (america__new_york)
 import Timestamp
 import Transaction
 
@@ -433,3 +443,8 @@ validationMapper model =
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
     }
+
+
+toTxn : Model -> Transaction.Model
+toTxn model =
+    model.txn
