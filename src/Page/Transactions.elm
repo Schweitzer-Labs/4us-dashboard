@@ -71,6 +71,7 @@ type alias Model =
     , createContributionSubmitting : Bool
     , generateDisclosureModalVisibility : Modal.Visibility
     , generateDisclosureModalDownloadDropdownState : Dropdown.State
+    , getTransactionCanceled : Bool
     , actionsDropdown : Dropdown.State
     , filtersDropdown : Dropdown.State
     , filterTransactionType : Maybe TransactionType
@@ -139,6 +140,7 @@ init config session aggs committee committeeId =
             , createDisbursementModalVisibility = Modal.hidden
             , createDisbursementModal = CreateDisbursement.init committeeId
             , createDisbursementSubmitting = False
+            , getTransactionCanceled = False
 
             -- Disb rule unverified state
             , disbRuleUnverifiedModal = DisbRuleUnverified.init config [] Transaction.init
@@ -604,7 +606,11 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ShowTxnFormModal txn ->
-            openTxnFormModalLoading model txn
+            let
+                state =
+                    { model | getTransactionCanceled = False }
+            in
+            openTxnFormModalLoading state txn
 
         -- Disb Rule Unverified
         DisbRuleUnverifiedModalAnimate visibility ->
@@ -614,6 +620,7 @@ update msg model =
             ( { model
                 | disbRuleUnverifiedModalVisibility = Modal.hidden
                 , disbRuleUnverifiedSuccessViewActive = False
+                , getTransactionCanceled = True
               }
             , getTransactions model Nothing
             )
@@ -708,6 +715,7 @@ update msg model =
             ( { model
                 | disbRuleVerifiedModalVisibility = Modal.hidden
                 , disbRuleVerifiedSuccessViewActive = False
+                , getTransactionCanceled = True
               }
             , Cmd.none
             )
@@ -743,6 +751,7 @@ update msg model =
             ( { model
                 | contribRuleUnverifiedModalVisibility = Modal.hidden
                 , contribRuleUnverifiedSuccessViewActive = False
+                , getTransactionCanceled = True
               }
             , getTransactions model Nothing
             )
@@ -837,6 +846,7 @@ update msg model =
             ( { model
                 | contribRuleVerifiedModalVisibility = Modal.hidden
                 , contribRuleVerifiedSuccessViewActive = False
+                , getTransactionCanceled = True
               }
             , Cmd.none
             )
@@ -892,15 +902,20 @@ update msg model =
             ( { model | generateDisclosureModalVisibility = visibility }, Cmd.none )
 
         GotTransactionData res ->
-            case res of
-                Ok body ->
-                    openTxnFormModalLoaded model (GetTxn.toTxn body)
+            case model.getTransactionCanceled of
+                False ->
+                    case res of
+                        Ok body ->
+                            openTxnFormModalLoaded model (GetTxn.toTxn body)
 
-                Err _ ->
-                    let
-                        { cognitoDomain, cognitoClientId, redirectUri } =
-                            model.config
-                    in
+                        Err _ ->
+                            let
+                                { cognitoDomain, cognitoClientId, redirectUri } =
+                                    model.config
+                            in
+                            ( model, Cmd.none )
+
+                True ->
                     ( model, Cmd.none )
 
         --( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
