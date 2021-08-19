@@ -14,7 +14,7 @@ import Bootstrap.Grid as Grid exposing (Column)
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
 import Html exposing (Html)
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 import Validate exposing (Validator, fromErrors, ifBlank, ifNothing)
 
@@ -34,7 +34,7 @@ type alias Model =
     , isInKind : Maybe Bool
     , amount : String
     , paymentDate : String
-    , paymentMethod : Maybe PaymentMethod
+    , paymentMethod : Maybe PaymentMethod.Model
     , checkNumber : String
     , maybeError : Maybe String
     , isSubmitDisabled : Bool
@@ -70,7 +70,8 @@ view model =
         []
     <|
         DisbInfo.view
-            { entityName = ( model.entityName, EntityNameUpdated )
+            { checkNumber = ( model.checkNumber, CheckNumberUpdated )
+            , entityName = ( model.entityName, EntityNameUpdated )
             , addressLine1 = ( model.addressLine1, AddressLine1Updated )
             , addressLine2 = ( model.addressLine2, AddressLine2Updated )
             , city = ( model.city, CityUpdated )
@@ -88,6 +89,7 @@ view model =
             , isEditable = False
             , toggleEdit = NoOp
             , maybeError = model.maybeError
+            , txnID = Nothing
             }
 
 
@@ -106,7 +108,7 @@ type Msg
     | IsInKindUpdated (Maybe Bool)
     | AmountUpdated String
     | PaymentDateUpdated String
-    | PaymentMethodUpdated (Maybe PaymentMethod)
+    | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CheckNumberUpdated String
 
 
@@ -174,6 +176,7 @@ validator =
         , ifBlank .city "City is missing."
         , ifBlank .state "State is missing."
         , ifBlank .postalCode "Postal Code is missing."
+        , ifBlank .paymentDate "Payment Date is missing"
         , ifNothing .isSubcontracted "Subcontracted Information is missing"
         , ifNothing .isPartialPayment "Partial Payment Information is missing"
         , ifNothing .isExistingLiability "Existing Liability Information is missing"

@@ -3,13 +3,14 @@ module TxnForm.ContribRuleVerified exposing (Model, Msg(..), amendTxnEncoder, fr
 import Api.AmendContrib as AmendContrib
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
+import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import ContribInfo exposing (ContribValidatorModel)
 import EmploymentStatus
 import EntityType
 import ExpandableBankData
-import Html exposing (Html, span, text)
+import Html exposing (Html, p, span, text)
 import Html.Attributes exposing (class)
 import InKindType
 import Loading
@@ -33,7 +34,7 @@ type alias Model =
     , error : String
     , checkNumber : String
     , paymentDate : String
-    , paymentMethod : String
+    , paymentMethod : Maybe PaymentMethod.Model
     , emailAddress : String
     , phoneNumber : String
     , firstName : String
@@ -63,6 +64,7 @@ type alias Model =
     , committeeId : String
     , isSubmitDisabled : Bool
     , maybeError : Maybe String
+    , popoverState : Popover.State
     }
 
 
@@ -112,10 +114,11 @@ init txn =
     , ownerOwnership = ""
     , inKindType = txn.inKindType
     , inKindDesc = Maybe.withDefault "" txn.inKindDescription
-    , paymentMethod = PaymentMethod.toDataString txn.paymentMethod
+    , paymentMethod = Nothing
     , committeeId = txn.committeeId
     , isSubmitDisabled = True
     , maybeError = Nothing
+    , popoverState = Popover.initialState
     }
 
 
@@ -188,6 +191,8 @@ contribFormRow model =
         , isEditable = True
         , toggleEdit = ToggleEdit
         , maybeError = model.maybeError
+        , txnId = Just model.txn.id
+        , processPayment = False
         }
 
 
@@ -207,6 +212,7 @@ type Msg
     = NoOp
     | ToggleEdit
     | BankDataToggled
+    | PopoverMsg Popover.State
       --- Donor Info
     | OrgOrIndUpdated (Maybe OrgOrInd.Model)
     | EmailAddressUpdated String
@@ -232,7 +238,7 @@ type Msg
     | CardYearUpdated String
     | CardMonthUpdated String
     | CardNumberUpdated String
-    | PaymentMethodUpdated String
+    | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CVVUpdated String
     | AmountUpdated String
     | CheckNumberUpdated String
@@ -344,10 +350,22 @@ update msg model =
             ( { model | inKindType = t }, Cmd.none )
 
         ToggleEdit ->
-            ( { model | disabled = not model.disabled }, Cmd.none )
+            case model.disabled of
+                True ->
+                    ( { model | disabled = False, isSubmitDisabled = False }, Cmd.none )
+
+                False ->
+                    let
+                        state =
+                            init model.txn
+                    in
+                    ( { state | disabled = True, isSubmitDisabled = True }, Cmd.none )
 
         BankDataToggled ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
+
+        PopoverMsg state ->
+            ( { model | popoverState = state }, Cmd.none )
 
 
 fromError : Model -> String -> Model
@@ -392,7 +410,7 @@ validationMapper model =
     { checkNumber = model.checkNumber
     , amount = model.amount
     , paymentDate = model.paymentDate
-    , paymentMethod = PaymentMethod.toDataString model.txn.paymentMethod
+    , paymentMethod = model.paymentMethod
     , emailAddress = model.emailAddress
     , phoneNumber = model.phoneNumber
     , firstName = model.firstName

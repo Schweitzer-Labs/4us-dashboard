@@ -18,6 +18,7 @@ import Api.GraphQL exposing (MutationResponse(..))
 import Api.ReconcileTxn as ReconcileTxn
 import Asset
 import BankData
+import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
@@ -28,6 +29,7 @@ import Browser.Navigation exposing (load)
 import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
+import Copy
 import DataTable exposing (DataRow)
 import Direction
 import DisbInfo
@@ -37,7 +39,7 @@ import Html.Attributes exposing (class, type_)
 import Html.Events exposing (onClick)
 import Http
 import LabelWithData exposing (labelWithContent, labelWithData)
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 import SubmitButton exposing (submitButton)
 import Time exposing (utc)
@@ -67,7 +69,7 @@ type alias Model =
     , isInKind : Maybe Bool
     , amount : String
     , paymentDate : String
-    , paymentMethod : Maybe PaymentMethod
+    , paymentMethod : Maybe PaymentMethod.Model
     , checkNumber : String
     , createDisbIsVisible : Bool
     , disabled : Bool
@@ -129,7 +131,7 @@ clearForm model =
         , isExistingLiability = Nothing
         , isInKind = Nothing
         , amount = toDollarData model.bankTxn.amount
-        , paymentDate = ""
+        , paymentDate = formDate model.timezone model.bankTxn.paymentDate
         , checkNumber = ""
         , createDisbIsVisible = False
         , createDisbButtonIsDisabled = True
@@ -143,14 +145,15 @@ clearForm model =
 
 getRelatedDisb : Transaction.Model -> List Transaction.Model -> List Transaction.Model
 getRelatedDisb txn txns =
-    List.filter (\val -> (val.paymentMethod == txn.paymentMethod) && (val.amount <= txn.amount) && (val.direction == Direction.Out) && not val.bankVerified && val.ruleVerified) txns
+    List.filter (\val -> (val.paymentMethod /= PaymentMethod.InKind) && (val.amount <= txn.amount) && (val.direction == Direction.Out) && not val.bankVerified && val.ruleVerified) txns
 
 
 view : Model -> Html Msg
 view model =
     div
-        [ Spacing.mt4 ]
-        [ BankData.view True model.bankTxn
+        []
+        [ dialogueBox
+        , BankData.view True model.bankTxn
         , h6 [ Spacing.mt4 ] [ text "Reconcile" ]
         , Grid.containerFluid
             []
@@ -161,6 +164,11 @@ view model =
                 ++ disbFormRow model
                 ++ [ reconcileItemsTable model.relatedTxns model.selectedTxns ]
         ]
+
+
+dialogueBox : Html Msg
+dialogueBox =
+    Alert.simpleInfo [] Copy.disbUnverifiedDialogue
 
 
 labels : List String
@@ -214,7 +222,7 @@ reconcileItemsTable relatedTxns selectedTxns =
 addDisbButtonOrHeading : Model -> Html Msg
 addDisbButtonOrHeading model =
     if model.createDisbIsVisible then
-        div [ Spacing.mt4, class "font-size-large", onClick CreateDisbToggled ] [ text "Create Disbursement" ]
+        div [ Spacing.mt4, class "font-size-large", onClick NoOp ] [ text "Create Disbursement" ]
 
     else
         addDisbButton
@@ -232,7 +240,8 @@ disbFormRow : Model -> List (Html Msg)
 disbFormRow model =
     if model.createDisbIsVisible then
         DisbInfo.view
-            { entityName = ( model.entityName, EntityNameUpdated )
+            { checkNumber = ( model.checkNumber, CheckNumberUpdated )
+            , entityName = ( model.entityName, EntityNameUpdated )
             , addressLine1 = ( model.addressLine1, AddressLine1Updated )
             , addressLine2 = ( model.addressLine2, AddressLine2Updated )
             , city = ( model.city, CityUpdated )
@@ -249,11 +258,12 @@ disbFormRow model =
                     ( dateWithFormat model
                     , PaymentDateUpdated
                     )
-            , paymentMethod = Nothing
+            , paymentMethod = Just ( model.paymentMethod, PaymentMethodUpdated )
             , disabled = False
             , isEditable = False
             , toggleEdit = NoOp
             , maybeError = model.maybeError
+            , txnID = Just model.bankTxn.id
             }
             ++ [ buttonRow CreateDisbToggled "Create" "Cancel" CreateDisbSubmitted model.createDisbIsSubmitting model.createDisbButtonIsDisabled ]
 
@@ -334,7 +344,7 @@ type Msg
     | IsInKindUpdated (Maybe Bool)
     | AmountUpdated String
     | PaymentDateUpdated String
-    | PaymentMethodUpdated (Maybe PaymentMethod)
+    | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CheckNumberUpdated String
     | CreateDisbToggled
     | CreateDisbSubmitted
@@ -406,7 +416,13 @@ update msg model =
             ( { model | isInKind = bool, createDisbButtonIsDisabled = False }, Cmd.none )
 
         CreateDisbToggled ->
-            ( { model | createDisbIsVisible = not model.createDisbIsVisible }, Cmd.none )
+            ( let
+                resetFormModel =
+                    clearForm model
+              in
+              { resetFormModel | createDisbIsVisible = not model.createDisbIsVisible }
+            , Cmd.none
+            )
 
         CreateDisbSubmitted ->
             case validate validator model of
@@ -515,6 +531,7 @@ validator =
         , ifBlank .city "City is missing."
         , ifBlank .state "State is missing."
         , ifBlank .postalCode "Postal Code is missing."
+        , ifBlank .paymentDate "Payment Date is missing"
         , ifNothing .isSubcontracted "Subcontracted Information is missing"
         , ifNothing .isPartialPayment "Partial Payment Information is missing"
         , ifNothing .isExistingLiability "Existing Liability Information is missing"

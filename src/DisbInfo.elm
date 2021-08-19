@@ -2,6 +2,7 @@ module DisbInfo exposing (Config, view)
 
 import Address
 import AmountDate
+import AppInput exposing (inputText)
 import Asset
 import Bootstrap.Form as Form
 import Bootstrap.Form.Fieldset as Fieldset
@@ -20,7 +21,8 @@ import YesOrNo exposing (yesOrNo)
 
 
 type alias Config msg =
-    { entityName : DataMsg.MsgString msg
+    { checkNumber : DataMsg.MsgString msg
+    , entityName : DataMsg.MsgString msg
     , addressLine1 : DataMsg.MsgString msg
     , addressLine2 : DataMsg.MsgString msg
     , city : DataMsg.MsgString msg
@@ -38,11 +40,12 @@ type alias Config msg =
     , isEditable : Bool
     , toggleEdit : msg
     , maybeError : Maybe String
+    , txnID : Maybe String
     }
 
 
 view : Config msg -> List (Html msg)
-view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable, toggleEdit, maybeError } =
+view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable, toggleEdit, maybeError, txnID } =
     let
         errorContent =
             case maybeError of
@@ -59,7 +62,13 @@ view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeC
                     [ Form.label [ for "recipient-name" ]
                         [ text "Recipient Info"
                         , if isEditable then
-                            span [ class "hover-underline hover-pointer", Spacing.ml2, onClick toggleEdit ] [ Asset.editGlyph [] ]
+                            span [ class "hover-underline hover-pointer", Spacing.ml2, onClick toggleEdit ]
+                                [ if disabled == True then
+                                    Asset.editGlyph []
+
+                                  else
+                                    Asset.redoGlyph []
+                                ]
 
                           else
                             span [] []
@@ -85,17 +94,27 @@ view { entityName, addressLine1, addressLine2, city, state, postalCode, purposeC
         ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ PurposeCode.select (toData purposeCode) (toMsg purposeCode) disabled ] ]
            ]
         ++ [ Grid.row []
-                [ yesOrNo "Is expenditure subcontracted?" isSubcontracted entityName disabled
-                , yesOrNo "Is expenditure a partial payment?" isPartialPayment entityName disabled
-                , yesOrNo "Is this an existing Liability?" isExistingLiability entityName disabled
-                , yesOrNo "Is this an In-Kind payment?" isInKind entityName disabled
+                [ yesOrNo "Is expenditure subcontracted?" isSubcontracted txnID disabled
+                , yesOrNo "Is expenditure a partial payment?" isPartialPayment txnID disabled
+                , yesOrNo "Is this an existing Liability?" isExistingLiability txnID disabled
+                , yesOrNo "Is this an In-Kind payment?" isInKind txnID disabled
                 ]
            ]
         ++ (case ( amount, paymentDate, paymentMethod ) of
                 ( Just a, Just p, Just pm ) ->
                     AmountDate.view { amount = a, paymentDate = p, disabled = disabled }
-                        ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] (PaymentMethod.dropdown (toData pm) (toMsg pm)) ]
+                        ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] (PaymentMethod.dropdown (toData pm) (toMsg pm) True) ]
                            ]
+                        ++ (if toData pm == Just PaymentMethod.Check then
+                                [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
+                                    [ Grid.col []
+                                        [ inputText (toMsg checkNumber) "Check Number" (toData checkNumber) False ]
+                                    ]
+                                ]
+
+                            else
+                                []
+                           )
 
                 ( Just a, Just p, _ ) ->
                     AmountDate.view { amount = a, paymentDate = p, disabled = disabled }

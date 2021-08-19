@@ -9,14 +9,16 @@ module TxnForm.DisbRuleVerified exposing
     , view
     )
 
+import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
+import Bootstrap.Popover as Popover
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
 import ExpandableBankData
 import Html exposing (Html)
 import Loading
 import PaymentInfo
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 import Transaction
 import Validate exposing (Validator, fromErrors, ifBlank, ifNothing)
@@ -37,13 +39,14 @@ type alias Model =
     , isInKind : Maybe Bool
     , amount : String
     , paymentDate : String
-    , paymentMethod : Maybe PaymentMethod
+    , paymentMethod : Maybe PaymentMethod.Model
     , checkNumber : String
     , showBankData : Bool
     , loading : Bool
     , isSubmitDisabled : Bool
     , maybeError : Maybe String
     , formDisabled : Bool
+    , popoverState : Popover.State
     }
 
 
@@ -79,6 +82,7 @@ init txn =
     , formDisabled = True
     , isSubmitDisabled = True
     , maybeError = Nothing
+    , popoverState = Popover.initialState
     }
 
 
@@ -108,7 +112,8 @@ loadedView model =
     in
     Grid.container
         []
-        (PaymentInfo.view model.txn
+        ([]
+            ++ PaymentInfo.view model.txn
             ++ disbFormRow model
             ++ bankData
         )
@@ -117,7 +122,8 @@ loadedView model =
 disbFormRow : Model -> List (Html Msg)
 disbFormRow model =
     DisbInfo.view
-        { entityName = ( model.entityName, EntityNameUpdated )
+        { checkNumber = ( model.checkNumber, CheckNumberUpdated )
+        , entityName = ( model.entityName, EntityNameUpdated )
         , addressLine1 = ( model.addressLine1, AddressLine1Updated )
         , addressLine2 = ( model.addressLine2, AddressLine2Updated )
         , city = ( model.city, CityUpdated )
@@ -135,11 +141,13 @@ disbFormRow model =
         , isEditable = True
         , toggleEdit = EditFormToggled
         , maybeError = model.maybeError
+        , txnID = Just model.txn.id
         }
 
 
 type Msg
     = NoOp
+    | PopoverMsg Popover.State
     | EntityNameUpdated String
     | AddressLine1Updated String
     | AddressLine2Updated String
@@ -153,7 +161,7 @@ type Msg
     | IsInKindUpdated (Maybe Bool)
     | AmountUpdated String
     | PaymentDateUpdated String
-    | PaymentMethodUpdated (Maybe PaymentMethod)
+    | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CheckNumberUpdated String
     | EditFormToggled
     | BankDataToggled
@@ -211,10 +219,22 @@ update msg model =
             ( { model | showBankData = not model.showBankData }, Cmd.none )
 
         EditFormToggled ->
-            ( { model | formDisabled = not model.formDisabled, isSubmitDisabled = False }, Cmd.none )
+            case model.formDisabled of
+                True ->
+                    ( { model | formDisabled = False, isSubmitDisabled = False }, Cmd.none )
+
+                False ->
+                    let
+                        state =
+                            init model.txn
+                    in
+                    ( { state | formDisabled = True, isSubmitDisabled = True }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
+
+        PopoverMsg state ->
+            ( { model | popoverState = state }, Cmd.none )
 
 
 validator : Validator String Model

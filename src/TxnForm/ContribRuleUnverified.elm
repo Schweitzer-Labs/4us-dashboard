@@ -7,6 +7,7 @@ import Api.GraphQL exposing (MutationResponse(..))
 import Api.ReconcileTxn as ReconcileTxn
 import Asset
 import BankData
+import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
@@ -18,6 +19,7 @@ import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import ContribInfo
+import Copy
 import DataTable exposing (DataRow)
 import Direction
 import EmploymentStatus
@@ -32,6 +34,7 @@ import LabelWithData exposing (labelWithContent, labelWithData)
 import List exposing (sortBy)
 import OrgOrInd
 import Owners exposing (Owner, Owners)
+import PaymentMethod
 import SubmitButton exposing (submitButton)
 import Time exposing (utc)
 import Timestamp exposing (dateStringToMillis, formDate)
@@ -53,7 +56,7 @@ type alias Model =
     , error : String
     , checkNumber : String
     , paymentDate : String
-    , paymentMethod : String
+    , paymentMethod : Maybe PaymentMethod.Model
     , emailAddress : String
     , phoneNumber : String
     , firstName : String
@@ -130,7 +133,7 @@ init config txns bankTxn =
     , ownerOwnership = ""
     , inKindType = Nothing
     , inKindDesc = ""
-    , paymentMethod = ""
+    , paymentMethod = Nothing
     , createContribIsVisible = False
     , createContribButtonIsDisabled = False
     , createContribIsSubmitting = False
@@ -171,7 +174,7 @@ clearForm model =
         , owners = []
         , ownerName = ""
         , ownerOwnership = ""
-        , paymentMethod = ""
+        , paymentMethod = Nothing
         , createContribIsVisible = False
         , createContribButtonIsDisabled = False
         , createContribIsSubmitting = False
@@ -182,8 +185,9 @@ clearForm model =
 view : Model -> Html Msg
 view model =
     div
-        [ Spacing.mt4 ]
-        [ BankData.view True model.bankTxn
+        []
+        [ dialogueBox
+        , BankData.view True model.bankTxn
         , h6 [ Spacing.mt4 ] [ text "Reconcile" ]
         , Grid.containerFluid
             []
@@ -194,6 +198,11 @@ view model =
                 ++ contribFormRow model
                 ++ [ reconcileItemsTable model.relatedTxns model.selectedTxns ]
         ]
+
+
+dialogueBox : Html Msg
+dialogueBox =
+    Alert.simpleInfo [] Copy.contribUnverifiedDialogue
 
 
 contribFormRow : Model -> List (Html Msg)
@@ -233,6 +242,8 @@ contribFormRow model =
             , isEditable = False
             , toggleEdit = ToggleEdit
             , maybeError = model.maybeError
+            , txnId = Just model.bankTxn.id
+            , processPayment = False
             }
         ]
             ++ [ buttonRow CreateContribToggled "Create" "Cancel" CreateContribSubmitted model.createContribIsSubmitting model.createContribButtonIsDisabled ]
@@ -269,7 +280,7 @@ type Msg
     | CardYearUpdated String
     | CardMonthUpdated String
     | CardNumberUpdated String
-    | PaymentMethodUpdated String
+    | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CVVUpdated String
     | AmountUpdated String
     | CheckNumberUpdated String
@@ -414,7 +425,13 @@ update msg model =
                     ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
 
         CreateContribToggled ->
-            ( { model | createContribIsVisible = not model.createContribIsVisible }, Cmd.none )
+            ( let
+                resetFormModel =
+                    clearForm model
+              in
+              { resetFormModel | createContribIsVisible = not model.createContribIsVisible }
+            , Cmd.none
+            )
 
         CreateContribSubmitted ->
             case validate validator model of
@@ -536,7 +553,7 @@ reconcileItemsTable relatedTxns selectedTxns =
 addContribButtonOrHeading : Model -> Html Msg
 addContribButtonOrHeading model =
     if model.createContribIsVisible then
-        div [ Spacing.mt4, class "font-size-large", onClick CreateContribToggled ] [ text "Create Contribution" ]
+        div [ Spacing.mt4, class "font-size-large", onClick NoOp ] [ text "Create Contribution" ]
 
     else
         addContribButton
@@ -741,6 +758,7 @@ createContribEncoder model =
     , employmentStatus = model.employmentStatus
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
+    , processPayment = False
     }
 
 

@@ -9,6 +9,7 @@ import Http
 import InKindType
 import Json.Decode as Decode
 import Json.Encode as Encode
+import PaymentMethod
 import Timestamp exposing (dateStringToMillis)
 import TransactionType
 
@@ -42,6 +43,7 @@ query =
       $refCode: String
       $inKindDescription: String
       $inKindType: InKindType
+      $processPayment: Boolean!
     ) {
       createContribution(createContributionData: {
         committeeId: $committeeId
@@ -69,6 +71,7 @@ query =
         refCode: $refCode
         inKindDescription: $inKindDescription
         inKindType: $inKindType
+        processPayment: $processPayment
       }) {
         id
       }
@@ -79,7 +82,7 @@ query =
 type alias EncodeModel =
     { committeeId : String
     , amount : String
-    , paymentMethod : String
+    , paymentMethod : Maybe PaymentMethod.Model
     , firstName : String
     , lastName : String
     , addressLine1 : String
@@ -103,6 +106,7 @@ type alias EncodeModel =
     , employmentStatus : Maybe EmploymentStatus.Model
     , inKindType : Maybe InKindType.Model
     , inKindDesc : String
+    , processPayment : Bool
     }
 
 
@@ -116,7 +120,7 @@ encode mapper val =
             Encode.object <|
                 [ ( "committeeId", Encode.string model.committeeId )
                 , ( "amount", Encode.int <| Cents.fromDollars model.amount )
-                , ( "paymentMethod", Encode.string model.paymentMethod )
+                , ( "paymentMethod", Encode.string <| PaymentMethod.fromMaybeToString model.paymentMethod )
                 , ( "firstName", Encode.string model.firstName )
                 , ( "lastName", Encode.string model.lastName )
                 , ( "addressLine1", Encode.string model.addressLine1 )
@@ -125,6 +129,7 @@ encode mapper val =
                 , ( "postalCode", Encode.string model.postalCode )
                 , ( "entityType", Encode.string <| EntityType.fromMaybeToStringWithDefaultInd model.maybeEntityType )
                 , ( "transactionType", Encode.string <| TransactionType.toString TransactionType.Contribution )
+                , ( "processPayment", Encode.bool <| model.processPayment )
                 ]
                     ++ optionalFieldString "emailAddress" model.emailAddress
                     ++ optionalFieldNotZero "paymentDate" (dateStringToMillis model.paymentDate)

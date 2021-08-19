@@ -11,7 +11,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromInKindType, fromPostalCode)
+import Errors exposing (fromInKindType, fromOrgType, fromPostalCode)
 import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
@@ -19,15 +19,15 @@ import InKindType exposing (Model(..))
 import MonthSelector
 import OrgOrInd
 import Owners exposing (Owners)
-import PaymentMethod exposing (PaymentMethod)
-import Validate exposing (Valid, Validator, fromErrors, ifBlank, validate)
+import PaymentMethod
+import Validate exposing (Valid, Validator, fromErrors, ifBlank, ifNothing, validate)
 import YearSelector
 
 
 type alias Config msg =
     { checkNumber : DataMsg.MsgString msg
     , paymentDate : DataMsg.MsgString msg
-    , paymentMethod : DataMsg.MsgString msg
+    , paymentMethod : DataMsg.MsgMaybePaymentMethod msg
     , emailAddress : DataMsg.MsgString msg
     , phoneNumber : DataMsg.MsgString msg
     , firstName : DataMsg.MsgString msg
@@ -58,16 +58,25 @@ type alias Config msg =
     , isEditable : Bool
     , toggleEdit : msg
     , maybeError : Maybe String
+    , txnId : Maybe String
+    , processPayment : Bool
     }
 
 
 view : Config msg -> Html msg
 view c =
+    let
+        maybeMsg =
+            toMsg c.paymentMethod
+
+        msg =
+            Just >> maybeMsg
+    in
     Grid.containerFluid
         []
     <|
         []
-            ++ donorHeadingRow c.toggleEdit c.isEditable
+            ++ donorHeadingRow c.toggleEdit c.disabled c.isEditable
             ++ (if c.isEditable == False then
                     amountDateRow c
 
@@ -77,7 +86,7 @@ view c =
             ++ errorRow c.maybeError
             ++ donorInfoRows c
             ++ (if c.isEditable then
-                    if toData c.paymentMethod == "InKind" then
+                    if toData c.paymentMethod == Just PaymentMethod.InKind then
                         inKindRow c
 
                     else
@@ -86,17 +95,23 @@ view c =
                 else
                     []
                         ++ labelRow "Processing Info"
-                        ++ PaymentMethod.select (toMsg c.paymentMethod) (toData c.paymentMethod) c.disabled
+                        ++ PaymentMethod.select c.processPayment msg (toData c.paymentMethod) c.disabled c.txnId
                         ++ processingRow c
                )
 
 
-donorHeadingRow : msg -> Bool -> List (Html msg)
-donorHeadingRow toggleMsg isEditable =
+donorHeadingRow : msg -> Bool -> Bool -> List (Html msg)
+donorHeadingRow toggleMsg disabled isEditable =
     [ div [ Spacing.mt3 ]
         [ h5 [ class "font-weight-bold d-inline" ] [ text "Donor Info" ]
         , if isEditable then
-            span [ class "hover-underline hover-pointer align-middle", Spacing.ml2, onClick toggleMsg ] [ Asset.editGlyph [] ]
+            span [ class "hover-underline hover-pointer align-middle", Spacing.ml2, onClick toggleMsg ]
+                [ if disabled == True then
+                    Asset.editGlyph []
+
+                  else
+                    Asset.redoGlyph []
+                ]
 
           else
             span [] []
@@ -108,7 +123,7 @@ type alias ContribValidatorModel =
     { checkNumber : String
     , amount : String
     , paymentDate : String
-    , paymentMethod : String
+    , paymentMethod : Maybe PaymentMethod.Model
     , emailAddress : String
     , phoneNumber : String
     , firstName : String
@@ -138,6 +153,7 @@ contribInfoValidator =
     Validate.firstError
         [ ifBlank .amount "Payment Amount is missing"
         , ifBlank .paymentDate "Payment Date is missing"
+        , ifNothing .paymentMethod "Processing Info is missing"
         , ifBlank .firstName "First Name is missing"
         , ifBlank .lastName "Last name is missing"
         , ifBlank .city "City is missing"
@@ -146,6 +162,7 @@ contribInfoValidator =
         , ifBlank .addressLine1 "Address is missing"
         , postalCodeValidator
         , inKindTypeValidator
+        , orgTypeValidator
         ]
 
 
@@ -168,14 +185,24 @@ inKindTypeValidator =
     fromErrors inKindTypeOnModelToErrors
 
 
+orgTypeValidator : Validator String ContribValidatorModel
+orgTypeValidator =
+    fromErrors orgTypeOnModelToErrors
+
+
 postalCodeOnModelToErrors : ContribValidatorModel -> List String
 postalCodeOnModelToErrors model =
     fromPostalCode model.postalCode
 
 
 inKindTypeOnModelToErrors : ContribValidatorModel -> List String
-inKindTypeOnModelToErrors { paymentMethod, inKindType } =
-    fromInKindType paymentMethod inKindType
+inKindTypeOnModelToErrors { paymentMethod, inKindType, inKindDesc } =
+    fromInKindType paymentMethod inKindType inKindDesc
+
+
+orgTypeOnModelToErrors : ContribValidatorModel -> List String
+orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType } =
+    fromOrgType maybeOrgOrInd maybeEntityType
 
 
 errorRow : Maybe String -> List (Html msg)
@@ -245,14 +272,14 @@ inKindRow { inKindType, inKindDesc, disabled } =
 
 processingRow : Config msg -> List (Html msg)
 processingRow c =
-    case toData c.paymentMethod of
-        "Check" ->
-            checkRow c
-
-        "Credit" ->
+    case ( toData c.paymentMethod, c.processPayment ) of
+        ( Just PaymentMethod.Credit, True ) ->
             creditRow c
 
-        "InKind" ->
+        ( Just PaymentMethod.Check, _ ) ->
+            checkRow c
+
+        ( Just PaymentMethod.InKind, _ ) ->
             inKindRow c
 
         _ ->
@@ -494,7 +521,7 @@ piiRows c =
 
 
 familyRow : Config msg -> List (Html msg)
-familyRow { maybeEntityType, disabled } =
+familyRow { maybeEntityType, disabled, txnId } =
     let
         maybeEntityMsg =
             toMsg maybeEntityType
@@ -513,13 +540,13 @@ familyRow { maybeEntityType, disabled } =
         [ Grid.col
             []
           <|
-            EntityType.familyRadioList entityMsg (toData maybeEntityType) disabled
+            EntityType.familyRadioList entityMsg (toData maybeEntityType) disabled txnId
         ]
     ]
 
 
 attestsToBeingAnAdultCitizenRow : Config msg -> List (Html msg)
-attestsToBeingAnAdultCitizenRow { maybeEntityType, disabled } =
+attestsToBeingAnAdultCitizenRow { maybeEntityType, disabled, txnId } =
     [ Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
@@ -531,7 +558,7 @@ attestsToBeingAnAdultCitizenRow { maybeEntityType, disabled } =
         [ Grid.col
             []
           <|
-            EntityType.familyRadioList (Just >> toMsg maybeEntityType) (toData maybeEntityType) disabled
+            EntityType.familyRadioList (Just >> toMsg maybeEntityType) (toData maybeEntityType) disabled txnId
         ]
     ]
 
@@ -572,7 +599,7 @@ employerOccupationRow { occupation, employer, disabled } =
 
 
 employmentStatusRows : Config msg -> List (Html msg)
-employmentStatusRows { employmentStatus, disabled } =
+employmentStatusRows { employmentStatus, disabled, txnId } =
     let
         maybeEmploymentMsg =
             toMsg employmentStatus
@@ -591,6 +618,6 @@ employmentStatusRows { employmentStatus, disabled } =
         [ Grid.col
             []
           <|
-            employmentRadioList employmentMsg (toData employmentStatus) disabled
+            employmentRadioList employmentMsg (toData employmentStatus) disabled txnId
         ]
     ]

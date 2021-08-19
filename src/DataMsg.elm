@@ -17,7 +17,7 @@ import EntityType
 import InKindType
 import OrgOrInd
 import Owners exposing (Owner, Owners)
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 
 
@@ -38,7 +38,7 @@ type alias MsgMaybeEntityType msg =
 
 
 type alias MsgMaybePaymentMethod msg =
-    ( Maybe PaymentMethod, Maybe PaymentMethod -> msg )
+    ( Maybe PaymentMethod.Model, Maybe PaymentMethod.Model -> msg )
 
 
 type alias MsgMaybeEmploymentStatus msg =
