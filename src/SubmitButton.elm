@@ -1,4 +1,4 @@
-module SubmitButton exposing (block, blockWithLoadingBar, custom, submitButton)
+module SubmitButton exposing (block, blockWithLoadingBar, custom, delete, submitButton)
 
 import Bootstrap.Button as Button
 import Bootstrap.Spinner as Spinner
@@ -36,6 +36,22 @@ block attrs label submitMsg loading disabled =
 
           else
             text label
+        ]
+
+
+delete : msg -> Bool -> Html msg
+delete submitMsg isSending =
+    Button.button
+        [ Button.outlineDanger
+        , Button.onClick submitMsg
+        , Button.disabled isSending
+        , Button.block
+        ]
+        [ if isSending then
+            spinner
+
+          else
+            text "Delete"
         ]
 
 
