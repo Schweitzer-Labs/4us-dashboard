@@ -1,6 +1,5 @@
 import './main.css';
 import { Elm } from './Main.elm';
-import * as serviceWorker from './serviceWorker';
 
 const cognitoDomain = process.env.ELM_APP_COGNITO_DOMAIN
 const cognitoClientId = process.env.ELM_APP_COGNITO_CLIENT_ID
@@ -66,12 +65,4 @@ function runApp() {
   }
 }
 
-console.log('deployed test')
-
 runApp();
-
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();

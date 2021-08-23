@@ -2,7 +2,6 @@ module Main exposing (Model(..), Msg(..), changeRouteTo, init, main, subscriptio
 
 import Aggregations
 import Browser exposing (Document)
-import Browser.Dom as Dom
 import Browser.Navigation as Nav
 import Committee
 import CommitteeId
@@ -16,7 +15,6 @@ import Page.NotFound as NotFound
 import Page.Transactions as Transactions
 import Route exposing (Route)
 import Session exposing (Session)
-import Task exposing (Task)
 import Url exposing (Url)
 
 
@@ -43,6 +41,63 @@ init config url navKey =
                 (Redirect (Session.fromViewer navKey config.token))
     in
     ( model, cmdMsg )
+
+
+changeRouteTo : Url -> Config -> Maybe Route -> Model -> ( Model, Cmd Msg )
+changeRouteTo url config maybeRoute model =
+    let
+        session =
+            toSession model
+
+        committeeId =
+            CommitteeId.parse url
+
+        aggregations =
+            toAggregations model
+
+        committee =
+            toCommittee model
+    in
+    case maybeRoute of
+        Nothing ->
+            ( NotFound session, Cmd.none )
+
+        -- rest of the routes
+        Just Route.Home ->
+            Transactions.init
+                config
+                session
+                aggregations
+                committee
+                committeeId
+                |> updateWith Transactions GotTransactionsMsg model
+
+        Just Route.Transactions ->
+            Transactions.init
+                config
+                session
+                aggregations
+                committee
+                committeeId
+                |> updateWith Transactions GotTransactionsMsg model
+
+        Just Route.LinkBuilder ->
+            LinkBuilder.init
+                config
+                session
+                aggregations
+                committee
+                committeeId
+                |> updateWith LinkBuilder GotLinkBuilderMsg model
+
+        Just Route.Demo ->
+            Demo.init
+                config
+                session
+                aggregations
+                committee
+                committeeId
+                |> updateWith Demo GotDemoMsg model
 
 
 
@@ -146,63 +201,6 @@ toConfig page =
             demo.config
 
 
-changeRouteTo : Url -> Config -> Maybe Route -> Model -> ( Model, Cmd Msg )
-changeRouteTo url config maybeRoute model =
-    let
-        session =
-            toSession model
-
-        committeeId =
-            CommitteeId.parse url
-
-        aggregations =
-            toAggregations model
-
-        committee =
-            toCommittee model
-    in
-    case maybeRoute of
-        Nothing ->
-            ( NotFound session, Cmd.none )
-
-        -- rest of the routes
-        Just Route.Home ->
-            Transactions.init
-                config
-                session
-                aggregations
-                committee
-                committeeId
-                |> updateWith Transactions GotTransactionsMsg model
-
-        Just Route.Transactions ->
-            Transactions.init
-                config
-                session
-                aggregations
-                committee
-                committeeId
-                |> updateWith Transactions GotTransactionsMsg model
-
-        Just Route.LinkBuilder ->
-            LinkBuilder.init
-                config
-                session
-                aggregations
-                committee
-                committeeId
-                |> updateWith LinkBuilder GotLinkBuilderMsg model
-
-        Just Route.Demo ->
-            Demo.init
-                config
-                session
-                aggregations
-                committee
-                committeeId
-                |> updateWith Demo GotDemoMsg model
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
@@ -270,9 +268,6 @@ updateWith toModel toMsg model ( subModel, subCmd ) =
 view : Model -> Document Msg
 view model =
     let
-        viewer =
-            Session.viewer (toSession model)
-
         aggregations =
             toAggregations model
 
@@ -338,11 +333,3 @@ main =
         , update = update
         , view = view
         }
-
-
-scrollToTop : Task x ()
-scrollToTop =
-    Dom.setViewport 0 0
-        -- It's not worth showing the user anything special if scrolling fails.
-        -- If anything, we'd log this to an error recording service.
-        |> Task.onError (\_ -> Task.succeed ())
