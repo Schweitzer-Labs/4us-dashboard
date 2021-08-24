@@ -20,7 +20,7 @@ import Cognito exposing (loginUrl)
 import Committee
 import Config exposing (Config)
 import Html exposing (..)
-import Html.Attributes as SvgA exposing (class, for, href, src, style)
+import Html.Attributes as SvgA exposing (class, for, href, src, style, target)
 import Http
 import QRCode
 import Session exposing (Session)
@@ -130,7 +130,7 @@ linkCard url =
             [ Block.titleH4 [] [ text "Link" ]
             , Block.text []
                 [ a
-                    [ href url, class "d-block max-height-80", Spacing.mt1, Spacing.mb3, Spacing.p3 ]
+                    [ href url, class "d-block max-height-80", Spacing.mt1, Spacing.mb3, Spacing.p3, target "_blank" ]
                     [ text url ]
                 ]
             , Block.text [ class "text-center" ] [ qrCodeView url ]
@@ -196,9 +196,6 @@ update msg model =
 createUrl : String -> String -> String -> String -> String
 createUrl donorUrl committeeId refCode amount =
     let
-        committeeIdVal =
-            [ Url.Builder.string "committeeId" committeeId ]
-
         refCodeVal =
             if String.length refCode > 0 then
                 [ Url.Builder.string "refCode" refCode ]
@@ -213,7 +210,7 @@ createUrl donorUrl committeeId refCode amount =
             else
                 []
     in
-    Url.Builder.crossOrigin donorUrl [] <| committeeIdVal ++ refCodeVal ++ amountVal
+    Url.Builder.crossOrigin donorUrl [ "committee", committeeId ] <| refCodeVal ++ amountVal
 
 
 scrollToTop : Task x ()
