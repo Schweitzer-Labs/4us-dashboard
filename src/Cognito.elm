@@ -15,8 +15,8 @@ port storeCache : Maybe Value -> Cmd msg
 port onStoreChange : (Value -> msg) -> Sub msg
 
 
-loginUrl : String -> String -> String -> String -> String
-loginUrl cognitoDomain cognitoClientId redirectUri committeeId =
+loginUrl : Config -> String -> String
+loginUrl { cognitoDomain, cognitoClientId, redirectUri } committeeId =
     cognitoDomain ++ "/login?client_id=" ++ cognitoClientId ++ "&response_type=token&scope=email+openid+profile&redirect_uri=" ++ redirectUri ++ "&state=" ++ committeeId
 
 

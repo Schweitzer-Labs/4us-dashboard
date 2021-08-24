@@ -993,11 +993,7 @@ update msg model =
                             ( model, Download.string "report.csv" "text/csv" <| GetReport.toCsvData body )
 
                         Err _ ->
-                            let
-                                { cognitoDomain, cognitoClientId, redirectUri } =
-                                    model.config
-                            in
-                            ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                            ( model, load <| loginUrl model.config model.committeeId )
 
                 Preview ->
                     case res of
@@ -1005,11 +1001,7 @@ update msg model =
                             ( { model | generateDisclosureModalPreview = Just (GetReport.toCsvData body) }, Cmd.none )
 
                         Err _ ->
-                            let
-                                { cognitoDomain, cognitoClientId, redirectUri } =
-                                    model.config
-                            in
-                            ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                            ( model, load <| loginUrl model.config model.committeeId )
 
                 Closed ->
                     ( model, Cmd.none )
@@ -1025,10 +1017,6 @@ update msg model =
                             openTxnFormModalLoaded model (GetTxn.toTxn body)
 
                         Err _ ->
-                            let
-                                { cognitoDomain, cognitoClientId, redirectUri } =
-                                    model.config
-                            in
                             ( model, Cmd.none )
 
                 True ->
@@ -1058,11 +1046,7 @@ update msg model =
                     )
 
                 Err _ ->
-                    let
-                        { cognitoDomain, cognitoClientId, redirectUri } =
-                            model.config
-                    in
-                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                    ( model, load <| loginUrl model.config model.committeeId )
 
         --( model, Cmd.none )
         ShowCreateContributionModal ->
@@ -1314,11 +1298,7 @@ update msg model =
                     )
 
                 Err _ ->
-                    let
-                        { cognitoDomain, cognitoClientId, redirectUri } =
-                            model.config
-                    in
-                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                    ( model, load <| loginUrl model.config model.committeeId )
 
 
 generateReport : Cmd msg

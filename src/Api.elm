@@ -4,15 +4,9 @@ module Api exposing
     , post
     )
 
-{-| This module is responsible for communicating to the Conduit API.
-
-It exposes an opaque Endpoint type which is guaranteed to point to the correct URL.
-
--}
-
 import Api.Endpoint as Endpoint exposing (Endpoint)
 import Http exposing (Body, Expect)
-import Json.Decode as Decode exposing (Decoder, Value, decodeString, field, string)
+import Json.Decode exposing (Decoder, Value, decodeString, field, string)
 
 
 
