@@ -32,15 +32,11 @@ type Model
 
 init : Config -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init config url navKey =
-    let
-        ( model, cmdMsg ) =
-            changeRouteTo
-                url
-                config
-                (Route.fromUrl url)
-                (Redirect (Session.fromViewer navKey config.token))
-    in
-    ( model, cmdMsg )
+    changeRouteTo
+        url
+        config
+        (Route.fromUrl url)
+        (Redirect (Session.fromViewer navKey config.token))
 
 
 changeRouteTo : Url -> Config -> Maybe Route -> Model -> ( Model, Cmd Msg )
