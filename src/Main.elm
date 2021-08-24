@@ -68,31 +68,31 @@ changeRouteTo url config maybeRoute model =
                 committeeId
                 |> updateWith Transactions GotTransactionsMsg
 
-        Just Route.Transactions ->
+        Just (Route.Transactions id) ->
             Transactions.init
                 config
                 session
                 aggregations
                 committee
-                committeeId
+                id
                 |> updateWith Transactions GotTransactionsMsg
 
-        Just Route.LinkBuilder ->
+        Just (Route.LinkBuilder id) ->
             LinkBuilder.init
                 config
                 session
                 aggregations
                 committee
-                committeeId
+                id
                 |> updateWith LinkBuilder GotLinkBuilderMsg
 
-        Just Route.Demo ->
+        Just (Route.Demo id) ->
             Demo.init
                 config
                 session
                 aggregations
                 committee
-                committeeId
+                id
                 |> updateWith Demo GotDemoMsg
 
 
@@ -203,22 +203,9 @@ update msg model =
         ( ClickedLink urlRequest, _ ) ->
             case urlRequest of
                 Browser.Internal url ->
-                    case url.fragment of
-                        Nothing ->
-                            -- If we got a link that didn't include a fragment,
-                            -- it's from one of those (href "") attributes that
-                            -- we have to include to make the RealWorld CSS work.
-                            --
-                            -- In an application doing path routing instead of
-                            -- fragment-based routing, this entire
-                            -- `case url.fragment of` expression this comment
-                            -- is inside would be unnecessary.
-                            ( model, Cmd.none )
-
-                        Just _ ->
-                            ( model
-                            , Nav.pushUrl (Session.navKey (toSession model)) (Url.toString url)
-                            )
+                    ( model
+                    , Nav.pushUrl (Session.navKey (toSession model)) (Url.toString url)
+                    )
 
                 Browser.External href ->
                     ( model

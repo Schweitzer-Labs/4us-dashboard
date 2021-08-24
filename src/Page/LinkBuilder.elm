@@ -89,7 +89,7 @@ formRow model =
             [ Form.group []
                 [ Form.label [ for "ref-id" ] [ text "Source" ]
                 , Input.text [ Input.id "ref-id", Input.onInput RefCodeUpdated ]
-                , Form.help [] [ text "This code will be used to track the context of a donation and enable tracking. After sharing a link with a source, navigate to the Contributions view to see which transactions come from which context." ]
+                , Form.help [] [ text "This code will be used to track the context of a donation and enable tracking. After sharing a link with a source, navigate to the Transactions view to see which transactions come from which context." ]
                 ]
             , Form.group []
                 [ Form.label [ for "amount" ] [ text "Amount" ]
