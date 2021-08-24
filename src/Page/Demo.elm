@@ -107,7 +107,7 @@ formRow model =
 
 idToCommitteeUrl : Config -> String -> String
 idToCommitteeUrl config id =
-    config.redirectUri ++ "?committeeId=" ++ id
+    config.redirectUri ++ "/committee/" ++ id
 
 
 urlRow : Model -> List (Html Msg)

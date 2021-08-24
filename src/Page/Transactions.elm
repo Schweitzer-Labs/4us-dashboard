@@ -1120,7 +1120,7 @@ update msg model =
                         ResValidationFailure errList ->
                             ( { model
                                 | createContributionModal =
-                                    CreateContribution.setError model.createContributionModal <|
+                                    CreateContribution.fromError model.createContributionModal <|
                                         Maybe.withDefault "Unexplained error" <|
                                             List.head errList
                                 , createContributionSubmitting = False
@@ -1131,7 +1131,7 @@ update msg model =
                 Err err ->
                     ( { model
                         | createContributionModal =
-                            CreateContribution.setError model.createContributionModal <|
+                            CreateContribution.fromError model.createContributionModal <|
                                 Api.decodeError err
                         , createContributionSubmitting = False
                       }

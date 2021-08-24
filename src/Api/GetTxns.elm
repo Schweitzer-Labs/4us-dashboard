@@ -29,6 +29,7 @@ committeeQuery =
               candidateLastName
               officeType
               bankName
+              id
             }
     """
 
