@@ -44,6 +44,7 @@ query =
             attestsToBeingAnAdultCitizen
             stripePaymentIntentId
             cardNumberLastFourDigits
+            checkNumber
             finicityCategory
             finicityBestRepresentation
             finicityPostedDate
