@@ -1083,11 +1083,15 @@ update msg model =
         SubmitCreateContribution ->
             case ContribInfo.validateModel CreateContribution.validationMapper model.createContributionModal of
                 Err errors ->
-                    let
-                        error =
-                            Maybe.withDefault "Form error" <| List.head errors
-                    in
-                    ( { model | createContributionModal = CreateContribution.fromError model.createContributionModal error }, Cmd.none )
+                    ( { model
+                        | createContributionModal =
+                            CreateContribution.fromError model.createContributionModal <|
+                                Maybe.withDefault "Unexplained error" <|
+                                    List.head errors
+                        , contribRuleVerifiedSubmitting = False
+                      }
+                    , Cmd.none
+                    )
 
                 Ok val ->
                     ( { model
@@ -1136,7 +1140,7 @@ update msg model =
                         ResValidationFailure errList ->
                             ( { model
                                 | createContributionModal =
-                                    CreateContribution.setError model.createContributionModal <|
+                                    CreateContribution.fromError model.createContributionModal <|
                                         Maybe.withDefault "Unexplained error" <|
                                             List.head errList
                                 , createContributionSubmitting = False
@@ -1147,7 +1151,7 @@ update msg model =
                 Err err ->
                     ( { model
                         | createContributionModal =
-                            CreateContribution.setError model.createContributionModal <|
+                            CreateContribution.fromError model.createContributionModal <|
                                 Api.decodeError err
                         , createContributionSubmitting = False
                       }
