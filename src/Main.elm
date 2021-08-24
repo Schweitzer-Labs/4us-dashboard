@@ -70,7 +70,7 @@ changeRouteTo url config maybeRoute model =
                 aggregations
                 committee
                 committeeId
-                |> updateWith Transactions GotTransactionsMsg model
+                |> updateWith Transactions GotTransactionsMsg
 
         Just Route.Transactions ->
             Transactions.init
@@ -79,7 +79,7 @@ changeRouteTo url config maybeRoute model =
                 aggregations
                 committee
                 committeeId
-                |> updateWith Transactions GotTransactionsMsg model
+                |> updateWith Transactions GotTransactionsMsg
 
         Just Route.LinkBuilder ->
             LinkBuilder.init
@@ -88,7 +88,7 @@ changeRouteTo url config maybeRoute model =
                 aggregations
                 committee
                 committeeId
-                |> updateWith LinkBuilder GotLinkBuilderMsg model
+                |> updateWith LinkBuilder GotLinkBuilderMsg
 
         Just Route.Demo ->
             Demo.init
@@ -97,7 +97,7 @@ changeRouteTo url config maybeRoute model =
                 aggregations
                 committee
                 committeeId
-                |> updateWith Demo GotDemoMsg model
+                |> updateWith Demo GotDemoMsg
 
 
 
@@ -234,15 +234,15 @@ update msg model =
 
         ( GotTransactionsMsg subMsg, Transactions home ) ->
             Transactions.update subMsg home
-                |> updateWith Transactions GotTransactionsMsg model
+                |> updateWith Transactions GotTransactionsMsg
 
         ( GotLinkBuilderMsg subMsg, LinkBuilder linkBuilder ) ->
             LinkBuilder.update subMsg linkBuilder
-                |> updateWith LinkBuilder GotLinkBuilderMsg model
+                |> updateWith LinkBuilder GotLinkBuilderMsg
 
         ( GotDemoMsg subMsg, Demo demo ) ->
             Demo.update subMsg demo
-                |> updateWith Demo GotDemoMsg model
+                |> updateWith Demo GotDemoMsg
 
         ( GotSession session, Redirect _ ) ->
             ( Redirect session
@@ -254,8 +254,8 @@ update msg model =
             ( model, Cmd.none )
 
 
-updateWith : (subModel -> Model) -> (subMsg -> Msg) -> Model -> ( subModel, Cmd subMsg ) -> ( Model, Cmd Msg )
-updateWith toModel toMsg model ( subModel, subCmd ) =
+updateWith : (subModel -> Model) -> (subMsg -> Msg) -> ( subModel, Cmd subMsg ) -> ( Model, Cmd Msg )
+updateWith toModel toMsg ( subModel, subCmd ) =
     ( toModel subModel
     , Cmd.map toMsg subCmd
     )
