@@ -92,7 +92,9 @@ view c =
                                 inKindRow c
 
                             Just PaymentMethod.Check ->
-                                processingRow c
+                                []
+                                    ++ labelRow "Check Number"
+                                    ++ processingRow c
 
                             _ ->
                                 []
