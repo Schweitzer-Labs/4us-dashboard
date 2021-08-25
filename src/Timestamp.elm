@@ -1,4 +1,4 @@
-module Timestamp exposing (dateStringToMillis, formDate, format, view)
+module Timestamp exposing (dateStringToMillis, formDate, format, isoFormatter, view)
 
 import Date
 import DateFormat

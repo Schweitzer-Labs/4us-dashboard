@@ -44,6 +44,7 @@ type alias Model =
     , attestsToBeingAnAdultCitizen : Maybe Bool
     , stripePaymentIntentId : Maybe String
     , cardNumberLastFourDigits : Maybe String
+    , checkNumber : Maybe String
     , entityName : Maybe String
     , isSubcontracted : Maybe Bool
     , isPartialPayment : Maybe Bool
@@ -95,6 +96,7 @@ init =
     , attestsToBeingAnAdultCitizen = Nothing
     , stripePaymentIntentId = Nothing
     , cardNumberLastFourDigits = Nothing
+    , checkNumber = Nothing
     , entityName = Nothing
     , isSubcontracted = Nothing
     , isPartialPayment = Nothing
@@ -183,6 +185,7 @@ decoder =
         |> maybeBool "attestsToBeingAnAdultCitizen"
         |> maybeString "stripePaymentIntentId"
         |> maybeString "cardNumberLastFourDigits"
+        |> maybeString "checkNumber"
         |> maybeString "entityName"
         |> maybeBool "isSubcontracted"
         |> maybeBool "isPartialPayment"
