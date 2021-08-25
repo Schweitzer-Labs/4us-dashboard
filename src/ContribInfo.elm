@@ -85,18 +85,25 @@ view c =
                )
             ++ errorRow c.maybeError
             ++ donorInfoRows c
-            ++ (if c.isEditable then
-                    if toData c.paymentMethod == Just PaymentMethod.InKind then
-                        inKindRow c
+            ++ (case c.isEditable of
+                    True ->
+                        case toData c.paymentMethod of
+                            Just PaymentMethod.InKind ->
+                                inKindRow c
 
-                    else
+                            Just PaymentMethod.Check ->
+                                []
+                                    ++ labelRow "Check Number"
+                                    ++ processingRow c
+
+                            _ ->
+                                []
+
+                    False ->
                         []
-
-                else
-                    []
-                        ++ labelRow "Processing Info"
-                        ++ PaymentMethod.select c.processPayment msg (toData c.paymentMethod) c.disabled c.txnId
-                        ++ processingRow c
+                            ++ labelRow "Processing Info"
+                            ++ PaymentMethod.select c.processPayment msg (toData c.paymentMethod) c.disabled c.txnId
+                            ++ processingRow c
                )
 
 

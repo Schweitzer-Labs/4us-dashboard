@@ -30,7 +30,7 @@ import Owners exposing (Owner, Owners)
 import PaymentInfo
 import PaymentMethod
 import Time exposing (utc)
-import Timestamp
+import Timestamp exposing (formDate)
 import Transaction
 
 
@@ -97,8 +97,8 @@ init txn =
     , error = ""
     , errors = []
     , amount = Cents.stringToDollar <| String.fromInt txn.amount
-    , checkNumber = ""
-    , paymentDate = Timestamp.format utc txn.paymentDate
+    , checkNumber = Maybe.withDefault "" txn.checkNumber
+    , paymentDate = Timestamp.formDate utc txn.paymentDate
     , emailAddress = Maybe.withDefault "" txn.emailAddress
     , phoneNumber = Maybe.withDefault "" txn.phoneNumber
     , firstName = Maybe.withDefault "" txn.firstName
@@ -169,7 +169,7 @@ contribFormRow : Model -> Html Msg
 contribFormRow model =
     ContribInfo.view
         { checkNumber = ( model.checkNumber, CheckNumberUpdated )
-        , paymentDate = ( model.paymentDate, PaymentDateUpdated )
+        , paymentDate = ( dateWithFormat model, PaymentDateUpdated )
         , paymentMethod = ( model.paymentMethod, PaymentMethodUpdated )
         , emailAddress = ( model.emailAddress, EmailAddressUpdated )
         , phoneNumber = ( model.phoneNumber, PhoneNumberUpdated )
@@ -448,3 +448,12 @@ validationMapper model =
 toTxn : Model -> Transaction.Model
 toTxn model =
     model.txn
+
+
+dateWithFormat : Model -> String
+dateWithFormat model =
+    if model.paymentDate == "" then
+        formDate utc model.txn.paymentDate
+
+    else
+        model.paymentDate

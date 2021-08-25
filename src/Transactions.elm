@@ -48,10 +48,10 @@ labels =
     , "Entity Name"
     , "Entity Type"
     , "Amount"
-    , "Verified"
+    , "ID Verified"
     , "Payment Method"
     , "Ref Code"
-    , "Status"
+    , "Bank Status"
     ]
 
 
