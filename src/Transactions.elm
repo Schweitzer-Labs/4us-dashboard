@@ -50,7 +50,7 @@ labels =
     , "Amount"
     , "ID Verified"
     , "Payment Method"
-    , "Processor"
+    , "Ref Code"
     , "Bank Status"
     ]
 
@@ -191,7 +191,7 @@ transactionRowMap committee ( _, maybeMsg, transaction ) =
       , ( "Amount", amount )
       , ( "Verified", verifiedContent <| transaction.ruleVerified )
       , ( "Payment Method", text <| getPaymentMethod transaction )
-      , ( "Processor", processor committee transaction )
+      , ( "Ref Code", text <| Maybe.withDefault "N/A" transaction.refCode )
       , ( "Status", getStatus transaction )
       ]
     )
