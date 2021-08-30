@@ -1,6 +1,0 @@
-OAI:
-  Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
-  Condition: NonCloudFlare
-  Properties:
-    CloudFrontOriginAccessIdentityConfig:
-      Comment: !Sub Origin Access Identity for ${Domain}.${TLD}
