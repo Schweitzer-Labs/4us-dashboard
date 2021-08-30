@@ -50,7 +50,6 @@ $(BUILD_DIR):
 	@mkdir -p $@
 
 build: dep $(BUILD_DIR)
-	echo $(COGNITO_USER_POOL) $(COGNITO_CLIENT_ID)
 	npm \
 		--domain=$(COGNITO_DOMAIN) \
 		--redirect=$(COGNITO_REDIRECT_URI) \
