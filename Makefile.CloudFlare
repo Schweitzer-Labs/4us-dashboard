@@ -18,19 +18,18 @@ else
 	export AWS_SECRET_ACCESS_KEY	:= $(AWS_SECRET_ACCESS_KEY_QA)
 endif
 
-AWS_SRC = awscli-exe-linux-x86_64.zip
+AWS_SRC := awscli-exe-linux-x86_64.zip
+AWS_BIN	:= $(LOCAL_BIN)/aws
 
 include Makefile
 
-$(AWS_SRC):
-	@curl -s "https://awscli.amazonaws.com/$@" -O
-	@unzip -q $@
-
-cloudflare-aws: $(AWS_SRC)
+$(AWS_BIN):
+	@curl -s "https://awscli.amazonaws.com/$(AWS_SRC)" -O
+	@unzip -q $(AWS_SRC)
 	./aws/install -u -i ~/.local/aws-cli -b $(LOCAL_BIN)
-	aws configure set aws_access_key_id $(AWS_ACCESS_KEY_ID)
-	aws configure set aws_secret_access_key $(AWS_SECRET_ACCESS_KEY)
+	@aws configure set aws_access_key_id $(AWS_ACCESS_KEY_ID)
+	@aws configure set aws_secret_access_key $(AWS_SECRET_ACCESS_KEY)
 
-cloudflare-dep: dep cloudflare-aws
+cloudflare-dep: dep $(AWS_BIN)
 
 cloudflare-web: cloudflare-dep build
