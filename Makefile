@@ -10,15 +10,15 @@ endif
 ifeq ($(RUNENV), qa)
 	export DOMAIN   := build4
 	export TLD      := us
+	export REGION	:= us-west-2
 else ifeq ($(RUNENV), prod)
 	export DOMAIN   := 4us
 	export TLD      := net
+	export REGION	:= us-east-1
 else ifeq ($(RUNENV), demo)
 	export DOMAIN   := 4usdemo
 	export TLD      := com
-else #extra
-        export DOMAIN   := 4us
-        export TLD      := com
+	export REGION	:= us-west-1
 endif
 
 
