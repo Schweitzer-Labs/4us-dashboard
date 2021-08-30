@@ -33,15 +33,12 @@ COGNITO_USER_POOL = $(eval COGNITO_USER_POOL := $$(shell aws cognito-idp list-us
 
 COGNITO_CLIENT_ID = $(eval COGNITO_CLIENT_ID := $$(shell aws cognito-idp list-user-pool-clients --region $(REGION) --user-pool-id $(COGNITO_USER_POOL) --query 'UserPoolClients[*].ClientId' --output text))$(COGNITO_CLIENT_ID)
 
-.PHONY: all dep build clean realclean
+.PHONY: all dep build clean
 
 # Make targets
 all: build
 
-clean:
-	@rm -f $(BUILD_DIR)/*
-
-realclean: clean
+clean: clean
 	@rm -rf $(BUILD_DIR)
 	@rm -rf node_modules
 
