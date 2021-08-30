@@ -1,4 +1,4 @@
-module CreateContribution exposing (Model, Msg(..), fromError, init, setError, toEncodeModel, update, validationMapper, view)
+port module CreateContribution exposing (Model, Msg(..), fromError, init, setError, subscriptions, toEncodeModel, update, validationMapper, view)
 
 import Api.CreateContrib as CreateContrib
 import ContribInfo exposing (ContribValidatorModel)
@@ -6,9 +6,21 @@ import EmploymentStatus
 import EntityType
 import Html exposing (Html)
 import InKindType
+import Json.Decode as Decode exposing (bool, decodeValue)
+import Json.Encode exposing (Value)
 import OrgOrInd
 import Owners exposing (Owners)
 import PaymentMethod
+
+
+
+-- PORTS
+
+
+port sendEmail : String -> Cmd msg
+
+
+port isValidEmailReceiver : (Value -> msg) -> Sub msg
 
 
 type alias Model =
@@ -19,6 +31,7 @@ type alias Model =
     , paymentDate : String
     , paymentMethod : Maybe PaymentMethod.Model
     , emailAddress : String
+    , emailAddressValidated : Bool
     , phoneNumber : String
     , firstName : String
     , middleName : String
@@ -58,6 +71,7 @@ init committeeId =
     , checkNumber = ""
     , paymentDate = ""
     , emailAddress = ""
+    , emailAddressValidated = False
     , phoneNumber = ""
     , firstName = ""
     , middleName = ""
@@ -168,6 +182,7 @@ type Msg
     | CVVUpdated String
     | InKindTypeUpdated (Maybe InKindType.Model)
     | InKindDescUpdated String
+    | GotEmailValidationRes Decode.Value
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -206,7 +221,7 @@ update msg model =
             ( { model | phoneNumber = str }, Cmd.none )
 
         EmailAddressUpdated str ->
-            ( { model | emailAddress = str }, Cmd.none )
+            ( { model | emailAddress = str }, sendEmail str )
 
         FirstNameUpdated str ->
             ( { model | firstName = str }, Cmd.none )
@@ -271,6 +286,14 @@ update msg model =
 
         InKindDescUpdated t ->
             ( { model | inKindDesc = t }, Cmd.none )
+
+        GotEmailValidationRes value ->
+            case decodeValue bool value of
+                Ok data ->
+                    ( { model | emailAddressValidated = data }, Cmd.none )
+
+                Err error ->
+                    ( model, Cmd.none )
 
 
 toEncodeModel : Model -> CreateContrib.EncodeModel
@@ -338,3 +361,12 @@ validationMapper model =
 fromError : Model -> String -> Model
 fromError model error =
     { model | maybeError = Just error }
+
+
+
+-- Subscriptions
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    isValidEmailReceiver GotEmailValidationRes

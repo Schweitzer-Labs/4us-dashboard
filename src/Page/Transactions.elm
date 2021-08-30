@@ -652,6 +652,7 @@ type Msg
       -- Feed pagination
     | MoreTxnsClicked
     | GotTxnSet (Result Http.Error GetTxns.Model)
+    | GotCreateContributionMsg CreateContribution.Msg
 
 
 
@@ -1300,6 +1301,9 @@ update msg model =
                 Err _ ->
                     ( model, load <| loginUrl model.config model.committeeId )
 
+        GotCreateContributionMsg _ ->
+            ( model, Cmd.none )
+
 
 generateReport : Cmd msg
 generateReport =
@@ -1409,6 +1413,7 @@ subscriptions model =
         , Modal.subscriptions model.disbRuleVerifiedModalVisibility DisbRuleVerifiedModalAnimate
         , Modal.subscriptions model.contribRuleUnverifiedModalVisibility ContribRuleUnverifiedModalAnimate
         , Modal.subscriptions model.contribRuleVerifiedModalVisibility ContribRuleVerifiedModalAnimate
+        , Sub.map GotCreateContributionMsg (CreateContribution.subscriptions model.createContributionModal)
         ]
 
 
