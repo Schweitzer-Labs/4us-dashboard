@@ -1,4 +1,4 @@
-module Copy exposing (contribUnverifiedDialogue, disbUnverifiedDialogue, verificationScore)
+module Copy exposing (contribUnverifiedDialogue, contribVerifiedDialogue, disbUnverifiedDialogue, disbVerifiedDialogue, verificationScore)
 
 import Html exposing (Html, text)
 
@@ -17,6 +17,20 @@ disbUnverifiedDialogue =
 
 contribUnverifiedDialogue : List (Html msg)
 contribUnverifiedDialogue =
+    [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
+    , text "At urna condimentum mattis pellentesque id nibh tortor id aliquet."
+    ]
+
+
+contribVerifiedDialogue : List (Html msg)
+contribVerifiedDialogue =
+    [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
+    , text "At urna condimentum mattis pellentesque id nibh tortor id aliquet."
+    ]
+
+
+disbVerifiedDialogue : List (Html msg)
+disbVerifiedDialogue =
     [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
     , text "At urna condimentum mattis pellentesque id nibh tortor id aliquet."
     ]

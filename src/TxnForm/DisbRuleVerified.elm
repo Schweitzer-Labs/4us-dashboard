@@ -13,6 +13,7 @@ module TxnForm.DisbRuleVerified exposing
 import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
 import Bootstrap.Popover as Popover
+import Copy
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
 import ExpandableBankData
@@ -114,10 +115,16 @@ loadedView model =
     Grid.container
         []
         ([]
+            ++ [ dialogueBox ]
             ++ PaymentInfo.view model.txn
             ++ disbFormRow model
             ++ bankData
         )
+
+
+dialogueBox : Html Msg
+dialogueBox =
+    Alert.simpleInfo [] Copy.disbVerifiedDialogue
 
 
 disbFormRow : Model -> List (Html Msg)
