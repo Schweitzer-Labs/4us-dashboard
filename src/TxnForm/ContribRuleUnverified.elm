@@ -418,11 +418,7 @@ update msg model =
                     )
 
                 Err _ ->
-                    let
-                        { cognitoDomain, cognitoClientId, redirectUri } =
-                            model.config
-                    in
-                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                    ( model, load <| loginUrl model.config model.committeeId )
 
         CreateContribToggled ->
             ( let

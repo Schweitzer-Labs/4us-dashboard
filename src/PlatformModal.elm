@@ -28,6 +28,8 @@ type alias MakeModalConfig msg subMsg subModel =
     , successViewActive : Bool
     , successViewMessage : String
     , visibility : Modal.Visibility
+    , maybeDeleteMsg : Maybe msg
+    , isDeleting : Bool
     }
 
 
@@ -54,12 +56,14 @@ view config =
                 []
                 [ buttonRow
                     { submitText = config.submitText
+                    , maybeDeleteMsg = config.maybeDeleteMsg
                     , submitting = config.isSubmitting
                     , enableExit = True
                     , disableSave = config.successViewActive
                     , disabled = config.isSubmitDisabled
                     , hideMsg = config.hideMsg
                     , submitMsg = config.submitMsg
+                    , isDeleting = config.isDeleting
                     }
                 ]
             ]
@@ -68,12 +72,14 @@ view config =
 
 type alias ButtonRowConfig hideMsg submitMsg =
     { hideMsg : hideMsg
+    , maybeDeleteMsg : Maybe hideMsg
     , submitText : String
     , submitMsg : submitMsg
     , submitting : Bool
     , enableExit : Bool
     , disableSave : Bool
     , disabled : Bool
+    , isDeleting : Bool
     }
 
 
@@ -83,12 +89,16 @@ buttonRow config =
         [ Row.betweenXs ]
         [ Grid.col
             [ Col.lg3, Col.attrs [ class "text-left" ] ]
-            (if config.enableExit then
-                [ exitButton config.hideMsg ]
+          <|
+            case ( config.enableExit, config.maybeDeleteMsg ) of
+                ( True, Just deleteMsg ) ->
+                    [ SubmitButton.delete deleteMsg config.isDeleting ]
 
-             else
-                []
-            )
+                ( True, Nothing ) ->
+                    [ exitButton config.hideMsg ]
+
+                _ ->
+                    []
         , Grid.col
             [ Col.lg3 ]
             (if config.disableSave then

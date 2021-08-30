@@ -8,6 +8,7 @@ type alias Model =
     { candidateLastName : String
     , bankName : String
     , officeType : String
+    , id : String
     }
 
 
@@ -17,6 +18,7 @@ decoder =
         |> required "candidateLastName" string
         |> required "bankName" string
         |> required "officeType" string
+        |> required "id" string
 
 
 init : Model
@@ -24,4 +26,5 @@ init =
     { candidateLastName = ""
     , bankName = ""
     , officeType = ""
+    , id = ""
     }

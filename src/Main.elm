@@ -2,7 +2,6 @@ module Main exposing (Model(..), Msg(..), changeRouteTo, init, main, subscriptio
 
 import Aggregations
 import Browser exposing (Document)
-import Browser.Dom as Dom
 import Browser.Navigation as Nav
 import Committee
 import CommitteeId
@@ -16,7 +15,6 @@ import Page.NotFound as NotFound
 import Page.Transactions as Transactions
 import Route exposing (Route)
 import Session exposing (Session)
-import Task exposing (Task)
 import Url exposing (Url)
 
 
@@ -34,15 +32,68 @@ type Model
 
 init : Config -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init config url navKey =
+    changeRouteTo
+        url
+        config
+        (Route.fromUrl url)
+        (Redirect (Session.fromViewer navKey config.token))
+
+
+changeRouteTo : Url -> Config -> Maybe Route -> Model -> ( Model, Cmd Msg )
+changeRouteTo url config maybeRoute model =
     let
-        ( model, cmdMsg ) =
-            changeRouteTo
-                url
-                config
-                (Route.fromUrl url)
-                (Redirect (Session.fromViewer navKey config.token))
+        session =
+            toSession model
+
+        committeeId =
+            CommitteeId.parse url
+
+        aggregations =
+            toAggregations model
+
+        committee =
+            toCommittee model
     in
-    ( model, cmdMsg )
+    case maybeRoute of
+        Nothing ->
+            ( NotFound session, Cmd.none )
+
+        -- rest of the routes
+        Just Route.Home ->
+            Transactions.init
+                config
+                session
+                aggregations
+                committee
+                committeeId
+                |> updateWith Transactions GotTransactionsMsg
+
+        Just (Route.Transactions id) ->
+            Transactions.init
+                config
+                session
+                aggregations
+                committee
+                id
+                |> updateWith Transactions GotTransactionsMsg
+
+        Just (Route.LinkBuilder id) ->
+            LinkBuilder.init
+                config
+                session
+                aggregations
+                committee
+                id
+                |> updateWith LinkBuilder GotLinkBuilderMsg
+
+        Just (Route.Demo id) ->
+            Demo.init
+                config
+                session
+                aggregations
+                committee
+                id
+                |> updateWith Demo GotDemoMsg
 
 
 
@@ -146,85 +197,15 @@ toConfig page =
             demo.config
 
 
-changeRouteTo : Url -> Config -> Maybe Route -> Model -> ( Model, Cmd Msg )
-changeRouteTo url config maybeRoute model =
-    let
-        session =
-            toSession model
-
-        committeeId =
-            CommitteeId.parse url
-
-        aggregations =
-            toAggregations model
-
-        committee =
-            toCommittee model
-    in
-    case maybeRoute of
-        Nothing ->
-            ( NotFound session, Cmd.none )
-
-        -- rest of the routes
-        Just Route.Home ->
-            Transactions.init
-                config
-                session
-                aggregations
-                committee
-                committeeId
-                |> updateWith Transactions GotTransactionsMsg model
-
-        Just Route.Transactions ->
-            Transactions.init
-                config
-                session
-                aggregations
-                committee
-                committeeId
-                |> updateWith Transactions GotTransactionsMsg model
-
-        Just Route.LinkBuilder ->
-            LinkBuilder.init
-                config
-                session
-                aggregations
-                committee
-                committeeId
-                |> updateWith LinkBuilder GotLinkBuilderMsg model
-
-        Just Route.Demo ->
-            Demo.init
-                config
-                session
-                aggregations
-                committee
-                committeeId
-                |> updateWith Demo GotDemoMsg model
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
         ( ClickedLink urlRequest, _ ) ->
             case urlRequest of
                 Browser.Internal url ->
-                    case url.fragment of
-                        Nothing ->
-                            -- If we got a link that didn't include a fragment,
-                            -- it's from one of those (href "") attributes that
-                            -- we have to include to make the RealWorld CSS work.
-                            --
-                            -- In an application doing path routing instead of
-                            -- fragment-based routing, this entire
-                            -- `case url.fragment of` expression this comment
-                            -- is inside would be unnecessary.
-                            ( model, Cmd.none )
-
-                        Just _ ->
-                            ( model
-                            , Nav.pushUrl (Session.navKey (toSession model)) (Url.toString url)
-                            )
+                    ( model
+                    , Nav.pushUrl (Session.navKey (toSession model)) (Url.toString url)
+                    )
 
                 Browser.External href ->
                     ( model
@@ -236,15 +217,15 @@ update msg model =
 
         ( GotTransactionsMsg subMsg, Transactions home ) ->
             Transactions.update subMsg home
-                |> updateWith Transactions GotTransactionsMsg model
+                |> updateWith Transactions GotTransactionsMsg
 
         ( GotLinkBuilderMsg subMsg, LinkBuilder linkBuilder ) ->
             LinkBuilder.update subMsg linkBuilder
-                |> updateWith LinkBuilder GotLinkBuilderMsg model
+                |> updateWith LinkBuilder GotLinkBuilderMsg
 
         ( GotDemoMsg subMsg, Demo demo ) ->
             Demo.update subMsg demo
-                |> updateWith Demo GotDemoMsg model
+                |> updateWith Demo GotDemoMsg
 
         ( GotSession session, Redirect _ ) ->
             ( Redirect session
@@ -256,8 +237,8 @@ update msg model =
             ( model, Cmd.none )
 
 
-updateWith : (subModel -> Model) -> (subMsg -> Msg) -> Model -> ( subModel, Cmd subMsg ) -> ( Model, Cmd Msg )
-updateWith toModel toMsg model ( subModel, subCmd ) =
+updateWith : (subModel -> Model) -> (subMsg -> Msg) -> ( subModel, Cmd subMsg ) -> ( Model, Cmd Msg )
+updateWith toModel toMsg ( subModel, subCmd ) =
     ( toModel subModel
     , Cmd.map toMsg subCmd
     )
@@ -270,9 +251,6 @@ updateWith toModel toMsg model ( subModel, subCmd ) =
 view : Model -> Document Msg
 view model =
     let
-        viewer =
-            Session.viewer (toSession model)
-
         aggregations =
             toAggregations model
 
@@ -338,11 +316,3 @@ main =
         , update = update
         , view = view
         }
-
-
-scrollToTop : Task x ()
-scrollToTop =
-    Dom.setViewport 0 0
-        -- It's not worth showing the user anything special if scrolling fails.
-        -- If anything, we'd log this to an error recording service.
-        |> Task.onError (\_ -> Task.succeed ())

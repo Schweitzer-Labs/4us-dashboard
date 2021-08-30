@@ -6,6 +6,7 @@ import Api.AmendContrib as AmendContrib
 import Api.AmendDisb as AmendDisb
 import Api.CreateContrib as CreateContrib
 import Api.CreateDisb as CreateDisb
+import Api.DeleteTxn as DeleteTxn
 import Api.GetReport as GetReport
 import Api.GetTxn as GetTxn
 import Api.GetTxns as GetTxns
@@ -71,6 +72,10 @@ type alias Model =
     , createContributionSubmitting : Bool
     , generateDisclosureModalVisibility : Modal.Visibility
     , generateDisclosureModalDownloadDropdownState : Dropdown.State
+    , getTransactionCanceled : Bool
+    , generateDisclosureModalPreviewDropdownState : Dropdown.State
+    , generateDisclosureModalContext : DiscDropdownContext
+    , generateDisclosureModalPreview : Maybe String
     , actionsDropdown : Dropdown.State
     , filtersDropdown : Dropdown.State
     , filterTransactionType : Maybe TransactionType
@@ -110,6 +115,9 @@ type alias Model =
     , fromId : Maybe String
     , moreLoading : Bool
     , moreDisabled : Bool
+
+    -- Deletions
+    , isDeleting : Bool
     }
 
 
@@ -132,6 +140,9 @@ init config session aggs committee committeeId =
             , actionsDropdown = Dropdown.initialState
             , filtersDropdown = Dropdown.initialState
             , generateDisclosureModalDownloadDropdownState = Dropdown.initialState
+            , generateDisclosureModalPreviewDropdownState = Dropdown.initialState
+            , generateDisclosureModalContext = Closed
+            , generateDisclosureModalPreview = Nothing
             , filterTransactionType = Nothing
             , filterNeedsReview = False
             , disclosureSubmitting = False
@@ -139,6 +150,7 @@ init config session aggs committee committeeId =
             , createDisbursementModalVisibility = Modal.hidden
             , createDisbursementModal = CreateDisbursement.init committeeId
             , createDisbursementSubmitting = False
+            , getTransactionCanceled = False
 
             -- Disb rule unverified state
             , disbRuleUnverifiedModal = DisbRuleUnverified.init config [] Transaction.init
@@ -169,6 +181,7 @@ init config session aggs committee committeeId =
             , fromId = Nothing
             , moreLoading = False
             , moreDisabled = False
+            , isDeleting = False
             }
     in
     ( initModel
@@ -178,6 +191,28 @@ init config session aggs committee committeeId =
 
 
 -- VIEW
+
+
+toDeleteMsg : (a -> Transaction.Model) -> a -> Maybe Msg
+toDeleteMsg mapper subModel =
+    let
+        txn =
+            mapper subModel
+
+        isUnreconciled =
+            not txn.bankVerified
+
+        isUnprocessed =
+            txn.stripePaymentIntentId == Nothing
+
+        notBlank =
+            String.length txn.id > 0
+    in
+    if isUnreconciled && isUnprocessed && notBlank then
+        Just (TxnDelete txn)
+
+    else
+        Nothing
 
 
 moreTxnsButton : Model -> Html Msg
@@ -223,6 +258,8 @@ createDisbursementModal model =
         , successViewMessage = ""
         , isSubmitDisabled = model.createDisbursementModal.isSubmitDisabled
         , visibility = model.createDisbursementModalVisibility
+        , maybeDeleteMsg = Nothing
+        , isDeleting = False
         }
 
 
@@ -242,6 +279,8 @@ createContributionModal model =
         , successViewMessage = ""
         , isSubmitDisabled = False
         , visibility = model.createContributionModalVisibility
+        , maybeDeleteMsg = Nothing
+        , isDeleting = False
         }
 
 
@@ -265,6 +304,8 @@ disbRuleUnverifiedModal model =
         , successViewMessage = " Reconciliation Successful!"
         , isSubmitDisabled = DisbRuleUnverified.toSubmitDisabled model.disbRuleUnverifiedModal
         , visibility = model.disbRuleUnverifiedModalVisibility
+        , maybeDeleteMsg = Nothing
+        , isDeleting = False
         }
 
 
@@ -284,6 +325,8 @@ disbRuleVerifiedModal model =
         , successViewMessage = " Revision Successful!"
         , isSubmitDisabled = model.disbRuleVerifiedModal.isSubmitDisabled
         , visibility = model.disbRuleVerifiedModalVisibility
+        , maybeDeleteMsg = toDeleteMsg DisbRuleVerified.toTxn model.disbRuleVerifiedModal
+        , isDeleting = model.isDeleting
         }
 
 
@@ -307,6 +350,8 @@ contribRuleUnverifiedModal model =
         , successViewMessage = " Reconciliation Successful!"
         , isSubmitDisabled = False
         , visibility = model.contribRuleUnverifiedModalVisibility
+        , maybeDeleteMsg = Nothing
+        , isDeleting = False
         }
 
 
@@ -326,6 +371,8 @@ contribRuleVerifiedModal model =
         , successViewMessage = " Revision Successful!"
         , isSubmitDisabled = model.contribRuleVerifiedModal.isSubmitDisabled
         , visibility = model.contribRuleVerifiedModalVisibility
+        , maybeDeleteMsg = toDeleteMsg ContribRuleVerified.toTxn model.contribRuleVerifiedModal
+        , isDeleting = model.isDeleting
         }
 
 
@@ -417,6 +464,7 @@ generateDisclosureModal model =
         |> Modal.withAnimation AnimateGenerateDisclosureModal
         |> Modal.large
         |> Modal.hideOnBackdropClick True
+        |> Modal.scrollableBody True
         |> Modal.h3 [] [ text "Get Disclosure" ]
         |> Modal.body
             []
@@ -425,9 +473,14 @@ generateDisclosureModal model =
                 ( ToggleGenerateDisclosureModalDownloadDropdown
                 , model.generateDisclosureModalDownloadDropdownState
                 )
+                ( ToggleGenerateDisclosureModalPreviewDropdown
+                , model.generateDisclosureModalPreviewDropdownState
+                )
                 GenerateReport
                 FilterNeedsReview
                 model.disclosureSubmitted
+                model.generateDisclosureModalPreview
+                ReturnFromGenerateDisclosureModalPreview
             ]
         |> Modal.footer []
             [ Grid.containerFluid
@@ -554,6 +607,8 @@ type Msg
     | ToggleActionsDropdown Dropdown.State
     | ToggleFiltersDropdown Dropdown.State
     | ToggleGenerateDisclosureModalDownloadDropdown Dropdown.State
+    | ToggleGenerateDisclosureModalPreviewDropdown Dropdown.State
+    | ReturnFromGenerateDisclosureModalPreview
     | FileDisclosure
     | FileDisclosureDelayed
     | FilterByContributions
@@ -591,6 +646,9 @@ type Msg
     | ContribRuleVerifiedModalUpdate ContribRuleVerified.Msg
     | ContribRuleVerifiedSubmit
     | ContribRuleVerifiedGotMutResp (Result Http.Error MutationResponse)
+      -- Deletion
+    | TxnDelete Transaction.Model
+    | GotDeleteTxnMutResp (Result Http.Error MutationResponse)
       -- Feed pagination
     | MoreTxnsClicked
     | GotTxnSet (Result Http.Error GetTxns.Model)
@@ -603,8 +661,55 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        TxnDelete txn ->
+            ( { model | isDeleting = True }, deleteTxn model txn.id )
+
+        GotDeleteTxnMutResp res ->
+            case res of
+                Ok mutResp ->
+                    case mutResp of
+                        Success id ->
+                            ( { model
+                                | isDeleting = False
+                                , contribRuleVerifiedModalVisibility = Modal.hidden
+                                , disbRuleVerifiedModalVisibility = Modal.hidden
+                              }
+                            , getTransactions model Nothing
+                            )
+
+                        ResValidationFailure errList ->
+                            ( { model
+                                | isDeleting = False
+                                , contribRuleVerifiedModal =
+                                    ContribRuleVerified.fromError model.contribRuleVerifiedModal <|
+                                        Maybe.withDefault "Unexplained error" <|
+                                            List.head errList
+                                , disbRuleVerifiedModal =
+                                    DisbRuleVerified.fromError model.disbRuleVerifiedModal <|
+                                        Maybe.withDefault "Unexplained error" <|
+                                            List.head errList
+                              }
+                            , Cmd.none
+                            )
+
+                Err err ->
+                    ( { model
+                        | contribRuleVerifiedModal =
+                            ContribRuleVerified.fromError model.contribRuleVerifiedModal <|
+                                Api.decodeError err
+                        , disbRuleVerifiedModal =
+                            DisbRuleVerified.fromError model.disbRuleVerifiedModal <|
+                                Api.decodeError err
+                      }
+                    , Cmd.none
+                    )
+
         ShowTxnFormModal txn ->
-            openTxnFormModalLoading model txn
+            let
+                state =
+                    { model | getTransactionCanceled = False }
+            in
+            openTxnFormModalLoading state txn
 
         -- Disb Rule Unverified
         DisbRuleUnverifiedModalAnimate visibility ->
@@ -614,6 +719,7 @@ update msg model =
             ( { model
                 | disbRuleUnverifiedModalVisibility = Modal.hidden
                 , disbRuleUnverifiedSuccessViewActive = False
+                , getTransactionCanceled = True
               }
             , getTransactions model Nothing
             )
@@ -708,6 +814,7 @@ update msg model =
             ( { model
                 | disbRuleVerifiedModalVisibility = Modal.hidden
                 , disbRuleVerifiedSuccessViewActive = False
+                , getTransactionCanceled = True
               }
             , Cmd.none
             )
@@ -743,6 +850,7 @@ update msg model =
             ( { model
                 | contribRuleUnverifiedModalVisibility = Modal.hidden
                 , contribRuleUnverifiedSuccessViewActive = False
+                , getTransactionCanceled = True
               }
             , getTransactions model Nothing
             )
@@ -837,6 +945,7 @@ update msg model =
             ( { model
                 | contribRuleVerifiedModalVisibility = Modal.hidden
                 , contribRuleVerifiedSuccessViewActive = False
+                , getTransactionCanceled = True
               }
             , Cmd.none
             )
@@ -877,30 +986,40 @@ update msg model =
                     ( model, Download.string "2021-periodic-report-july.pdf" "text/pdf" "2021-periodic-report-july" )
 
         GotReportData res ->
-            case res of
-                Ok body ->
-                    ( model, Download.string "report.csv" "text/csv" <| GetReport.toCsvData body )
+            case model.generateDisclosureModalContext of
+                Download ->
+                    case res of
+                        Ok body ->
+                            ( model, Download.string "report.csv" "text/csv" <| GetReport.toCsvData body )
 
-                Err _ ->
-                    let
-                        { cognitoDomain, cognitoClientId, redirectUri } =
-                            model.config
-                    in
-                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                        Err _ ->
+                            ( model, load <| loginUrl model.config model.committeeId )
+
+                Preview ->
+                    case res of
+                        Ok body ->
+                            ( { model | generateDisclosureModalPreview = Just (GetReport.toCsvData body) }, Cmd.none )
+
+                        Err _ ->
+                            ( model, load <| loginUrl model.config model.committeeId )
+
+                Closed ->
+                    ( model, Cmd.none )
 
         AnimateGenerateDisclosureModal visibility ->
             ( { model | generateDisclosureModalVisibility = visibility }, Cmd.none )
 
         GotTransactionData res ->
-            case res of
-                Ok body ->
-                    openTxnFormModalLoaded model (GetTxn.toTxn body)
+            case model.getTransactionCanceled of
+                False ->
+                    case res of
+                        Ok body ->
+                            openTxnFormModalLoaded model (GetTxn.toTxn body)
 
-                Err _ ->
-                    let
-                        { cognitoDomain, cognitoClientId, redirectUri } =
-                            model.config
-                    in
+                        Err _ ->
+                            ( model, Cmd.none )
+
+                True ->
                     ( model, Cmd.none )
 
         --( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
@@ -927,11 +1046,7 @@ update msg model =
                     )
 
                 Err _ ->
-                    let
-                        { cognitoDomain, cognitoClientId, redirectUri } =
-                            model.config
-                    in
-                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                    ( model, load <| loginUrl model.config model.committeeId )
 
         --( model, Cmd.none )
         ShowCreateContributionModal ->
@@ -978,6 +1093,7 @@ update msg model =
         HideGenerateDisclosureModal ->
             ( { model
                 | generateDisclosureModalVisibility = Modal.hidden
+                , generateDisclosureModalPreview = Nothing
               }
             , Cmd.none
             )
@@ -1004,7 +1120,7 @@ update msg model =
                         ResValidationFailure errList ->
                             ( { model
                                 | createContributionModal =
-                                    CreateContribution.setError model.createContributionModal <|
+                                    CreateContribution.fromError model.createContributionModal <|
                                         Maybe.withDefault "Unexplained error" <|
                                             List.head errList
                                 , createContributionSubmitting = False
@@ -1015,7 +1131,7 @@ update msg model =
                 Err err ->
                     ( { model
                         | createContributionModal =
-                            CreateContribution.setError model.createContributionModal <|
+                            CreateContribution.fromError model.createContributionModal <|
                                 Api.decodeError err
                         , createContributionSubmitting = False
                       }
@@ -1063,7 +1179,25 @@ update msg model =
             ( { model | filtersDropdown = state }, Cmd.none )
 
         ToggleGenerateDisclosureModalDownloadDropdown state ->
-            ( { model | generateDisclosureModalDownloadDropdownState = state }, Cmd.none )
+            ( { model
+                | generateDisclosureModalDownloadDropdownState = state
+                , generateDisclosureModalContext = Download
+              }
+            , Cmd.none
+            )
+
+        ToggleGenerateDisclosureModalPreviewDropdown state ->
+            ( { model
+                | generateDisclosureModalPreviewDropdownState = state
+                , generateDisclosureModalContext = Preview
+              }
+            , Cmd.none
+            )
+
+        ReturnFromGenerateDisclosureModalPreview ->
+            ( { model | generateDisclosureModalPreview = Nothing }
+            , Cmd.none
+            )
 
         FilterByContributions ->
             ( { model | filterTransactionType = Just TransactionType.Contribution, filterNeedsReview = False, heading = "Contributions" }
@@ -1164,16 +1298,19 @@ update msg model =
                     )
 
                 Err _ ->
-                    let
-                        { cognitoDomain, cognitoClientId, redirectUri } =
-                            model.config
-                    in
-                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                    ( model, load <| loginUrl model.config model.committeeId )
 
 
 generateReport : Cmd msg
 generateReport =
     Download.string "2021_Q1.pdf" "text/pdf" "2021_Q1"
+
+
+deleteTxnMapper : String -> Model -> DeleteTxn.EncodeModel
+deleteTxnMapper txnId model =
+    { committeeId = model.committeeId
+    , id = txnId
+    }
 
 
 
@@ -1198,6 +1335,11 @@ reconcileDisb model =
 reconcileContrib : Model -> Cmd Msg
 reconcileContrib model =
     ReconcileTxn.send ContribRuleUnverifiedGotReconcileMutResp model.config <| ReconcileTxn.encode ContribRuleUnverified.reconcileTxnEncoder model.contribRuleUnverifiedModal
+
+
+deleteTxn : Model -> String -> Cmd Msg
+deleteTxn model txnId =
+    DeleteTxn.send GotDeleteTxnMutResp model.config <| DeleteTxn.encode (deleteTxnMapper txnId) model
 
 
 getNextTxnsSet : Model -> Cmd Msg
@@ -1261,6 +1403,7 @@ subscriptions model =
         , Dropdown.subscriptions model.actionsDropdown ToggleActionsDropdown
         , Dropdown.subscriptions model.filtersDropdown ToggleFiltersDropdown
         , Dropdown.subscriptions model.generateDisclosureModalDownloadDropdownState ToggleGenerateDisclosureModalDownloadDropdown
+        , Dropdown.subscriptions model.generateDisclosureModalPreviewDropdownState ToggleGenerateDisclosureModalPreviewDropdown
         , Modal.subscriptions model.createDisbursementModalVisibility CreateDisbursementModalAnimate
         , Modal.subscriptions model.disbRuleUnverifiedModalVisibility DisbRuleUnverifiedModalAnimate
         , Modal.subscriptions model.disbRuleVerifiedModalVisibility DisbRuleVerifiedModalAnimate
@@ -1294,3 +1437,9 @@ applyNeedsReviewFilter model txns =
 
     else
         txns
+
+
+type DiscDropdownContext
+    = Download
+    | Preview
+    | Closed

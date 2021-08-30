@@ -1,6 +1,7 @@
 import './main.css';
 import { Elm } from './Main.elm';
-import * as serviceWorker from './serviceWorker';
+
+const storageKey = 'token'
 
 const cognitoDomain = process.env.ELM_APP_COGNITO_DOMAIN
 const cognitoClientId = process.env.ELM_APP_COGNITO_CLIENT_ID
@@ -27,9 +28,14 @@ const getCommitteeIdFromUrlRedirect = (url) => {
 }
 
 const getCommitteeIdFromUrlQueryString = (url) => {
-  const firstTrim = url.split('?committeeId=')
+  const firstTrim = url.split('/committee/')
   if (firstTrim.length > 1) {
-    return firstTrim[1]
+    const secondTrim = firstTrim[1].split('/')
+    if (firstTrim.length > 0) {
+      return secondTrim[0]
+    } else {
+      throw new Error('committeeId from url not found.')
+    }
   } else {
     throw new Error('committeeId from url not found.')
   }
@@ -42,10 +48,10 @@ function runApp() {
   try {
     token = getTokenFromUrl(host.href)
     committeeId = getCommitteeIdFromUrlRedirect(host.href)
-    localStorage.setItem('token', token)
-    window.location = `${host.origin}?committeeId=${committeeId}`
+    localStorage.setItem(storageKey, token)
+    window.location = `${host.origin}/committee/${committeeId}`
   } catch (e) {
-    token = localStorage.getItem('token')
+    token = localStorage.getItem(storageKey)
     committeeId = getCommitteeIdFromUrlQueryString(host.href)
     if (token) {
       Elm.Main.init({
@@ -66,12 +72,7 @@ function runApp() {
   }
 }
 
-console.log('deployed test')
-
 runApp();
 
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+

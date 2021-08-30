@@ -4,6 +4,7 @@ module TxnForm.DisbRuleVerified exposing
     , fromError
     , init
     , loadingInit
+    , toTxn
     , update
     , validator
     , view
@@ -75,7 +76,7 @@ init txn =
     , isInKind = Nothing
     , amount = ""
     , paymentDate = ""
-    , paymentMethod = Nothing
+    , paymentMethod = Just txn.paymentMethod
     , checkNumber = ""
     , showBankData = False
     , loading = False
@@ -276,3 +277,8 @@ isInKindValidator =
 isInKindOnModelToErrors : Model -> List String
 isInKindOnModelToErrors model =
     fromInKind model.isInKind
+
+
+toTxn : Model -> Transaction.Model
+toTxn model =
+    model.txn

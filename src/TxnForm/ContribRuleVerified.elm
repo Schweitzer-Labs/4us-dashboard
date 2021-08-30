@@ -1,4 +1,15 @@
-module TxnForm.ContribRuleVerified exposing (Model, Msg(..), amendTxnEncoder, fromError, init, loadingInit, update, validationMapper, view)
+module TxnForm.ContribRuleVerified exposing
+    ( Model
+    , Msg(..)
+    , amendTxnEncoder
+    , fromError
+    , init
+    , loadingInit
+    , toTxn
+    , update
+    , validationMapper
+    , view
+    )
 
 import Api.AmendContrib as AmendContrib
 import Bootstrap.Grid as Grid
@@ -19,8 +30,7 @@ import Owners exposing (Owner, Owners)
 import PaymentInfo
 import PaymentMethod
 import Time exposing (utc)
-import TimeZone exposing (america__new_york)
-import Timestamp
+import Timestamp exposing (formDate)
 import Transaction
 
 
@@ -87,8 +97,8 @@ init txn =
     , error = ""
     , errors = []
     , amount = Cents.stringToDollar <| String.fromInt txn.amount
-    , checkNumber = ""
-    , paymentDate = Timestamp.format utc txn.paymentDate
+    , checkNumber = Maybe.withDefault "" txn.checkNumber
+    , paymentDate = Timestamp.formDate utc txn.paymentDate
     , emailAddress = Maybe.withDefault "" txn.emailAddress
     , phoneNumber = Maybe.withDefault "" txn.phoneNumber
     , firstName = Maybe.withDefault "" txn.firstName
@@ -114,7 +124,7 @@ init txn =
     , ownerOwnership = ""
     , inKindType = txn.inKindType
     , inKindDesc = Maybe.withDefault "" txn.inKindDescription
-    , paymentMethod = Nothing
+    , paymentMethod = Just txn.paymentMethod
     , committeeId = txn.committeeId
     , isSubmitDisabled = True
     , maybeError = Nothing
@@ -159,7 +169,7 @@ contribFormRow : Model -> Html Msg
 contribFormRow model =
     ContribInfo.view
         { checkNumber = ( model.checkNumber, CheckNumberUpdated )
-        , paymentDate = ( model.paymentDate, PaymentDateUpdated )
+        , paymentDate = ( dateWithFormat model, PaymentDateUpdated )
         , paymentMethod = ( model.paymentMethod, PaymentMethodUpdated )
         , emailAddress = ( model.emailAddress, EmailAddressUpdated )
         , phoneNumber = ( model.phoneNumber, PhoneNumberUpdated )
@@ -433,3 +443,17 @@ validationMapper model =
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
     }
+
+
+toTxn : Model -> Transaction.Model
+toTxn model =
+    model.txn
+
+
+dateWithFormat : Model -> String
+dateWithFormat model =
+    if model.paymentDate == "" then
+        formDate utc model.txn.paymentDate
+
+    else
+        model.paymentDate

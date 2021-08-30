@@ -107,7 +107,7 @@ formRow model =
 
 idToCommitteeUrl : Config -> String -> String
 idToCommitteeUrl config id =
-    config.redirectUri ++ "?committeeId=" ++ id
+    config.redirectUri ++ "/committee/" ++ id
 
 
 urlRow : Model -> List (Html Msg)
@@ -171,11 +171,7 @@ update msg model =
                     )
 
                 Err _ ->
-                    let
-                        { cognitoDomain, cognitoClientId, redirectUri } =
-                            model.config
-                    in
-                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                    ( model, load <| loginUrl model.config model.committeeId )
 
         GenDemoCommitteeClicked ->
             ( { model | isSubmitting = True, errors = [] }, genDemoCommittee model )
