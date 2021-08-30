@@ -12,6 +12,7 @@ import Api.GetTxn as GetTxn
 import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse(..))
 import Api.ReconcileTxn as ReconcileTxn
+import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Grid as Grid exposing (Column)
@@ -118,6 +119,7 @@ type alias Model =
 
     -- Deletions
     , isDeleting : Bool
+    , alertVisibility : Alert.Visibility
     }
 
 
@@ -182,6 +184,7 @@ init config session aggs committee committeeId =
             , moreLoading = False
             , moreDisabled = False
             , isDeleting = False
+            , alertVisibility = Alert.closed
             }
     in
     ( initModel
@@ -260,6 +263,8 @@ createDisbursementModal model =
         , visibility = model.createDisbursementModalVisibility
         , maybeDeleteMsg = Nothing
         , isDeleting = False
+        , alertMsg = Nothing
+        , alertVisibility = Nothing
         }
 
 
@@ -281,6 +286,8 @@ createContributionModal model =
         , visibility = model.createContributionModalVisibility
         , maybeDeleteMsg = Nothing
         , isDeleting = False
+        , alertMsg = Nothing
+        , alertVisibility = Nothing
         }
 
 
@@ -306,6 +313,8 @@ disbRuleUnverifiedModal model =
         , visibility = model.disbRuleUnverifiedModalVisibility
         , maybeDeleteMsg = Nothing
         , isDeleting = False
+        , alertMsg = Nothing
+        , alertVisibility = Nothing
         }
 
 
@@ -327,6 +336,8 @@ disbRuleVerifiedModal model =
         , visibility = model.disbRuleVerifiedModalVisibility
         , maybeDeleteMsg = toDeleteMsg DisbRuleVerified.toTxn model.disbRuleVerifiedModal
         , isDeleting = model.isDeleting
+        , alertMsg = Just AlertMsg
+        , alertVisibility = Just Alert.shown
         }
 
 
@@ -352,6 +363,8 @@ contribRuleUnverifiedModal model =
         , visibility = model.contribRuleUnverifiedModalVisibility
         , maybeDeleteMsg = Nothing
         , isDeleting = False
+        , alertMsg = Nothing
+        , alertVisibility = Nothing
         }
 
 
@@ -373,6 +386,8 @@ contribRuleVerifiedModal model =
         , visibility = model.contribRuleVerifiedModalVisibility
         , maybeDeleteMsg = toDeleteMsg ContribRuleVerified.toTxn model.contribRuleVerifiedModal
         , isDeleting = model.isDeleting
+        , alertMsg = Nothing
+        , alertVisibility = Nothing
         }
 
 
@@ -652,6 +667,7 @@ type Msg
       -- Feed pagination
     | MoreTxnsClicked
     | GotTxnSet (Result Http.Error GetTxns.Model)
+    | AlertMsg Alert.Visibility
 
 
 
@@ -1299,6 +1315,9 @@ update msg model =
 
                 Err _ ->
                     ( model, load <| loginUrl model.config model.committeeId )
+
+        AlertMsg visibility ->
+            ( { model | alertVisibility = visibility }, Cmd.none )
 
 
 generateReport : Cmd msg

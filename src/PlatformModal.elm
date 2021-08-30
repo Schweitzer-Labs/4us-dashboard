@@ -1,7 +1,9 @@
 module PlatformModal exposing (MakeModalConfig, view)
 
 import Asset
+import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
+import Bootstrap.Form.Input as Alert
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
@@ -30,6 +32,8 @@ type alias MakeModalConfig msg subMsg subModel =
     , visibility : Modal.Visibility
     , maybeDeleteMsg : Maybe msg
     , isDeleting : Bool
+    , alertMsg : Maybe (Alert.Visibility -> msg)
+    , alertVisibility : Maybe Alert.Visibility
     }
 
 
@@ -54,7 +58,13 @@ view config =
         |> Modal.footer []
             [ Grid.containerFluid
                 []
-                [ buttonRow
+                [ case config.maybeDeleteMsg of
+                    Just a ->
+                        deletionAlert config.alertMsg config.alertVisibility
+
+                    Nothing ->
+                        text ""
+                , buttonRow
                     { submitText = config.submitText
                     , maybeDeleteMsg = config.maybeDeleteMsg
                     , submitting = config.isSubmitting
@@ -130,3 +140,20 @@ successMessage successViewMessage =
             ]
             [ text <| successViewMessage ]
         ]
+
+
+deletionAlert : Maybe (Alert.Visibility -> msg) -> Maybe Alert.Visibility -> Html msg
+deletionAlert msg visibility =
+    case ( msg, visibility ) of
+        ( Just alertMsg, Just alertVisibility ) ->
+            Alert.config
+                |> Alert.warning
+                |> Alert.dismissable alertMsg
+                |> Alert.children
+                    [ Alert.h4 [] [ text "Warning" ]
+                    , Alert.h6 [] [ text "This action is irreversible" ]
+                    ]
+                |> Alert.view alertVisibility
+
+        _ ->
+            text ""
