@@ -43,7 +43,7 @@ clean: clean
 	@rm -rf node_modules
 
 dep:
-	@npm install
+	@npm install create-elm-app
 
 
 $(BUILD_DIR):
