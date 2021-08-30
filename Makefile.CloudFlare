@@ -31,4 +31,6 @@ cloudflare-aws: $(AWS_SRC)
 	aws configure set aws_access_key_id $(AWS_ACCESS_KEY_ID)
 	aws configure set aws_secret_access_key $(AWS_SECRET_ACCESS_KEY)
 
-build-cloudflare-web: dep cloudflare-aws build
+cloudflare-dep: dep cloudflare-aws
+
+cloudflare-web: cloudflare-dep build
