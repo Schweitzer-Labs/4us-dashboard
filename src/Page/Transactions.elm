@@ -391,8 +391,8 @@ contribRuleVerifiedModal model =
         , visibility = model.contribRuleVerifiedModalVisibility
         , maybeDeleteMsg = toDeleteMsg model ContribRuleVerified.toTxn model.contribRuleVerifiedModal
         , isDeleting = model.isDeleting
-        , alertMsg = Just DeleteAlertMsg
-        , alertVisibility = Just model.alertVisibility
+        , alertMsg = Nothing
+        , alertVisibility = Nothing
         }
 
 
