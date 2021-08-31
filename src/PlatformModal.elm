@@ -143,7 +143,7 @@ deletionAlert msg visibility =
         ( Just alertMsg, Just alertVisibility ) ->
             Alert.config
                 |> Alert.warning
-                |> Alert.dismissable alertMsg
+                |> Alert.dismissableWithAnimation alertMsg
                 |> Alert.children
                     [ Alert.h4 [] [ text "Warning" ]
                     , Alert.h6 [] [ text "This action is irreversible" ]

@@ -1448,6 +1448,7 @@ subscriptions model =
         , Modal.subscriptions model.disbRuleVerifiedModalVisibility DisbRuleVerifiedModalAnimate
         , Modal.subscriptions model.contribRuleUnverifiedModalVisibility ContribRuleUnverifiedModalAnimate
         , Modal.subscriptions model.contribRuleVerifiedModalVisibility ContribRuleVerifiedModalAnimate
+        , Alert.subscriptions model.alertVisibility DeleteAlertMsg
         ]
 
 
