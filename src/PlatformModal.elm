@@ -58,12 +58,7 @@ view config =
         |> Modal.footer []
             [ Grid.containerFluid
                 []
-                [ case config.maybeDeleteMsg of
-                    Just a ->
-                        deletionAlert config.alertMsg config.alertVisibility
-
-                    Nothing ->
-                        text ""
+                [ deletionAlert config.alertMsg config.alertVisibility
                 , buttonRow
                     { submitText = config.submitText
                     , maybeDeleteMsg = config.maybeDeleteMsg
