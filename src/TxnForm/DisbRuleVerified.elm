@@ -115,16 +115,10 @@ loadedView model =
     Grid.container
         []
         ([]
-            ++ [ dialogueBox ]
             ++ PaymentInfo.view model.txn
             ++ disbFormRow model
             ++ bankData
         )
-
-
-dialogueBox : Html Msg
-dialogueBox =
-    Alert.simpleInfo [] Copy.disbVerifiedDialogue
 
 
 disbFormRow : Model -> List (Html Msg)
