@@ -391,8 +391,8 @@ contribRuleVerifiedModal model =
         , visibility = model.contribRuleVerifiedModalVisibility
         , maybeDeleteMsg = toDeleteMsg model ContribRuleVerified.toTxn model.contribRuleVerifiedModal
         , isDeleting = model.isDeleting
-        , alertMsg = Nothing
-        , alertVisibility = Nothing
+        , alertMsg = Just DeleteAlertMsg
+        , alertVisibility = Just model.alertVisibility
         }
 
 
@@ -684,7 +684,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TxnDelete txn ->
-            ( { model | isDeleting = True }, deleteTxn model txn.id )
+            ( { model | isDeleting = True, isDeletionConfirmed = False }, deleteTxn model txn.id )
 
         GotDeleteTxnMutResp res ->
             case res of
