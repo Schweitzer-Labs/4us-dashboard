@@ -1,0 +1,7 @@
+RunEnvironment:
+  Type: String
+  Default: {{ RUNENV }}
+  AllowedValues:
+    - prod
+    - qa
+    - demo

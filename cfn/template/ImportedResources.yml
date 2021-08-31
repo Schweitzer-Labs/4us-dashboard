@@ -1,0 +1,4 @@
+WebsiteBucket:
+  Matcher:
+    BucketName: {{ SUBDOMAIN }}-{{ RUNENV }}.{{ DOMAIN }}.{{ TLD }}-{{ REGION }}
+  Property: [BucketName]

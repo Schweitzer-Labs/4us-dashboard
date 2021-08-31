@@ -1,0 +1,6 @@
+DonorGateway:
+  Type: AWS::SSM::Parameter::Value<String>
+  Default: /{{ RUNENV }}/{{ PRODUCT }}/api/donor
+CommitteeGateway:
+  Type: AWS::SSM::Parameter::Value<String>
+  Default: /{{ RUNENV }}/{{ PRODUCT }}/api/committee
