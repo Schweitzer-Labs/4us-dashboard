@@ -753,6 +753,8 @@ update msg model =
                 | disbRuleUnverifiedModalVisibility = Modal.hidden
                 , disbRuleUnverifiedSuccessViewActive = False
                 , getTransactionCanceled = True
+                , isDeletionConfirmed = Uninitialized
+                , alertVisibility = Alert.closed
               }
             , getTransactions model Nothing
             )
@@ -848,6 +850,8 @@ update msg model =
                 | disbRuleVerifiedModalVisibility = Modal.hidden
                 , disbRuleVerifiedSuccessViewActive = False
                 , getTransactionCanceled = True
+                , isDeletionConfirmed = Uninitialized
+                , alertVisibility = Alert.closed
               }
             , Cmd.none
             )
@@ -884,6 +888,8 @@ update msg model =
                 | contribRuleUnverifiedModalVisibility = Modal.hidden
                 , contribRuleUnverifiedSuccessViewActive = False
                 , getTransactionCanceled = True
+                , isDeletionConfirmed = Uninitialized
+                , alertVisibility = Alert.closed
               }
             , getTransactions model Nothing
             )
@@ -979,6 +985,8 @@ update msg model =
                 | contribRuleVerifiedModalVisibility = Modal.hidden
                 , contribRuleVerifiedSuccessViewActive = False
                 , getTransactionCanceled = True
+                , isDeletionConfirmed = Uninitialized
+                , alertVisibility = Alert.closed
               }
             , Cmd.none
             )

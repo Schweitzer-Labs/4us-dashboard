@@ -145,7 +145,7 @@ deletionAlert msg visibility =
                 |> Alert.warning
                 |> Alert.dismissableWithAnimation alertMsg
                 |> Alert.children
-                    [ Alert.h4 [] [ text "Warning" ]
+                    [ Alert.h5 [ class "font-weight-bold" ] [ text "Warning" ]
                     , Alert.h6 [] [ text "This action is irreversible" ]
                     ]
                 |> Alert.view alertVisibility
