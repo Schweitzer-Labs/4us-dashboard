@@ -119,7 +119,7 @@ type alias Model =
 
     -- Deletions
     , isDeleting : Bool
-    , isDeletionConfirmed : Bool
+    , isDeletionConfirmed : DelConfirmationState
     , alertVisibility : Alert.Visibility
     }
 
@@ -185,7 +185,7 @@ init config session aggs committee committeeId =
             , moreLoading = False
             , moreDisabled = False
             , isDeleting = False
-            , isDeletionConfirmed = False
+            , isDeletionConfirmed = Uninitialized
             , alertVisibility = Alert.closed
             }
     in
@@ -213,14 +213,25 @@ toDeleteMsg model mapper subModel =
         notBlank =
             String.length txn.id > 0
     in
-    if model.isDeletionConfirmed == False then
-        Just ToggleDeletePrompt
+    case isUnreconciled && isUnprocessed && notBlank of
+        True ->
+            case model.isDeletionConfirmed of
+                Confirmed ->
+                    Just (TxnDelete txn)
 
-    else if isUnreconciled && isUnprocessed && notBlank then
-        Just (TxnDelete txn)
+                Unconfirmed ->
+                    Just ToggleDeletePrompt
 
-    else
-        Nothing
+                Uninitialized ->
+                    case isUnreconciled && isUnprocessed && notBlank of
+                        True ->
+                            Just ToggleDeletePrompt
+
+                        False ->
+                            Nothing
+
+        False ->
+            Nothing
 
 
 moreTxnsButton : Model -> Html Msg
@@ -391,8 +402,8 @@ contribRuleVerifiedModal model =
         , visibility = model.contribRuleVerifiedModalVisibility
         , maybeDeleteMsg = toDeleteMsg model ContribRuleVerified.toTxn model.contribRuleVerifiedModal
         , isDeleting = model.isDeleting
-        , alertMsg = Nothing
-        , alertVisibility = Nothing
+        , alertMsg = Just DeleteAlertMsg
+        , alertVisibility = Just model.alertVisibility
         }
 
 
@@ -684,7 +695,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TxnDelete txn ->
-            ( { model | isDeleting = True, isDeletionConfirmed = False }, deleteTxn model txn.id )
+            ( { model | isDeleting = True, isDeletionConfirmed = Unconfirmed }, deleteTxn model txn.id )
 
         GotDeleteTxnMutResp res ->
             case res of
@@ -1326,7 +1337,7 @@ update msg model =
             ( { model | alertVisibility = Alert.shown }, Cmd.none )
 
         DeleteAlertMsg visibility ->
-            ( { model | alertVisibility = visibility, isDeletionConfirmed = True }, Cmd.none )
+            ( { model | alertVisibility = visibility, isDeletionConfirmed = Confirmed }, Cmd.none )
 
 
 generateReport : Cmd msg
@@ -1471,3 +1482,9 @@ type DiscDropdownContext
     = Download
     | Preview
     | Closed
+
+
+type DelConfirmationState
+    = Confirmed
+    | Unconfirmed
+    | Uninitialized
