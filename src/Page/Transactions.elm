@@ -119,6 +119,7 @@ type alias Model =
 
     -- Deletions
     , isDeleting : Bool
+    , isDeletionConfirmed : Bool
     , alertVisibility : Alert.Visibility
     }
 
@@ -184,6 +185,7 @@ init config session aggs committee committeeId =
             , moreLoading = False
             , moreDisabled = False
             , isDeleting = False
+            , isDeletionConfirmed = False
             , alertVisibility = Alert.closed
             }
     in
@@ -196,8 +198,8 @@ init config session aggs committee committeeId =
 -- VIEW
 
 
-toDeleteMsg : (a -> Transaction.Model) -> a -> Maybe Msg
-toDeleteMsg mapper subModel =
+toDeleteMsg : Model -> (a -> Transaction.Model) -> a -> Maybe Msg
+toDeleteMsg model mapper subModel =
     let
         txn =
             mapper subModel
@@ -211,7 +213,10 @@ toDeleteMsg mapper subModel =
         notBlank =
             String.length txn.id > 0
     in
-    if isUnreconciled && isUnprocessed && notBlank then
+    if model.isDeletionConfirmed == False then
+        Just ToggleDeletePrompt
+
+    else if isUnreconciled && isUnprocessed && notBlank then
         Just (TxnDelete txn)
 
     else
@@ -334,10 +339,10 @@ disbRuleVerifiedModal model =
         , successViewMessage = " Revision Successful!"
         , isSubmitDisabled = model.disbRuleVerifiedModal.isSubmitDisabled
         , visibility = model.disbRuleVerifiedModalVisibility
-        , maybeDeleteMsg = toDeleteMsg DisbRuleVerified.toTxn model.disbRuleVerifiedModal
+        , maybeDeleteMsg = toDeleteMsg model DisbRuleVerified.toTxn model.disbRuleVerifiedModal
         , isDeleting = model.isDeleting
-        , alertMsg = Just AlertMsg
-        , alertVisibility = Just Alert.shown
+        , alertMsg = Just DeleteAlertMsg
+        , alertVisibility = Just model.alertVisibility
         }
 
 
@@ -384,7 +389,7 @@ contribRuleVerifiedModal model =
         , successViewMessage = " Revision Successful!"
         , isSubmitDisabled = model.contribRuleVerifiedModal.isSubmitDisabled
         , visibility = model.contribRuleVerifiedModalVisibility
-        , maybeDeleteMsg = toDeleteMsg ContribRuleVerified.toTxn model.contribRuleVerifiedModal
+        , maybeDeleteMsg = toDeleteMsg model ContribRuleVerified.toTxn model.contribRuleVerifiedModal
         , isDeleting = model.isDeleting
         , alertMsg = Nothing
         , alertVisibility = Nothing
@@ -667,7 +672,8 @@ type Msg
       -- Feed pagination
     | MoreTxnsClicked
     | GotTxnSet (Result Http.Error GetTxns.Model)
-    | AlertMsg Alert.Visibility
+    | ToggleDeletePrompt
+    | DeleteAlertMsg Alert.Visibility
 
 
 
@@ -1316,8 +1322,11 @@ update msg model =
                 Err _ ->
                     ( model, load <| loginUrl model.config model.committeeId )
 
-        AlertMsg visibility ->
-            ( { model | alertVisibility = visibility }, Cmd.none )
+        ToggleDeletePrompt ->
+            ( { model | alertVisibility = Alert.shown }, Cmd.none )
+
+        DeleteAlertMsg visibility ->
+            ( { model | alertVisibility = visibility, isDeletionConfirmed = True }, Cmd.none )
 
 
 generateReport : Cmd msg
