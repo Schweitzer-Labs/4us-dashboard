@@ -4,9 +4,6 @@ WebsiteBucket:
   Properties:
     BucketName: !Sub ${SubDomain}-${RunEnvironment}.${Domain}.${TLD}-${AWS::Region}
     AccessControl: Private
-    PublicAccessBlockConfiguration:
-      IgnorePublicAcls: false
-      RestrictPublicBuckets: true
     BucketEncryption:
       ServerSideEncryptionConfiguration:
         - ServerSideEncryptionByDefault:
