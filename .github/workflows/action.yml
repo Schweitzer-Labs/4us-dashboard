@@ -57,7 +57,7 @@ jobs:
       - name: Deploy CloudFormation Package
         id: deploy-cloudformation-package-to-aws
         run: |
-          make RUNENV=${{ env.RUNENV }} -f Makefile.prod deploy-infra
+          make RUNENV=${{ env.RUNENV }} -f Makefile.prod deploy
       - name: Deploy Static Web Assets to S3
         id: deploy-web-assets-to-s3
         run: |
