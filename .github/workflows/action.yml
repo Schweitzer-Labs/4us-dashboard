@@ -49,7 +49,7 @@ jobs:
       - name: Assemble CloudFormation Stack
         id: assemble-cloudformation-stack
         run: |
-          make RUNENV=${{ env.RUNENV }} -f Makefile.prod clean build-stacks
+          make RUNENV=${{ env.RUNENV }} -f Makefile.prod clean build
       - name: Generate and Upload CloudFormation Package
         id: generate-and-upload-cloudformation-package
         run: |
