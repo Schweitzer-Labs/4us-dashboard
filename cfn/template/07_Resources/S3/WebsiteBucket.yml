@@ -15,21 +15,6 @@ WebsiteBucket:
             SSEAlgorithm: AES256
     VersioningConfiguration:
       Status: Enabled
-{% if RUNENV == 'prod' %}
-    ReplicationConfiguration:
-      Role: !Ref WebsiteReplicationRoleArn
-      Rules:
-        - Id: BackupToCalifornia
-          Status: Enabled
-          Destination:
-            Bucket: !Sub arn:aws:s3:::${SubDomain}-${RunEnvironment}.${Domain}.${TLD}-us-west-1
-            StorageClass: STANDARD
-          #SourceSelectionCriteria:
-          # ReplicaModifications:
-          #   Status: Enabled
-          # SseKmsEncryptedObjects:
-          #   Status: Enabled
-{% endif %}
 
 WebsiteBucketPolicy:
   Type: AWS::S3::BucketPolicy
