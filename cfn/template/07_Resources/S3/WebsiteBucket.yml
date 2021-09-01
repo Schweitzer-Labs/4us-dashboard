@@ -40,3 +40,9 @@ WebsiteBucketPolicy:
           Action: s3:GetObject
           Principal:
             AWS: !Sub arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${OAI}
+        - Sid: AllowPublicBlocking
+          Effect: Allow
+          Resource:
+            - !Sub ${WebsiteBucket.Arn}
+            - !Sub ${WebsiteBucket.Arn}/*
+          Principal: '*'
