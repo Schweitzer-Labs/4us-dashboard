@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Replication S3 buckets
+Parameters:
+  Domain:
+    Type: String
+    Default: policapital.net
+  LambdaRunEnvironment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - prod
+      - qa
+      - dev
+  SubDomain:
+    Type: String
+    Default: donate
+Resources:
+  ReplicationBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName:
+        Fn::Sub: ${SubDomain}-${LambdaRunEnvironment}.${Domain}-${AWS::Region}
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: false
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+  ReplicationBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: ReplicationBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AlloWSSLRequestsOnly
+            Effect: Deny
+            Resource:
+              - Fn::GetAtt:
+                  - ReplicationBucket
+                  - Arn
+              - Fn::Join:
+                  - /
+                  - - Fn::GetAtt:
+                        - ReplicationBucket
+                        - Arn
+                    - '*'
+            Action: s3:*
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+            Principal: '*'

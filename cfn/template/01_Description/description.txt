@@ -1,0 +1,1 @@
+AWS resources required for the {{ SUBDOMAIN }}-{{ RUNENV }}.{{ DOMAIN }} static site.
