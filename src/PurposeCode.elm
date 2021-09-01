@@ -1,9 +1,9 @@
-module PurposeCode exposing (PurposeCode(..), fromString, purposeCodeText, select, toString)
+module PurposeCode exposing (PurposeCode(..), fromMaybeToString, fromString, purposeCodeText, select, toString)
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Select as Select
 import Html exposing (Html, text)
-import Html.Attributes exposing (for, value)
+import Html.Attributes as Attribute exposing (for, value)
 
 
 type PurposeCode
@@ -134,18 +134,38 @@ toString purpose =
             ""
 
 
-select : (String -> msg) -> Html msg
-select updateMsg =
+fromMaybeToString : Maybe PurposeCode -> String
+fromMaybeToString =
+    Maybe.withDefault "---" << Maybe.map toString
+
+
+select : Maybe PurposeCode -> (Maybe PurposeCode -> msg) -> Bool -> Html msg
+select maybePurposeCode updateMsg disabled =
     Form.group
         []
         [ Form.label [ for "purpose" ] [ text "Purpose" ]
         , Select.select
             [ Select.id "purpose"
-            , Select.onChange updateMsg
+            , Select.onChange (fromString >> updateMsg)
+            , Select.attrs <| [ Attribute.value <| fromMaybeToString maybePurposeCode ]
+            , Select.disabled disabled
             ]
           <|
-            (++) [ Select.item [] [ text "---" ] ] <|
+            (++)
+                [ Select.item
+                    [ Attribute.selected (maybePurposeCode == Nothing)
+                    , Attribute.value "---"
+                    ]
+                    [ text "---" ]
+                ]
+            <|
                 List.map
-                    (\( _, codeText, purposeText ) -> Select.item [ value codeText ] [ text <| purposeText ])
+                    (\( _, codeText, purposeText ) ->
+                        Select.item
+                            [ Attribute.selected (codeText == fromMaybeToString maybePurposeCode)
+                            , Attribute.value codeText
+                            ]
+                            [ text <| purposeText ]
+                    )
                     purposeCodeText
         ]

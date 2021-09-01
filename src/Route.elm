@@ -4,7 +4,7 @@ import Browser.Navigation as Nav
 import Html exposing (Attribute)
 import Html.Attributes as Attr
 import Url exposing (Url)
-import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
+import Url.Parser as Parser exposing ((</>), Parser, oneOf, s, string)
 
 
 
@@ -13,18 +13,17 @@ import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
 
 type Route
     = Home
-    | LinkBuilder
-    | NeedsReview
-    | Transactions
+    | LinkBuilder String
+    | Transactions String
+    | Demo String
 
 
 parser : Parser (Route -> a) a
 parser =
     oneOf
-        [ Parser.map Home Parser.top
-        , Parser.map Transactions (s "transactions")
-        , Parser.map LinkBuilder (s "link-builder")
-        , Parser.map NeedsReview (s "needs-review")
+        [ Parser.map Transactions (s "committee" </> string)
+        , Parser.map LinkBuilder (s "committee" </> string </> s "link-builder")
+        , Parser.map Demo (s "committee" </> string </> s "demo")
         ]
 
 
@@ -43,12 +42,8 @@ replaceUrl key route =
 
 
 fromUrl : Url -> Maybe Route
-fromUrl url =
-    -- The RealWorld spec treats the fragment like a path.
-    -- This makes it *literally* the path, so we can proceed
-    -- with parsing as if it had been a normal path all along.
-    { url | path = Maybe.withDefault "" url.fragment, fragment = Nothing }
-        |> Parser.parse parser
+fromUrl =
+    Parser.parse parser
 
 
 
@@ -57,7 +52,7 @@ fromUrl url =
 
 routeToString : Route -> String
 routeToString page =
-    "#" ++ String.join "/" (routeToPieces page)
+    "/" ++ String.join "/" (routeToPieces page)
 
 
 routeToPieces : Route -> List String
@@ -66,11 +61,11 @@ routeToPieces page =
         Home ->
             []
 
-        Transactions ->
-            [ "transactions" ]
+        Transactions id ->
+            [ "committee", id ]
 
-        LinkBuilder ->
-            [ "link-builder" ]
+        LinkBuilder id ->
+            [ "committee", id, "link-builder" ]
 
-        NeedsReview ->
-            [ "needs-review" ]
+        Demo id ->
+            [ "committee", id, "demo" ]

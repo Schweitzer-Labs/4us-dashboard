@@ -3,6 +3,7 @@ module FileDisclosure exposing (aggregateCol, aggregateRows, downloadRows, title
 import Aggregations
 import AppDialogue
 import Asset
+import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Grid as Grid exposing (Column)
@@ -10,12 +11,16 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
+import Csv.Decode as Decode exposing (FieldNames(..), string)
+import DataTable exposing (DataRow)
+import DiscCsv
 import File.Download as Download
 import FileFormat exposing (FileFormat)
-import Html exposing (Html, a, div, h2, h3, h4, h5, h6, span, text)
+import Html exposing (Html, a, div, h2, h3, h4, h5, h6, p, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Route
+import SubmitButton
 
 
 
@@ -26,22 +31,53 @@ type alias DropdownConfig msg =
     ( Dropdown.State -> msg, Dropdown.State )
 
 
-view : Aggregations.Model -> DropdownConfig msg -> (FileFormat -> msg) -> Bool -> Html msg
-view aggs dropdownConfig downloadMsg submitted =
-    let
-        summary =
-            warningRows aggs ++ titleRows ++ aggregateRows aggs ++ downloadRows dropdownConfig downloadMsg
+view : Aggregations.Model -> DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> msg) -> msg -> Bool -> Maybe String -> msg -> Html msg
+view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsReviewMsg submitted preview backMsg =
+    case preview of
+        Just a ->
+            let
+                decodedCsv =
+                    Decode.decodeCsv Decode.FieldNamesFromFirstRow DiscCsv.decoder a
+            in
+            case decodedCsv of
+                Ok value ->
+                    Grid.row []
+                        [ Grid.col []
+                            [ Grid.row [ Row.attrs [ Spacing.mb2 ] ]
+                                [ Grid.col [ Col.sm2 ] [ backButton backMsg ]
+                                ]
+                            , Grid.row [] [ Grid.col [] [ DataTable.view "" DiscCsv.labels DiscCsv.disclosureRowMap <| List.map (\d -> ( Nothing, Nothing, d )) value ] ]
+                            ]
+                        ]
 
-        rows =
-            if submitted then
-                successRows
+                Err error ->
+                    text "Something went wrong"
 
-            else
-                summary
-    in
-    Grid.containerFluid
-        []
-        rows
+        Nothing ->
+            let
+                summary =
+                    warningRows goToNeedsReviewMsg aggs ++ titleRows ++ aggregateRows aggs ++ downloadRows dropdownDownloadConfig dropdownPreviewConfig downloadMsg
+
+                rows =
+                    if submitted then
+                        successRows
+
+                    else
+                        summary
+            in
+            Grid.containerFluid
+                []
+                rows
+
+
+backButton : msg -> Html msg
+backButton backMsg =
+    Button.button
+        [ Button.outlinePrimary
+        , Button.block
+        , Button.attrs [ onClick backMsg ]
+        ]
+        [ text "Back" ]
 
 
 successRows : List (Html msg)
@@ -50,8 +86,8 @@ successRows =
     ]
 
 
-warningRows : Aggregations.Model -> List (Html msg)
-warningRows aggs =
+warningRows : msg -> Aggregations.Model -> List (Html msg)
+warningRows goToNeedsReviewMsg aggs =
     if aggs.needsReviewCount == 0 then
         []
 
@@ -59,19 +95,19 @@ warningRows aggs =
         let
             transactionsAre =
                 if aggs.needsReviewCount == 1 then
-                    " transaction is "
+                    " transaction needs "
 
                 else
-                    " transactions are "
+                    " transactions need "
 
             errorMessage =
-                String.fromInt aggs.needsReviewCount ++ transactionsAre ++ " missing required disclosure fields"
+                String.fromInt aggs.needsReviewCount ++ transactionsAre ++ " to be reviewed."
         in
         [ Grid.row
             [ Row.attrs [] ]
             [ Grid.col
                 []
-                [ a [ Route.href Route.NeedsReview ] [ AppDialogue.warning <| text errorMessage ]
+                [ span [ onClick goToNeedsReviewMsg, class "hover-underline-red hover-pointer" ] [ AppDialogue.warning <| text errorMessage ]
                 ]
             ]
         ]
@@ -112,8 +148,8 @@ aggregateCol name data =
         ]
 
 
-downloadRows : DropdownConfig msg -> (FileFormat -> msg) -> List (Html msg)
-downloadRows ( dropdownToggleMsg, dropdownState ) downloadMsg =
+downloadRows : DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> msg) -> List (Html msg)
+downloadRows ( dropdownToggleDownloadMsg, dropdownDownloadState ) ( dropdownTogglePreviewMsg, dropdownTogglePreviewState ) downloadMsg =
     let
         pdfMsg =
             downloadMsg FileFormat.PDF
@@ -126,14 +162,27 @@ downloadRows ( dropdownToggleMsg, dropdownState ) downloadMsg =
         [ Grid.col
             []
             [ Dropdown.dropdown
-                dropdownState
+                dropdownDownloadState
                 { options = []
-                , toggleMsg = dropdownToggleMsg
+                , toggleMsg = dropdownToggleDownloadMsg
                 , toggleButton =
                     Dropdown.toggle [ Button.outlineSuccess, Button.attrs [ Spacing.mb3, Spacing.mt4 ] ] [ text "Download as " ]
                 , items =
                     [ Dropdown.buttonItem [ onClick csvMsg ] [ text "CSV" ]
-                    , Dropdown.buttonItem [ onClick pdfMsg ] [ text "PDF" ]
+
+                    --, Dropdown.buttonItem [ onClick pdfMsg ] [ text "PDF" ]
+                    ]
+                }
+            , Dropdown.dropdown
+                dropdownTogglePreviewState
+                { options = []
+                , toggleMsg = dropdownTogglePreviewMsg
+                , toggleButton =
+                    Dropdown.toggle [ Button.outlineSuccess, Button.attrs [ Spacing.mb3, Spacing.mt4, Spacing.ml2 ] ] [ text "Preview" ]
+                , items =
+                    [ Dropdown.buttonItem [ onClick csvMsg ] [ text "CSV" ]
+
+                    --, Dropdown.buttonItem [ onClick pdfMsg ] [ text "PDF" ]
                     ]
                 }
             ]

@@ -1,18 +1,30 @@
-module EntityType exposing (EntityType(..), familyRadioList, fromMaybeToStringWithDefaultInd, fromString, isLLC, llc, orgView, toDataString, toDisplayString, toGridString)
+module EntityType exposing
+    ( Model(..)
+    , familyRadioList
+    , fromMaybeToStringWithDefaultInd
+    , fromString
+    , isLLC
+    , llc
+    , orgView
+    , toDataString
+    , toDisplayString
+    , toGridString
+    )
 
+import Bootstrap.Form as Form
+import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Form.Select as Select exposing (Item)
 import Html exposing (Html, text)
 import Html.Attributes exposing (class, selected, value)
 
 
-type EntityType
+type Model
     = Family
     | Individual
     | SoleProprietorship
     | PartnershipIncludingLLPs
     | Corporation
-    | Committee
     | Union
     | Association
     | LimitedLiabilityCompany
@@ -21,7 +33,7 @@ type EntityType
     | Other
 
 
-toDataString : EntityType -> String
+toDataString : Model -> String
 toDataString entityType =
     case entityType of
         Family ->
@@ -38,9 +50,6 @@ toDataString entityType =
 
         Corporation ->
             "Corp"
-
-        Committee ->
-            "Comm"
 
         Union ->
             "Union"
@@ -61,12 +70,12 @@ toDataString entityType =
             "Oth"
 
 
-fromMaybeToStringWithDefaultInd : Maybe EntityType -> String
+fromMaybeToStringWithDefaultInd : Maybe Model -> String
 fromMaybeToStringWithDefaultInd maybeEntityType =
     toDataString <| Maybe.withDefault Individual maybeEntityType
 
 
-fromString : String -> Maybe EntityType
+fromString : String -> Maybe Model
 fromString str =
     case str of
         "Fam" ->
@@ -83,9 +92,6 @@ fromString str =
 
         "Corp" ->
             Just Corporation
-
-        "Comm" ->
-            Just Committee
 
         "Union" ->
             Just Union
@@ -109,7 +115,7 @@ fromString str =
             Nothing
 
 
-toDisplayString : EntityType -> String
+toDisplayString : Model -> String
 toDisplayString entityType =
     case entityType of
         Family ->
@@ -126,9 +132,6 @@ toDisplayString entityType =
 
         Corporation ->
             "Corporation"
-
-        Committee ->
-            "Committee"
 
         Union ->
             "Union"
@@ -149,7 +152,7 @@ toDisplayString entityType =
             "Other"
 
 
-toGridString : EntityType -> String
+toGridString : Model -> String
 toGridString entityType =
     case entityType of
         Family ->
@@ -166,9 +169,6 @@ toGridString entityType =
 
         Corporation ->
             "Corporation"
-
-        Committee ->
-            "Committee"
 
         Union ->
             "Union"
@@ -189,17 +189,17 @@ toGridString entityType =
             "Other"
 
 
-orgView : (Maybe EntityType -> msg) -> Maybe EntityType -> Html msg
-orgView msg currentValue =
+orgView : (Maybe Model -> msg) -> Maybe Model -> Bool -> Html msg
+orgView msg currentValue disabled =
     Select.select
         [ Select.id "entityType"
         , Select.onChange (fromString >> msg)
+        , Select.disabled disabled
         ]
         [ Select.item [ value "" ] [ text "-- Organization Classification --" ]
         , orgSelect SoleProprietorship currentValue
         , orgSelect PartnershipIncludingLLPs currentValue
         , orgSelect Corporation currentValue
-        , orgSelect Committee currentValue
         , orgSelect Union currentValue
         , orgSelect Association currentValue
         , orgSelect LimitedLiabilityCompany currentValue
@@ -209,7 +209,7 @@ orgView msg currentValue =
         ]
 
 
-orgSelect : EntityType -> Maybe EntityType -> Item msg
+orgSelect : Model -> Maybe Model -> Item msg
 orgSelect entityType currentValue =
     Select.item
         [ value <| toDataString entityType
@@ -218,31 +218,47 @@ orgSelect entityType currentValue =
         [ text <| toDisplayString entityType ]
 
 
-familyRadioList : (EntityType -> msg) -> Maybe EntityType -> List (Html msg)
-familyRadioList msg currentValue =
-    Radio.radioList "familyOfCandidate"
-        [ Radio.createCustom
-            [ Radio.id "yes"
-            , Radio.inline
-            , Radio.onClick (msg Family)
-            , Radio.checked (currentValue == Just Family)
-            ]
-            "Yes"
-        , Radio.createCustom
-            [ Radio.id "no"
-            , Radio.inline
-            , Radio.onClick (msg Individual)
-            , Radio.checked (currentValue == Just Individual)
-            ]
-            "No"
+familyRadioList : (Model -> msg) -> Maybe Model -> Bool -> Maybe String -> List (Html msg)
+familyRadioList msg currentValue disabled txnId =
+    let
+        id =
+            Maybe.withDefault "" txnId
+    in
+    [ Form.form []
+        [ Fieldset.config
+            |> Fieldset.asGroup
+            |> Fieldset.legend [] []
+            |> Fieldset.children
+                (Radio.radioList
+                    "familyOfCandidate"
+                    [ Radio.createCustom
+                        [ Radio.id <| id ++ "familyOfCandidate-yes"
+                        , Radio.inline
+                        , Radio.onClick (msg Family)
+                        , Radio.checked (currentValue == Just Family)
+                        , Radio.disabled disabled
+                        ]
+                        "Yes"
+                    , Radio.createCustom
+                        [ Radio.id <| id ++ "familyOfCandidate-no"
+                        , Radio.inline
+                        , Radio.onClick (msg Individual)
+                        , Radio.checked (currentValue == Just Individual)
+                        , Radio.disabled disabled
+                        ]
+                        "No"
+                    ]
+                )
+            |> Fieldset.view
         ]
+    ]
 
 
-isLLC : EntityType -> Bool
+isLLC : Model -> Bool
 isLLC contributorType =
     contributorType == LimitedLiabilityCompany
 
 
-llc : EntityType
+llc : Model
 llc =
     LimitedLiabilityCompany

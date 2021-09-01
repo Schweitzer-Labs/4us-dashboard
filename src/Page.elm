@@ -26,8 +26,8 @@ type Page
     = Other
     | Home
     | LinkBuilder
-    | NeedsReview
     | Transactions
+    | Demo
 
 
 {-| Take a page's Html and frames it with a header and footer.
@@ -119,10 +119,10 @@ ruleInfoRow committee =
         ]
 
 
-logo : Html msg
-logo =
+logo : Committee.Model -> Html msg
+logo committee =
     div [ class "text-center" ]
-        [ a [ Route.href Route.Home ]
+        [ a [ Route.href <| Route.Transactions committee.id ]
             [ img [ Asset.src Asset.usLogo, class "header-logo" ] [] ]
         ]
 
@@ -130,16 +130,10 @@ logo =
 pageIsActive : Page -> Route -> Bool
 pageIsActive page route =
     case ( page, route ) of
-        ( Home, Route.Home ) ->
+        ( LinkBuilder, Route.LinkBuilder _ ) ->
             True
 
-        ( NeedsReview, Route.NeedsReview ) ->
-            False
-
-        ( LinkBuilder, Route.LinkBuilder ) ->
-            True
-
-        ( Transactions, Route.Transactions ) ->
+        ( Transactions, Route.Transactions _ ) ->
             True
 
         _ ->
@@ -168,24 +162,18 @@ sidebar : Page -> Committee.Model -> Html msg
 sidebar page committee =
     div [ class "sidebar-container border-right border-blue", Spacing.pl0 ]
         [ committeeInfoContainer committee
-        , navContainer page
-        , logo
+        , navContainer page committee
+        , logo committee
         ]
 
 
-navContainer : Page -> Html msg
-navContainer page =
+navContainer : Page -> Committee.Model -> Html msg
+navContainer page committee =
     Grid.containerFluid
         [ Spacing.mt5 ]
-        [ navRow True (Asset.coinsGlyph [ class "tool-glyph" ]) page Route.Transactions "Transactions"
-        , navRow False (Asset.searchDollarGlyph [ class "tool-glyph" ]) page Route.NeedsReview "Needs Review"
-        , navRow True (Asset.linkGlyph [ class "tool-glyph" ]) page Route.LinkBuilder "Link Builder"
+        [ navRow True (Asset.coinsGlyph [ class "tool-glyph" ]) page (Route.Transactions committee.id) "Transactions"
+        , navRow True (Asset.linkGlyph [ class "tool-glyph" ]) page (Route.LinkBuilder committee.id) "Link Builder"
         ]
-
-
-toolBarAsset : Image -> Html msg
-toolBarAsset image =
-    img [ Asset.src image, class "tool-asset" ] []
 
 
 navRow : Bool -> Html msg -> Page -> Route -> String -> Html msg

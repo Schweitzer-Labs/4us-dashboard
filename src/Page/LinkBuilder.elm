@@ -4,9 +4,7 @@ module Page.LinkBuilder exposing (Model, Msg, init, subscriptions, toSession, up
 -}
 
 import Aggregations
-import Api exposing (Token)
-import Api.Endpoint exposing (Endpoint(..))
-import Api.GraphQL exposing (getTransactions)
+import Api.GetTxns as GetTxns
 import Bootstrap.Button as Button
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
@@ -18,17 +16,16 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
+import Cognito exposing (loginUrl)
 import Committee
 import Config exposing (Config)
-import Config.Env exposing (loginUrl)
 import Html exposing (..)
-import Html.Attributes as SvgA exposing (class, for, href, src, style)
+import Html.Attributes as SvgA exposing (class, for, href, src, style, target)
 import Http
 import QRCode
 import Session exposing (Session)
 import Task exposing (Task)
-import Transaction.ContributionsData as ContributionsData exposing (ContributionsData)
-import Transaction.TransactionsData exposing (TransactionsData)
+import TransactionType exposing (TransactionType)
 import Url.Builder
 
 
@@ -50,16 +47,20 @@ type alias Model =
 
 init : Config -> Session -> Aggregations.Model -> Committee.Model -> String -> ( Model, Cmd Msg )
 init config session aggs committee committeeId =
-    ( { session = session
-      , refCode = ""
-      , amount = ""
-      , url = ""
-      , committeeId = committeeId
-      , aggregations = aggs
-      , committee = committee
-      , config = config
-      }
-    , getTransactions config committeeId LoadAggregationsData Nothing
+    let
+        initModel =
+            { session = session
+            , refCode = ""
+            , amount = ""
+            , url = ""
+            , committeeId = committeeId
+            , aggregations = aggs
+            , committee = committee
+            , config = config
+            }
+    in
+    ( initModel
+    , getTransactions initModel Nothing
     )
 
 
@@ -88,7 +89,7 @@ formRow model =
             [ Form.group []
                 [ Form.label [ for "ref-id" ] [ text "Source" ]
                 , Input.text [ Input.id "ref-id", Input.onInput RefCodeUpdated ]
-                , Form.help [] [ text "This code will be used to track the context of a donation and enable tracking. After sharing a link with a source, navigate to the Contributions view to see which transactions come from which context." ]
+                , Form.help [] [ text "This code will be used to track the context of a donation and enable tracking. After sharing a link with a source, navigate to the Transactions view to see which transactions come from which context." ]
                 ]
             , Form.group []
                 [ Form.label [ for "amount" ] [ text "Amount" ]
@@ -129,7 +130,7 @@ linkCard url =
             [ Block.titleH4 [] [ text "Link" ]
             , Block.text []
                 [ a
-                    [ href url, class "d-block max-height-80", Spacing.mt1, Spacing.mb3, Spacing.p3 ]
+                    [ href url, class "d-block max-height-80", Spacing.mt1, Spacing.mb3, Spacing.p3, target "_blank" ]
                     [ text url ]
                 ]
             , Block.text [ class "text-center" ] [ qrCodeView url ]
@@ -163,7 +164,7 @@ type Msg
     = GotSession Session
     | RefCodeUpdated String
     | AmountUpdated String
-    | LoadAggregationsData (Result Http.Error TransactionsData)
+    | GotTransactionsData (Result Http.Error GetTxns.Model)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -178,7 +179,7 @@ update msg model =
         AmountUpdated str ->
             ( { model | amount = str }, Cmd.none )
 
-        LoadAggregationsData res ->
+        GotTransactionsData res ->
             case res of
                 Ok body ->
                     ( { model
@@ -189,19 +190,12 @@ update msg model =
                     )
 
                 Err _ ->
-                    let
-                        { cognitoDomain, cognitoClientId, redirectUri } =
-                            model.config
-                    in
-                    ( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
+                    ( model, load <| loginUrl model.config model.committeeId )
 
 
 createUrl : String -> String -> String -> String -> String
 createUrl donorUrl committeeId refCode amount =
     let
-        committeeIdVal =
-            [ Url.Builder.string "committeeId" committeeId ]
-
         refCodeVal =
             if String.length refCode > 0 then
                 [ Url.Builder.string "refCode" refCode ]
@@ -216,7 +210,7 @@ createUrl donorUrl committeeId refCode amount =
             else
                 []
     in
-    Url.Builder.crossOrigin donorUrl [] <| committeeIdVal ++ refCodeVal ++ amountVal
+    Url.Builder.crossOrigin donorUrl [ "committee", committeeId ] <| refCodeVal ++ amountVal
 
 
 scrollToTop : Task x ()
@@ -225,6 +219,15 @@ scrollToTop =
         -- It's not worth showing the user anything special if scrolling fails.
         -- If anything, we'd log this to an error recording service.
         |> Task.onError (\_ -> Task.succeed ())
+
+
+
+-- HTTP
+
+
+getTransactions : Model -> Maybe TransactionType -> Cmd Msg
+getTransactions model maybeTxnType =
+    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
 
 
 

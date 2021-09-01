@@ -6,6 +6,7 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
+            "BrianHicks/elm-csv": "3.0.2",
             "NoRedInk/elm-json-decode-pipeline": "1.0.0",
             "PanagiotisGeorgiadis/elm-datetime": "1.3.0",
             "andrewMacmurray/elm-delay": "3.0.0",
@@ -31,6 +32,7 @@
             "justinmimbs/timezone-data": "4.0.2",
             "jxxcarlson/elm-stat": "3.0.0",
             "pablohirafuji/elm-qrcode": "4.0.1",
+            "rtfeldman/elm-validate": "4.0.1",
             "rundis/elm-bootstrap": "5.2.0",
             "ryannhg/date-format": "2.3.0"
         },

@@ -1,4 +1,19 @@
-module Transactions exposing (Label(..), Model, decoder, labels, statusContent, stringToBool, transactionRowMap, verifiedContent, view)
+module Transactions exposing
+    ( Model
+    , decoder
+    , getAmount
+    , getContext
+    , getEntityName
+    , getStatus
+    , labels
+    , missingContent
+    , statusContent
+    , transactionRowMap
+    , uppercaseText
+    , verifiedContent
+    , view
+    , viewInteractive
+    )
 
 import Asset
 import Bank
@@ -6,14 +21,14 @@ import Cents
 import Committee
 import DataTable exposing (DataRow)
 import Direction
-import EntityType exposing (EntityType(..))
+import EntityType
 import Html exposing (Html, img, span, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode
 import List exposing (sortBy)
-import PaymentMethod exposing (PaymentMethod)
+import PaymentMethod
 import PurposeCode
-import TimeZone exposing (america__new_york)
+import Time exposing (utc)
 import Timestamp
 import Transaction
 
@@ -27,35 +42,31 @@ decoder =
     Decode.list Transaction.decoder
 
 
-type Label
-    = DateTime
-    | EntityName
-    | Amount
-    | Context
-    | Rule
-    | PaymentMethod
-    | Status
-    | Verified
-
-
-labels : (Label -> msg) -> List ( msg, String )
-labels sortMsg =
-    [ ( sortMsg DateTime, "Date / Time" )
-    , ( sortMsg EntityName, "Entity Name" )
-    , ( sortMsg Context, "Entity Type" )
-    , ( sortMsg Amount, "Amount" )
-    , ( sortMsg Verified, "Verified" )
-    , ( sortMsg PaymentMethod, "Payment Method" )
-    , ( sortMsg PaymentMethod, "Processor" )
-    , ( sortMsg Status, "Status" )
+labels : List String
+labels =
+    [ "Date / Time"
+    , "Entity Name"
+    , "Entity Type"
+    , "Amount"
+    , "ID Verified"
+    , "Payment Method"
+    , "Ref Code"
+    , "Bank Status"
     ]
 
 
-view : Committee.Model -> (Label -> msg) -> List (Html msg) -> List Transaction.Model -> Html msg
-view committee sortMsg content txns =
-    DataTable.view "Awaiting Transactions." content (labels sortMsg) (transactionRowMap committee) <|
-        List.map (\d -> ( Nothing, d )) <|
-            List.reverse (sortBy .initiatedTimestamp txns)
+view : Committee.Model -> List Transaction.Model -> Html msg
+view committee txns =
+    DataTable.view "Awaiting Transactions." labels (transactionRowMap committee) <|
+        List.map (\d -> ( Nothing, Nothing, d )) <|
+            List.reverse (sortBy .paymentDate txns)
+
+
+viewInteractive : Committee.Model -> (Transaction.Model -> msg) -> List Transaction.Model -> Html msg
+viewInteractive committee selectMsg txns =
+    DataTable.view "Awaiting Transactions." labels (transactionRowMap committee) <|
+        List.map (\t -> ( Nothing, Just <| selectMsg t, t )) <|
+            List.reverse (sortBy .paymentDate txns)
 
 
 processor : Committee.Model -> Transaction.Model -> Html msg
@@ -128,8 +139,19 @@ getContext transaction =
                 missingContent
                 (Maybe.map (text << PurposeCode.toString) transaction.purposeCode)
 
+        Direction.In ->
+            Maybe.withDefault
+                missingContent
+                (Maybe.map (text << EntityType.toDisplayString) transaction.entityType)
+
+
+getPaymentMethod : Transaction.Model -> String
+getPaymentMethod txn =
+    case ( txn.paymentMethod, txn.stripePaymentIntentId ) of
+        --( _, Just a ) ->
+        --    "Online Processor"
         _ ->
-            text <| Maybe.withDefault "Home" transaction.refCode
+            PaymentMethod.toDisplayString txn.paymentMethod
 
 
 getAmount : Transaction.Model -> Html msg
@@ -147,8 +169,8 @@ uppercaseText str =
     span [ class "text-capitalize" ] [ text str ]
 
 
-transactionRowMap : Committee.Model -> ( Maybe msg, Transaction.Model ) -> ( Maybe msg, DataRow msg )
-transactionRowMap committee ( maybeMsg, transaction ) =
+transactionRowMap : Committee.Model -> ( Maybe a, Maybe msg, Transaction.Model ) -> ( Maybe msg, DataRow msg )
+transactionRowMap committee ( _, maybeMsg, transaction ) =
     let
         name =
             Maybe.withDefault missingContent (Maybe.map uppercaseText <| getEntityName transaction)
@@ -163,13 +185,13 @@ transactionRowMap committee ( maybeMsg, transaction ) =
             getEntityType transaction
     in
     ( maybeMsg
-    , [ ( "Date / Time", text <| Timestamp.format (america__new_york ()) transaction.initiatedTimestamp )
+    , [ ( "Date / Time", text <| Timestamp.format utc transaction.paymentDate )
       , ( "Entity Name", name )
       , ( "Context", entityType )
       , ( "Amount", amount )
       , ( "Verified", verifiedContent <| transaction.ruleVerified )
-      , ( "Payment Method", text <| PaymentMethod.toDisplayString transaction.paymentMethod )
-      , ( "Processor", processor committee transaction )
+      , ( "Payment Method", text <| getPaymentMethod transaction )
+      , ( "Ref Code", text <| Maybe.withDefault "N/A" transaction.refCode )
       , ( "Status", getStatus transaction )
       ]
     )
@@ -196,13 +218,3 @@ verifiedContent val =
 
     else
         Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
-
-
-stringToBool : String -> Bool
-stringToBool str =
-    case str of
-        "true" ->
-            True
-
-        _ ->
-            False

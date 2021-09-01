@@ -69,7 +69,7 @@ $my-warning: #FF5555;
 
 
 $light: #EBEBEB;
-$danger: #BD0000;
+$danger: #FF0A03;
 
 $theme-colors: (
         "primary": $slate-blue,
@@ -82,6 +82,11 @@ $green : #28a745;
 .text-green {
   color: #28a745;
 }
+
+.text-slate-blue {
+  color: $slate-blue
+}
+
 
 @import "node_modules/bootstrap/scss/bootstrap";
 
@@ -147,6 +152,11 @@ body {
 
 .hover-pointer:hover {
   cursor: pointer;
+}
+
+.hover-underline-red:hover {
+  @extend .hover-underline;
+  text-decoration-color: $danger
 }
 
 .header-info-bank-logo {
@@ -238,6 +248,20 @@ body {
 .font-size-22 {
   font-size: 22px;
 }
+
+
+.font-size-medium {
+  font-size: 16px;
+}
+
+.font-size-large {
+  font-size: 32px;
+}
+
+.height-md {
+  height: 40px;
+}
+
 
 //body {
 //  min-width: 800px;
