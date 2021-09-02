@@ -4,6 +4,11 @@ WebsiteBucket:
   Properties:
     BucketName: !Sub ${SubDomain}-${RunEnvironment}.${Domain}.${TLD}-${AWS::Region}
     AccessControl: Private
+    PublicAccessBlockConfiguration:
+      BlockPublicAcls: true
+      IgnorePublicAcls: false
+      BlockPublicPolicy: true
+      RestrictPublicBuckets: true
     BucketEncryption:
       ServerSideEncryptionConfiguration:
         - ServerSideEncryptionByDefault:
@@ -35,9 +40,3 @@ WebsiteBucketPolicy:
           Action: s3:GetObject
           Principal:
             AWS: !Sub arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${OAI}
-        - Sid: AllowPublicBlocking
-          Effect: Allow
-          Resource:
-            - !Sub ${WebsiteBucket.Arn}
-            - !Sub ${WebsiteBucket.Arn}/*
-          Principal: '*'
