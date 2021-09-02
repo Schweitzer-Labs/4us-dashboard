@@ -615,7 +615,7 @@ openTxnFormModalLoaded model txn =
 
 type Msg
     = GotSession Session
-    | GotTransactionsData (Result Http.Error GetTxns.Model)
+    | GotTxnsData (Result Http.Error GetTxns.Model)
     | GenerateReport FileFormat
     | HideCreateContributionModal
     | ShowCreateContributionModal
@@ -626,7 +626,7 @@ type Msg
     | AnimateCreateContributionModal Modal.Visibility
     | GotCreateContributionResponse (Result Http.Error MutationResponse)
     | GotCreateDisbursementResponse (Result Http.Error MutationResponse)
-    | GotTransactionData (Result Http.Error GetTxn.Model)
+    | GotTxnData (Result Http.Error GetTxn.Model)
     | GotReportData (Result Http.Error GetReport.Model)
     | SubmitCreateContribution
     | ToggleActionsDropdown Dropdown.State
@@ -1034,7 +1034,7 @@ update msg model =
         AnimateGenerateDisclosureModal visibility ->
             ( { model | generateDisclosureModalVisibility = visibility }, Cmd.none )
 
-        GotTransactionData res ->
+        GotTxnData res ->
             case model.getTransactionCanceled of
                 False ->
                     case res of
@@ -1048,7 +1048,7 @@ update msg model =
                     ( model, Cmd.none )
 
         --( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
-        GotTransactionsData res ->
+        GotTxnsData res ->
             case res of
                 Ok body ->
                     let
@@ -1381,17 +1381,17 @@ getNextTxnsSet model =
 
 getRehydrateTxnsSet : Model -> Maybe TransactionType -> Cmd Msg
 getRehydrateTxnsSet model maybeTxnType =
-    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType (Just model.paginationSize) Nothing
+    GetTxns.send GotTxnsData model.config <| GetTxns.encode model.committeeId maybeTxnType (Just model.paginationSize) Nothing
 
 
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg
 getTransactions model maybeTxnType =
-    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
+    GetTxns.send GotTxnsData model.config <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
 
 
 getTransaction : Model -> String -> Cmd Msg
 getTransaction model txnId =
-    GetTxn.send GotTransactionData model.config <| GetTxn.encode model.committeeId txnId
+    GetTxn.send GotTxnData model.config <| GetTxn.encode model.committeeId txnId
 
 
 getReport : Model -> Cmd Msg
