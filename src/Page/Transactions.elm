@@ -742,7 +742,7 @@ update msg model =
                 , disbRuleUnverifiedSuccessViewActive = False
                 , getTransactionCanceled = True
               }
-            , getTransactions model Nothing
+            , Cmd.none
             )
 
         DisbRuleUnverifiedSubmit ->
@@ -873,7 +873,7 @@ update msg model =
                 , contribRuleUnverifiedSuccessViewActive = False
                 , getTransactionCanceled = True
               }
-            , getTransactions model Nothing
+            , Cmd.none
             )
 
         ContribRuleUnverifiedSubmit ->
