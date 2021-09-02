@@ -171,7 +171,7 @@ navContainer : Page -> Committee.Model -> Html msg
 navContainer page committee =
     Grid.containerFluid
         [ Spacing.mt5 ]
-        [ navRow True (Asset.coinsGlyph [ class "tool-glyph" ]) page (Route.Transactions committee.id) "Transactions"
+        [ navRow True (Asset.coinsGlyph [ class "tool-glyph" ]) page (Route.Transactions committee.id) "Treasury Manager"
         , navRow True (Asset.linkGlyph [ class "tool-glyph" ]) page (Route.LinkBuilder committee.id) "Link Builder"
         ]
 
@@ -196,7 +196,7 @@ navRow enabled glyph page route label =
     Grid.row
         [ Row.centerXs
         , Row.attrs [ class "hover-underline hover-black" ]
-        , Row.attrs [ Spacing.mb5 ]
+        , Row.attrs [ Spacing.mb4 ]
         ]
         [ Grid.col
             []
