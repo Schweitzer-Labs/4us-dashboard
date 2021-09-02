@@ -115,6 +115,7 @@ type alias Model =
     , fromId : Maybe String
     , moreLoading : Bool
     , moreDisabled : Bool
+    , paginationSize : Int
 
     -- Deletions
     , isDeleting : Bool
@@ -181,6 +182,9 @@ init config session aggs committee committeeId =
             , fromId = Nothing
             , moreLoading = False
             , moreDisabled = False
+            , paginationSize = Pagination.size
+
+            -- Deletions
             , isDeleting = False
             }
     in
@@ -1285,7 +1289,7 @@ update msg model =
 
         -- Feed pagination
         MoreTxnsClicked ->
-            ( { model | moreLoading = True }, getNextTxnsSet model )
+            ( { model | moreLoading = True, paginationSize = model.paginationSize + Pagination.size }, getNextTxnsSet model )
 
         GotTxnSet res ->
             case res of
@@ -1377,7 +1381,7 @@ getNextTxnsSet model =
 
 getRehydrateTxnsSet : Model -> Maybe TransactionType -> Cmd Msg
 getRehydrateTxnsSet model maybeTxnType =
-    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType (Just Pagination.size) Nothing
+    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType (Just model.paginationSize) Nothing
 
 
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg
