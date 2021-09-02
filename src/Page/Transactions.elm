@@ -742,7 +742,7 @@ update msg model =
                 , disbRuleUnverifiedSuccessViewActive = False
                 , getTransactionCanceled = True
               }
-            , Cmd.none
+            , getRehydrateTxnsSet model model.filterTransactionType
             )
 
         DisbRuleUnverifiedSubmit ->
@@ -873,7 +873,7 @@ update msg model =
                 , contribRuleUnverifiedSuccessViewActive = False
                 , getTransactionCanceled = True
               }
-            , Cmd.none
+            , getRehydrateTxnsSet model model.filterTransactionType
             )
 
         ContribRuleUnverifiedSubmit ->
@@ -1373,6 +1373,11 @@ getNextTxnsSet model =
             model.filterTransactionType
             (Just Pagination.size)
             model.fromId
+
+
+getRehydrateTxnsSet : Model -> Maybe TransactionType -> Cmd Msg
+getRehydrateTxnsSet model maybeTxnType =
+    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType (Just Pagination.size) Nothing
 
 
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg
