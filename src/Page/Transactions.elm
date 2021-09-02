@@ -260,6 +260,7 @@ createDisbursementModal model =
         , visibility = model.createDisbursementModalVisibility
         , maybeDeleteMsg = Nothing
         , isDeleting = False
+        , enableExit = True
         }
 
 
@@ -281,6 +282,7 @@ createContributionModal model =
         , visibility = model.createContributionModalVisibility
         , maybeDeleteMsg = Nothing
         , isDeleting = False
+        , enableExit = True
         }
 
 
@@ -298,7 +300,7 @@ disbRuleUnverifiedModal model =
         , subModel = model.disbRuleUnverifiedModal
         , subView = DisbRuleUnverified.view
         , submitMsg = DisbRuleUnverifiedSubmit
-        , submitText = "Reconcile"
+        , submitText = "Ok"
         , isSubmitting = model.disbRuleUnverifiedSubmitting
         , successViewActive = model.disbRuleUnverifiedSuccessViewActive
         , successViewMessage = " Reconciliation Successful!"
@@ -306,6 +308,7 @@ disbRuleUnverifiedModal model =
         , visibility = model.disbRuleUnverifiedModalVisibility
         , maybeDeleteMsg = Nothing
         , isDeleting = False
+        , enableExit = False
         }
 
 
@@ -327,6 +330,7 @@ disbRuleVerifiedModal model =
         , visibility = model.disbRuleVerifiedModalVisibility
         , maybeDeleteMsg = toDeleteMsg DisbRuleVerified.toTxn model.disbRuleVerifiedModal
         , isDeleting = model.isDeleting
+        , enableExit = True
         }
 
 
@@ -352,6 +356,7 @@ contribRuleUnverifiedModal model =
         , visibility = model.contribRuleUnverifiedModalVisibility
         , maybeDeleteMsg = Nothing
         , isDeleting = False
+        , enableExit = False
         }
 
 
@@ -373,6 +378,7 @@ contribRuleVerifiedModal model =
         , visibility = model.contribRuleVerifiedModalVisibility
         , maybeDeleteMsg = toDeleteMsg ContribRuleVerified.toTxn model.contribRuleVerifiedModal
         , isDeleting = model.isDeleting
+        , enableExit = True
         }
 
 

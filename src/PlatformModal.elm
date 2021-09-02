@@ -30,6 +30,7 @@ type alias MakeModalConfig msg subMsg subModel =
     , visibility : Modal.Visibility
     , maybeDeleteMsg : Maybe msg
     , isDeleting : Bool
+    , enableExit : Bool
     }
 
 
@@ -58,7 +59,7 @@ view config =
                     { submitText = config.submitText
                     , maybeDeleteMsg = config.maybeDeleteMsg
                     , submitting = config.isSubmitting
-                    , enableExit = True
+                    , enableExit = config.enableExit
                     , disableSave = config.successViewActive
                     , disabled = config.isSubmitDisabled
                     , hideMsg = config.hideMsg
