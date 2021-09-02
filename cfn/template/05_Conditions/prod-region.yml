@@ -1,2 +1,0 @@
-AWS-USE-1:
-  !Equals [!Ref AWS::Region, us-east-1]
