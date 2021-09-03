@@ -31,7 +31,7 @@ type alias Model =
     , paymentDate : String
     , paymentMethod : Maybe PaymentMethod.Model
     , emailAddress : String
-    , emailAddressValid : Bool
+    , isEmailAddressValid : Bool
     , phoneNumber : String
     , firstName : String
     , middleName : String
@@ -71,7 +71,7 @@ init committeeId =
     , checkNumber = ""
     , paymentDate = ""
     , emailAddress = ""
-    , emailAddressValid = False
+    , isEmailAddressValid = False
     , phoneNumber = ""
     , firstName = ""
     , middleName = ""
@@ -290,7 +290,7 @@ update msg model =
         GotEmailValidationRes value ->
             case decodeValue bool value of
                 Ok data ->
-                    ( { model | emailAddressValid = data }, Cmd.none )
+                    ( { model | isEmailAddressValid = data }, Cmd.none )
 
                 Err error ->
                     ( model, Cmd.none )
@@ -335,7 +335,7 @@ validationMapper model =
     , paymentDate = model.paymentDate
     , paymentMethod = model.paymentMethod
     , emailAddress = model.emailAddress
-    , isEmailAddressValid = model.emailAddressValid
+    , isEmailAddressValid = model.isEmailAddressValid
     , phoneNumber = model.phoneNumber
     , firstName = model.firstName
     , middleName = model.middleName
