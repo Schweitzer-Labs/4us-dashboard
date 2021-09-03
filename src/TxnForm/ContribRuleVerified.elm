@@ -48,6 +48,7 @@ type alias Model =
     , paymentDate : String
     , paymentMethod : Maybe PaymentMethod.Model
     , emailAddress : String
+    , isEmailAddressValid : Bool
     , phoneNumber : String
     , firstName : String
     , middleName : String
@@ -102,6 +103,7 @@ init txn =
     , checkNumber = Maybe.withDefault "" txn.checkNumber
     , paymentDate = Timestamp.formDate utc txn.paymentDate
     , emailAddress = Maybe.withDefault "" txn.emailAddress
+    , isEmailAddressValid = True
     , phoneNumber = Maybe.withDefault "" txn.phoneNumber
     , firstName = Maybe.withDefault "" txn.firstName
     , middleName = Maybe.withDefault "" txn.middleName
@@ -424,6 +426,7 @@ validationMapper model =
     , paymentDate = model.paymentDate
     , paymentMethod = model.paymentMethod
     , emailAddress = model.emailAddress
+    , isEmailAddressValid = model.isEmailAddressValid
     , phoneNumber = model.phoneNumber
     , firstName = model.firstName
     , middleName = model.middleName

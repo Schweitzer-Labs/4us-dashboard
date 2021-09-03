@@ -1,4 +1,4 @@
-module Errors exposing (fromInKind, fromInKindType, fromMaxAmount, fromMaxDate, fromOrgType, fromPostalCode, view)
+module Errors exposing (fromEmailAddress, fromInKind, fromInKindType, fromMaxAmount, fromMaxDate, fromOrgType, fromPostalCode, view)
 
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
@@ -110,6 +110,15 @@ fromMaxDate timezone max val =
 
         _ ->
             []
+
+
+fromEmailAddress : Bool -> List String
+fromEmailAddress emailAddressValidated =
+    if emailAddressValidated == True then
+        []
+
+    else
+        [ "Email Address is invalid" ]
 
 
 view : Errors -> List (Html msg)
