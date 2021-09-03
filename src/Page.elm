@@ -41,7 +41,7 @@ in the header. (This comes up during slow page transitions.)
 -}
 view : Config -> Aggregations.Model -> Committee.Model -> Page -> { title : String, content : Html msg } -> Document msg
 view config aggregations committee page { title, content } =
-    { title = title ++ " - Transactions"
+    { title = title ++ " - Treasury Manager"
     , body =
         sidebar page committee :: mainContainer aggregations content :: []
     }
