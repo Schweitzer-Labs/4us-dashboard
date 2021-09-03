@@ -5,7 +5,6 @@ import Dict
 import Html exposing (Html, text)
 import Html.Attributes exposing (class, selected, value)
 import String exposing (toUpper)
-import String.Extra exposing (toTitleCase)
 
 
 statesAndAbbrsList : List ( String, String )

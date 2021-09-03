@@ -1,5 +1,4 @@
 export SHELL		:= env PATH=$(PATH) bash
-export CREPES		:= $(PWD)/cfn/bin/crepes.py
 export SUBDOMAIN	:= dashboard
 export PRODUCT		:= 4us
 
@@ -8,56 +7,22 @@ ifeq ($(RUNENV), )
 endif
 
 
-# Deduce the Domain related parameters based on the RUNENV and PRODUCT params
 ifeq ($(RUNENV), qa)
-        export REGION   := us-west-2
-	ifeq ($(PRODUCT), 4us)
-		export DOMAIN   := build4
-		export TLD      := us
-	else # PRODUCT = p2
-		export DOMAIN   := purplepay
-		export TLD      := us
-	endif
+	export DOMAIN   := build4
+	export TLD      := us
+	export REGION	:= us-west-2
 else ifeq ($(RUNENV), prod)
-        export REGION   := us-east-1
-	ifeq ($(PRODUCT), 4us)
-		export DOMAIN   := 4us
-		export TLD      := net
-	else
-		export DOMAIN   := policapital
-		export TLD      := net
-	endif
+	export DOMAIN   := 4us
+	export TLD      := net
+	export REGION	:= us-east-1
 else ifeq ($(RUNENV), demo)
-        export REGION   := us-west-1
 	export DOMAIN   := 4usdemo
 	export TLD      := com
-	export PRODUCT	:= 4us
-else #extra
-        export REGION   := us-east-2
-        export DOMAIN   := 4us
-        export TLD      := com
+	export REGION	:= us-west-1
 endif
 
 
-export STACK		:= $(RUNENV)-$(PRODUCT)-$(SUBDOMAIN)
-
-export DATE		:= $(shell date)
-
-export ENDPOINT		:= https://cloudformation-fips.$(REGION).amazonaws.com
-
-export BUILD_DIR	:= $(PWD)/.build
-
-export TEMPLATE		:= $(BUILD_DIR)/template.yml
-export PACKAGE		:= $(BUILD_DIR)/CloudFormation-template.yml
-
-
-CFN_SRC_DIR		:= $(PWD)/cfn/template
-SRCS			:= $(shell find $(CFN_SRC_DIR)/0* -name '*.yml' -o -name '*.txt')
-
-export CFN_BUCKET	:= $(PRODUCT)-cfn-templates-$(REGION)
-
-export CREPES_PARAMS	:= --region $(REGION)
-export CREPES_PARAMS	+= --subdomain $(SUBDOMAIN) --domain $(DOMAIN) --tld $(TLD) --runenv $(RUNENV) --product $(PRODUCT)
+export BUILD_DIR	:= $(PWD)/build
 
 COGNITO_DOMAIN	:= https://platform-user-$(PRODUCT)-$(RUNENV).auth.$(REGION).amazoncognito.com
 COGNITO_REDIRECT_URI	:= https://$(SUBDOMAIN).$(DOMAIN).$(TLD)
@@ -68,35 +33,23 @@ COGNITO_USER_POOL = $(eval COGNITO_USER_POOL := $$(shell aws cognito-idp list-us
 
 COGNITO_CLIENT_ID = $(eval COGNITO_CLIENT_ID := $$(shell aws cognito-idp list-user-pool-clients --region $(REGION) --user-pool-id $(COGNITO_USER_POOL) --query 'UserPoolClients[*].ClientId' --output text))$(COGNITO_CLIENT_ID)
 
-.PHONY: all dep build build-web check import package deploy deploy-web clean realclean
+.PHONY: all dep build clean
 
 # Make targets
 all: build
 
 clean:
-	@rm -f $(BUILD_DIR)/*.yml
-
-realclean: clean
 	@rm -rf $(BUILD_DIR)
-	@rm -rf build
 	@rm -rf node_modules
 
 dep:
-	@pip3 install jinja2 cfn_flip boto3
+	@npm install create-elm-app
 
-install-build-deps: $(BUILD_DIR)
-	@npm install
-
-build: build-stacks build-web
-
-build-stacks: $(BUILD_DIR)
-	@$(MAKE) -C $(CFN_SRC_DIR) build
 
 $(BUILD_DIR):
 	@mkdir -p $@
 
-build-web: install-build-deps
-	echo $(COGNITO_USER_POOL) $(COGNITO_CLIENT_ID)
+build: dep $(BUILD_DIR)
 	npm \
 		--domain=$(COGNITO_DOMAIN) \
 		--redirect=$(COGNITO_REDIRECT_URI) \
@@ -104,24 +57,3 @@ build-web: install-build-deps
 		--donorurl=$(DONOR_URL) \
 		--clientid=$(COGNITO_CLIENT_ID) \
 		run build
-
-check: build
-	@$(MAKE) -C $(CFN_SRC_DIR) $@
-
-package: build
-	@$(MAKE) -C $(CFN_SRC_DIR) $@
-
-deploy-infra: package
-	@$(MAKE) -C $(CFN_SRC_DIR) deploy
-
-deploy: deploy-infra deploy-web
-
-buildimports: $(BUILD_DIR)
-	@$(MAKE) -C $(CFN_SRC_DIR) $@
-
-import: $(BUILD_DIR)
-	@$(MAKE) -C $(CFN_SRC_DIR) $@
-
-replication:
-	@$(MAKE) -C cfn/replication deploy
-

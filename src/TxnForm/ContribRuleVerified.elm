@@ -12,12 +12,14 @@ module TxnForm.ContribRuleVerified exposing
     )
 
 import Api.AmendContrib as AmendContrib
+import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import ContribInfo exposing (ContribValidatorModel)
+import Copy
 import EmploymentStatus
 import EntityType
 import ExpandableBankData
