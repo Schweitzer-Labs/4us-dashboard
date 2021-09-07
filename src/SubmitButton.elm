@@ -1,7 +1,9 @@
 module SubmitButton exposing (block, blockWithLoadingBar, custom, delete, submitButton)
 
+import Asset
 import Bootstrap.Button as Button
 import Bootstrap.Spinner as Spinner
+import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Attribute, Html, text)
 import Html.Events exposing (onClick)
 import List exposing (singleton)
@@ -52,6 +54,7 @@ delete submitMsg isSending =
 
           else
             text "Delete"
+        , Asset.lockGlyph [ Spacing.ml2, Spacing.mb1 ]
         ]
 
 

@@ -29,6 +29,7 @@ import ContribInfo
 import CreateContribution
 import CreateDisbursement
 import Delay
+import DeleteInfo
 import File.Download as Download
 import FileDisclosure
 import FileFormat exposing (FileFormat)
@@ -119,7 +120,7 @@ type alias Model =
 
     -- Deletions
     , isDeleting : Bool
-    , isDeletionConfirmed : DelConfirmationState
+    , isDeletionConfirmed : DeleteInfo.Model
     , alertVisibility : Alert.Visibility
     }
 
@@ -185,7 +186,7 @@ init config session aggs committee committeeId =
             , moreLoading = False
             , moreDisabled = False
             , isDeleting = False
-            , isDeletionConfirmed = Uninitialized
+            , isDeletionConfirmed = DeleteInfo.Uninitialized
             , alertVisibility = Alert.closed
             }
     in
@@ -216,13 +217,13 @@ toDeleteMsg model mapper subModel =
     case isUnreconciled && isUnprocessed && notBlank of
         True ->
             case model.isDeletionConfirmed of
-                Confirmed ->
+                DeleteInfo.Confirmed ->
                     Just (TxnDelete txn)
 
-                Unconfirmed ->
+                DeleteInfo.Unconfirmed ->
                     Just ToggleDeletePrompt
 
-                Uninitialized ->
+                DeleteInfo.Uninitialized ->
                     case isUnreconciled && isUnprocessed && notBlank of
                         True ->
                             Just ToggleDeletePrompt
@@ -281,6 +282,7 @@ createDisbursementModal model =
         , isDeleting = False
         , alertMsg = Nothing
         , alertVisibility = Nothing
+        , isDeleteConfirmed = model.isDeletionConfirmed
         }
 
 
@@ -304,6 +306,7 @@ createContributionModal model =
         , isDeleting = False
         , alertMsg = Nothing
         , alertVisibility = Nothing
+        , isDeleteConfirmed = model.isDeletionConfirmed
         }
 
 
@@ -331,6 +334,7 @@ disbRuleUnverifiedModal model =
         , isDeleting = False
         , alertMsg = Nothing
         , alertVisibility = Nothing
+        , isDeleteConfirmed = model.isDeletionConfirmed
         }
 
 
@@ -354,6 +358,7 @@ disbRuleVerifiedModal model =
         , isDeleting = model.isDeleting
         , alertMsg = Just DeleteAlertMsg
         , alertVisibility = Just model.alertVisibility
+        , isDeleteConfirmed = model.isDeletionConfirmed
         }
 
 
@@ -381,6 +386,7 @@ contribRuleUnverifiedModal model =
         , isDeleting = False
         , alertMsg = Nothing
         , alertVisibility = Nothing
+        , isDeleteConfirmed = model.isDeletionConfirmed
         }
 
 
@@ -404,6 +410,7 @@ contribRuleVerifiedModal model =
         , isDeleting = model.isDeleting
         , alertMsg = Just DeleteAlertMsg
         , alertVisibility = Just model.alertVisibility
+        , isDeleteConfirmed = model.isDeletionConfirmed
         }
 
 
@@ -716,7 +723,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TxnDelete txn ->
-            ( { model | isDeleting = True, isDeletionConfirmed = Unconfirmed }, deleteTxn model txn.id )
+            ( { model | isDeleting = True, isDeletionConfirmed = DeleteInfo.Unconfirmed }, deleteTxn model txn.id )
 
         GotDeleteTxnMutResp res ->
             case res of
@@ -774,7 +781,7 @@ update msg model =
                 | disbRuleUnverifiedModalVisibility = Modal.hidden
                 , disbRuleUnverifiedSuccessViewActive = False
                 , getTransactionCanceled = True
-                , isDeletionConfirmed = Uninitialized
+                , isDeletionConfirmed = DeleteInfo.Uninitialized
                 , alertVisibility = Alert.closed
               }
             , getTransactions model Nothing
@@ -872,7 +879,7 @@ update msg model =
                 | disbRuleVerifiedModalVisibility = Modal.hidden
                 , disbRuleVerifiedSuccessViewActive = False
                 , getTransactionCanceled = True
-                , isDeletionConfirmed = Uninitialized
+                , isDeletionConfirmed = DeleteInfo.Uninitialized
                 , alertVisibility = Alert.closed
               }
             , Cmd.none
@@ -910,7 +917,7 @@ update msg model =
                 | contribRuleUnverifiedModalVisibility = Modal.hidden
                 , contribRuleUnverifiedSuccessViewActive = False
                 , getTransactionCanceled = True
-                , isDeletionConfirmed = Uninitialized
+                , isDeletionConfirmed = DeleteInfo.Uninitialized
                 , alertVisibility = Alert.closed
               }
             , getTransactions model Nothing
@@ -1008,7 +1015,7 @@ update msg model =
                 | contribRuleVerifiedModalVisibility = Modal.hidden
                 , contribRuleVerifiedSuccessViewActive = False
                 , getTransactionCanceled = True
-                , isDeletionConfirmed = Uninitialized
+                , isDeletionConfirmed = DeleteInfo.Uninitialized
                 , alertVisibility = Alert.closed
               }
             , Cmd.none
@@ -1368,7 +1375,7 @@ update msg model =
             ( { model | alertVisibility = Alert.shown }, Cmd.none )
 
         DeleteAlertMsg visibility ->
-            ( { model | alertVisibility = visibility, isDeletionConfirmed = Confirmed }, Cmd.none )
+            ( { model | alertVisibility = visibility, isDeletionConfirmed = DeleteInfo.Confirmed }, Cmd.none )
 
 
 generateReport : Cmd msg
@@ -1514,9 +1521,3 @@ type DiscDropdownContext
     = Download
     | Preview
     | Closed
-
-
-type DelConfirmationState
-    = Confirmed
-    | Unconfirmed
-    | Uninitialized

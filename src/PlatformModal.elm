@@ -3,17 +3,16 @@ module PlatformModal exposing (MakeModalConfig, view)
 import Asset
 import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
-import Bootstrap.Form.Input as Alert
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
+import DeleteInfo
 import Html exposing (Html, h2, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import SubmitButton exposing (submitButton)
-import TxnForm exposing (Model(..))
 
 
 type alias MakeModalConfig msg subMsg subModel =
@@ -34,6 +33,7 @@ type alias MakeModalConfig msg subMsg subModel =
     , isDeleting : Bool
     , alertMsg : Maybe (Alert.Visibility -> msg)
     , alertVisibility : Maybe Alert.Visibility
+    , isDeleteConfirmed : DeleteInfo.Model
     }
 
 
@@ -142,7 +142,7 @@ deletionAlert msg visibility =
     case ( msg, visibility ) of
         ( Just alertMsg, Just alertVisibility ) ->
             Alert.config
-                |> Alert.warning
+                |> Alert.danger
                 |> Alert.dismissableWithAnimation alertMsg
                 |> Alert.children
                     [ Alert.h5 [ class "font-weight-bold" ] [ text "Warning" ]
