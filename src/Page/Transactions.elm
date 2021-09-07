@@ -727,7 +727,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TxnDelete txn ->
-            ( { model | isDeleting = True, isDeletionConfirmed = DeleteInfo.Unconfirmed }, deleteTxn model txn.id )
+            ( { model | isDeleting = True, isDeletionConfirmed = DeleteInfo.Unconfirmed, alertVisibility = Alert.closed }, deleteTxn model txn.id )
 
         GotDeleteTxnMutResp res ->
             case res of
