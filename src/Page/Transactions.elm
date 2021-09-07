@@ -1439,6 +1439,7 @@ subscriptions model =
         , Modal.subscriptions model.disbRuleVerifiedModalVisibility DisbRuleVerifiedModalAnimate
         , Modal.subscriptions model.contribRuleUnverifiedModalVisibility ContribRuleUnverifiedModalAnimate
         , Modal.subscriptions model.contribRuleVerifiedModalVisibility ContribRuleVerifiedModalAnimate
+        , Sub.map CreateContributionModalUpdated (CreateContribution.subscriptions model.createContributionModal)
         ]
 
 

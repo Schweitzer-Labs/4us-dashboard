@@ -1,5 +1,6 @@
 import './main.css';
 import { Elm } from './Main.elm';
+import {verifyEmail} from "./js/email-validator";
 
 const storageKey = 'token'
 
@@ -54,7 +55,7 @@ function runApp() {
     token = localStorage.getItem(storageKey)
     committeeId = getCommitteeIdFromUrlQueryString(host.href)
     if (token) {
-      Elm.Main.init({
+    const app =  Elm.Main.init({
         node: document.getElementById('root'),
         flags: {
           token,
@@ -65,6 +66,9 @@ function runApp() {
           apiEndpoint
         }
       });
+    app.ports.sendEmail.subscribe((email)=> {
+      app.ports.isValidEmailReceiver.send(verifyEmail(email))
+    })
     } else {
       window.location =
         `${cognitoDomain}/login?client_id=${cognitoClientId}&response_type=token&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=${host.origin}&state=${committeeId}`

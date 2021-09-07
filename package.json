@@ -22,6 +22,7 @@
     "@fortawesome/fontawesome-free": "^5.15.2",
     "bootstrap": "^4.5.3",
     "dotenv": "^10.0.0",
+    "email-validator": "^2.0.4",
     "string-extra": "github:elm-community/string-extra"
   },
   "devDependencies": {
