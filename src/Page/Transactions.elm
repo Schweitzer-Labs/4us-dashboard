@@ -834,6 +834,7 @@ update msg model =
                             ( { model
                                 | disbRuleVerifiedSuccessViewActive = True
                                 , disbRuleVerifiedSubmitting = False
+                                , alertVisibility = Alert.closed
 
                                 -- @Todo make this state impossible
                                 , disbRuleVerifiedModal = DisbRuleVerified.loadingInit
@@ -969,6 +970,7 @@ update msg model =
                             ( { model
                                 | contribRuleVerifiedSuccessViewActive = True
                                 , contribRuleVerifiedSubmitting = False
+                                , alertVisibility = Alert.closed
 
                                 -- @Todo make this state impossible
                                 , contribRuleVerifiedModal = ContribRuleVerified.loadingInit
