@@ -1376,10 +1376,10 @@ update msg model =
                     ( model, load <| loginUrl model.config model.committeeId )
 
         ToggleDeletePrompt ->
-            ( { model | alertVisibility = Alert.shown }, Cmd.none )
+            ( { model | alertVisibility = Alert.shown, isDeletionConfirmed = DeleteInfo.Confirmed }, Cmd.none )
 
         DeleteAlertMsg visibility ->
-            ( { model | alertVisibility = visibility, isDeletionConfirmed = DeleteInfo.Confirmed }, Cmd.none )
+            ( { model | alertVisibility = visibility }, Cmd.none )
 
 
 generateReport : Cmd msg
