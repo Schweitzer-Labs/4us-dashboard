@@ -320,4 +320,4 @@ lockGlyph =
 
 lockOpenGlyph : List (Attribute msg) -> Html msg
 lockOpenGlyph =
-    glyph "fas fa-lock"
+    glyph "fas fa-lock-open"

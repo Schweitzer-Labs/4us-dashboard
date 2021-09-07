@@ -69,6 +69,7 @@ view config =
                     , hideMsg = config.hideMsg
                     , submitMsg = config.submitMsg
                     , isDeleting = config.isDeleting
+                    , isDeleteConfirmed = config.isDeleteConfirmed
                     }
                 ]
             ]
@@ -85,6 +86,7 @@ type alias ButtonRowConfig hideMsg submitMsg =
     , disableSave : Bool
     , disabled : Bool
     , isDeleting : Bool
+    , isDeleteConfirmed : DeleteInfo.Model
     }
 
 
@@ -97,7 +99,7 @@ buttonRow config =
           <|
             case ( config.enableExit, config.maybeDeleteMsg ) of
                 ( True, Just deleteMsg ) ->
-                    [ SubmitButton.delete deleteMsg config.isDeleting ]
+                    [ SubmitButton.delete deleteMsg config.isDeleting config.isDeleteConfirmed ]
 
                 ( True, Nothing ) ->
                     [ exitButton config.hideMsg ]
