@@ -28,6 +28,8 @@ module Asset exposing
     , infoCircleGlyph
     , linkGlyph
     , loading
+    , lockGlyph
+    , lockOpenGlyph
     , minusCircleGlyph
     , monthlyContributionsByReferenceCode
     , person
@@ -309,3 +311,13 @@ redoGlyph =
 infoCircleGlyph : List (Attribute msg) -> Html msg
 infoCircleGlyph =
     glyph "fas fa-info-circle"
+
+
+lockGlyph : List (Attribute msg) -> Html msg
+lockGlyph =
+    glyph "fas fa-lock"
+
+
+lockOpenGlyph : List (Attribute msg) -> Html msg
+lockOpenGlyph =
+    glyph "fas fa-lock-open"

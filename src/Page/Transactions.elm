@@ -12,6 +12,7 @@ import Api.GetTxn as GetTxn
 import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse(..))
 import Api.ReconcileTxn as ReconcileTxn
+import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Grid as Grid exposing (Column)
@@ -28,6 +29,7 @@ import ContribInfo
 import CreateContribution
 import CreateDisbursement
 import Delay
+import DeleteInfo
 import File.Download as Download
 import FileDisclosure
 import FileFormat exposing (FileFormat)
@@ -119,6 +121,8 @@ type alias Model =
 
     -- Deletions
     , isDeleting : Bool
+    , isDeletionConfirmed : DeleteInfo.Model
+    , alertVisibility : Alert.Visibility
     }
 
 
@@ -186,6 +190,8 @@ init config session aggs committee committeeId =
 
             -- Deletions
             , isDeleting = False
+            , isDeletionConfirmed = DeleteInfo.Uninitialized
+            , alertVisibility = Alert.closed
             }
     in
     ( initModel
@@ -197,8 +203,8 @@ init config session aggs committee committeeId =
 -- VIEW
 
 
-toDeleteMsg : (a -> Transaction.Model) -> a -> Maybe Msg
-toDeleteMsg mapper subModel =
+toDeleteMsg : Model -> (a -> Transaction.Model) -> a -> Maybe Msg
+toDeleteMsg model mapper subModel =
     let
         txn =
             mapper subModel
@@ -212,11 +218,25 @@ toDeleteMsg mapper subModel =
         notBlank =
             String.length txn.id > 0
     in
-    if isUnreconciled && isUnprocessed && notBlank then
-        Just (TxnDelete txn)
+    case isUnreconciled && isUnprocessed && notBlank of
+        True ->
+            case model.isDeletionConfirmed of
+                DeleteInfo.Confirmed ->
+                    Just (TxnDelete txn)
 
-    else
-        Nothing
+                DeleteInfo.Unconfirmed ->
+                    Just ToggleDeletePrompt
+
+                DeleteInfo.Uninitialized ->
+                    case isUnreconciled && isUnprocessed && notBlank of
+                        True ->
+                            Just ToggleDeletePrompt
+
+                        False ->
+                            Nothing
+
+        False ->
+            Nothing
 
 
 moreTxnsButton : Model -> Html Msg
@@ -264,6 +284,9 @@ createDisbursementModal model =
         , visibility = model.createDisbursementModalVisibility
         , maybeDeleteMsg = Nothing
         , isDeleting = False
+        , alertMsg = Nothing
+        , alertVisibility = Nothing
+        , isDeleteConfirmed = model.isDeletionConfirmed
         }
 
 
@@ -285,6 +308,9 @@ createContributionModal model =
         , visibility = model.createContributionModalVisibility
         , maybeDeleteMsg = Nothing
         , isDeleting = False
+        , alertMsg = Nothing
+        , alertVisibility = Nothing
+        , isDeleteConfirmed = model.isDeletionConfirmed
         }
 
 
@@ -310,6 +336,9 @@ disbRuleUnverifiedModal model =
         , visibility = model.disbRuleUnverifiedModalVisibility
         , maybeDeleteMsg = Nothing
         , isDeleting = False
+        , alertMsg = Nothing
+        , alertVisibility = Nothing
+        , isDeleteConfirmed = model.isDeletionConfirmed
         }
 
 
@@ -329,8 +358,11 @@ disbRuleVerifiedModal model =
         , successViewMessage = " Revision Successful!"
         , isSubmitDisabled = model.disbRuleVerifiedModal.isSubmitDisabled
         , visibility = model.disbRuleVerifiedModalVisibility
-        , maybeDeleteMsg = toDeleteMsg DisbRuleVerified.toTxn model.disbRuleVerifiedModal
+        , maybeDeleteMsg = toDeleteMsg model DisbRuleVerified.toTxn model.disbRuleVerifiedModal
         , isDeleting = model.isDeleting
+        , alertMsg = Just DeleteAlertMsg
+        , alertVisibility = Just model.alertVisibility
+        , isDeleteConfirmed = model.isDeletionConfirmed
         }
 
 
@@ -356,6 +388,9 @@ contribRuleUnverifiedModal model =
         , visibility = model.contribRuleUnverifiedModalVisibility
         , maybeDeleteMsg = Nothing
         , isDeleting = False
+        , alertMsg = Nothing
+        , alertVisibility = Nothing
+        , isDeleteConfirmed = model.isDeletionConfirmed
         }
 
 
@@ -375,8 +410,11 @@ contribRuleVerifiedModal model =
         , successViewMessage = " Revision Successful!"
         , isSubmitDisabled = model.contribRuleVerifiedModal.isSubmitDisabled
         , visibility = model.contribRuleVerifiedModalVisibility
-        , maybeDeleteMsg = toDeleteMsg ContribRuleVerified.toTxn model.contribRuleVerifiedModal
+        , maybeDeleteMsg = toDeleteMsg model ContribRuleVerified.toTxn model.contribRuleVerifiedModal
         , isDeleting = model.isDeleting
+        , alertMsg = Just DeleteAlertMsg
+        , alertVisibility = Just model.alertVisibility
+        , isDeleteConfirmed = model.isDeletionConfirmed
         }
 
 
@@ -677,6 +715,8 @@ type Msg
       -- Feed pagination
     | MoreTxnsClicked
     | GotTxnSet (Result Http.Error GetTxns.Model)
+    | ToggleDeletePrompt
+    | DeleteAlertMsg Alert.Visibility
 
 
 
@@ -687,7 +727,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TxnDelete txn ->
-            ( { model | isDeleting = True }, deleteTxn model txn.id )
+            ( { model | isDeleting = True, isDeletionConfirmed = DeleteInfo.Unconfirmed, alertVisibility = Alert.closed }, deleteTxn model txn.id )
 
         GotDeleteTxnMutResp res ->
             case res of
@@ -745,6 +785,8 @@ update msg model =
                 | disbRuleUnverifiedModalVisibility = Modal.hidden
                 , disbRuleUnverifiedSuccessViewActive = False
                 , getTransactionCanceled = True
+                , isDeletionConfirmed = DeleteInfo.Uninitialized
+                , alertVisibility = Alert.closed
               }
             , getRehydrateTxnsSet model model.filterTransactionType
             )
@@ -803,6 +845,7 @@ update msg model =
                             ( { model
                                 | disbRuleVerifiedSuccessViewActive = True
                                 , disbRuleVerifiedSubmitting = False
+                                , alertVisibility = Alert.closed
 
                                 -- @Todo make this state impossible
                                 , disbRuleVerifiedModal = DisbRuleVerified.loadingInit
@@ -840,6 +883,8 @@ update msg model =
                 | disbRuleVerifiedModalVisibility = Modal.hidden
                 , disbRuleVerifiedSuccessViewActive = False
                 , getTransactionCanceled = True
+                , isDeletionConfirmed = DeleteInfo.Uninitialized
+                , alertVisibility = Alert.closed
               }
             , Cmd.none
             )
@@ -876,6 +921,8 @@ update msg model =
                 | contribRuleUnverifiedModalVisibility = Modal.hidden
                 , contribRuleUnverifiedSuccessViewActive = False
                 , getTransactionCanceled = True
+                , isDeletionConfirmed = DeleteInfo.Uninitialized
+                , alertVisibility = Alert.closed
               }
             , getRehydrateTxnsSet model model.filterTransactionType
             )
@@ -934,6 +981,7 @@ update msg model =
                             ( { model
                                 | contribRuleVerifiedSuccessViewActive = True
                                 , contribRuleVerifiedSubmitting = False
+                                , alertVisibility = Alert.closed
 
                                 -- @Todo make this state impossible
                                 , contribRuleVerifiedModal = ContribRuleVerified.loadingInit
@@ -971,6 +1019,8 @@ update msg model =
                 | contribRuleVerifiedModalVisibility = Modal.hidden
                 , contribRuleVerifiedSuccessViewActive = False
                 , getTransactionCanceled = True
+                , isDeletionConfirmed = DeleteInfo.Uninitialized
+                , alertVisibility = Alert.closed
               }
             , Cmd.none
             )
@@ -1325,6 +1375,12 @@ update msg model =
                 Err _ ->
                     ( model, load <| loginUrl model.config model.committeeId )
 
+        ToggleDeletePrompt ->
+            ( { model | alertVisibility = Alert.shown, isDeletionConfirmed = DeleteInfo.Confirmed }, Cmd.none )
+
+        DeleteAlertMsg visibility ->
+            ( { model | alertVisibility = visibility }, Cmd.none )
+
 
 generateReport : Cmd msg
 generateReport =
@@ -1439,6 +1495,7 @@ subscriptions model =
         , Modal.subscriptions model.disbRuleVerifiedModalVisibility DisbRuleVerifiedModalAnimate
         , Modal.subscriptions model.contribRuleUnverifiedModalVisibility ContribRuleUnverifiedModalAnimate
         , Modal.subscriptions model.contribRuleVerifiedModalVisibility ContribRuleVerifiedModalAnimate
+        , Alert.subscriptions model.alertVisibility DeleteAlertMsg
         , Sub.map CreateContributionModalUpdated (CreateContribution.subscriptions model.createContributionModal)
         ]
 

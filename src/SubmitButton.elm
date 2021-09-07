@@ -1,7 +1,10 @@
 module SubmitButton exposing (block, blockWithLoadingBar, custom, delete, submitButton)
 
+import Asset
 import Bootstrap.Button as Button
 import Bootstrap.Spinner as Spinner
+import Bootstrap.Utilities.Spacing as Spacing
+import DeleteInfo
 import Html exposing (Attribute, Html, text)
 import Html.Events exposing (onClick)
 import List exposing (singleton)
@@ -39,8 +42,8 @@ block attrs label submitMsg loading disabled =
         ]
 
 
-delete : msg -> Bool -> Html msg
-delete submitMsg isSending =
+delete : msg -> Bool -> DeleteInfo.Model -> Html msg
+delete submitMsg isSending isDeleteConfirmed =
     Button.button
         [ Button.outlineDanger
         , Button.onClick submitMsg
@@ -52,6 +55,15 @@ delete submitMsg isSending =
 
           else
             text "Delete"
+        , case isDeleteConfirmed of
+            DeleteInfo.Confirmed ->
+                Asset.lockOpenGlyph [ Spacing.ml2, Spacing.mb1 ]
+
+            DeleteInfo.Unconfirmed ->
+                Asset.lockGlyph [ Spacing.ml2, Spacing.mb1 ]
+
+            DeleteInfo.Uninitialized ->
+                Asset.lockGlyph [ Spacing.ml2, Spacing.mb1 ]
         ]
 
 

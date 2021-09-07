@@ -1,17 +1,18 @@
 module PlatformModal exposing (MakeModalConfig, view)
 
 import Asset
+import Bootstrap.Alert as Alert
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
+import DeleteInfo
 import Html exposing (Html, h2, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import SubmitButton exposing (submitButton)
-import TxnForm exposing (Model(..))
 
 
 type alias MakeModalConfig msg subMsg subModel =
@@ -30,6 +31,9 @@ type alias MakeModalConfig msg subMsg subModel =
     , visibility : Modal.Visibility
     , maybeDeleteMsg : Maybe msg
     , isDeleting : Bool
+    , alertMsg : Maybe (Alert.Visibility -> msg)
+    , alertVisibility : Maybe Alert.Visibility
+    , isDeleteConfirmed : DeleteInfo.Model
     }
 
 
@@ -54,7 +58,8 @@ view config =
         |> Modal.footer []
             [ Grid.containerFluid
                 []
-                [ buttonRow
+                [ DeleteInfo.deletionAlert config.alertMsg config.alertVisibility
+                , buttonRow
                     { submitText = config.submitText
                     , maybeDeleteMsg = config.maybeDeleteMsg
                     , submitting = config.isSubmitting
@@ -64,6 +69,7 @@ view config =
                     , hideMsg = config.hideMsg
                     , submitMsg = config.submitMsg
                     , isDeleting = config.isDeleting
+                    , isDeleteConfirmed = config.isDeleteConfirmed
                     }
                 ]
             ]
@@ -80,6 +86,7 @@ type alias ButtonRowConfig hideMsg submitMsg =
     , disableSave : Bool
     , disabled : Bool
     , isDeleting : Bool
+    , isDeleteConfirmed : DeleteInfo.Model
     }
 
 
@@ -92,7 +99,7 @@ buttonRow config =
           <|
             case ( config.enableExit, config.maybeDeleteMsg ) of
                 ( True, Just deleteMsg ) ->
-                    [ SubmitButton.delete deleteMsg config.isDeleting ]
+                    [ SubmitButton.delete deleteMsg config.isDeleting config.isDeleteConfirmed ]
 
                 ( True, Nothing ) ->
                     [ exitButton config.hideMsg ]
