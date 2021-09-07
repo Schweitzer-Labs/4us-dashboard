@@ -115,6 +115,7 @@ type alias Model =
     , fromId : Maybe String
     , moreLoading : Bool
     , moreDisabled : Bool
+    , paginationSize : Int
 
     -- Deletions
     , isDeleting : Bool
@@ -181,6 +182,9 @@ init config session aggs committee committeeId =
             , fromId = Nothing
             , moreLoading = False
             , moreDisabled = False
+            , paginationSize = Pagination.size
+
+            -- Deletions
             , isDeleting = False
             }
     in
@@ -611,7 +615,7 @@ openTxnFormModalLoaded model txn =
 
 type Msg
     = GotSession Session
-    | GotTransactionsData (Result Http.Error GetTxns.Model)
+    | GotTxnsData (Result Http.Error GetTxns.Model)
     | GenerateReport FileFormat
     | HideCreateContributionModal
     | ShowCreateContributionModal
@@ -622,7 +626,7 @@ type Msg
     | AnimateCreateContributionModal Modal.Visibility
     | GotCreateContributionResponse (Result Http.Error MutationResponse)
     | GotCreateDisbursementResponse (Result Http.Error MutationResponse)
-    | GotTransactionData (Result Http.Error GetTxn.Model)
+    | GotTxnData (Result Http.Error GetTxn.Model)
     | GotReportData (Result Http.Error GetReport.Model)
     | SubmitCreateContribution
     | ToggleActionsDropdown Dropdown.State
@@ -742,7 +746,7 @@ update msg model =
                 , disbRuleUnverifiedSuccessViewActive = False
                 , getTransactionCanceled = True
               }
-            , getTransactions model Nothing
+            , getRehydrateTxnsSet model model.filterTransactionType
             )
 
         DisbRuleUnverifiedSubmit ->
@@ -873,7 +877,7 @@ update msg model =
                 , contribRuleUnverifiedSuccessViewActive = False
                 , getTransactionCanceled = True
               }
-            , getTransactions model Nothing
+            , getRehydrateTxnsSet model model.filterTransactionType
             )
 
         ContribRuleUnverifiedSubmit ->
@@ -1030,7 +1034,7 @@ update msg model =
         AnimateGenerateDisclosureModal visibility ->
             ( { model | generateDisclosureModalVisibility = visibility }, Cmd.none )
 
-        GotTransactionData res ->
+        GotTxnData res ->
             case model.getTransactionCanceled of
                 False ->
                     case res of
@@ -1044,7 +1048,7 @@ update msg model =
                     ( model, Cmd.none )
 
         --( model, load <| loginUrl cognitoDomain cognitoClientId redirectUri model.committeeId )
-        GotTransactionsData res ->
+        GotTxnsData res ->
             case res of
                 Ok body ->
                     let
@@ -1285,7 +1289,7 @@ update msg model =
 
         -- Feed pagination
         MoreTxnsClicked ->
-            ( { model | moreLoading = True }, getNextTxnsSet model )
+            ( { model | moreLoading = True, paginationSize = model.paginationSize + Pagination.size }, getNextTxnsSet model )
 
         GotTxnSet res ->
             case res of
@@ -1375,14 +1379,19 @@ getNextTxnsSet model =
             model.fromId
 
 
+getRehydrateTxnsSet : Model -> Maybe TransactionType -> Cmd Msg
+getRehydrateTxnsSet model maybeTxnType =
+    GetTxns.send GotTxnsData model.config <| GetTxns.encode model.committeeId maybeTxnType (Just model.paginationSize) Nothing
+
+
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg
 getTransactions model maybeTxnType =
-    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
+    GetTxns.send GotTxnsData model.config <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
 
 
 getTransaction : Model -> String -> Cmd Msg
 getTransaction model txnId =
-    GetTxn.send GotTransactionData model.config <| GetTxn.encode model.committeeId txnId
+    GetTxn.send GotTxnData model.config <| GetTxn.encode model.committeeId txnId
 
 
 getReport : Model -> Cmd Msg
