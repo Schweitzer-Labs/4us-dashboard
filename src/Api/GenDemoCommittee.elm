@@ -10,8 +10,16 @@ import Json.Encode as Encode
 query : String
 query =
     """
-    mutation($password: String!) {
-      generateCommittee(genCommittee: {password: $password}) {
+    mutation(
+        $password: String!
+        $demoType: String!
+    ) {
+      generateCommittee(
+        genCommittee: {
+            password: $password,
+            demoType: $demoType
+        }
+      ) {
         id
       }
     }
@@ -20,6 +28,7 @@ query =
 
 type alias EncodeModel =
     { password : String
+    , demoType : String
     }
 
 
@@ -32,6 +41,7 @@ encode mapper val =
         variables =
             Encode.object <|
                 [ ( "password", Encode.string model.password )
+                , ( "demoType", Encode.string model.demoType )
                 ]
     in
     encodeQuery query variables

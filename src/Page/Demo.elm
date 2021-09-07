@@ -228,7 +228,7 @@ genDemoCommittee model =
 
 toGenDemoCommittee : Model -> GenDemoCommittee.EncodeModel
 toGenDemoCommittee model =
-    { password = model.password }
+    { password = model.password, demoType = "Clean" }
 
 
 
