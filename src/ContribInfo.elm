@@ -11,7 +11,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromInKindType, fromOrgType, fromPostalCode)
+import Errors exposing (fromEmailAddress, fromInKindType, fromOrgType, fromPostalCode)
 import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
@@ -132,6 +132,7 @@ type alias ContribValidatorModel =
     , paymentDate : String
     , paymentMethod : Maybe PaymentMethod.Model
     , emailAddress : String
+    , isEmailAddressValid : Bool
     , phoneNumber : String
     , firstName : String
     , middleName : String
@@ -170,6 +171,7 @@ contribInfoValidator =
         , postalCodeValidator
         , inKindTypeValidator
         , orgTypeValidator
+        , emailValidator
         ]
 
 
@@ -197,9 +199,19 @@ orgTypeValidator =
     fromErrors orgTypeOnModelToErrors
 
 
+emailValidator : Validator String ContribValidatorModel
+emailValidator =
+    fromErrors emailAddressOnModelToErrors
+
+
 postalCodeOnModelToErrors : ContribValidatorModel -> List String
 postalCodeOnModelToErrors model =
     fromPostalCode model.postalCode
+
+
+emailAddressOnModelToErrors : ContribValidatorModel -> List String
+emailAddressOnModelToErrors model =
+    fromEmailAddress model.isEmailAddressValid
 
 
 inKindTypeOnModelToErrors : ContribValidatorModel -> List String

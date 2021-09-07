@@ -5,6 +5,12 @@ import Html exposing (Html, text)
 import Html.Attributes exposing (class)
 
 
+type Model
+    = Confirmed
+    | Unconfirmed
+    | Uninitialized
+
+
 deletionAlert : Maybe (Alert.Visibility -> msg) -> Maybe Alert.Visibility -> Html msg
 deletionAlert msg visibility =
     case ( msg, visibility ) of
@@ -20,9 +26,3 @@ deletionAlert msg visibility =
 
         _ ->
             text ""
-
-
-type Model
-    = Confirmed
-    | Unconfirmed
-    | Uninitialized

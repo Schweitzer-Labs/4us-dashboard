@@ -58,7 +58,7 @@ view config =
         |> Modal.footer []
             [ Grid.containerFluid
                 []
-                [ deletionAlert config.alertMsg config.alertVisibility
+                [ DeleteInfo.deletionAlert config.alertMsg config.alertVisibility
                 , buttonRow
                     { submitText = config.submitText
                     , maybeDeleteMsg = config.maybeDeleteMsg
@@ -137,20 +137,3 @@ successMessage successViewMessage =
             ]
             [ text <| successViewMessage ]
         ]
-
-
-deletionAlert : Maybe (Alert.Visibility -> msg) -> Maybe Alert.Visibility -> Html msg
-deletionAlert msg visibility =
-    case ( msg, visibility ) of
-        ( Just alertMsg, Just alertVisibility ) ->
-            Alert.config
-                |> Alert.danger
-                |> Alert.dismissableWithAnimation alertMsg
-                |> Alert.children
-                    [ Alert.h5 [ class "font-weight-bold" ] [ text "Warning" ]
-                    , Alert.h6 [] [ text "This action is irreversible" ]
-                    ]
-                |> Alert.view alertVisibility
-
-        _ ->
-            text ""
