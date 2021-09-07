@@ -456,7 +456,7 @@ actionsDropdown model =
             { options = []
             , toggleMsg = ToggleActionsDropdown
             , toggleButton =
-                Dropdown.toggle [ Button.success, Button.disabled False, Button.attrs [ Spacing.pl3, Spacing.pr3 ] ] [ text "Actions" ]
+                Dropdown.toggle [ Button.success, Button.disabled (Committee.isPolicapital model.committee), Button.attrs [ Spacing.pl3, Spacing.pr3 ] ] [ text "Actions" ]
             , items =
                 [ Dropdown.buttonItem [ onClick ShowCreateContributionModal ] [ text "Create Contribution" ]
                 , Dropdown.buttonItem [ onClick CreateDisbursementModalShow ] [ text "Create Disbursement" ]
@@ -476,7 +476,12 @@ filtersDropdown model =
             { options = []
             , toggleMsg = ToggleFiltersDropdown
             , toggleButton =
-                Dropdown.toggle [ Button.success, Button.attrs [ Spacing.pl3, Spacing.pr3 ] ] [ text "Filters" ]
+                Dropdown.toggle
+                    [ Button.success
+                    , Button.disabled <| Committee.isPolicapital model.committee
+                    , Button.attrs [ Spacing.pl3, Spacing.pr3 ]
+                    ]
+                    [ text "Filters" ]
             , items =
                 [ Dropdown.buttonItem [ onClick FilterNeedsReview ] [ text "Needs Review" ]
                 , Dropdown.buttonItem [ onClick FilterByContributions ] [ text "Contributions" ]
@@ -584,6 +589,14 @@ openTxnFormModalLoading model txn =
             , getTransaction model txn.id
             )
 
+        TxnForm.ContribUnverified ->
+            ( { model
+                | contribRuleVerifiedModalVisibility = Modal.shown
+                , contribRuleVerifiedModal = ContribRuleVerified.loadingInit
+              }
+            , getTransaction model txn.id
+            )
+
         _ ->
             ( model, Cmd.none )
 
@@ -608,6 +621,14 @@ openTxnFormModalLoaded model txn =
             )
 
         TxnForm.ContribRuleVerified ->
+            ( { model
+                | contribRuleVerifiedModalVisibility = Modal.shown
+                , contribRuleVerifiedModal = ContribRuleVerified.init txn
+              }
+            , Cmd.none
+            )
+
+        TxnForm.ContribUnverified ->
             ( { model
                 | contribRuleVerifiedModalVisibility = Modal.shown
                 , contribRuleVerifiedModal = ContribRuleVerified.init txn

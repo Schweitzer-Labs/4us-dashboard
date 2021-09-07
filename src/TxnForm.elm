@@ -9,6 +9,7 @@ type Model
     | DisbRuleUnverified
     | ContribRuleVerified
     | ContribRuleUnverified
+    | ContribUnverified
     | NoOp
 
 
@@ -34,6 +35,9 @@ fromTxn txn =
 
         ( In, False, True ) ->
             ContribRuleUnverified
+
+        ( In, False, False ) ->
+            ContribUnverified
 
         _ ->
             NoOp

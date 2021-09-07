@@ -13,6 +13,7 @@ module TxnForm.DisbRuleVerified exposing
 import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
 import Bootstrap.Popover as Popover
+import Copy
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
 import ExpandableBankData

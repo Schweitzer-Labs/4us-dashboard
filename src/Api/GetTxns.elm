@@ -30,6 +30,7 @@ committeeQuery =
               officeType
               bankName
               id
+              platformPlan
             }
     """
 

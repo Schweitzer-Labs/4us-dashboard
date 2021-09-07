@@ -38,7 +38,7 @@ COGNITO_CLIENT_ID = $(eval COGNITO_CLIENT_ID := $$(shell aws cognito-idp list-us
 # Make targets
 all: build
 
-clean: clean
+clean:
 	@rm -rf $(BUILD_DIR)
 	@rm -rf node_modules
 

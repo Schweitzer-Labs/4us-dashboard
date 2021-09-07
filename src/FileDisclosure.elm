@@ -51,7 +51,7 @@ view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsRevi
                         ]
 
                 Err error ->
-                    text "Something went wrong"
+                    text "Awaiting Verified Transactions"
 
         Nothing ->
             let
