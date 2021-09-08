@@ -59,18 +59,22 @@ view config =
             [ Grid.containerFluid
                 []
                 [ DeleteInfo.deletionAlert config.alertMsg config.alertVisibility
-                , buttonRow
-                    { submitText = config.submitText
-                    , maybeDeleteMsg = config.maybeDeleteMsg
-                    , submitting = config.isSubmitting
-                    , enableExit = True
-                    , disableSave = config.successViewActive
-                    , disabled = config.isSubmitDisabled
-                    , hideMsg = config.hideMsg
-                    , submitMsg = config.submitMsg
-                    , isDeleting = config.isDeleting
-                    , isDeleteConfirmed = config.isDeleteConfirmed
-                    }
+                , if config.successViewActive then
+                    successButtonRow config.hideMsg
+
+                  else
+                    buttonRow
+                        { submitText = config.submitText
+                        , maybeDeleteMsg = config.maybeDeleteMsg
+                        , submitting = config.isSubmitting
+                        , enableExit = True
+                        , disableSave = config.successViewActive
+                        , disabled = config.isSubmitDisabled
+                        , hideMsg = config.hideMsg
+                        , submitMsg = config.submitMsg
+                        , isDeleting = config.isDeleting
+                        , isDeleteConfirmed = config.isDeleteConfirmed
+                        }
                 ]
             ]
         |> Modal.view config.visibility
@@ -114,6 +118,21 @@ buttonRow config =
              else
                 [ submitButton config.submitText config.submitMsg config.submitting config.disabled ]
             )
+        ]
+
+
+successButtonRow : msg -> Html msg
+successButtonRow hideMsg =
+    Grid.row
+        [ Row.aroundXs ]
+        [ Grid.col [ Col.offsetLg10 ]
+            [ Button.button
+                [ Button.outlinePrimary
+                , Button.block
+                , Button.attrs [ onClick hideMsg ]
+                ]
+                [ text "OK" ]
+            ]
         ]
 
 
