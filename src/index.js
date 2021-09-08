@@ -1,6 +1,7 @@
 import './main.css';
 import { Elm } from './Main.elm';
 import {verifyEmail} from "./js/email-validator";
+import {verifyPhone} from "./js/phone";
 
 const storageKey = 'token'
 
@@ -68,6 +69,9 @@ function runApp() {
       });
     app.ports.sendEmail.subscribe((email)=> {
       app.ports.isValidEmailReceiver.send(verifyEmail(email))
+    })
+    app.ports.sendPhone.subscribe((phoneNum) => {
+      app.ports.isValidNumReceiver.send(verifyPhone(phoneNum).isValid)
     })
     } else {
       window.location =

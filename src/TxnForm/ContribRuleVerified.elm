@@ -50,6 +50,7 @@ type alias Model =
     , emailAddress : String
     , isEmailAddressValid : Bool
     , phoneNumber : String
+    , isPhoneNumValid : Bool
     , firstName : String
     , middleName : String
     , lastName : String
@@ -105,6 +106,7 @@ init txn =
     , emailAddress = Maybe.withDefault "" txn.emailAddress
     , isEmailAddressValid = True
     , phoneNumber = Maybe.withDefault "" txn.phoneNumber
+    , isPhoneNumValid = True
     , firstName = Maybe.withDefault "" txn.firstName
     , middleName = Maybe.withDefault "" txn.middleName
     , lastName = Maybe.withDefault "" txn.lastName
@@ -428,6 +430,7 @@ validationMapper model =
     , emailAddress = model.emailAddress
     , isEmailAddressValid = model.isEmailAddressValid
     , phoneNumber = model.phoneNumber
+    , isPhoneNumValid = model.isPhoneNumValid
     , firstName = model.firstName
     , middleName = model.middleName
     , lastName = model.lastName
