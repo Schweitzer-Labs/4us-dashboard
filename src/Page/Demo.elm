@@ -5,6 +5,7 @@ import Api
 import Api.GenDemoCommittee as GenDemoCommittee
 import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse(..))
+import Bootstrap.Button as Button
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
@@ -18,6 +19,7 @@ import Errors
 import Html exposing (..)
 import Html.Attributes as SvgA exposing (class, for, href, target)
 import Http
+import LabelWithData exposing (dataText)
 import Session exposing (Session)
 import SubmitButton
 import Time
@@ -39,6 +41,7 @@ type alias Model =
     , maybeDemoCommitteeId : Maybe String
     , errors : List String
     , loadingProgress : Int
+    , eventLogs : List String
     }
 
 
@@ -56,6 +59,7 @@ init config session aggs committee committeeId =
             , maybeDemoCommitteeId = Nothing
             , errors = []
             , loadingProgress = 0
+            , eventLogs = [ "Bank record seeded", "Transaction Reconciled", "Transaction Reconciled", "Bank record seeded" ]
             }
     in
     ( initModel
@@ -71,7 +75,7 @@ view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "4US - Demo"
     , content =
-        div [] [ formRow model ]
+        div [] [ manageDemoView model ]
     }
 
 
@@ -103,6 +107,56 @@ formRow model =
             ]
         ]
             ++ urlRow model
+
+
+manageDemoView : Model -> Html Msg
+manageDemoView model =
+    Grid.containerFluid
+        [ Spacing.mt3, class "fade-in" ]
+    <|
+        [ Grid.row []
+            [ Grid.col [] [ dataText "Manage Demo Committee" ]
+            ]
+        , Grid.row
+            []
+            [ Grid.col
+                [ Col.xs3 ]
+              <|
+                demoLabel "Committee Link"
+                    ++ [ a [ href <| idToCommitteeUrl model.config model.committeeId ] [ text <| idToCommitteeUrl model.config model.committeeId ] ]
+                    ++ demoLabel "Actions"
+                    ++ [ SubmitButton.block [] "Seed Bank record" NoOp False False ]
+                    ++ [ SubmitButton.block [ Spacing.mt3 ] "Reconcile One" NoOp False False ]
+                    ++ [ resetButton ]
+                    ++ demoLabel "Event Log"
+                    ++ [ eventList model.eventLogs ]
+            ]
+        ]
+            ++ urlRow model
+
+
+demoLabel : String -> List (Html msg)
+demoLabel label =
+    [ div [ Spacing.mt3 ] [ text label ] ]
+
+
+resetButton : Html Msg
+resetButton =
+    Button.button
+        [ Button.outlineDanger
+        , Button.onClick NoOp
+        , Button.disabled False
+        , Button.block
+        , Button.attrs [ Spacing.mt3 ]
+        ]
+        [ text "Reset" ]
+
+
+eventList : List String -> Html msg
+eventList list =
+    list
+        |> List.map (\e -> li [] [ text e ])
+        |> ul []
 
 
 idToCommitteeUrl : Config -> String -> String
@@ -140,6 +194,7 @@ type Msg
     | GotTransactionsData (Result Http.Error GetTxns.Model)
     | GenDemoCommitteeClicked
     | Tick Time.Posix
+    | NoOp
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -210,6 +265,9 @@ update msg model =
                       }
                     , Cmd.none
                     )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 
