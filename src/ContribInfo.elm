@@ -11,7 +11,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromEmailAddress, fromInKindType, fromOrgType, fromPostalCode)
+import Errors exposing (fromEmailAddress, fromInKindType, fromOrgType, fromPhoneNumber, fromPostalCode)
 import Html exposing (Html, div, h5, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
@@ -134,6 +134,7 @@ type alias ContribValidatorModel =
     , emailAddress : String
     , isEmailAddressValid : Bool
     , phoneNumber : String
+    , isPhoneNumValid : Bool
     , firstName : String
     , middleName : String
     , lastName : String
@@ -172,6 +173,7 @@ contribInfoValidator =
         , inKindTypeValidator
         , orgTypeValidator
         , emailValidator
+        , phoneValidator
         ]
 
 
@@ -204,6 +206,11 @@ emailValidator =
     fromErrors emailAddressOnModelToErrors
 
 
+phoneValidator : Validator String ContribValidatorModel
+phoneValidator =
+    fromErrors phoneNumberOnModelToErrors
+
+
 postalCodeOnModelToErrors : ContribValidatorModel -> List String
 postalCodeOnModelToErrors model =
     fromPostalCode model.postalCode
@@ -212,6 +219,11 @@ postalCodeOnModelToErrors model =
 emailAddressOnModelToErrors : ContribValidatorModel -> List String
 emailAddressOnModelToErrors model =
     fromEmailAddress model.isEmailAddressValid
+
+
+phoneNumberOnModelToErrors : ContribValidatorModel -> List String
+phoneNumberOnModelToErrors { phoneNumber, isPhoneNumValid } =
+    fromPhoneNumber phoneNumber isPhoneNumValid
 
 
 inKindTypeOnModelToErrors : ContribValidatorModel -> List String

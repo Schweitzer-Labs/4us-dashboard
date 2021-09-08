@@ -1,4 +1,4 @@
-module Errors exposing (fromEmailAddress, fromInKind, fromInKindType, fromMaxAmount, fromMaxDate, fromOrgType, fromPostalCode, view)
+module Errors exposing (fromEmailAddress, fromInKind, fromInKindType, fromMaxAmount, fromMaxDate, fromOrgType, fromPhoneNumber, fromPostalCode, view)
 
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
@@ -119,6 +119,18 @@ fromEmailAddress emailAddressValidated =
 
     else
         [ "Email Address is invalid" ]
+
+
+fromPhoneNumber : String -> Bool -> List String
+fromPhoneNumber phoneNum phoneNumberValidated =
+    if String.length phoneNum == 0 then
+        []
+
+    else if phoneNumberValidated then
+        []
+
+    else
+        [ "Phone number is invalid" ]
 
 
 view : Errors -> List (Html msg)

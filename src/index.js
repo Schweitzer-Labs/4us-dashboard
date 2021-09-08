@@ -71,7 +71,7 @@ function runApp() {
       app.ports.isValidEmailReceiver.send(verifyEmail(email))
     })
     app.ports.sendPhone.subscribe((phoneNum) => {
-      app.ports.isValidNumReceiver.send(verifyPhone(phoneNum))
+      app.ports.isValidNumReceiver.send(verifyPhone(phoneNum).isValid)
     })
     } else {
       window.location =

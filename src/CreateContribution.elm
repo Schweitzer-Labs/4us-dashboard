@@ -356,6 +356,7 @@ validationMapper model =
     , emailAddress = model.emailAddress
     , isEmailAddressValid = model.isEmailAddressValid
     , phoneNumber = model.phoneNumber
+    , isPhoneNumValid = model.isPhoneNumberValid
     , firstName = model.firstName
     , middleName = model.middleName
     , lastName = model.lastName
