@@ -287,7 +287,6 @@ createDisbursementModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , enableExit = True
         }
 
 
@@ -312,7 +311,6 @@ createContributionModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , enableExit = True
         }
 
 
@@ -330,7 +328,7 @@ disbRuleUnverifiedModal model =
         , subModel = model.disbRuleUnverifiedModal
         , subView = DisbRuleUnverified.view
         , submitMsg = DisbRuleUnverifiedSubmit
-        , submitText = "Ok"
+        , submitText = "Save"
         , isSubmitting = model.disbRuleUnverifiedSubmitting
         , successViewActive = model.disbRuleUnverifiedSuccessViewActive
         , successViewMessage = " Reconciliation Successful!"
@@ -341,7 +339,6 @@ disbRuleUnverifiedModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , enableExit = False
         }
 
 
@@ -366,7 +363,6 @@ disbRuleVerifiedModal model =
         , alertMsg = Just DeleteAlertMsg
         , alertVisibility = Just model.alertVisibility
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , enableExit = True
         }
 
 
@@ -395,7 +391,6 @@ contribRuleUnverifiedModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , enableExit = False
         }
 
 
@@ -420,7 +415,6 @@ contribRuleVerifiedModal model =
         , alertMsg = Just DeleteAlertMsg
         , alertVisibility = Just model.alertVisibility
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , enableExit = True
         }
 
 
