@@ -12,7 +12,7 @@ query =
     """
     mutation(
         $password: String!
-        $demoType: String!
+        $demoType: DemoType
     ) {
       generateCommittee(
         genCommittee: {
