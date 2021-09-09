@@ -1,4 +1,4 @@
-module Api.SeedDemoBankRecords exposing (..)
+module Api.ReconcileDemoTxn exposing (..)
 
 import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder)
 import Config exposing (Config)
@@ -13,13 +13,11 @@ query =
 mutation(
   $password: String!
   $committeeId: String!
-  $transactionType: TransactionType!
 ) {
-  seedDemoBankRecords(
-    seedDemoBankRecordsInput: {
+  reconcileOneDemoTransaction(
+    manageDemoCommitteeInput: {
       password: $password,
       committeeId: $committeeId,
-      transactionType: $transactionType
     }
   ) {
     id
@@ -31,7 +29,6 @@ mutation(
 type alias EncodeModel =
     { password : String
     , committeeId : String
-    , transactionType : String
     }
 
 
@@ -45,7 +42,6 @@ encode mapper val =
             Encode.object <|
                 [ ( "password", Encode.string model.password )
                 , ( "committeeId", Encode.string model.committeeId )
-                , ( "transactionType", Encode.string model.transactionType )
                 ]
     in
     encodeQuery query variables
@@ -55,7 +51,7 @@ successDecoder : Decode.Decoder MutationResponse
 successDecoder =
     Decode.map Success <|
         Decode.field "data" <|
-            Decode.field "seedDemoBankRecords" <|
+            Decode.field "reconcileOneDemoTransaction" <|
                 Decode.field "id" <|
                     Decode.string
 

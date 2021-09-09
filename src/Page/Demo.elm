@@ -5,6 +5,7 @@ import Api
 import Api.GenDemoCommittee as GenDemoCommittee
 import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse(..))
+import Api.ReconcileDemoTxn as ReconcileDemoTxs
 import Api.SeedDemoBankRecords as SeedDemoBankRecords
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
@@ -60,7 +61,7 @@ init config session aggs committee committeeId =
             , maybeDemoCommitteeId = Nothing
             , errors = []
             , loadingProgress = 0
-            , eventLogs = [ "Bank record seeded", "Transaction Reconciled", "Transaction Reconciled", "Bank record seeded" ]
+            , eventLogs = []
             }
     in
     ( initModel
@@ -127,10 +128,10 @@ manageDemoView model =
                     ++ [ a [ href <| idToCommitteeUrl model.config model.committeeId ] [ text <| idToCommitteeUrl model.config model.committeeId ] ]
                     ++ demoLabel "Actions"
                     ++ [ SubmitButton.block [] "Seed Bank record" SeedDemoBankRecordClicked False False ]
-                    ++ [ SubmitButton.block [ Spacing.mt3 ] "Reconcile One" NoOp False False ]
+                    ++ [ SubmitButton.block [ Spacing.mt3 ] "Reconcile One" ReconcileDemoTxnClicked False False ]
                     ++ [ resetButton ]
                     ++ demoLabel "Event Log"
-                    ++ [ eventList model.eventLogs ]
+                    ++ [ eventList model ]
             ]
         ]
             ++ urlRow model
@@ -153,9 +154,9 @@ resetButton =
         [ text "Reset" ]
 
 
-eventList : List String -> Html msg
-eventList list =
-    list
+eventList : Model -> Html msg
+eventList model =
+    model.eventLogs
         |> List.map (\e -> li [] [ text e ])
         |> ul []
 
@@ -197,6 +198,8 @@ type Msg
     | Tick Time.Posix
     | SeedDemoBankRecordGotResp (Result Http.Error MutationResponse)
     | SeedDemoBankRecordClicked
+    | ReconcileDemoTxnGotResp (Result Http.Error MutationResponse)
+    | ReconcileDemoTxnClicked
     | NoOp
 
 
@@ -270,7 +273,7 @@ update msg model =
                     )
 
         SeedDemoBankRecordClicked ->
-            ( { model | isSubmitting = True, errors = [] }, seedDemoBankRecord model )
+            ( { model | eventLogs = model.eventLogs ++ [ "Bank Record Seeded" ] }, seedDemoBankRecord model )
 
         SeedDemoBankRecordGotResp res ->
             case res of
@@ -305,6 +308,39 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+        ReconcileDemoTxnClicked ->
+            ( { model | eventLogs = model.eventLogs ++ [ "Transaction Reconciled" ] }, reconcileDemoTxn model )
+
+        ReconcileDemoTxnGotResp res ->
+            case res of
+                Ok seedDemoResp ->
+                    case seedDemoResp of
+                        Success id ->
+                            ( { model
+                                | errors = []
+                              }
+                            , Cmd.none
+                            )
+
+                        ResValidationFailure errList ->
+                            ( { model
+                                | errors =
+                                    List.singleton <|
+                                        Maybe.withDefault "Unexpected API response" <|
+                                            List.head errList
+                              }
+                            , Cmd.none
+                            )
+
+                Err err ->
+                    ( { model
+                        | errors = [ Api.decodeError err ]
+                        , isSubmitting = False
+                        , loadingProgress = 0
+                      }
+                    , Cmd.none
+                    )
+
 
 
 -- HTTP
@@ -313,6 +349,10 @@ update msg model =
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg
 getTransactions model maybeTxnType =
     GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
+
+
+
+-- Generate Committee
 
 
 genDemoCommittee : Model -> Cmd Msg
@@ -325,9 +365,13 @@ toGenDemoCommittee model =
     { password = model.password, demoType = "Clean" }
 
 
+
+-- Seed Bank Record
+
+
 toSeedDemoBankRecord : Model -> SeedDemoBankRecords.EncodeModel
 toSeedDemoBankRecord model =
-    { password = "f4jp1i"
+    { password = model.password
     , committeeId = model.committeeId
     , transactionType = "Contribution"
     }
@@ -335,7 +379,23 @@ toSeedDemoBankRecord model =
 
 seedDemoBankRecord : Model -> Cmd Msg
 seedDemoBankRecord model =
-    SeedDemoBankRecords.send GenDemoCommitteeGotResp model.config <| SeedDemoBankRecords.encode toSeedDemoBankRecord model
+    SeedDemoBankRecords.send SeedDemoBankRecordGotResp model.config <| SeedDemoBankRecords.encode toSeedDemoBankRecord model
+
+
+
+-- Reconcile Bank Record
+
+
+toReconcileDemoTxn : Model -> ReconcileDemoTxs.EncodeModel
+toReconcileDemoTxn model =
+    { password = model.password
+    , committeeId = model.committeeId
+    }
+
+
+reconcileDemoTxn : Model -> Cmd Msg
+reconcileDemoTxn model =
+    ReconcileDemoTxs.send ReconcileDemoTxnGotResp model.config <| ReconcileDemoTxs.encode toReconcileDemoTxn model
 
 
 
