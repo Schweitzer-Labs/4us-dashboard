@@ -146,7 +146,8 @@ manageDemoView model =
             [ Grid.col
                 [ Col.xs3 ]
               <|
-                manageDemoUrlRow model
+                Errors.view model.errors
+                    ++ manageDemoUrlRow model
                     ++ demoLabel "Actions"
                     ++ [ SubmitButton.block [] "Seed Money In" SeedDemoBankRecordInClicked model.seedMoneyInLoading False ]
                     ++ [ SubmitButton.block [ Spacing.mt3 ] "Seed Money Out" SeedDemoBankRecordOutClicked model.seedMoneyOutLoading False ]
@@ -345,6 +346,8 @@ update msg model =
                                     List.singleton <|
                                         Maybe.withDefault "Unexpected API response" <|
                                             List.head errList
+                                , seedMoneyInLoading = False
+                                , seedMoneyOutLoading = False
                               }
                             , Cmd.none
                             )
@@ -354,6 +357,8 @@ update msg model =
                         | errors = [ Api.decodeError err ]
                         , isSubmitting = False
                         , loadingProgress = 0
+                        , seedMoneyInLoading = False
+                        , seedMoneyOutLoading = False
                       }
                     , Cmd.none
                     )
@@ -380,6 +385,7 @@ update msg model =
                                     List.singleton <|
                                         Maybe.withDefault "Unexpected API response" <|
                                             List.head errList
+                                , reconcileOneLoading = False
                               }
                             , Cmd.none
                             )
@@ -387,6 +393,7 @@ update msg model =
                 Err err ->
                     ( { model
                         | errors = [ Api.decodeError err ]
+                        , reconcileOneLoading = False
                       }
                     , Cmd.none
                     )
