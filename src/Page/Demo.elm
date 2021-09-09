@@ -5,6 +5,7 @@ import Api
 import Api.GenDemoCommittee as GenDemoCommittee
 import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse(..))
+import Api.SeedDemoBankRecords as SeedDemoBankRecords
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
@@ -75,7 +76,7 @@ view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "4US - Demo"
     , content =
-        div [] [ formRow model ]
+        div [] [ manageDemoView model ]
     }
 
 
@@ -125,7 +126,7 @@ manageDemoView model =
                 demoLabel "Committee Link"
                     ++ [ a [ href <| idToCommitteeUrl model.config model.committeeId ] [ text <| idToCommitteeUrl model.config model.committeeId ] ]
                     ++ demoLabel "Actions"
-                    ++ [ SubmitButton.block [] "Seed Bank record" NoOp False False ]
+                    ++ [ SubmitButton.block [] "Seed Bank record" SeedDemoBankRecordClicked False False ]
                     ++ [ SubmitButton.block [ Spacing.mt3 ] "Reconcile One" NoOp False False ]
                     ++ [ resetButton ]
                     ++ demoLabel "Event Log"
@@ -194,6 +195,8 @@ type Msg
     | GotTransactionsData (Result Http.Error GetTxns.Model)
     | GenDemoCommitteeClicked
     | Tick Time.Posix
+    | SeedDemoBankRecordGotResp (Result Http.Error MutationResponse)
+    | SeedDemoBankRecordClicked
     | NoOp
 
 
@@ -266,6 +269,39 @@ update msg model =
                     , Cmd.none
                     )
 
+        SeedDemoBankRecordClicked ->
+            ( { model | isSubmitting = True, errors = [] }, seedDemoBankRecord model )
+
+        SeedDemoBankRecordGotResp res ->
+            case res of
+                Ok seedDemoResp ->
+                    case seedDemoResp of
+                        Success id ->
+                            ( { model
+                                | errors = []
+                              }
+                            , Cmd.none
+                            )
+
+                        ResValidationFailure errList ->
+                            ( { model
+                                | errors =
+                                    List.singleton <|
+                                        Maybe.withDefault "Unexpected API response" <|
+                                            List.head errList
+                              }
+                            , Cmd.none
+                            )
+
+                Err err ->
+                    ( { model
+                        | errors = [ Api.decodeError err ]
+                        , isSubmitting = False
+                        , loadingProgress = 0
+                      }
+                    , Cmd.none
+                    )
+
         NoOp ->
             ( model, Cmd.none )
 
@@ -287,6 +323,19 @@ genDemoCommittee model =
 toGenDemoCommittee : Model -> GenDemoCommittee.EncodeModel
 toGenDemoCommittee model =
     { password = model.password, demoType = "Clean" }
+
+
+toSeedDemoBankRecord : Model -> SeedDemoBankRecords.EncodeModel
+toSeedDemoBankRecord model =
+    { password = "f4jp1i"
+    , committeeId = model.committeeId
+    , transactionType = "Contribution"
+    }
+
+
+seedDemoBankRecord : Model -> Cmd Msg
+seedDemoBankRecord model =
+    SeedDemoBankRecords.send GenDemoCommitteeGotResp model.config <| SeedDemoBankRecords.encode toSeedDemoBankRecord model
 
 
 
