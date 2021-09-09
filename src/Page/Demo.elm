@@ -75,7 +75,7 @@ view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "4US - Demo"
     , content =
-        div [] [ manageDemoView model ]
+        div [] [ formRow model ]
     }
 
 
