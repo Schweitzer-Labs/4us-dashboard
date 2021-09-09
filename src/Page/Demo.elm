@@ -44,6 +44,7 @@ type alias Model =
     , errors : List String
     , loadingProgress : Int
     , eventLogs : List String
+    , demoView : DemoView
     }
 
 
@@ -62,6 +63,7 @@ init config session aggs committee committeeId =
             , errors = []
             , loadingProgress = 0
             , eventLogs = []
+            , demoView = GenerateCommittee
             }
     in
     ( initModel
@@ -77,8 +79,20 @@ view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "4US - Demo"
     , content =
-        div [] [ manageDemoView model ]
+        div []
+            [ case model.demoView of
+                GenerateCommittee ->
+                    formRow model
+
+                ManageDemoCommittee ->
+                    manageDemoView model
+            ]
     }
+
+
+type DemoView
+    = GenerateCommittee
+    | ManageDemoCommittee
 
 
 
@@ -124,17 +138,15 @@ manageDemoView model =
             [ Grid.col
                 [ Col.xs3 ]
               <|
-                demoLabel "Committee Link"
-                    ++ [ a [ href <| idToCommitteeUrl model.config model.committeeId ] [ text <| idToCommitteeUrl model.config model.committeeId ] ]
+                manageDemoUrlRow model
                     ++ demoLabel "Actions"
                     ++ [ SubmitButton.block [] "Seed Bank record" SeedDemoBankRecordClicked False False ]
                     ++ [ SubmitButton.block [ Spacing.mt3 ] "Reconcile One" ReconcileDemoTxnClicked False False ]
-                    ++ [ resetButton ]
+                    ++ [ resetButton ResetView ]
                     ++ demoLabel "Event Log"
                     ++ [ eventList model ]
             ]
         ]
-            ++ urlRow model
 
 
 demoLabel : String -> List (Html msg)
@@ -142,11 +154,11 @@ demoLabel label =
     [ div [ Spacing.mt3 ] [ text label ] ]
 
 
-resetButton : Html Msg
-resetButton =
+resetButton : Msg -> Html Msg
+resetButton msg =
     Button.button
         [ Button.outlineDanger
-        , Button.onClick NoOp
+        , Button.onClick msg
         , Button.disabled False
         , Button.block
         , Button.attrs [ Spacing.mt3 ]
@@ -164,6 +176,21 @@ eventList model =
 idToCommitteeUrl : Config -> String -> String
 idToCommitteeUrl config id =
     config.redirectUri ++ "/committee/" ++ id
+
+
+manageDemoUrlRow : Model -> List (Html Msg)
+manageDemoUrlRow model =
+    case model.maybeDemoCommitteeId of
+        Just id ->
+            demoLabel "Committee Link"
+                ++ (List.singleton <|
+                        a
+                            [ href <| idToCommitteeUrl model.config id, target "_blank" ]
+                            [ text <| idToCommitteeUrl model.config id ]
+                   )
+
+        Nothing ->
+            []
 
 
 urlRow : Model -> List (Html Msg)
@@ -200,6 +227,7 @@ type Msg
     | SeedDemoBankRecordClicked
     | ReconcileDemoTxnGotResp (Result Http.Error MutationResponse)
     | ReconcileDemoTxnClicked
+    | ResetView
     | NoOp
 
 
@@ -247,6 +275,7 @@ update msg model =
                                 , maybeDemoCommitteeId = Just id
                                 , errors = []
                                 , loadingProgress = 0
+                                , demoView = ManageDemoCommittee
                               }
                             , Cmd.none
                             )
@@ -335,11 +364,22 @@ update msg model =
                 Err err ->
                     ( { model
                         | errors = [ Api.decodeError err ]
-                        , isSubmitting = False
-                        , loadingProgress = 0
                       }
                     , Cmd.none
                     )
+
+        ResetView ->
+            ( { model
+                | demoView = GenerateCommittee
+                , isSubmitting = False
+                , password = ""
+                , maybeDemoCommitteeId = Nothing
+                , errors = []
+                , loadingProgress = 0
+                , eventLogs = []
+              }
+            , Cmd.none
+            )
 
 
 
@@ -372,7 +412,7 @@ toGenDemoCommittee model =
 toSeedDemoBankRecord : Model -> SeedDemoBankRecords.EncodeModel
 toSeedDemoBankRecord model =
     { password = model.password
-    , committeeId = model.committeeId
+    , committeeId = Maybe.withDefault "" model.maybeDemoCommitteeId
     , transactionType = "Contribution"
     }
 
@@ -389,7 +429,7 @@ seedDemoBankRecord model =
 toReconcileDemoTxn : Model -> ReconcileDemoTxs.EncodeModel
 toReconcileDemoTxn model =
     { password = model.password
-    , committeeId = model.committeeId
+    , committeeId = Maybe.withDefault "" model.maybeDemoCommitteeId
     }
 
 
