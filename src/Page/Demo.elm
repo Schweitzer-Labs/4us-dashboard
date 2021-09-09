@@ -45,6 +45,7 @@ type alias Model =
     , loadingProgress : Int
     , eventLogs : List String
     , demoView : DemoView
+    , transactionType : Maybe String
     }
 
 
@@ -64,6 +65,7 @@ init config session aggs committee committeeId =
             , loadingProgress = 0
             , eventLogs = []
             , demoView = GenerateCommittee
+            , transactionType = Nothing
             }
     in
     ( initModel
@@ -140,7 +142,8 @@ manageDemoView model =
               <|
                 manageDemoUrlRow model
                     ++ demoLabel "Actions"
-                    ++ [ SubmitButton.block [] "Seed Bank record" SeedDemoBankRecordClicked False False ]
+                    ++ [ SubmitButton.block [] "Seed Money In" SeedDemoBankRecordInClicked False False ]
+                    ++ [ SubmitButton.block [ Spacing.mt3 ] "Seed Money Out" SeedDemoBankRecordOutClicked False False ]
                     ++ [ SubmitButton.block [ Spacing.mt3 ] "Reconcile One" ReconcileDemoTxnClicked False False ]
                     ++ [ resetButton ResetView ]
                     ++ demoLabel "Event Log"
@@ -223,8 +226,9 @@ type Msg
     | GotTransactionsData (Result Http.Error GetTxns.Model)
     | GenDemoCommitteeClicked
     | Tick Time.Posix
+    | SeedDemoBankRecordInClicked
+    | SeedDemoBankRecordOutClicked
     | SeedDemoBankRecordGotResp (Result Http.Error MutationResponse)
-    | SeedDemoBankRecordClicked
     | ReconcileDemoTxnGotResp (Result Http.Error MutationResponse)
     | ReconcileDemoTxnClicked
     | ResetView
@@ -301,8 +305,19 @@ update msg model =
                     , Cmd.none
                     )
 
-        SeedDemoBankRecordClicked ->
-            ( { model | eventLogs = model.eventLogs ++ [ "Bank Record Seeded" ] }, seedDemoBankRecord model )
+        SeedDemoBankRecordInClicked ->
+            ( { model
+                | eventLogs = model.eventLogs ++ [ "Bank Record Seeded" ]
+              }
+            , seedDemoBankRecord model (Just "Contribution")
+            )
+
+        SeedDemoBankRecordOutClicked ->
+            ( { model
+                | eventLogs = model.eventLogs ++ [ "Bank Record Seeded" ]
+              }
+            , seedDemoBankRecord model (Just "Disbursement")
+            )
 
         SeedDemoBankRecordGotResp res ->
             case res of
@@ -333,9 +348,6 @@ update msg model =
                       }
                     , Cmd.none
                     )
-
-        NoOp ->
-            ( model, Cmd.none )
 
         ReconcileDemoTxnClicked ->
             ( { model | eventLogs = model.eventLogs ++ [ "Transaction Reconciled" ] }, reconcileDemoTxn model )
@@ -381,6 +393,9 @@ update msg model =
             , Cmd.none
             )
 
+        NoOp ->
+            ( model, Cmd.none )
+
 
 
 -- HTTP
@@ -413,13 +428,17 @@ toSeedDemoBankRecord : Model -> SeedDemoBankRecords.EncodeModel
 toSeedDemoBankRecord model =
     { password = model.password
     , committeeId = Maybe.withDefault "" model.maybeDemoCommitteeId
-    , transactionType = "Contribution"
+    , transactionType = Maybe.withDefault "" model.transactionType
     }
 
 
-seedDemoBankRecord : Model -> Cmd Msg
-seedDemoBankRecord model =
-    SeedDemoBankRecords.send SeedDemoBankRecordGotResp model.config <| SeedDemoBankRecords.encode toSeedDemoBankRecord model
+seedDemoBankRecord : Model -> Maybe String -> Cmd Msg
+seedDemoBankRecord model txnType =
+    let
+        state =
+            { model | transactionType = txnType }
+    in
+    SeedDemoBankRecords.send SeedDemoBankRecordGotResp model.config <| SeedDemoBankRecords.encode toSeedDemoBankRecord state
 
 
 
