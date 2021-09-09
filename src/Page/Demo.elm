@@ -46,6 +46,9 @@ type alias Model =
     , eventLogs : List String
     , demoView : DemoView
     , transactionType : Maybe String
+    , seedMoneyInLoading : Bool
+    , seedMoneyOutLoading : Bool
+    , reconcileOneLoading : Bool
     }
 
 
@@ -66,6 +69,9 @@ init config session aggs committee committeeId =
             , eventLogs = []
             , demoView = GenerateCommittee
             , transactionType = Nothing
+            , seedMoneyInLoading = False
+            , seedMoneyOutLoading = False
+            , reconcileOneLoading = False
             }
     in
     ( initModel
@@ -142,9 +148,9 @@ manageDemoView model =
               <|
                 manageDemoUrlRow model
                     ++ demoLabel "Actions"
-                    ++ [ SubmitButton.block [] "Seed Money In" SeedDemoBankRecordInClicked False False ]
-                    ++ [ SubmitButton.block [ Spacing.mt3 ] "Seed Money Out" SeedDemoBankRecordOutClicked False False ]
-                    ++ [ SubmitButton.block [ Spacing.mt3 ] "Reconcile One" ReconcileDemoTxnClicked False False ]
+                    ++ [ SubmitButton.block [] "Seed Money In" SeedDemoBankRecordInClicked model.seedMoneyInLoading False ]
+                    ++ [ SubmitButton.block [ Spacing.mt3 ] "Seed Money Out" SeedDemoBankRecordOutClicked model.seedMoneyOutLoading False ]
+                    ++ [ SubmitButton.block [ Spacing.mt3 ] "Reconcile One" ReconcileDemoTxnClicked model.reconcileOneLoading False ]
                     ++ [ resetButton ResetView ]
                     ++ demoLabel "Event Log"
                     ++ [ eventList model ]
@@ -307,14 +313,14 @@ update msg model =
 
         SeedDemoBankRecordInClicked ->
             ( { model
-                | eventLogs = model.eventLogs ++ [ "Bank Record Seeded" ]
+                | seedMoneyInLoading = True
               }
             , seedDemoBankRecord model (Just "Contribution")
             )
 
         SeedDemoBankRecordOutClicked ->
             ( { model
-                | eventLogs = model.eventLogs ++ [ "Bank Record Seeded" ]
+                | seedMoneyOutLoading = True
               }
             , seedDemoBankRecord model (Just "Disbursement")
             )
@@ -326,6 +332,9 @@ update msg model =
                         Success id ->
                             ( { model
                                 | errors = []
+                                , eventLogs = model.eventLogs ++ [ "Bank Record Seeded" ]
+                                , seedMoneyInLoading = False
+                                , seedMoneyOutLoading = False
                               }
                             , Cmd.none
                             )
@@ -350,7 +359,7 @@ update msg model =
                     )
 
         ReconcileDemoTxnClicked ->
-            ( { model | eventLogs = model.eventLogs ++ [ "Transaction Reconciled" ] }, reconcileDemoTxn model )
+            ( { model | reconcileOneLoading = True }, reconcileDemoTxn model )
 
         ReconcileDemoTxnGotResp res ->
             case res of
@@ -359,6 +368,8 @@ update msg model =
                         Success id ->
                             ( { model
                                 | errors = []
+                                , eventLogs = model.eventLogs ++ [ "Transaction Reconciled" ]
+                                , reconcileOneLoading = False
                               }
                             , Cmd.none
                             )
