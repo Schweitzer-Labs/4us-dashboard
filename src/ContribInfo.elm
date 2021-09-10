@@ -6,6 +6,7 @@ import AppInput exposing (inputEmail, inputText)
 import Asset
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid exposing (Column)
+import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
@@ -567,9 +568,9 @@ familyRow { maybeEntityType, disabled, txnId } =
             [ text "Is the donor a family member of the candidate that will receive this contribution?" ]
         ]
     , Grid.row
-        [ Row.attrs [ Spacing.mt3 ] ]
+        [ Row.attrs [ Spacing.mt2 ] ]
         [ Grid.col
-            []
+            [ Col.xs8 ]
           <|
             EntityType.familyRadioList entityMsg (toData maybeEntityType) disabled txnId
         ]
