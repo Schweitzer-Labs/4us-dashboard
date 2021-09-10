@@ -1,4 +1,4 @@
-module Api.GenDemoCommittee exposing (EncodeModel, decoder, encode, query, send, successDecoder)
+module Api.ReconcileDemoTxn exposing (..)
 
 import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder)
 import Config exposing (Config)
@@ -10,25 +10,25 @@ import Json.Encode as Encode
 query : String
 query =
     """
-    mutation(
-        $password: String!
-        $demoType: DemoType
-    ) {
-      generateCommittee(
-        genCommittee: {
-            password: $password,
-            demoType: $demoType
-        }
-      ) {
-        id
-      }
+mutation(
+  $password: String!
+  $committeeId: String!
+) {
+  reconcileOneDemoTransaction(
+    manageDemoCommitteeInput: {
+      password: $password,
+      committeeId: $committeeId,
     }
+  ) {
+    id
+  }
+}
     """
 
 
 type alias EncodeModel =
     { password : String
-    , demoType : String
+    , committeeId : String
     }
 
 
@@ -41,7 +41,7 @@ encode mapper val =
         variables =
             Encode.object <|
                 [ ( "password", Encode.string model.password )
-                , ( "demoType", Encode.string model.demoType )
+                , ( "committeeId", Encode.string model.committeeId )
                 ]
     in
     encodeQuery query variables
@@ -51,7 +51,7 @@ successDecoder : Decode.Decoder MutationResponse
 successDecoder =
     Decode.map Success <|
         Decode.field "data" <|
-            Decode.field "generateCommittee" <|
+            Decode.field "reconcileOneDemoTransaction" <|
                 Decode.field "id" <|
                     Decode.string
 
