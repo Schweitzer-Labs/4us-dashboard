@@ -154,7 +154,7 @@ manageDemoView model =
         [ Spacing.mt3, class "fade-in" ]
     <|
         [ Grid.row []
-            [ Grid.col [ Col.xs6 ] <|
+            [ Grid.col [ Col.xs12 ] <|
                 [ dataText "Manage Demo Committee" ]
                     ++ Errors.view model.errors
                     ++ manageDemoUrl model
@@ -328,9 +328,16 @@ update msg model =
                     )
 
         SeedBankRecordClicked txnType ->
-            ( { model
-                | seedMoneyInLoading = True
-                , transactionType = Just <| txnTypeToString txnType
+            let
+                loadingModel =
+                    if txnType == Disbursement then
+                        { model | seedMoneyOutLoading = True }
+
+                    else
+                        { model | seedMoneyInLoading = True }
+            in
+            ( { loadingModel
+                | transactionType = Just <| txnTypeToString txnType
               }
             , seedDemoBankRecord model (Just <| txnTypeToString txnType)
             )
