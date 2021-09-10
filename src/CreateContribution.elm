@@ -17,6 +17,12 @@ import PaymentMethod
 -- PORTS
 
 
+port sendPhone : String -> Cmd msg
+
+
+port isValidNumReceiver : (Value -> msg) -> Sub msg
+
+
 port sendEmail : String -> Cmd msg
 
 
@@ -32,6 +38,7 @@ type alias Model =
     , paymentMethod : Maybe PaymentMethod.Model
     , emailAddress : String
     , isEmailAddressValid : Bool
+    , isPhoneNumberValid : Bool
     , phoneNumber : String
     , firstName : String
     , middleName : String
@@ -72,6 +79,7 @@ init committeeId =
     , paymentDate = ""
     , emailAddress = ""
     , isEmailAddressValid = False
+    , isPhoneNumberValid = False
     , phoneNumber = ""
     , firstName = ""
     , middleName = ""
@@ -182,7 +190,9 @@ type Msg
     | CVVUpdated String
     | InKindTypeUpdated (Maybe InKindType.Model)
     | InKindDescUpdated String
+      -- Ports
     | GotEmailValidationRes Decode.Value
+    | GotPhoneValidationRes Decode.Value
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -218,7 +228,7 @@ update msg model =
             ( { model | ownerOwnership = str }, Cmd.none )
 
         PhoneNumberUpdated str ->
-            ( { model | phoneNumber = str }, Cmd.none )
+            ( { model | phoneNumber = str }, sendPhone str )
 
         EmailAddressUpdated str ->
             ( { model | emailAddress = str }, sendEmail str )
@@ -287,10 +297,19 @@ update msg model =
         InKindDescUpdated t ->
             ( { model | inKindDesc = t }, Cmd.none )
 
+        -- Ports
         GotEmailValidationRes value ->
             case decodeValue bool value of
                 Ok data ->
                     ( { model | isEmailAddressValid = data }, Cmd.none )
+
+                Err error ->
+                    ( model, Cmd.none )
+
+        GotPhoneValidationRes value ->
+            case decodeValue bool value of
+                Ok data ->
+                    ( { model | isPhoneNumberValid = data }, Cmd.none )
 
                 Err error ->
                     ( model, Cmd.none )
@@ -337,6 +356,7 @@ validationMapper model =
     , emailAddress = model.emailAddress
     , isEmailAddressValid = model.isEmailAddressValid
     , phoneNumber = model.phoneNumber
+    , isPhoneNumValid = model.isPhoneNumberValid
     , firstName = model.firstName
     , middleName = model.middleName
     , lastName = model.lastName
@@ -370,4 +390,4 @@ fromError model error =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    isValidEmailReceiver GotEmailValidationRes
+    Sub.batch [ isValidNumReceiver GotPhoneValidationRes, isValidEmailReceiver GotEmailValidationRes ]
