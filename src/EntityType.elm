@@ -15,7 +15,8 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Form.Select as Select exposing (Item)
-import Html exposing (Html, text)
+import Bootstrap.Utilities.Spacing as Spacing
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, selected, value)
 
 
@@ -25,6 +26,7 @@ type Model
     | SoleProprietorship
     | PartnershipIncludingLLPs
     | Corporation
+    | Candidate
     | Union
     | Association
     | LimitedLiabilityCompany
@@ -47,6 +49,9 @@ toDataString entityType =
 
         PartnershipIncludingLLPs ->
             "Part"
+
+        Candidate ->
+            "Can"
 
         Corporation ->
             "Corp"
@@ -90,6 +95,9 @@ fromString str =
         "Part" ->
             Just PartnershipIncludingLLPs
 
+        "Can" ->
+            Just Candidate
+
         "Corp" ->
             Just Corporation
 
@@ -130,6 +138,9 @@ toDisplayString entityType =
         PartnershipIncludingLLPs ->
             "Partnership including LLPs"
 
+        Candidate ->
+            "Candidate"
+
         Corporation ->
             "Corporation"
 
@@ -166,6 +177,9 @@ toGridString entityType =
 
         PartnershipIncludingLLPs ->
             "Partnership"
+
+        Candidate ->
+            "Candidate"
 
         Corporation ->
             "Corporation"
@@ -224,34 +238,36 @@ familyRadioList msg currentValue disabled txnId =
         id =
             Maybe.withDefault "" txnId
     in
-    [ Form.form []
-        [ Fieldset.config
-            |> Fieldset.asGroup
-            |> Fieldset.legend [] []
-            |> Fieldset.children
-                (Radio.radioList
-                    "familyOfCandidate"
-                    [ Radio.createCustom
-                        [ Radio.id <| id ++ "familyOfCandidate-yes"
-                        , Radio.inline
-                        , Radio.onClick (msg Family)
-                        , Radio.checked (currentValue == Just Family)
-                        , Radio.disabled disabled
-                        ]
-                        "Yes"
-                    , Radio.createCustom
-                        [ Radio.id <| id ++ "familyOfCandidate-no"
-                        , Radio.inline
-                        , Radio.onClick (msg Individual)
-                        , Radio.checked (currentValue == Just Individual)
-                        , Radio.disabled disabled
-                        ]
-                        "No"
-                    ]
-                )
-            |> Fieldset.view
+    Radio.radioList "candidateRelationship"
+        [ Radio.createCustom
+            [ Radio.id <| id ++ "ind"
+            , Radio.inline
+            , Radio.disabled disabled
+            , Radio.onClick (msg Individual)
+            , Radio.checked (currentValue == Just Individual)
+            ]
+            "Not Related"
+        , Radio.createCustom
+            [ Radio.id <| id ++ "can"
+            , Radio.inline
+            , Radio.disabled disabled
+            , Radio.onClick (msg Candidate)
+            , Radio.checked (currentValue == Just Candidate)
+            ]
+            "The candidate or spouse of the candidate"
+        , Radio.createCustomAdvanced
+            [ Radio.id <| id ++ "fam"
+            , Radio.inline
+            , Radio.disabled disabled
+            , Radio.onClick (msg Family)
+            , Radio.checked (currentValue == Just Family)
+            ]
+            (Radio.label []
+                [ text "Family member* of the candidate"
+                , div [ Spacing.mt1, Spacing.ml2 ] [ text "*Defined as the candidate's child, parent, grandparent, brother, or sister of any such persons " ]
+                ]
+            )
         ]
-    ]
 
 
 isLLC : Model -> Bool
