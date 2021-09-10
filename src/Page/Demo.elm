@@ -103,6 +103,21 @@ type DemoView
     | ManageDemoCommittee
 
 
+type TxnType
+    = Contribution
+    | Disbursement
+
+
+txnTypeToString : TxnType -> String
+txnTypeToString transactionType =
+    case transactionType of
+        Contribution ->
+            "Contribution"
+
+        Disbursement ->
+            "Disbursement"
+
+
 
 -- Form
 
@@ -149,8 +164,8 @@ manageDemoView model =
                 Errors.view model.errors
                     ++ manageDemoUrlRow model
                     ++ demoLabel "Actions"
-                    ++ [ SubmitButton.block [] "Seed Money In" SeedDemoBankRecordInClicked model.seedMoneyInLoading False ]
-                    ++ [ SubmitButton.block [ Spacing.mt3 ] "Seed Money Out" SeedDemoBankRecordOutClicked model.seedMoneyOutLoading False ]
+                    ++ [ SubmitButton.block [] "Seed Money In" (SeedBankRecordClicked Contribution) model.seedMoneyInLoading False ]
+                    ++ [ SubmitButton.block [ Spacing.mt3 ] "Seed Money Out" (SeedBankRecordClicked Disbursement) model.seedMoneyOutLoading False ]
                     ++ [ SubmitButton.block [ Spacing.mt3 ] "Reconcile One" ReconcileDemoTxnClicked model.reconcileOneLoading False ]
                     ++ [ resetButton ResetView ]
                     ++ demoLabel "Event Log"
@@ -233,8 +248,7 @@ type Msg
     | GotTransactionsData (Result Http.Error GetTxns.Model)
     | GenDemoCommitteeClicked
     | Tick Time.Posix
-    | SeedDemoBankRecordInClicked
-    | SeedDemoBankRecordOutClicked
+    | SeedBankRecordClicked TxnType
     | SeedDemoBankRecordGotResp (Result Http.Error MutationResponse)
     | ReconcileDemoTxnGotResp (Result Http.Error MutationResponse)
     | ReconcileDemoTxnClicked
@@ -312,18 +326,11 @@ update msg model =
                     , Cmd.none
                     )
 
-        SeedDemoBankRecordInClicked ->
+        SeedBankRecordClicked txnType ->
             ( { model
                 | seedMoneyInLoading = True
               }
-            , seedDemoBankRecord model (Just "Contribution")
-            )
-
-        SeedDemoBankRecordOutClicked ->
-            ( { model
-                | seedMoneyOutLoading = True
-              }
-            , seedDemoBankRecord model (Just "Disbursement")
+            , seedDemoBankRecord model (Just <| txnTypeToString txnType)
             )
 
         SeedDemoBankRecordGotResp res ->
