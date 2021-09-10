@@ -154,16 +154,17 @@ manageDemoView model =
         [ Spacing.mt3, class "fade-in" ]
     <|
         [ Grid.row []
-            [ Grid.col [] [ dataText "Manage Demo Committee" ]
+            [ Grid.col [ Col.xs6 ] <|
+                [ dataText "Manage Demo Committee" ]
+                    ++ Errors.view model.errors
+                    ++ manageDemoUrl model
             ]
         , Grid.row
             []
             [ Grid.col
                 [ Col.xs3 ]
               <|
-                Errors.view model.errors
-                    ++ manageDemoUrlRow model
-                    ++ demoLabel "Actions"
+                demoLabel "Actions"
                     ++ [ SubmitButton.block [] "Seed Money In" (SeedBankRecordClicked Contribution) model.seedMoneyInLoading False ]
                     ++ [ SubmitButton.block [ Spacing.mt3 ] "Seed Money Out" (SeedBankRecordClicked Disbursement) model.seedMoneyOutLoading False ]
                     ++ [ SubmitButton.block [ Spacing.mt3 ] "Reconcile One" ReconcileDemoTxnClicked model.reconcileOneLoading False ]
@@ -203,8 +204,8 @@ idToCommitteeUrl config id =
     config.redirectUri ++ "/committee/" ++ id
 
 
-manageDemoUrlRow : Model -> List (Html Msg)
-manageDemoUrlRow model =
+manageDemoUrl : Model -> List (Html Msg)
+manageDemoUrl model =
     case model.maybeDemoCommitteeId of
         Just id ->
             demoLabel "Committee Link"
