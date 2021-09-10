@@ -329,6 +329,7 @@ update msg model =
         SeedBankRecordClicked txnType ->
             ( { model
                 | seedMoneyInLoading = True
+                , transactionType = Just <| txnTypeToString txnType
               }
             , seedDemoBankRecord model (Just <| txnTypeToString txnType)
             )
@@ -338,9 +339,13 @@ update msg model =
                 Ok seedDemoResp ->
                     case seedDemoResp of
                         Success id ->
+                            let
+                                txn =
+                                    Maybe.withDefault "" model.transactionType
+                            in
                             ( { model
                                 | errors = []
-                                , eventLogs = model.eventLogs ++ [ "Bank Record Seeded" ]
+                                , eventLogs = model.eventLogs ++ [ txn ++ " Bank Record" ++ " Seeded" ]
                                 , seedMoneyInLoading = False
                                 , seedMoneyOutLoading = False
                               }
