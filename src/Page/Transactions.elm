@@ -732,7 +732,13 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TxnDelete txn ->
-            ( { model | isDeleting = True, isDeletionConfirmed = DeleteInfo.Unconfirmed, alertVisibility = Alert.closed }, deleteTxn model txn.id )
+            ( { model
+                | isDeleting = True
+                , isDeletionConfirmed = DeleteInfo.Unconfirmed
+                , alertVisibility = Alert.closed
+              }
+            , deleteTxn model txn.id
+            )
 
         GotDeleteTxnMutResp res ->
             case res of
@@ -744,7 +750,7 @@ update msg model =
                                 , contribRuleVerifiedModalVisibility = Modal.hidden
                                 , disbRuleVerifiedModalVisibility = Modal.hidden
                               }
-                            , getTransactions model Nothing
+                            , getRehydrateTxnsSet model model.filterTransactionType
                             )
 
                         ResValidationFailure errList ->
