@@ -32,7 +32,8 @@ bankDataRows data =
         ]
     , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
         [ Grid.col [] [ labelWithMaybeLongData "Description" data.finicityDescription ]
-        , Grid.col [] [ labelWithData "Payment Type" <| Maybe.withDefault "N/A" <| Maybe.map PaymentMethod.toDisplayString data.finicityPaymentMethod ]
+
+        --, Grid.col [] [ labelWithData "Payment Type" <| Maybe.withDefault "N/A" <| Maybe.map PaymentMethod.toDisplayString data.finicityPaymentMethod ]
         ]
     , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
         [ Grid.col [] [ Maybe.withDefault (text "N/A") <| Maybe.map (labelWithTimeData "Posted Date") data.finicityPostedDate ]
