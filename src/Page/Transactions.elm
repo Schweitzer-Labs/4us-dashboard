@@ -824,7 +824,7 @@ update msg model =
                                 -- @Todo make this state impossible
                                 , disbRuleUnverifiedModal = DisbRuleUnverified.init model.config [] model.disbRuleUnverifiedModal.bankTxn
                               }
-                            , Cmd.batch [ getTransactions model Nothing, Task.attempt (\_ -> NoOp) scrollToTop ]
+                            , Task.attempt (\_ -> NoOp) scrollToTop
                             )
 
                         ResValidationFailure errList ->
@@ -861,7 +861,7 @@ update msg model =
                                 -- @Todo make this state impossible
                                 , disbRuleVerifiedModal = DisbRuleVerified.loadingInit
                               }
-                            , getTransactions model Nothing
+                            , getRehydrateTxnsSet model Nothing
                             )
 
                         ResValidationFailure errList ->
@@ -960,7 +960,7 @@ update msg model =
                                 -- @Todo make this state impossible
                                 , contribRuleUnverifiedModal = ContribRuleUnverified.init model.config [] model.contribRuleUnverifiedModal.bankTxn
                               }
-                            , getTransactions model Nothing
+                            , Cmd.none
                             )
 
                         ResValidationFailure errList ->
@@ -997,7 +997,7 @@ update msg model =
                                 -- @Todo make this state impossible
                                 , contribRuleVerifiedModal = ContribRuleVerified.loadingInit
                               }
-                            , getTransactions model Nothing
+                            , getRehydrateTxnsSet model Nothing
                             )
 
                         ResValidationFailure errList ->
