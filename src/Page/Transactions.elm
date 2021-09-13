@@ -87,6 +87,7 @@ type alias Model =
     , createDisbursementModalVisibility : Modal.Visibility
     , createDisbursementModal : CreateDisbursement.Model
     , createDisbursementSubmitting : Bool
+    , unreconciledTxn : Maybe Transaction.Model
 
     -- Disb unverified modal
     , disbRuleUnverifiedModal : DisbRuleUnverified.Model
@@ -156,6 +157,7 @@ init config session aggs committee committeeId =
             , createDisbursementModal = CreateDisbursement.init committeeId
             , createDisbursementSubmitting = False
             , getTransactionCanceled = False
+            , unreconciledTxn = Nothing
 
             -- Disb rule unverified state
             , disbRuleUnverifiedModal = DisbRuleUnverified.init config [] Transaction.init
@@ -571,9 +573,10 @@ openTxnFormModalLoading model txn =
         TxnForm.DisbRuleUnverified ->
             ( { model
                 | disbRuleUnverifiedModalVisibility = Modal.shown
-                , disbRuleUnverifiedModal = DisbRuleUnverified.init model.config model.transactions txn
+                , unreconciledTxn = Just txn
+                , disbRuleUnverifiedModal = DisbRuleUnverified.loadingInit model.config model.transactions txn
               }
-            , Cmd.none
+            , getNewUnreconciledTransactions model Nothing
             )
 
         TxnForm.DisbRuleVerified ->
@@ -587,9 +590,10 @@ openTxnFormModalLoading model txn =
         TxnForm.ContribRuleUnverified ->
             ( { model
                 | contribRuleUnverifiedModalVisibility = Modal.shown
-                , contribRuleUnverifiedModal = ContribRuleUnverified.init model.config model.transactions txn
+                , unreconciledTxn = Just txn
+                , contribRuleUnverifiedModal = ContribRuleUnverified.loadingInit model.config model.transactions txn
               }
-            , Cmd.none
+            , getNewUnreconciledTransactions model Nothing
             )
 
         TxnForm.ContribRuleVerified ->
@@ -639,10 +643,10 @@ openTxnFormModalLoaded model txn =
             , Cmd.none
             )
 
-        TxnForm.ContribUnverified ->
+        TxnForm.ContribRuleUnverified ->
             ( { model
-                | contribRuleVerifiedModalVisibility = Modal.shown
-                , contribRuleVerifiedModal = ContribRuleVerified.init txn
+                | contribRuleUnverifiedModalVisibility = Modal.shown
+                , contribRuleUnverifiedModal = ContribRuleUnverified.init model.config model.transactions txn
               }
             , Cmd.none
             )
@@ -654,6 +658,7 @@ openTxnFormModalLoaded model txn =
 type Msg
     = GotSession Session
     | GotTxnsData (Result Http.Error GetTxns.Model)
+    | GotLatestTxnsData (Result Http.Error GetTxns.Model)
     | GenerateReport FileFormat
     | HideCreateContributionModal
     | ShowCreateContributionModal
@@ -1124,6 +1129,25 @@ update msg model =
                     ( model, load <| loginUrl model.config model.committeeId )
 
         --( model, Cmd.none )
+        GotLatestTxnsData res ->
+            case res of
+                Ok body ->
+                    let
+                        state =
+                            { model
+                                | aggregations = GetTxns.toAggs body
+                                , committee = GetTxns.toCommittee body
+                                , transactions = GetTxns.toTxns body
+                            }
+
+                        txn =
+                            Maybe.withDefault Transaction.init model.unreconciledTxn
+                    in
+                    openTxnFormModalLoaded state txn
+
+                Err _ ->
+                    ( model, load <| loginUrl model.config model.committeeId )
+
         ShowCreateContributionModal ->
             ( { model
                 | createContributionModalVisibility = Modal.shown
@@ -1438,6 +1462,11 @@ getNextTxnsSet model =
 getRehydrateTxnsSet : Model -> Maybe TransactionType -> Cmd Msg
 getRehydrateTxnsSet model maybeTxnType =
     GetTxns.send GotTxnsData model.config <| GetTxns.encode model.committeeId maybeTxnType (Just model.paginationSize) Nothing
+
+
+getNewUnreconciledTransactions : Model -> Maybe TransactionType -> Cmd Msg
+getNewUnreconciledTransactions model maybeTxnType =
+    GetTxns.send GotLatestTxnsData model.config <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
 
 
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg

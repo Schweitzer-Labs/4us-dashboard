@@ -1,4 +1,4 @@
-module TxnForm.ContribRuleUnverified exposing (Model, Msg(..), fromError, init, reconcileTxnEncoder, toSubmitDisabled, update, view)
+module TxnForm.ContribRuleUnverified exposing (Model, Msg(..), fromError, init, loadingInit, reconcileTxnEncoder, toSubmitDisabled, update, view)
 
 import Api
 import Api.CreateContrib as CreateContrib
@@ -32,6 +32,7 @@ import Http
 import InKindType
 import LabelWithData exposing (labelWithContent, labelWithData)
 import List exposing (sortBy)
+import Loading
 import OrgOrInd
 import Owners exposing (Owner, Owners)
 import PaymentMethod
@@ -145,6 +146,15 @@ init config txns bankTxn =
     }
 
 
+loadingInit : Config -> List Transaction.Model -> Transaction.Model -> Model
+loadingInit config txns banktxn =
+    let
+        state =
+            init config txns banktxn
+    in
+    { state | loading = True }
+
+
 clearForm : Model -> Model
 clearForm model =
     { model
@@ -184,20 +194,29 @@ clearForm model =
 
 view : Model -> Html Msg
 view model =
-    div
-        []
-        [ dialogueBox
-        , BankData.view True model.bankTxn
-        , h6 [ Spacing.mt4 ] [ text "Reconcile" ]
-        , Grid.containerFluid
+    if model.loading then
+        loadingView
+
+    else
+        div
             []
-          <|
-            [ reconcileInfoRow model.bankTxn model.selectedTxns
-            , addContribButtonOrHeading model
+            [ dialogueBox
+            , BankData.view True model.bankTxn
+            , h6 [ Spacing.mt4 ] [ text "Reconcile" ]
+            , Grid.containerFluid
+                []
+              <|
+                [ reconcileInfoRow model.bankTxn model.selectedTxns
+                , addContribButtonOrHeading model
+                ]
+                    ++ contribFormRow model
+                    ++ [ reconcileItemsTable model.relatedTxns model.selectedTxns ]
             ]
-                ++ contribFormRow model
-                ++ [ reconcileItemsTable model.relatedTxns model.selectedTxns ]
-        ]
+
+
+loadingView : Html msg
+loadingView =
+    Loading.view
 
 
 dialogueBox : Html Msg

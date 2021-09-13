@@ -3,6 +3,7 @@ module TxnForm.DisbRuleUnverified exposing
     , Msg(..)
     , fromError
     , init
+    , loadingInit
     , reconcileTxnEncoder
     , toSubmitDisabled
     , totalSelectedMatch
@@ -39,6 +40,7 @@ import Html.Attributes exposing (class, type_)
 import Html.Events exposing (onClick)
 import Http
 import LabelWithData exposing (labelWithContent, labelWithData)
+import Loading
 import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 import SubmitButton exposing (submitButton)
@@ -80,6 +82,7 @@ type alias Model =
     , config : Config
     , lastCreatedTxnId : String
     , timezone : Time.Zone
+    , loading : Bool
     }
 
 
@@ -113,7 +116,17 @@ init config txns bankTxn =
     , config = config
     , lastCreatedTxnId = ""
     , timezone = utc
+    , loading = False
     }
+
+
+loadingInit : Config -> List Transaction.Model -> Transaction.Model -> Model
+loadingInit config txns banktxn =
+    let
+        state =
+            init config txns banktxn
+    in
+    { state | loading = True }
 
 
 clearForm : Model -> Model
@@ -150,20 +163,29 @@ getRelatedDisb txn txns =
 
 view : Model -> Html Msg
 view model =
-    div
-        []
-        [ dialogueBox
-        , BankData.view True model.bankTxn
-        , h6 [ Spacing.mt4 ] [ text "Reconcile" ]
-        , Grid.containerFluid
+    if model.loading then
+        loadingView
+
+    else
+        div
             []
-          <|
-            [ reconcileInfoRow model.bankTxn model.selectedTxns
-            , addDisbButtonOrHeading model
+            [ dialogueBox
+            , BankData.view True model.bankTxn
+            , h6 [ Spacing.mt4 ] [ text "Reconcile" ]
+            , Grid.containerFluid
+                []
+              <|
+                [ reconcileInfoRow model.bankTxn model.selectedTxns
+                , addDisbButtonOrHeading model
+                ]
+                    ++ disbFormRow model
+                    ++ [ reconcileItemsTable model.relatedTxns model.selectedTxns ]
             ]
-                ++ disbFormRow model
-                ++ [ reconcileItemsTable model.relatedTxns model.selectedTxns ]
-        ]
+
+
+loadingView : Html msg
+loadingView =
+    Loading.view
 
 
 dialogueBox : Html Msg
