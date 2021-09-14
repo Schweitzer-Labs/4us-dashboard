@@ -4,6 +4,7 @@ import Address
 import AmountDate
 import AppInput exposing (inputEmail, inputText)
 import Asset
+import Bootstrap.Alert as Alert
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
@@ -306,7 +307,9 @@ processingRow : Config msg -> List (Html msg)
 processingRow c =
     case ( toData c.paymentMethod, c.processPayment ) of
         ( Just PaymentMethod.Credit, True ) ->
-            creditRow c
+            []
+                ++ errorRow (Just "Contributions via credit will be processed on submission of this form.")
+                ++ creditRow c
 
         ( Just PaymentMethod.Check, _ ) ->
             checkRow c
