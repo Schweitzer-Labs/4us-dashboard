@@ -238,36 +238,45 @@ familyRadioList msg currentValue disabled txnId =
         id =
             Maybe.withDefault "" txnId
     in
-    Radio.radioList "candidateRelationship"
-        [ Radio.createCustom
-            [ Radio.id <| id ++ "ind"
-            , Radio.inline
-            , Radio.disabled disabled
-            , Radio.onClick (msg Individual)
-            , Radio.checked (currentValue == Just Individual)
-            ]
-            "Not Related"
-        , Radio.createCustom
-            [ Radio.id <| id ++ "can"
-            , Radio.inline
-            , Radio.disabled disabled
-            , Radio.onClick (msg Candidate)
-            , Radio.checked (currentValue == Just Candidate)
-            ]
-            "The candidate or spouse of the candidate"
-        , Radio.createCustomAdvanced
-            [ Radio.id <| id ++ "fam"
-            , Radio.inline
-            , Radio.disabled disabled
-            , Radio.onClick (msg Family)
-            , Radio.checked (currentValue == Just Family)
-            ]
-            (Radio.label []
-                [ text "Family member* of the candidate"
-                , div [ Spacing.mt1, Spacing.ml2 ] [ text "*Defined as the candidate's child, parent, grandparent, brother, or sister of any such persons " ]
-                ]
-            )
+    [ Form.form []
+        [ Fieldset.config
+            |> Fieldset.asGroup
+            |> Fieldset.legend [] []
+            |> Fieldset.children
+                (Radio.radioList "candidateRelationship"
+                    [ Radio.createCustom
+                        [ Radio.id <| id ++ "ind"
+                        , Radio.inline
+                        , Radio.disabled disabled
+                        , Radio.onClick (msg Individual)
+                        , Radio.checked (currentValue == Just Individual)
+                        ]
+                        "Not Related"
+                    , Radio.createCustom
+                        [ Radio.id <| id ++ "can"
+                        , Radio.inline
+                        , Radio.disabled disabled
+                        , Radio.onClick (msg Candidate)
+                        , Radio.checked (currentValue == Just Candidate)
+                        ]
+                        "The candidate or spouse of the candidate"
+                    , Radio.createCustomAdvanced
+                        [ Radio.id <| id ++ "fam"
+                        , Radio.inline
+                        , Radio.disabled disabled
+                        , Radio.onClick (msg Family)
+                        , Radio.checked (currentValue == Just Family)
+                        ]
+                        (Radio.label []
+                            [ text "Family member* of the candidate"
+                            , div [ Spacing.mt1, Spacing.ml2 ] [ text "*Defined as the candidate's child, parent, grandparent, brother, or sister of any such persons " ]
+                            ]
+                        )
+                    ]
+                )
+            |> Fieldset.view
         ]
+    ]
 
 
 isLLC : Model -> Bool
