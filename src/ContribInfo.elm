@@ -78,12 +78,6 @@ view c =
         []
     <|
         []
-            ++ (if toData c.paymentMethod == Just PaymentMethod.Credit && not c.isEditable then
-                    errorRow (Just "Contributions via credit will be processed on submission of this form.")
-
-                else
-                    []
-               )
             ++ donorHeadingRow c.toggleEdit c.disabled c.isEditable
             ++ (if c.isEditable == False then
                     amountDateRow c
