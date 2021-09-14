@@ -79,7 +79,7 @@ view c =
     <|
         []
             ++ (if toData c.paymentMethod == Just PaymentMethod.Credit && not c.isEditable then
-                    [ creditDialogue ]
+                    errorRow (Just "Contributions via credit will be processed on submission of this form.")
 
                 else
                     []
@@ -309,17 +309,13 @@ inKindRow { inKindType, inKindDesc, disabled } =
            ]
 
 
-creditDialogue : Html msg
-creditDialogue =
-    Alert.simpleDanger [ Spacing.mt2 ] [ text "Contributions via credit will be processed on submission of this form." ]
-
-
 processingRow : Config msg -> List (Html msg)
 processingRow c =
     case ( toData c.paymentMethod, c.processPayment ) of
         ( Just PaymentMethod.Credit, True ) ->
-            creditRow c
-                ++ [ creditDialogue ]
+            []
+                ++ errorRow (Just "Contributions via credit will be processed on submission of this form.")
+                ++ creditRow c
 
         ( Just PaymentMethod.Check, _ ) ->
             checkRow c
