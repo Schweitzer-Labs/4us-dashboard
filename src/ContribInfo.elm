@@ -4,6 +4,7 @@ import Address
 import AmountDate
 import AppInput exposing (inputEmail, inputText)
 import Asset
+import Bootstrap.Alert as Alert
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
@@ -77,6 +78,12 @@ view c =
         []
     <|
         []
+            ++ (if toData c.paymentMethod == Just PaymentMethod.Credit && not c.isEditable then
+                    [ creditDialogue ]
+
+                else
+                    []
+               )
             ++ donorHeadingRow c.toggleEdit c.disabled c.isEditable
             ++ (if c.isEditable == False then
                     amountDateRow c
@@ -302,11 +309,17 @@ inKindRow { inKindType, inKindDesc, disabled } =
            ]
 
 
+creditDialogue : Html msg
+creditDialogue =
+    Alert.simpleDanger [ Spacing.mt2 ] [ text "Contributions via credit will be processed on submission of this form." ]
+
+
 processingRow : Config msg -> List (Html msg)
 processingRow c =
     case ( toData c.paymentMethod, c.processPayment ) of
         ( Just PaymentMethod.Credit, True ) ->
             creditRow c
+                ++ [ creditDialogue ]
 
         ( Just PaymentMethod.Check, _ ) ->
             checkRow c
