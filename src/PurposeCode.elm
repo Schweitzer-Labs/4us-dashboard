@@ -7,100 +7,94 @@ import Html.Attributes as Attribute exposing (for, value)
 
 
 type PurposeCode
-    = LITER
+    = BKFEE
+    | BKKP
+    | BLBD
+    | CAR
+    | CARSVC
+    | CCP
+    | CELL
+    | CMAIL
+    | CNTRB
+    | CONSL
+    | CONSV
+    | EADS
+    | EMAIL
+    | FUNDR
+    | GAS
+    | INT
+    | LITER
+    | LODG
+    | LWNSN
+    | MEALS
+    | MLGE
+    | MTG
+    | NPD
     | OFFICE
     | OTHER
+    | PARK
     | PETIT
-    | INT
+    | PIDA
     | POLLS
     | POSTA
     | PRINT
     | PROFL
     | RADIO
     | REIMB
-    | RDET
     | RENTO
-    | TVADS
-    | VOTER
-    | WAGES
-    | BKFEE
-    | LWNSN
-    | CMAIL
-    | CONSL
-    | CONSV
-    | CNTRB
-    | FUNDR
-    | UTILS
-    | PAYRL
-    | MAILS
-    | LOAN
-    | CCDET
-    | CCP
-    | BKKP
-    | CAR
-    | CARSVC
-    | CELL
-    | EADS
-    | GAS
-    | LODG
-    | MEALS
-    | MLGE
-    | MTG
-    | PARK
     | TOLLS
-    | XPORT
-    | BLBD
+    | TVADS
+    | UTILS
+    | VOTER
     | WAGE
-    | NPD
+    | WAGES
+    | XPORT
 
 
 purposeCodeText : List ( PurposeCode, String, String )
 purposeCodeText =
-    [ ( CMAIL, "CMAIL", "Campaign Mailings" )
+    [ ( BKFEE, "BKFEE", "Bank Fees" )
+    , ( BLBD, "BLBD", "Billboard" )
+    , ( BKKP, "BKKP", "Bookkeeping" )
     , ( CONSL, "CONSL", "Campaign Consultant" )
-    , ( CONSV, "CONSV", "Constituent Services" )
-    , ( CNTRB, "CNTRB", "Political Contributions" )
-    , ( FUNDR, "FUNDR", "Fundraising" )
     , ( LITER, "LITER", "Campaign Literature" )
-    , ( OFFICE, "OFFICE", "Office Expenses" )
-    , ( OTHER, "OTHER", "Other" )
-    , ( PETIT, "PETIT", "Petition Expenses" )
+    , ( CMAIL, "CMAIL", "Campaign Mailings" )
+    , ( WAGES, "WAGES", "Campaign Salaries" )
+    , ( CAR, "CAR", "Car Rental, Payment, Etc." )
+    , ( CELL, "CELL", "Cell Phone" )
+    , ( CONSV, "CONSV", "Constituent Services" )
+    , ( CCP, "CCP", "Credit Card Payment" )
+    , ( EMAIL, "EMAIL", "Email" )
+    , ( FUNDR, "FUNDR", "Fundraising" )
+    , ( GAS, "EMAIL", "Gas" )
     , ( INT, "INT", "Interest Expense" )
+    , ( LWNSN, "LWNSN", "Lawn Signs" )
+    , ( LODG, "LODG", "Lodging" )
+    , ( MEALS, "MEALS", "Meals" )
+    , ( MTG, "MTG", "Meeting" )
+    , ( MLGE, "MLGE", "Mileage" )
+    , ( NPD, "NPD", "Non-Political Donations" )
+    , ( OFFICE, "OFFICE", "Office Expenses" )
+    , ( RENTO, "RENTO", "Office Rent" )
+    , ( EADS, "EADS", "Online Ads" )
+    , ( OTHER, "OTHER", "Other" )
+    , ( PIDA, "PIDA", "PIDA" )
+    , ( PARK, "PARK", "Parking" )
+    , ( PETIT, "PETIT", "Petition Expenses" )
+    , ( CNTRB, "CNTRB", "Political Contributions" )
     , ( POLLS, "POLLS", "Polling Costs" )
     , ( POSTA, "POSTA", "Postage" )
     , ( PRINT, "PRINT", "Print Ads" )
     , ( PROFL, "PROFL", "Professional Services" )
     , ( RADIO, "RADIO", "Radio Ads" )
     , ( REIMB, "REIMB", "Reimbursement" )
-    , ( RENTO, "RENTO", "Office Rent" )
-    , ( RDET, "RDET", "Reimbursement Detail Item" )
-    , ( TVADS, "TVADS", "Television Ads" )
-    , ( VOTER, "VOTER", "Voter Reg. Material" )
-    , ( WAGES, "WAGES", "Campaign Salaries" )
-    , ( BKFEE, "BKFEE", "Bank Fees" )
-    , ( LWNSN, "LWNSN", "Lawn Signs" )
-    , ( UTILS, "UTILS", "Utilities" )
-    , ( PAYRL, "PAYRL", "Payroll" )
-    , ( MAILS, "MAILS", "Mailings" )
-    , ( LOAN, "LOAN", "Loan" )
-    , ( CCDET, "CC-DET", "Credit Card Itemization" )
-    , ( CCP, "CCP", "Credit Card Payment" )
-    , ( BKKP, "BKKP", "Bookkeeping" )
-    , ( CAR, "CAR", "Car Rental, Payment, Etc." )
     , ( CARSVC, "CARSVC", "Taxi, Uber, Etc." )
-    , ( CELL, "CELL", "Cell Phone" )
-    , ( EADS, "EADS", "Online Ads" )
-    , ( GAS, "EMAIL", "Gas" )
-    , ( LODG, "LODG", "Lodging" )
-    , ( MEALS, "MEALS", "Meals" )
-    , ( MLGE, "MLGE", "Mileage" )
-    , ( MTG, "MTG", "Meeting" )
-    , ( PARK, "PARK", "Parking" )
+    , ( TVADS, "TVADS", "Television Ads" )
     , ( TOLLS, "TOLLS", "Tolls" )
     , ( XPORT, "XPORT", "Transportation" )
-    , ( BLBD, "BLBD", "Billboard" )
+    , ( UTILS, "UTILS", "Utilities" )
+    , ( VOTER, "VOTER", "Voter Reg. Material" )
     , ( WAGE, "WAGE", "Wages" )
-    , ( NPD, "NPD", "Non-Political Donations" )
     ]
 
 
