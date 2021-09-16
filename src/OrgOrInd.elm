@@ -72,5 +72,8 @@ fromEntityType entityType =
         EntityType.Family ->
             Ind
 
+        EntityType.Candidate ->
+            Ind
+
         _ ->
             Org

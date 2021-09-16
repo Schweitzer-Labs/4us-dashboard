@@ -108,6 +108,9 @@ getEntityName transaction =
         ( Direction.In, Just EntityType.Family ) ->
             personName
 
+        ( Direction.In, Just EntityType.Candidate ) ->
+            personName
+
         _ ->
             transaction.entityName
 
