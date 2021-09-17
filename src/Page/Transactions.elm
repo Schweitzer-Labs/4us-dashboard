@@ -34,7 +34,7 @@ import File.Download as Download
 import FileDisclosure
 import FileFormat exposing (FileFormat)
 import Html exposing (..)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (on, onClick)
 import Http
 import List exposing (concat, head, length, reverse)
@@ -467,7 +467,7 @@ actionsDropdown model =
             { options = []
             , toggleMsg = ToggleActionsDropdown
             , toggleButton =
-                Dropdown.toggle [ Button.success, Button.disabled (Committee.isPolicapital model.committee), Button.attrs [ Spacing.pl3, Spacing.pr3 ] ] [ text "Actions" ]
+                Dropdown.toggle [ Button.success, Button.disabled (Committee.isPolicapital model.committee), Button.attrs [ Spacing.pl3, Spacing.pr3, id "actions-dropdown" ] ] [ text "Actions" ]
             , items =
                 [ Dropdown.buttonItem [ onClick ShowCreateContributionModal ] [ text "Create Contribution" ]
                 , Dropdown.buttonItem [ onClick CreateDisbursementModalShow ] [ text "Create Disbursement" ]
