@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npx cypress run --headed",
     "local-auth": "node tests/server/cognito-redirect.mock.js",
     "build-css": "node-sass-chokidar src/ -o src/",
     "watch-css": "npm run build-css && node-sass-chokidar src/ -o src/ --watch --recursive",
@@ -27,6 +27,7 @@
     "string-extra": "github:elm-community/string-extra"
   },
   "devDependencies": {
+    "cypress": "^8.4.0",
     "express": "^4.17.1",
     "query-string": "^7.0.0"
   }
