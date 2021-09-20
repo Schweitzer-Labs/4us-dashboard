@@ -4,6 +4,7 @@ module Asset exposing
     , amalgamatedLogo
     , angleDownGlyph
     , angleUpGlyph
+    , avantiBankLogo
     , bellGlyph
     , binoculars
     , blockchainDiamond
@@ -155,6 +156,11 @@ defaultAvatar =
 chaseBankLogo : Image
 chaseBankLogo =
     image "chase-logo-header.png"
+
+
+avantiBankLogo : Image
+avantiBankLogo =
+    image "avanti.jpg"
 
 
 citizensBankLogo : Image
