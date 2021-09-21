@@ -15,7 +15,7 @@ stringToLogo bank =
 
         "avanti" ->
             img
-                [ Asset.src Asset.avantiBankLogo, class "header-info-bank-logo" ]
+                [ Asset.src Asset.chaseBankLogo, class "header-info-bank-logo" ]
                 []
 
         "adirondack trust company" ->
