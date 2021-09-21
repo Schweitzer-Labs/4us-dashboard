@@ -101,7 +101,7 @@ init config txns bankTxn =
     , isExistingLiability = Nothing
     , isInKind = Nothing
     , amount = toDollarData bankTxn.amount
-    , paymentDate = formDate utc bankTxn.paymentDate
+    , paymentDate = formDate (america__new_york ()) bankTxn.paymentDate
     , paymentMethod = Just bankTxn.paymentMethod
     , checkNumber = ""
     , createDisbIsVisible = False
@@ -112,7 +112,7 @@ init config txns bankTxn =
     , maybeError = Nothing
     , config = config
     , lastCreatedTxnId = ""
-    , timezone = utc
+    , timezone = america__new_york ()
     }
 
 
@@ -205,7 +205,7 @@ transactionRowMap ( maybeSelected, maybeMsg, txn ) =
             ]
             ""
         )
-      , ( "Date / Time", text <| Timestamp.format utc txn.paymentDate )
+      , ( "Date / Time", text <| Timestamp.format (america__new_york ()) txn.paymentDate )
       , ( "Entity Name", name )
       , ( "Amount", amount )
       , ( "Purpose Code", Transactions.getContext txn )
@@ -634,7 +634,7 @@ reconcileTxnEncoder model =
 dateWithFormat : Model -> String
 dateWithFormat model =
     if model.paymentDate == "" then
-        formDate utc model.bankTxn.paymentDate
+        formDate (america__new_york ()) model.bankTxn.paymentDate
 
     else
         model.paymentDate
