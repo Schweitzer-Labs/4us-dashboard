@@ -117,12 +117,6 @@ encode mapper val =
         model =
             mapper val
 
-        _ =
-            Debug.log "payment date" model.paymentDate
-
-        _ =
-            Debug.log "payment millis" <| dateStringToMillis model.paymentDate
-
         variables =
             Encode.object <|
                 [ ( "committeeId", Encode.string model.committeeId )
