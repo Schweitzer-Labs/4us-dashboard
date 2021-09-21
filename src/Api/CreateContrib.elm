@@ -3,6 +3,7 @@ module Api.CreateContrib exposing (EncodeModel, encode, send)
 import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldNotZero, optionalFieldString, optionalFieldStringInt)
 import Cents
 import Config exposing (Config)
+import Date
 import EmploymentStatus
 import EntityType
 import Http
@@ -115,6 +116,12 @@ encode mapper val =
     let
         model =
             mapper val
+
+        _ =
+            Debug.log "payment date" model.paymentDate
+
+        _ =
+            Debug.log "payment millis" <| dateStringToMillis model.paymentDate
 
         variables =
             Encode.object <|

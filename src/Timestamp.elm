@@ -100,7 +100,7 @@ dateStringToMillis val =
                     d =
                         Date.day date
                 in
-                case DateTime.fromRawParts { day = d, month = m, year = y } { hours = 0, milliseconds = 0, seconds = 0, minutes = 0 } of
+                case DateTime.fromRawParts { day = d, month = m, year = y } { hours = 12, milliseconds = 0, seconds = 0, minutes = 0 } of
                     Just datetime ->
                         DateTime.toMillis datetime
 

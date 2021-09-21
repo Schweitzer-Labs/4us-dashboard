@@ -37,6 +37,7 @@ import Owners exposing (Owner, Owners)
 import PaymentMethod
 import SubmitButton exposing (submitButton)
 import Time exposing (utc)
+import TimeZone exposing (america__new_york)
 import Timestamp exposing (dateStringToMillis, formDate)
 import Transaction
 import TransactionType
@@ -107,7 +108,7 @@ init config txns bankTxn =
     , errors = []
     , amount = toDollarData bankTxn.amount
     , checkNumber = ""
-    , paymentDate = formDate utc bankTxn.paymentDate
+    , paymentDate = formDate (america__new_york ()) bankTxn.paymentDate
     , emailAddress = ""
     , phoneNumber = ""
     , firstName = ""
@@ -140,7 +141,7 @@ init config txns bankTxn =
     , reconcileButtonIsDisabled = True
     , maybeError = Nothing
     , config = config
-    , timezone = utc
+    , timezone = america__new_york ()
     , lastCreatedTxnId = ""
     }
 
@@ -587,7 +588,7 @@ transactionRowMap ( maybeSelected, maybeMsg, txn ) =
             ]
             ""
         )
-      , ( "Date", text <| Timestamp.format utc txn.paymentDate )
+      , ( "Date", text <| Timestamp.format (america__new_york ()) txn.paymentDate )
       , ( "Entity Name", name )
       , ( "Amount", amount )
       , ( "Entity Type", Transactions.getContext txn )
@@ -766,7 +767,7 @@ createContrib model =
 dateWithFormat : Model -> String
 dateWithFormat model =
     if model.paymentDate == "" then
-        formDate utc model.bankTxn.paymentDate
+        formDate (america__new_york ()) model.bankTxn.paymentDate
 
     else
         model.paymentDate
