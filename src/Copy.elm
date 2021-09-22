@@ -1,4 +1,4 @@
-module Copy exposing (contribUnverifiedDialogue, contribVerifiedDialogue, disbUnverifiedDialogue, disbVerifiedDialogue, verificationScore)
+module Copy exposing (contribUnverifiedDialogue, contribVerifiedDialogue, disbUnverifiedDialogue, disbVerifiedDialogue, llcDialogue, verificationScore)
 
 import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Html, br, div, span, text)
@@ -42,3 +42,8 @@ disbVerifiedDialogue : List (Html msg)
 disbVerifiedDialogue =
     [ text "You are editing a record that has already been ID verified, reconciled and recorded."
     ]
+
+
+llcDialogue : Html msg
+llcDialogue =
+    text "Please specify the current ownership breakdown of your company."

@@ -5,12 +5,15 @@ import AmountDate
 import AppInput exposing (inputEmail, inputText)
 import Asset
 import Bootstrap.Alert as Alert
+import Bootstrap.Button as Button
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
+import Copy
 import DataMsg exposing (toData, toMsg)
+import DataTable exposing (DataRow)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
 import Errors exposing (fromEmailAddress, fromInKindType, fromOrgType, fromPhoneNumber, fromPostalCode)
@@ -20,7 +23,7 @@ import Html.Events exposing (onClick)
 import InKindType exposing (Model(..))
 import MonthSelector
 import OrgOrInd
-import Owners exposing (Owners)
+import Owners exposing (Owner, Owners)
 import PaymentMethod
 import Validate exposing (Valid, Validator, fromErrors, ifBlank, ifNothing, validate)
 import YearSelector
@@ -490,27 +493,128 @@ employmentRows c =
 
 
 orgRows : Config msg -> List (Html msg)
-orgRows { maybeEntityType, entityName, disabled } =
+orgRows c =
     [ Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ EntityType.orgView (toMsg maybeEntityType) (toData maybeEntityType) disabled ]
+            [ EntityType.orgView (toMsg c.maybeEntityType) (toData c.maybeEntityType) c.disabled ]
         ]
     ]
+        ++ (if toData c.maybeEntityType == Just EntityType.LimitedLiabilityCompany then
+                ownerPiiRows c
+
+            else
+                []
+           )
         ++ [ Grid.row
                 [ Row.attrs [ Spacing.mt3 ] ]
                 [ Grid.col
                     []
                     [ Input.text
-                        [ Input.onInput <| toMsg entityName
+                        [ Input.onInput <| toMsg c.entityName
                         , Input.placeholder "Organization Name"
-                        , Input.value <| toData entityName
-                        , Input.disabled disabled
+                        , Input.value <| toData c.entityName
+                        , Input.disabled c.disabled
                         ]
                     ]
                 ]
            ]
+
+
+ownerPiiRows : Config msg -> List (Html msg)
+ownerPiiRows c =
+    [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
+        [ Grid.col [] [ Copy.llcDialogue ]
+        ]
+    ]
+        ++ [ ownersGrid ]
+        ++ [ Grid.row
+                [ Row.attrs [ Spacing.mt3 ] ]
+                [ Grid.col
+                    []
+                    [ inputText (toMsg c.firstName) "First Name" (toData c.firstName) c.disabled ]
+                , Grid.col
+                    []
+                    [ inputText (toMsg c.lastName) "Last Name" (toData c.lastName) c.disabled ]
+                ]
+           ]
+        ++ ownerAddressRows c
+        ++ ownerPercentOwnershipRow
+        ++ [ Grid.row
+                [ Row.attrs [ Spacing.mt3, Spacing.mr4 ] ]
+                [ Grid.col
+                    [ Col.xs4, Col.offsetXs9 ]
+                    [ Button.button [ Button.success ] [ text "Add Another Member" ] ]
+                ]
+           ]
+
+
+ownerPercentOwnershipRow : List (Html msg)
+ownerPercentOwnershipRow =
+    [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
+        [ Grid.col []
+            [ Input.text
+                [ Input.placeholder "Percent Ownership"
+                , Input.disabled False
+                ]
+            ]
+        ]
+    ]
+
+
+ownerAddressRows : Config msg -> List (Html msg)
+ownerAddressRows c =
+    Address.view
+        { addressLine1 = c.addressLine1
+        , addressLine2 = c.addressLine2
+        , city = c.city
+        , state = c.state
+        , postalCode = c.postalCode
+        , disabled = c.disabled
+        }
+
+
+ownerLabels : List String
+ownerLabels =
+    [ "Name"
+    , "Percent Ownership"
+    ]
+
+
+ownerRowMap : ( Maybe a, Maybe msg, Owner ) -> ( Maybe msg, DataRow msg )
+ownerRowMap ( _, maybeMsg, o ) =
+    ( maybeMsg
+    , [ ( "", text o.name )
+      , ( "", text o.percentOwnership )
+      , ( "", Asset.editGlyph [] )
+      , ( "", Asset.deleteGlyph [ class "text-danger" ] )
+      ]
+    )
+
+
+owners : Owners
+owners =
+    [ { name = "Richard Mann"
+      , percentOwnership = "10%"
+      }
+    , { name = "Lauren Pel"
+      , percentOwnership = "50%"
+      }
+    , { name = "Peter Ng"
+      , percentOwnership = "25%"
+      }
+    ]
+
+
+ownersGrid =
+    Grid.row []
+        [ Grid.col []
+            [ DataTable.view "" ownerLabels ownerRowMap <|
+                List.map (\d -> ( Nothing, Nothing, d ))
+                    owners
+            ]
+        ]
 
 
 addressRows : Config msg -> List (Html msg)

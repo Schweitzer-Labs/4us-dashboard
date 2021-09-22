@@ -17,6 +17,7 @@ module Asset exposing
     , coinsGlyph
     , contributionsByRefcodeChart
     , defaultAvatar
+    , deleteGlyph
     , documents
     , donorByRefcodeChart
     , editGlyph
@@ -327,3 +328,8 @@ lockGlyph =
 lockOpenGlyph : List (Attribute msg) -> Html msg
 lockOpenGlyph =
     glyph "fas fa-lock-open"
+
+
+deleteGlyph : List (Attribute msg) -> Html msg
+deleteGlyph =
+    glyph "fas fa-trash"
