@@ -9,7 +9,8 @@ import InKindType
 import Json.Decode as Decode exposing (bool, decodeValue)
 import Json.Encode exposing (Value)
 import OrgOrInd
-import Owners exposing (Owners)
+import Owner
+import OwnersView
 import PaymentMethod
 
 
@@ -59,7 +60,7 @@ type alias Model =
     , expirationYear : String
     , cvv : String
     , amount : String
-    , owners : Owners
+    , owners : Owner.Owners
     , ownerName : String
     , ownerOwnership : String
     , inKindType : Maybe InKindType.Model
@@ -142,9 +143,10 @@ view model =
         , expirationYear = ( model.expirationYear, CardYearUpdated )
         , cvv = ( model.cvv, CVVUpdated )
         , amount = ( model.amount, AmountUpdated )
-        , owners = ( model.owners, OwnerAdded )
+        , owners = model.owners
         , ownerName = ( model.ownerName, OwnerNameUpdated )
         , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
+        , ownersViewModel = OwnersView.init []
         , inKindType = ( model.inKindType, InKindTypeUpdated )
         , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
         , disabled = False
@@ -217,9 +219,9 @@ update msg model =
         OwnerAdded ->
             let
                 newOwner =
-                    Owners.Owner model.ownerName model.ownerOwnership
+                    Owner.Owner model.ownerName model.ownerOwnership
             in
-            ( { model | owners = model.owners ++ [ newOwner ], ownerOwnership = "", ownerName = "" }, Cmd.none )
+            ( model, Cmd.none )
 
         OwnerNameUpdated str ->
             ( { model | ownerName = str }, Cmd.none )

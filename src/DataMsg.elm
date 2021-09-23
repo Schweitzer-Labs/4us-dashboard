@@ -16,7 +16,7 @@ import EmploymentStatus
 import EntityType
 import InKindType
 import OrgOrInd
-import Owners exposing (Owner, Owners)
+import Owner exposing (Owner, Owners)
 import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 

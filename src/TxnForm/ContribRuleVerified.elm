@@ -28,7 +28,8 @@ import Html.Attributes exposing (class)
 import InKindType
 import Loading
 import OrgOrInd
-import Owners exposing (Owner, Owners)
+import Owner
+import OwnersView
 import PaymentInfo
 import PaymentMethod
 import Time exposing (utc)
@@ -70,7 +71,7 @@ type alias Model =
     , expirationYear : String
     , cvv : String
     , amount : String
-    , owners : Owners
+    , owners : Owner.Owners
     , ownerName : String
     , ownerOwnership : String
     , inKindType : Maybe InKindType.Model
@@ -198,9 +199,10 @@ contribFormRow model =
         , expirationYear = ( model.expirationYear, CardYearUpdated )
         , cvv = ( model.cvv, CVVUpdated )
         , amount = ( model.amount, AmountUpdated )
-        , owners = ( model.owners, OwnerAdded )
+        , owners = model.owners
         , ownerName = ( model.ownerName, OwnerNameUpdated )
         , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
+        , ownersViewModel = OwnersView.init model.owners
         , inKindType = ( model.inKindType, InKindTypeUpdated )
         , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
         , disabled = model.disabled
@@ -247,6 +249,7 @@ type Msg
     | EntityNameUpdated String
     | EntityTypeUpdated (Maybe EntityType.Model)
     | FamilyOrIndividualUpdated EntityType.Model
+      -- OwnersView
     | OwnerAdded
     | OwnerNameUpdated String
     | OwnerOwnershipUpdated String
@@ -283,11 +286,11 @@ update msg model =
             ( { model | maybeEntityType = maybeEntityType }, Cmd.none )
 
         OwnerAdded ->
-            let
-                newOwner =
-                    Owners.Owner model.ownerName model.ownerOwnership
-            in
-            ( { model | owners = model.owners ++ [ newOwner ], ownerOwnership = "", ownerName = "" }, Cmd.none )
+            --let
+            --    newOwner =
+            --        Owner.Owner model.ownerName model.ownerOwnership
+            --in
+            ( model, Cmd.none )
 
         OwnerNameUpdated str ->
             ( { model | ownerName = str }, Cmd.none )
