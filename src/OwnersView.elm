@@ -33,7 +33,7 @@ type alias Config msg =
     , percentOwnership : DataMsg.MsgString msg
     , owners : DataMsg.MsgOwner msg
     , disabled : Bool
-    , toggleEdit : Bool
+    , isOwnerEditable : Bool
     }
 
 
@@ -48,7 +48,7 @@ type alias Model =
     , percentOwnership : String
     , owners : Owners
     , disabled : Bool
-    , toggleEdit : Bool
+    , isOwnerEditable : Bool
     }
 
 
@@ -107,7 +107,7 @@ update msg model =
                     }
 
                 state =
-                    case model.toggleEdit of
+                    case model.isOwnerEditable of
                         True ->
                             editOwnerInfo newOwner model
 
@@ -146,7 +146,7 @@ init owners =
     , percentOwnership = ""
     , owners = owners
     , disabled = False
-    , toggleEdit = False
+    , isOwnerEditable = False
     }
 
 
@@ -167,7 +167,7 @@ view model =
         , owners = ( model.owners, OwnersUpdate )
         , percentOwnership = ( model.percentOwnership, OwnerOwnershipUpdated )
         , disabled = model.disabled
-        , toggleEdit = model.toggleEdit
+        , isOwnerEditable = model.isOwnerEditable
         }
 
 
@@ -285,7 +285,7 @@ setEditOwner model owner =
         , postalCode = owner.postalCode
         , owners = model.owners
         , percentOwnership = owner.percentOwnership
-        , toggleEdit = True
+        , isOwnerEditable = True
     }
 
 
@@ -306,4 +306,5 @@ editOwnerInfo newOwnerInfo model =
                         owner
                 )
                 model.owners
+        , isOwnerEditable = False
     }
