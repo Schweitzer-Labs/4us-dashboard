@@ -13,7 +13,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Copy
 import DataMsg exposing (toData, toMsg)
 import DataTable exposing (DataRow)
-import Html exposing (Html, text)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 import Owner exposing (Owner, Owners)
 
@@ -185,9 +185,7 @@ view model =
 
 ownersFormRows : Config msg -> Html msg
 ownersFormRows c =
-    Grid.containerFluid
-        []
-    <|
+    div [] <|
         []
             ++ [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
                     [ Grid.col [] [ Copy.llcDialogue ]
