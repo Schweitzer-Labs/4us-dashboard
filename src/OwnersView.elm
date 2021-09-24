@@ -231,6 +231,10 @@ ownerLabels =
     ]
 
 
+
+-- TODO: map more than one Msg for Edit and Delete owners
+
+
 ownerRowMap : ( Maybe a, Maybe msg, Owner ) -> ( Maybe msg, DataRow msg )
 ownerRowMap ( _, maybeMsg, o ) =
     ( maybeMsg

@@ -500,6 +500,7 @@ orgRows c =
         ]
     ]
         ++ (if toData c.maybeEntityType == Just EntityType.LimitedLiabilityCompany then
+                -- TODO: render Owners view here as a List(Html msg)
                 []
 
             else
