@@ -2,6 +2,7 @@ module OwnersView exposing (Model, Msg, init, view)
 
 import Address
 import AppInput exposing (inputText)
+import Array
 import Asset
 import Bootstrap.Button as Button
 import Bootstrap.Form.Input as Input
@@ -14,7 +15,6 @@ import DataMsg exposing (toData, toMsg)
 import DataTable exposing (DataRow)
 import Html exposing (Html, text)
 import Html.Attributes exposing (class)
-import Html.Events exposing (onClick)
 import Owner exposing (Owner, Owners)
 
 
@@ -23,30 +23,32 @@ import Owner exposing (Owner, Owners)
 
 
 type alias Config msg =
-    { ownerFirstName : DataMsg.MsgString msg
-    , ownerLastName : DataMsg.MsgString msg
-    , ownerAddressLine1 : DataMsg.MsgString msg
-    , ownerAddressLine2 : DataMsg.MsgString msg
-    , ownerCity : DataMsg.MsgString msg
-    , ownerState : DataMsg.MsgString msg
-    , ownerPostalCode : DataMsg.MsgString msg
+    { firstName : DataMsg.MsgString msg
+    , lastName : DataMsg.MsgString msg
+    , addressLine1 : DataMsg.MsgString msg
+    , addressLine2 : DataMsg.MsgString msg
+    , city : DataMsg.MsgString msg
+    , state : DataMsg.MsgString msg
+    , postalCode : DataMsg.MsgString msg
+    , percentOwnership : DataMsg.MsgString msg
     , owners : DataMsg.MsgOwner msg
-    , ownerOwnership : DataMsg.MsgString msg
     , disabled : Bool
+    , toggleEdit : Bool
     }
 
 
 type alias Model =
-    { ownerFirstName : String
-    , ownerLastName : String
-    , ownerAddressLine1 : String
-    , ownerAddressLine2 : String
-    , ownerCity : String
-    , ownerState : String
-    , ownerPostalCode : String
+    { firstName : String
+    , lastName : String
+    , addressLine1 : String
+    , addressLine2 : String
+    , city : String
+    , state : String
+    , postalCode : String
+    , percentOwnership : String
     , owners : Owners
-    , ownerOwnership : String
     , disabled : Bool
+    , toggleEdit : Bool
     }
 
 
@@ -61,6 +63,7 @@ type Msg
     | OwnerOwnershipUpdated String
     | OwnersUpdate
     | OwnerDeleted String
+    | ToggleEditOwner Owner
 
 
 
@@ -100,13 +103,21 @@ update msg model =
                     , city = model.city
                     , state = model.state
                     , postalCode = model.postalCode
-                    , percentOwnership = model.ownerOwnership
+                    , percentOwnership = model.percentOwnership
                     }
+
+                state =
+                    case model.toggleEdit of
+                        True ->
+                            editOwnerInfo newOwner model
+
+                        False ->
+                            { model | owners = model.owners ++ [ newOwner ] }
             in
-            ( { model | owners = model.owners ++ [ newOwner ] }, Cmd.none )
+            ( state, Cmd.none )
 
         OwnerOwnershipUpdated str ->
-            ( { model | ownerOwnership = str }, Cmd.none )
+            ( { model | percentOwnership = str }, Cmd.none )
 
         OwnerDeleted str ->
             let
@@ -115,19 +126,27 @@ update msg model =
             in
             ( { model | owners = newOwnersList }, Cmd.none )
 
+        ToggleEditOwner owner ->
+            let
+                state =
+                    setEditOwner model owner
+            in
+            ( state, Cmd.none )
+
 
 init : Owners -> Model
 init owners =
-    { ownerFirstName = ""
-    , ownerLastName = ""
-    , ownerAddressLine1 = ""
-    , ownerAddressLine2 = ""
-    , ownerCity = ""
-    , ownerState = ""
-    , ownerPostalCode = ""
+    { firstName = ""
+    , lastName = ""
+    , addressLine1 = ""
+    , addressLine2 = ""
+    , city = ""
+    , state = ""
+    , postalCode = ""
+    , percentOwnership = ""
     , owners = owners
-    , ownerOwnership = ""
     , disabled = False
+    , toggleEdit = False
     }
 
 
@@ -138,16 +157,17 @@ init owners =
 view : Model -> List (Html Msg)
 view model =
     ownersForm
-        { ownerFirstName = ( model.ownerFirstName, OwnerFirstNameUpdated )
-        , ownerLastName = ( model.ownerLastName, OwnerLastNameUpdated )
-        , ownerAddressLine1 = ( model.ownerAddressLine1, OwnerAddressLine1Updated )
-        , ownerAddressLine2 = ( model.ownerAddressLine2, OwnerAddressLine2Updated )
-        , ownerCity = ( model.ownerCity, OwnerCityUpdated )
-        , ownerState = ( model.ownerState, OwnerStateUpdated )
-        , ownerPostalCode = ( model.ownerPostalCode, OwnerPostalCodeUpdated )
+        { firstName = ( model.firstName, OwnerFirstNameUpdated )
+        , lastName = ( model.lastName, OwnerLastNameUpdated )
+        , addressLine1 = ( model.addressLine1, OwnerAddressLine1Updated )
+        , addressLine2 = ( model.addressLine2, OwnerAddressLine2Updated )
+        , city = ( model.city, OwnerCityUpdated )
+        , state = ( model.state, OwnerStateUpdated )
+        , postalCode = ( model.postalCode, OwnerPostalCodeUpdated )
         , owners = ( model.owners, OwnersUpdate )
+        , percentOwnership = ( model.percentOwnership, OwnerOwnershipUpdated )
         , disabled = model.disabled
-        , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
+        , toggleEdit = model.toggleEdit
         }
 
 
@@ -162,10 +182,10 @@ ownersForm c =
                 [ Row.attrs [ Spacing.mt3 ] ]
                 [ Grid.col
                     []
-                    [ inputText (toMsg c.ownerFirstName) "First Name" (toData c.ownerFirstName) c.disabled ]
+                    [ inputText (toMsg c.firstName) "First Name" (toData c.firstName) c.disabled ]
                 , Grid.col
                     []
-                    [ inputText (toMsg c.ownerLastName) "Last Name" (toData c.ownerLastName) c.disabled ]
+                    [ inputText (toMsg c.lastName) "Last Name" (toData c.lastName) c.disabled ]
                 ]
            ]
         ++ ownerAddressRows c
@@ -195,11 +215,11 @@ ownerPercentOwnershipRow =
 ownerAddressRows : Config msg -> List (Html msg)
 ownerAddressRows c =
     Address.view
-        { addressLine1 = c.ownerAddressLine1
-        , addressLine2 = c.ownerAddressLine2
-        , city = c.ownerCity
-        , state = c.ownerState
-        , postalCode = c.ownerPostalCode
+        { addressLine1 = c.addressLine1
+        , addressLine2 = c.addressLine2
+        , city = c.city
+        , state = c.state
+        , postalCode = c.postalCode
         , disabled = c.disabled
         }
 
@@ -247,3 +267,39 @@ ownersGrid { owners } =
 getOwnerFullName : Owner -> String
 getOwnerFullName owner =
     owner.firstName ++ " " ++ owner.lastName
+
+
+setEditOwner : Model -> Owner -> Model
+setEditOwner model owner =
+    { model
+        | firstName = owner.firstName
+        , lastName = owner.lastName
+        , addressLine1 = owner.addressLine1
+        , addressLine2 = owner.addressLine2
+        , city = owner.city
+        , state = owner.state
+        , postalCode = owner.postalCode
+        , owners = model.owners
+        , percentOwnership = owner.percentOwnership
+        , toggleEdit = True
+    }
+
+
+editOwnerInfo : Owner -> Model -> Model
+editOwnerInfo newOwnerInfo model =
+    let
+        newOwnerName =
+            getOwnerFullName newOwnerInfo
+    in
+    { model
+        | owners =
+            List.map
+                (\owner ->
+                    if getOwnerFullName owner == newOwnerName then
+                        newOwnerInfo
+
+                    else
+                        owner
+                )
+                model.owners
+    }
