@@ -60,7 +60,7 @@ type alias Model =
     , expirationYear : String
     , cvv : String
     , amount : String
-    , owners : Owner.Owners
+    , owners : Maybe Owner.Owners
     , ownerName : String
     , ownerOwnership : String
     , inKindType : Maybe InKindType.Model
@@ -100,7 +100,7 @@ init committeeId =
     , expirationMonth = ""
     , expirationYear = ""
     , cvv = ""
-    , owners = []
+    , owners = Nothing
     , ownerName = ""
     , ownerOwnership = ""
     , inKindType = Nothing
@@ -143,7 +143,7 @@ view model =
         , expirationYear = ( model.expirationYear, CardYearUpdated )
         , cvv = ( model.cvv, CVVUpdated )
         , amount = ( model.amount, AmountUpdated )
-        , owners = model.owners
+        , owners = Maybe.withDefault [] model.owners
         , ownerName = ( model.ownerName, OwnerNameUpdated )
         , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
         , ownersViewModel = OwnersView.init []
@@ -345,6 +345,7 @@ toEncodeModel model =
     , employmentStatus = model.employmentStatus
     , inKindType = model.inKindType
     , inKindDesc = model.inKindDesc
+    , owners = model.owners
     , processPayment = True
     }
 
@@ -373,7 +374,7 @@ validationMapper model =
     , entityName = model.entityName
     , maybeOrgOrInd = model.maybeOrgOrInd
     , maybeEntityType = model.maybeEntityType
-    , owners = model.owners
+    , owners = Maybe.withDefault [] model.owners
     , ownerName = model.ownerName
     , ownerOwnership = model.ownerOwnership
     , inKindDesc = model.inKindDesc

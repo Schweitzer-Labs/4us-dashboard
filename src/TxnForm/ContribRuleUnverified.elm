@@ -80,7 +80,7 @@ type alias Model =
     , expirationYear : String
     , cvv : String
     , amount : String
-    , owners : Owner.Owners
+    , owners : Maybe Owner.Owners
     , ownerName : String
     , ownerOwnership : String
     , inKindDesc : String
@@ -130,7 +130,7 @@ init config txns bankTxn =
     , expirationMonth = ""
     , expirationYear = ""
     , cvv = ""
-    , owners = []
+    , owners = Nothing
     , ownerName = ""
     , ownerOwnership = ""
     , inKindType = Nothing
@@ -173,7 +173,7 @@ clearForm model =
         , expirationMonth = ""
         , expirationYear = ""
         , cvv = ""
-        , owners = []
+        , owners = Nothing
         , ownerName = ""
         , ownerOwnership = ""
         , paymentMethod = Nothing
@@ -235,10 +235,10 @@ contribFormRow model =
             , expirationYear = ( model.expirationYear, CardYearUpdated )
             , cvv = ( model.cvv, CVVUpdated )
             , amount = ( model.amount, AmountUpdated )
-            , owners = model.owners
+            , owners = Maybe.withDefault [] model.owners
             , ownerName = ( model.ownerName, OwnerNameUpdated )
             , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
-            , ownersViewModel = OwnersView.init model.owners
+            , ownersViewModel = OwnersView.init <| Maybe.withDefault [] model.owners
             , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
             , inKindType = ( model.inKindType, InKindTypeUpdated )
             , disabled = model.disabled
@@ -757,6 +757,7 @@ createContribEncoder model =
     , employmentStatus = model.employmentStatus
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
+    , owners = model.owners
     , processPayment = False
     }
 
