@@ -73,7 +73,7 @@ type alias Model =
     , amount : String
     , owners : Owner.Owners
     , ownerName : String
-    , ownerOwnership : String
+    , ownersViewModel : OwnersView.Model
     , inKindType : Maybe InKindType.Model
     , inKindDesc : String
     , committeeId : String
@@ -128,7 +128,7 @@ init txn =
     , cvv = ""
     , owners = []
     , ownerName = ""
-    , ownerOwnership = ""
+    , ownersViewModel = OwnersView.init []
     , inKindType = txn.inKindType
     , inKindDesc = Maybe.withDefault "" txn.inKindDescription
     , paymentMethod = Just txn.paymentMethod
@@ -201,8 +201,13 @@ contribFormRow model =
         , amount = ( model.amount, AmountUpdated )
         , owners = model.owners
         , ownerName = ( model.ownerName, OwnerNameUpdated )
-        , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
         , ownersViewModel = OwnersView.init model.owners
+        , ownersView =
+            OwnersView.makeOwnersView
+                { updateMsg = OwnerOwnershipUpdated
+                , subModel = OwnersView.init model.owners
+                , subView = OwnersView.view
+                }
         , inKindType = ( model.inKindType, InKindTypeUpdated )
         , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
         , disabled = model.disabled
@@ -252,7 +257,7 @@ type Msg
       -- OwnersView
     | OwnerAdded
     | OwnerNameUpdated String
-    | OwnerOwnershipUpdated String
+    | OwnerOwnershipUpdated OwnersView.Msg
       -- Payment info
     | CardYearUpdated String
     | CardMonthUpdated String
@@ -295,8 +300,12 @@ update msg model =
         OwnerNameUpdated str ->
             ( { model | ownerName = str }, Cmd.none )
 
-        OwnerOwnershipUpdated str ->
-            ( { model | ownerOwnership = str }, Cmd.none )
+        OwnerOwnershipUpdated subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    OwnersView.update subMsg model.ownersViewModel
+            in
+            ( { model | ownersViewModel = subModel }, Cmd.map OwnerOwnershipUpdated subCmd )
 
         PhoneNumberUpdated str ->
             ( { model | phoneNumber = str }, Cmd.none )
@@ -417,7 +426,6 @@ amendTxnEncoder model =
     , amount = model.txn.amount
     , owners = model.owners
     , ownerName = model.ownerName
-    , ownerOwnership = model.ownerOwnership
     , committeeId = model.committeeId
     , inKindType = model.inKindType
     , inKindDesc = model.inKindDesc
@@ -450,7 +458,6 @@ validationMapper model =
     , maybeEntityType = model.maybeEntityType
     , owners = model.owners
     , ownerName = model.ownerName
-    , ownerOwnership = model.ownerOwnership
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
     }

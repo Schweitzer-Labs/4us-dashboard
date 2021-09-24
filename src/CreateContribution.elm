@@ -62,7 +62,7 @@ type alias Model =
     , amount : String
     , owners : Maybe Owner.Owners
     , ownerName : String
-    , ownerOwnership : String
+    , ownersViewModel : OwnersView.Model
     , inKindType : Maybe InKindType.Model
     , inKindDesc : String
     , committeeId : String
@@ -102,7 +102,7 @@ init committeeId =
     , cvv = ""
     , owners = Nothing
     , ownerName = ""
-    , ownerOwnership = ""
+    , ownersViewModel = OwnersView.init []
     , inKindType = Nothing
     , inKindDesc = ""
     , paymentMethod = Nothing
@@ -145,8 +145,13 @@ view model =
         , amount = ( model.amount, AmountUpdated )
         , owners = Maybe.withDefault [] model.owners
         , ownerName = ( model.ownerName, OwnerNameUpdated )
-        , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
-        , ownersViewModel = OwnersView.init []
+        , ownersViewModel = OwnersView.init <| Maybe.withDefault [] model.owners
+        , ownersView =
+            OwnersView.makeOwnersView
+                { updateMsg = OwnerOwnershipUpdated
+                , subModel = OwnersView.init <| Maybe.withDefault [] model.owners
+                , subView = OwnersView.view
+                }
         , inKindType = ( model.inKindType, InKindTypeUpdated )
         , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
         , disabled = False
@@ -182,7 +187,7 @@ type Msg
     | FamilyOrIndividualUpdated EntityType.Model
     | OwnerAdded
     | OwnerNameUpdated String
-    | OwnerOwnershipUpdated String
+    | OwnerOwnershipUpdated OwnersView.Msg
       -- Payment info
     | CardYearUpdated String
     | CardMonthUpdated String
@@ -217,17 +222,17 @@ update msg model =
             ( { model | maybeEntityType = maybeEntityType }, Cmd.none )
 
         OwnerAdded ->
-            let
-                newOwner =
-                    Owner.Owner model.ownerName model.ownerOwnership
-            in
             ( model, Cmd.none )
 
         OwnerNameUpdated str ->
             ( { model | ownerName = str }, Cmd.none )
 
-        OwnerOwnershipUpdated str ->
-            ( { model | ownerOwnership = str }, Cmd.none )
+        OwnerOwnershipUpdated subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    OwnersView.update subMsg model.ownersViewModel
+            in
+            ( { model | ownersViewModel = subModel }, Cmd.map OwnerOwnershipUpdated subCmd )
 
         PhoneNumberUpdated str ->
             ( { model | phoneNumber = str }, sendPhone str )
@@ -376,7 +381,6 @@ validationMapper model =
     , maybeEntityType = model.maybeEntityType
     , owners = Maybe.withDefault [] model.owners
     , ownerName = model.ownerName
-    , ownerOwnership = model.ownerOwnership
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
     }

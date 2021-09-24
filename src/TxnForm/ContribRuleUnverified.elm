@@ -82,7 +82,7 @@ type alias Model =
     , amount : String
     , owners : Maybe Owner.Owners
     , ownerName : String
-    , ownerOwnership : String
+    , ownersViewModel : OwnersView.Model
     , inKindDesc : String
     , inKindType : Maybe InKindType.Model
     , maybeError : Maybe String
@@ -132,7 +132,7 @@ init config txns bankTxn =
     , cvv = ""
     , owners = Nothing
     , ownerName = ""
-    , ownerOwnership = ""
+    , ownersViewModel = OwnersView.init []
     , inKindType = Nothing
     , inKindDesc = ""
     , paymentMethod = Nothing
@@ -175,7 +175,7 @@ clearForm model =
         , cvv = ""
         , owners = Nothing
         , ownerName = ""
-        , ownerOwnership = ""
+        , ownersViewModel = OwnersView.init []
         , paymentMethod = Nothing
         , createContribIsVisible = False
         , createContribButtonIsDisabled = False
@@ -237,8 +237,13 @@ contribFormRow model =
             , amount = ( model.amount, AmountUpdated )
             , owners = Maybe.withDefault [] model.owners
             , ownerName = ( model.ownerName, OwnerNameUpdated )
-            , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
             , ownersViewModel = OwnersView.init <| Maybe.withDefault [] model.owners
+            , ownersView =
+                OwnersView.makeOwnersView
+                    { updateMsg = OwnerOwnershipUpdated
+                    , subModel = OwnersView.init <| Maybe.withDefault [] model.owners
+                    , subView = OwnersView.view
+                    }
             , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
             , inKindType = ( model.inKindType, InKindTypeUpdated )
             , disabled = model.disabled
@@ -278,7 +283,7 @@ type Msg
     | FamilyOrIndividualUpdated EntityType.Model
     | OwnerAdded
     | OwnerNameUpdated String
-    | OwnerOwnershipUpdated String
+    | OwnerOwnershipUpdated OwnersView.Msg
       -- Payment info
     | CardYearUpdated String
     | CardMonthUpdated String
@@ -318,17 +323,17 @@ update msg model =
             ( { model | maybeEntityType = maybeEntityType }, Cmd.none )
 
         OwnerAdded ->
-            let
-                newOwner =
-                    Owner.Owner model.ownerName model.ownerOwnership
-            in
             ( model, Cmd.none )
 
         OwnerNameUpdated str ->
             ( { model | ownerName = str }, Cmd.none )
 
-        OwnerOwnershipUpdated str ->
-            ( { model | ownerOwnership = str }, Cmd.none )
+        OwnerOwnershipUpdated subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    OwnersView.update subMsg model.ownersViewModel
+            in
+            ( { model | ownersViewModel = subModel }, Cmd.map OwnerOwnershipUpdated subCmd )
 
         PhoneNumberUpdated str ->
             ( { model | phoneNumber = str }, Cmd.none )

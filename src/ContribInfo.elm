@@ -53,8 +53,8 @@ type alias Config msg =
     , amount : DataMsg.MsgString msg
     , owners : Owner.Owners
     , ownerName : DataMsg.MsgString msg
-    , ownerOwnership : DataMsg.MsgString msg
     , ownersViewModel : OwnersView.Model
+    , ownersView : Html msg
     , inKindType : DataMsg.MsgMaybeInKindType msg
     , inKindDesc : DataMsg.MsgString msg
     , disabled : Bool
@@ -154,7 +154,6 @@ type alias ContribValidatorModel =
     , maybeEntityType : Maybe EntityType.Model
     , owners : Owner.Owners
     , ownerName : String
-    , ownerOwnership : String
     , inKindType : Maybe InKindType.Model
     , inKindDesc : String
     }
@@ -501,7 +500,7 @@ orgRows c =
     ]
         ++ (if toData c.maybeEntityType == Just EntityType.LimitedLiabilityCompany then
                 -- TODO: render Owners view here as a List(Html msg)
-                []
+                [ c.ownersView ]
 
             else
                 []

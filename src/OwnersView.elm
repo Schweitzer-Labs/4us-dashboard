@@ -1,4 +1,4 @@
-module OwnersView exposing (Model, Msg, init, view)
+module OwnersView exposing (Model, Msg, init, makeOwnersView, update, view)
 
 import Address
 import AppInput exposing (inputText)
@@ -154,9 +154,21 @@ init owners =
 --- VIEW
 
 
-view : Model -> List (Html Msg)
+type alias MakeViewConfig msg subMsg subModel =
+    { updateMsg : subMsg -> msg
+    , subModel : subModel
+    , subView : subModel -> Html subMsg
+    }
+
+
+makeOwnersView : MakeViewConfig msg subMsg model -> Html msg
+makeOwnersView config =
+    Html.map config.updateMsg <| config.subView config.subModel
+
+
+view : Model -> Html Msg
 view model =
-    ownersForm
+    ownersFormRows
         { firstName = ( model.firstName, OwnerFirstNameUpdated )
         , lastName = ( model.lastName, OwnerLastNameUpdated )
         , addressLine1 = ( model.addressLine1, OwnerAddressLine1Updated )
@@ -171,32 +183,36 @@ view model =
         }
 
 
-ownersForm : Config msg -> List (Html msg)
-ownersForm c =
-    [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
-        [ Grid.col [] [ Copy.llcDialogue ]
-        ]
-    ]
-        ++ [ ownersGrid c ]
-        ++ [ Grid.row
-                [ Row.attrs [ Spacing.mt3 ] ]
-                [ Grid.col
-                    []
-                    [ inputText (toMsg c.firstName) "First Name" (toData c.firstName) c.disabled ]
-                , Grid.col
-                    []
-                    [ inputText (toMsg c.lastName) "Last Name" (toData c.lastName) c.disabled ]
-                ]
-           ]
-        ++ ownerAddressRows c
-        ++ ownerPercentOwnershipRow
-        ++ [ Grid.row
-                [ Row.attrs [ Spacing.mt3, Spacing.mr4 ] ]
-                [ Grid.col
-                    [ Col.xs4, Col.offsetXs9 ]
-                    [ Button.button [ Button.success, Button.onClick (toMsg c.owners) ] [ text "Add Another Member" ] ]
-                ]
-           ]
+ownersFormRows : Config msg -> Html msg
+ownersFormRows c =
+    Grid.containerFluid
+        []
+    <|
+        []
+            ++ [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
+                    [ Grid.col [] [ Copy.llcDialogue ]
+                    ]
+               ]
+            ++ [ ownersGrid c ]
+            ++ [ Grid.row
+                    [ Row.attrs [ Spacing.mt3 ] ]
+                    [ Grid.col
+                        []
+                        [ inputText (toMsg c.firstName) "First Name" (toData c.firstName) c.disabled ]
+                    , Grid.col
+                        []
+                        [ inputText (toMsg c.lastName) "Last Name" (toData c.lastName) c.disabled ]
+                    ]
+               ]
+            ++ ownerAddressRows c
+            ++ ownerPercentOwnershipRow
+            ++ [ Grid.row
+                    [ Row.attrs [ Spacing.mt3, Spacing.mr4 ] ]
+                    [ Grid.col
+                        [ Col.xs4, Col.offsetXs9 ]
+                        [ Button.button [ Button.success, Button.onClick (toMsg c.owners) ] [ text "Add Another Member" ] ]
+                    ]
+               ]
 
 
 ownerPercentOwnershipRow : List (Html msg)

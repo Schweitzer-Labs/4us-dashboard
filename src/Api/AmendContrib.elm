@@ -102,7 +102,6 @@ type alias EncodeModel =
     , amount : Int
     , owners : Owners
     , ownerName : String
-    , ownerOwnership : String
     , committeeId : String
     , inKindDesc : String
     , inKindType : Maybe InKindType.Model
