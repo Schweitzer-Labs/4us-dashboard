@@ -14,6 +14,7 @@ import DataMsg exposing (toData, toMsg)
 import DataTable exposing (DataRow)
 import Html exposing (Html, text)
 import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
 import Owner exposing (Owner, Owners)
 
 
@@ -59,6 +60,7 @@ type Msg
     | OwnerPostalCodeUpdated String
     | OwnerOwnershipUpdated String
     | OwnersUpdate
+    | OwnerDeleted String
 
 
 
@@ -89,10 +91,29 @@ update msg model =
             ( { model | state = str }, Cmd.none )
 
         OwnersUpdate ->
-            ( model, Cmd.none )
+            let
+                newOwner =
+                    { firstName = model.firstName
+                    , lastName = model.lastName
+                    , addressLine1 = model.addressLine1
+                    , addressLine2 = model.addressLine2
+                    , city = model.city
+                    , state = model.state
+                    , postalCode = model.postalCode
+                    , percentOwnership = model.ownerOwnership
+                    }
+            in
+            ( { model | owners = model.owners ++ [ newOwner ] }, Cmd.none )
 
         OwnerOwnershipUpdated str ->
             ( { model | ownerOwnership = str }, Cmd.none )
+
+        OwnerDeleted str ->
+            let
+                newOwnersList =
+                    List.filter (\o -> str == getOwnerFullName o) model.owners
+            in
+            ( { model | owners = newOwnersList }, Cmd.none )
 
 
 init : Owners -> Model
@@ -193,7 +214,7 @@ ownerLabels =
 ownerRowMap : ( Maybe a, Maybe msg, Owner ) -> ( Maybe msg, DataRow msg )
 ownerRowMap ( _, maybeMsg, o ) =
     ( maybeMsg
-    , [ ( "", text (o.firstName ++ " " ++ o.lastName) )
+    , [ ( "", text (getOwnerFullName o) )
       , ( "", text o.percentOwnership )
       , ( "", Asset.editGlyph [] )
       , ( "", Asset.deleteGlyph [ class "text-danger" ] )
@@ -221,3 +242,8 @@ ownersGrid { owners } =
                         ownersList
             ]
         ]
+
+
+getOwnerFullName : Owner -> String
+getOwnerFullName owner =
+    owner.firstName ++ " " ++ owner.lastName
