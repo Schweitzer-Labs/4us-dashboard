@@ -240,7 +240,7 @@ contribFormRow model =
             , ownersViewModel = OwnersView.init <| Maybe.withDefault [] model.owners
             , ownersView =
                 OwnersView.makeOwnersView
-                    { updateMsg = OwnerOwnershipUpdated
+                    { updateMsg = OwnersViewUpdated
                     , subModel = OwnersView.init <| Maybe.withDefault [] model.owners
                     , subView = OwnersView.view
                     }
@@ -281,9 +281,10 @@ type Msg
     | EntityNameUpdated String
     | EntityTypeUpdated (Maybe EntityType.Model)
     | FamilyOrIndividualUpdated EntityType.Model
+      -- Owner Info
     | OwnerAdded
     | OwnerNameUpdated String
-    | OwnerOwnershipUpdated OwnersView.Msg
+    | OwnersViewUpdated OwnersView.Msg
       -- Payment info
     | CardYearUpdated String
     | CardMonthUpdated String
@@ -328,12 +329,12 @@ update msg model =
         OwnerNameUpdated str ->
             ( { model | ownerName = str }, Cmd.none )
 
-        OwnerOwnershipUpdated subMsg ->
+        OwnersViewUpdated subMsg ->
             let
                 ( subModel, subCmd ) =
                     OwnersView.update subMsg model.ownersViewModel
             in
-            ( { model | ownersViewModel = subModel }, Cmd.map OwnerOwnershipUpdated subCmd )
+            ( { model | ownersViewModel = subModel }, Cmd.map OwnersViewUpdated subCmd )
 
         PhoneNumberUpdated str ->
             ( { model | phoneNumber = str }, Cmd.none )

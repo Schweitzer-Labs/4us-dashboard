@@ -204,7 +204,7 @@ contribFormRow model =
         , ownersViewModel = OwnersView.init model.owners
         , ownersView =
             OwnersView.makeOwnersView
-                { updateMsg = OwnerOwnershipUpdated
+                { updateMsg = OwnersViewUpdated
                 , subModel = OwnersView.init model.owners
                 , subView = OwnersView.view
                 }
@@ -257,7 +257,7 @@ type Msg
       -- OwnersView
     | OwnerAdded
     | OwnerNameUpdated String
-    | OwnerOwnershipUpdated OwnersView.Msg
+    | OwnersViewUpdated OwnersView.Msg
       -- Payment info
     | CardYearUpdated String
     | CardMonthUpdated String
@@ -300,12 +300,12 @@ update msg model =
         OwnerNameUpdated str ->
             ( { model | ownerName = str }, Cmd.none )
 
-        OwnerOwnershipUpdated subMsg ->
+        OwnersViewUpdated subMsg ->
             let
                 ( subModel, subCmd ) =
                     OwnersView.update subMsg model.ownersViewModel
             in
-            ( { model | ownersViewModel = subModel }, Cmd.map OwnerOwnershipUpdated subCmd )
+            ( { model | ownersViewModel = subModel }, Cmd.map OwnersViewUpdated subCmd )
 
         PhoneNumberUpdated str ->
             ( { model | phoneNumber = str }, Cmd.none )
