@@ -20,6 +20,14 @@ import Owner exposing (Owner, Owners)
 
 
 -- MODEL
+{--TODO 1. Add Owners to TXN and read owners data from txn to contribution forms
+        2. Write decoder for Owners on TXNs
+        3. Add validation to Owners View form
+        4. Ensure mutation data is hydrating properly
+        5. Create more than one Msg mapping for Data Grid to support Delete/Edit
+        6. Write Test to ensure validation of work
+        7. Clean up all previous usage of LLC Ownership work
+--}
 
 
 type alias Config msg =
@@ -243,10 +251,6 @@ ownerLabels =
     [ "Name"
     , "Percent Ownership"
     ]
-
-
-
--- TODO: map more than one Msg for Edit and Delete owners
 
 
 ownerRowMap : ( Maybe a, Maybe msg, Owner ) -> ( Maybe msg, DataRow msg )

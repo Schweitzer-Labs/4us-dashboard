@@ -71,7 +71,7 @@ type alias Model =
     , expirationYear : String
     , cvv : String
     , amount : String
-    , owners : Owner.Owners
+    , owners : Maybe Owner.Owners
     , ownerName : String
     , ownersViewModel : OwnersView.Model
     , inKindType : Maybe InKindType.Model
@@ -126,7 +126,7 @@ init txn =
     , expirationMonth = ""
     , expirationYear = ""
     , cvv = ""
-    , owners = []
+    , owners = txn.owners
     , ownerName = ""
     , ownersViewModel = OwnersView.init []
     , inKindType = txn.inKindType
@@ -199,13 +199,13 @@ contribFormRow model =
         , expirationYear = ( model.expirationYear, CardYearUpdated )
         , cvv = ( model.cvv, CVVUpdated )
         , amount = ( model.amount, AmountUpdated )
-        , owners = model.owners
+        , owners = Maybe.withDefault [] model.owners
         , ownerName = ( model.ownerName, OwnerNameUpdated )
-        , ownersViewModel = OwnersView.init model.owners
+        , ownersViewModel = OwnersView.init <| Maybe.withDefault [] model.owners
         , ownersView =
             OwnersView.makeOwnersView
                 { updateMsg = OwnersViewUpdated
-                , subModel = OwnersView.init model.owners
+                , subModel = OwnersView.init <| Maybe.withDefault [] model.owners
                 , subView = OwnersView.view
                 }
         , inKindType = ( model.inKindType, InKindTypeUpdated )
@@ -291,10 +291,6 @@ update msg model =
             ( { model | maybeEntityType = maybeEntityType }, Cmd.none )
 
         OwnerAdded ->
-            --let
-            --    newOwner =
-            --        Owner.Owner model.ownerName model.ownerOwnership
-            --in
             ( model, Cmd.none )
 
         OwnerNameUpdated str ->
@@ -424,7 +420,7 @@ amendTxnEncoder model =
     , maybeOrgOrInd = model.maybeOrgOrInd
     , maybeEntityType = model.maybeEntityType
     , amount = model.txn.amount
-    , owners = model.owners
+    , owners = Maybe.withDefault [] model.owners
     , ownerName = model.ownerName
     , committeeId = model.committeeId
     , inKindType = model.inKindType
@@ -456,7 +452,7 @@ validationMapper model =
     , entityName = model.entityName
     , maybeOrgOrInd = model.maybeOrgOrInd
     , maybeEntityType = model.maybeEntityType
-    , owners = model.owners
+    , owners = Maybe.withDefault [] model.owners
     , ownerName = model.ownerName
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType

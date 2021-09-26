@@ -6,6 +6,7 @@ import EntityType
 import InKindType
 import Json.Decode as Decode exposing (Decoder, bool, int, maybe, oneOf, string)
 import Json.Decode.Pipeline exposing (optional, required)
+import Owner
 import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 import TransactionType exposing (TransactionType)
@@ -46,6 +47,7 @@ type alias Model =
     , cardNumberLastFourDigits : Maybe String
     , checkNumber : Maybe String
     , entityName : Maybe String
+    , owners : Maybe Owner.Owners
     , isSubcontracted : Maybe Bool
     , isPartialPayment : Maybe Bool
     , isExistingLiability : Maybe Bool
@@ -98,6 +100,7 @@ init =
     , cardNumberLastFourDigits = Nothing
     , checkNumber = Nothing
     , entityName = Nothing
+    , owners = Nothing
     , isSubcontracted = Nothing
     , isPartialPayment = Nothing
     , isExistingLiability = Nothing
@@ -150,6 +153,10 @@ maybeEmploymentStatus name =
     optional name (Decode.map EmploymentStatus.fromString string) Nothing
 
 
+maybeOwners name =
+    optional name (Decode.map Just Owner.ownersDecoder) Nothing
+
+
 decoder : Decode.Decoder Model
 decoder =
     Decode.succeed Model
@@ -187,6 +194,7 @@ decoder =
         |> maybeString "cardNumberLastFourDigits"
         |> maybeString "checkNumber"
         |> maybeString "entityName"
+        |> maybeOwners "owners"
         |> maybeBool "isSubcontracted"
         |> maybeBool "isPartialPayment"
         |> maybeBool "isExistingLiability"

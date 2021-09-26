@@ -1,5 +1,7 @@
-module Owner exposing (Owner, Owners, encoder)
+module Owner exposing (Owner, Owners, encoder, ownersDecoder)
 
+import Json.Decode as Decode exposing (Decoder, string)
+import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 
 
@@ -31,3 +33,21 @@ encoder owner =
         , ( "postalCode", Encode.string owner.postalCode )
         , ( "percentOwnership", Encode.string owner.percentOwnership )
         ]
+
+
+ownerDecoder : Decoder Owner
+ownerDecoder =
+    Decode.succeed Owner
+        |> required "firstName" string
+        |> required "lastName" string
+        |> required "addressLine1" string
+        |> required "addressLine2" string
+        |> required "city" string
+        |> required "state" string
+        |> required "postalCode" string
+        |> required "percentOwnership" string
+
+
+ownersDecoder : Decoder (List Owner)
+ownersDecoder =
+    Decode.list ownerDecoder
