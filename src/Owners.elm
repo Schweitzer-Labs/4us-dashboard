@@ -1,4 +1,4 @@
-module Owner exposing (Owner, Owners, encoder, ownersDecoder)
+module Owners exposing (Owner, Owners, decoder, encoder)
 
 import Json.Decode as Decode exposing (Decoder, string)
 import Json.Decode.Pipeline exposing (required)
@@ -48,6 +48,6 @@ ownerDecoder =
         |> required "percentOwnership" string
 
 
-ownersDecoder : Decoder (List Owner)
-ownersDecoder =
+decoder : Decoder (List Owner)
+decoder =
     Decode.list ownerDecoder

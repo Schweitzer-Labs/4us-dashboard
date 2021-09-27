@@ -28,7 +28,7 @@ import Html.Attributes exposing (class)
 import InKindType
 import Loading
 import OrgOrInd
-import Owner
+import Owners
 import OwnersView
 import PaymentInfo
 import PaymentMethod
@@ -71,7 +71,7 @@ type alias Model =
     , expirationYear : String
     , cvv : String
     , amount : String
-    , owners : Maybe Owner.Owners
+    , owners : Maybe Owners.Owners
     , ownerName : String
     , ownersViewModel : OwnersView.Model
     , inKindType : Maybe InKindType.Model

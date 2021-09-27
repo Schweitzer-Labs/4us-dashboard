@@ -9,7 +9,7 @@ import InKindType
 import Json.Decode as Decode
 import Json.Encode as Encode
 import OrgOrInd
-import Owner exposing (Owners)
+import Owners exposing (Owners)
 import PaymentMethod
 import Timestamp exposing (dateStringToMillis)
 import Transaction

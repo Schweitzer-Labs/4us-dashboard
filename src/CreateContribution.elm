@@ -9,7 +9,7 @@ import InKindType
 import Json.Decode as Decode exposing (bool, decodeValue)
 import Json.Encode exposing (Value)
 import OrgOrInd
-import Owner
+import Owners
 import OwnersView
 import PaymentMethod
 
@@ -60,7 +60,7 @@ type alias Model =
     , expirationYear : String
     , cvv : String
     , amount : String
-    , owners : Maybe Owner.Owners
+    , owners : Maybe Owners.Owners
     , ownerName : String
     , ownersViewModel : OwnersView.Model
     , inKindType : Maybe InKindType.Model

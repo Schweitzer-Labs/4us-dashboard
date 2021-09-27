@@ -16,7 +16,7 @@ import Config exposing (Config)
 import Http exposing (Body)
 import Json.Decode as Decode
 import Json.Encode as Encode exposing (Value)
-import Owner
+import Owners
 
 
 encodeQuery : String -> Value -> Body
@@ -91,10 +91,10 @@ optionalFieldNotZero key val =
         []
 
 
-optionalFieldOwners : String -> Owner.Owners -> List ( String, Value )
+optionalFieldOwners : String -> Owners.Owners -> List ( String, Value )
 optionalFieldOwners key val =
     if val == [] then
         []
 
     else
-        [ ( key, Encode.list Owner.encoder val ) ]
+        [ ( key, Encode.list Owners.encoder val ) ]

@@ -4,9 +4,9 @@ import Direction exposing (Direction)
 import EmploymentStatus
 import EntityType
 import InKindType
-import Json.Decode as Decode exposing (Decoder, bool, int, maybe, oneOf, string)
+import Json.Decode as Decode exposing (Decoder, bool, int, string)
 import Json.Decode.Pipeline exposing (optional, required)
-import Owner
+import Owners
 import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 import TransactionType exposing (TransactionType)
@@ -47,7 +47,7 @@ type alias Model =
     , cardNumberLastFourDigits : Maybe String
     , checkNumber : Maybe String
     , entityName : Maybe String
-    , owners : Maybe Owner.Owners
+    , owners : Maybe Owners.Owners
     , isSubcontracted : Maybe Bool
     , isPartialPayment : Maybe Bool
     , isExistingLiability : Maybe Bool
@@ -154,7 +154,7 @@ maybeEmploymentStatus name =
 
 
 maybeOwners name =
-    optional name (Decode.map Just Owner.ownersDecoder) Nothing
+    optional name (Decode.map Just Owners.decoder) Nothing
 
 
 decoder : Decode.Decoder Model

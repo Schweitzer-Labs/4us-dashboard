@@ -15,19 +15,11 @@ import DataMsg exposing (toData, toMsg)
 import DataTable exposing (DataRow)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
-import Owner exposing (Owner, Owners)
+import Owners exposing (Owner, Owners)
 
 
 
 -- MODEL
-{--TODO
-        - Remove all abstracted View Functions to properly hydrate state
-        - Add validation to Owners View form
-        - Ensure mutation data is hydrating properly
-        - Create more than one Msg mapping for Data Grid to support Delete/Edit
-       - Write Test to ensure validation of work
-        - Clean up all previous usage of LLC Ownership work
---}
 
 
 type alias Config msg =

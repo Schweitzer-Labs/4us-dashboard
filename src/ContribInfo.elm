@@ -19,7 +19,7 @@ import Html.Events exposing (onClick)
 import InKindType exposing (Model(..))
 import MonthSelector
 import OrgOrInd
-import Owner
+import Owners
 import OwnersView
 import PaymentMethod
 import Validate exposing (Valid, Validator, fromErrors, ifBlank, ifNothing, validate)
@@ -51,7 +51,7 @@ type alias Config msg =
     , expirationYear : DataMsg.MsgString msg
     , cvv : DataMsg.MsgString msg
     , amount : DataMsg.MsgString msg
-    , owners : Owner.Owners
+    , owners : Owners.Owners
     , ownerName : DataMsg.MsgString msg
     , ownersViewModel : OwnersView.Model
     , ownersView : Html msg
@@ -152,7 +152,7 @@ type alias ContribValidatorModel =
     , entityName : String
     , maybeOrgOrInd : Maybe OrgOrInd.Model
     , maybeEntityType : Maybe EntityType.Model
-    , owners : Owner.Owners
+    , owners : Owners.Owners
     , ownerName : String
     , inKindType : Maybe InKindType.Model
     , inKindDesc : String
@@ -471,7 +471,7 @@ employmentRows c =
 --                [ Row.attrs [ Spacing.mt3 ] ]
 --                [ Grid.col
 --                    []
---                    [ inputText OwnerNameUpdated "Owner Name" model.ownerName
+--                    [ inputText OwnerNameUpdated "Owners Name" model.ownerName
 --                    ]
 --                , Grid.col
 --                    []

@@ -33,7 +33,7 @@ import InKindType
 import LabelWithData exposing (labelWithContent, labelWithData)
 import List exposing (sortBy)
 import OrgOrInd
-import Owner
+import Owners
 import OwnersView
 import PaymentMethod
 import SubmitButton exposing (submitButton)
@@ -80,7 +80,7 @@ type alias Model =
     , expirationYear : String
     , cvv : String
     , amount : String
-    , owners : Maybe Owner.Owners
+    , owners : Maybe Owners.Owners
     , ownerName : String
     , ownersViewModel : OwnersView.Model
     , inKindDesc : String
@@ -281,7 +281,7 @@ type Msg
     | EntityNameUpdated String
     | EntityTypeUpdated (Maybe EntityType.Model)
     | FamilyOrIndividualUpdated EntityType.Model
-      -- Owner Info
+      -- Owners Info
     | OwnerAdded
     | OwnerNameUpdated String
     | OwnersViewUpdated OwnersView.Msg

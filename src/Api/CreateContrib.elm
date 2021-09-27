@@ -10,7 +10,7 @@ import Http
 import InKindType
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Owner
+import Owners
 import PaymentMethod
 import Timestamp exposing (dateStringToMillis)
 import TransactionType
@@ -39,7 +39,7 @@ query =
       $cardCVC: String
       $checkNumber: String
       $entityName: String
-      $owners: [Owner!]
+      $owners: [Owners!]
       $employer: String
       $occupation: String
       $middleName: String
@@ -102,7 +102,7 @@ type alias EncodeModel =
     , cvv : String
     , checkNumber : String
     , entityName : String
-    , owners : Maybe Owner.Owners
+    , owners : Maybe Owners.Owners
     , employer : String
     , occupation : String
     , middleName : String
