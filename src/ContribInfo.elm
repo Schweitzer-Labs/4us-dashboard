@@ -495,8 +495,15 @@ orgRows c =
         ]
     ]
         ++ (if toData c.maybeEntityType == Just EntityType.LimitedLiabilityCompany then
+                let
+                    viewModel =
+                        c.ownersViewModel
+
+                    state =
+                        { viewModel | disabled = c.disabled }
+                in
                 [ Html.map c.ownersViewMsg <|
-                    OwnersView.view c.ownersViewModel
+                    OwnersView.view state
                 ]
 
             else

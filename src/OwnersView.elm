@@ -3,15 +3,20 @@ module OwnersView exposing (Model, Msg, init, toMaybeOwners, update, view)
 import Address
 import AppInput exposing (inputText)
 import Asset
+import Bootstrap.Button as Button
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
+import Bootstrap.Table as Table
 import Bootstrap.Utilities.Spacing as Spacing
 import Copy
 import DataTable exposing (DataRow)
-import Html exposing (Html, div, text)
+import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
-import Owners exposing (Owner, Owners)
+import Html.Events exposing (onClick)
+import Owners as Owner exposing (Owner, Owners)
+import Validate exposing (validate)
 
 
 
@@ -30,6 +35,8 @@ type alias Model =
     , owners : Owners
     , disabled : Bool
     , isOwnerEditable : Bool
+    , currentOwner : Owner
+    , errors : List String
     }
 
 
@@ -43,8 +50,10 @@ type Msg
     | OwnerPostalCodeUpdated String
     | OwnerOwnershipUpdated String
     | OwnersUpdate
-    | OwnerDeleted String
+    | OwnerDeleted Owner
     | ToggleEditOwner Owner
+    | AddOwner
+    | NoOp
 
 
 
@@ -53,6 +62,47 @@ type Msg
 
 update msg model =
     case msg of
+        AddOwner ->
+            let
+                newOwner =
+                    { firstName = model.firstName
+                    , lastName = model.lastName
+                    , addressLine1 = model.addressLine1
+                    , addressLine2 = model.addressLine2
+                    , city = model.city
+                    , state = model.state
+                    , postalCode = model.postalCode
+                    , percentOwnership = model.percentOwnership
+                    }
+            in
+            case validate Owner.validator newOwner of
+                Err messages ->
+                    ( { model | errors = messages }, Cmd.none )
+
+                _ ->
+                    let
+                        totalPercentage =
+                            Owner.foldOwnership model.owners + (Maybe.withDefault 0 <| String.toFloat newOwner.percentOwnership)
+                    in
+                    if totalPercentage > 100 then
+                        ( { model | errors = [ "Total percentage exceeds 100." ] }, Cmd.none )
+
+                    else
+                        ( { model
+                            | owners = model.owners ++ [ newOwner ]
+                            , percentOwnership = ""
+                            , firstName = ""
+                            , lastName = ""
+                            , addressLine1 = ""
+                            , addressLine2 = ""
+                            , city = ""
+                            , state = ""
+                            , postalCode = ""
+                            , errors = []
+                          }
+                        , Cmd.none
+                        )
+
         OwnerFirstNameUpdated str ->
             ( { model | firstName = str }, Cmd.none )
 
@@ -88,24 +138,25 @@ update msg model =
                     }
 
                 state =
-                    case model.isOwnerEditable of
-                        True ->
-                            editOwnerInfo newOwner model
+                    editOwnerInfo newOwner model
 
-                        False ->
-                            { model | owners = model.owners ++ [ newOwner ] }
+                stateWithClearForm =
+                    clearForm state
             in
-            ( state, Cmd.none )
+            ( { stateWithClearForm | isOwnerEditable = False }, Cmd.none )
 
         OwnerOwnershipUpdated str ->
             ( { model | percentOwnership = str }, Cmd.none )
 
-        OwnerDeleted str ->
+        OwnerDeleted deletedOwner ->
             let
-                newOwnersList =
-                    List.filter (\o -> str == getOwnerFullName o) model.owners
+                newOwners =
+                    List.filter (\owner -> Owner.toHash owner /= Owner.toHash deletedOwner) model.owners
+
+                state =
+                    clearForm model
             in
-            ( { model | owners = newOwnersList }, Cmd.none )
+            ( { state | owners = newOwners }, Cmd.none )
 
         ToggleEditOwner owner ->
             let
@@ -113,6 +164,9 @@ update msg model =
                     setEditOwner model owner
             in
             ( state, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 init : Owners -> Model
@@ -126,8 +180,33 @@ init owners =
     , postalCode = ""
     , percentOwnership = ""
     , owners = owners
+    , currentOwner =
+        { firstName = ""
+        , lastName = ""
+        , addressLine1 = ""
+        , addressLine2 = ""
+        , city = ""
+        , state = ""
+        , postalCode = ""
+        , percentOwnership = ""
+        }
     , disabled = False
     , isOwnerEditable = False
+    , errors = []
+    }
+
+
+clearForm : Model -> Model
+clearForm model =
+    { model
+        | firstName = ""
+        , lastName = ""
+        , addressLine1 = ""
+        , addressLine2 = ""
+        , city = ""
+        , state = ""
+        , postalCode = ""
+        , percentOwnership = ""
     }
 
 
@@ -148,11 +227,12 @@ view : Model -> Html Msg
 view model =
     div [] <|
         []
+            ++ errorMessages model.errors
             ++ [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
                     [ Grid.col [] [ Copy.llcDialogue ]
                     ]
                ]
-            ++ [ ownersGrid model ]
+            ++ [ capTable model ]
             ++ [ Grid.row
                     [ Row.attrs [ Spacing.mt3 ] ]
                     [ Grid.col
@@ -170,31 +250,62 @@ view model =
                     ]
                ]
             ++ ownerAddressRows model
-            ++ ownerPercentOwnershipRow
+            ++ [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
+                    [ Grid.col []
+                        [ inputText OwnerOwnershipUpdated "Percent Ownership" model.percentOwnership model.disabled
+                        ]
+                    ]
+               ]
+            ++ (case model.isOwnerEditable of
+                    False ->
+                        [ Grid.row
+                            [ Row.attrs [ Spacing.mt3, Spacing.mr4 ] ]
+                            [ Grid.col
+                                [ Col.xs4, Col.offsetXs9 ]
+                                [ Button.button
+                                    [ Button.success
+                                    , Button.onClick AddOwner
+                                    , Button.disabled model.disabled
+                                    ]
+                                    [ text "Add Another Member" ]
+                                ]
+                            ]
+                        ]
+
+                    True ->
+                        [ Grid.row
+                            [ Row.attrs [ Spacing.mt3 ] ]
+                            [ Grid.col
+                                [ Col.offsetXs10 ]
+                                [ Button.button
+                                    [ Button.success
+                                    , Button.onClick OwnersUpdate
+                                    , Button.disabled model.disabled
+                                    ]
+                                    [ text "Save" ]
+                                ]
+                            ]
+                        ]
+               )
 
 
+errorMessages : List String -> List (Html Msg)
+errorMessages errors =
+    if List.length errors == 0 then
+        []
 
---
---
---++ [ Grid.row
---        [ Row.attrs [ Spacing.mt3, Spacing.mr4 ] ]
---        [ Grid.col
---            [ Col.xs4, Col.offsetXs9 ]
---            [ Button.button [ Button.success, Button.onClick (toMsg c.owners) ] [ text "Add Another Member" ] ]
---        ]
-
-
-ownerPercentOwnershipRow : List (Html msg)
-ownerPercentOwnershipRow =
-    [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
-        [ Grid.col []
-            [ Input.text
-                [ Input.placeholder "Percent Ownership"
-                , Input.disabled False
+    else
+        [ Grid.containerFluid
+            []
+            [ Grid.row
+                []
+                [ Grid.col
+                    []
+                  <|
+                    List.map (\error -> div [ class "text-danger list-unstyled mt-2" ] [ text error ]) errors
                 ]
             ]
         ]
-    ]
 
 
 ownerAddressRows : Model -> List (Html Msg)
@@ -209,42 +320,53 @@ ownerAddressRows model =
         }
 
 
-ownerLabels : List String
-ownerLabels =
-    [ "Name"
-    , "Percent Ownership"
-    ]
+tableBody model =
+    Table.tbody [] <|
+        List.map
+            (\owner ->
+                Table.tr []
+                    [ Table.td [] [ text <| Owner.getOwnerFullName owner ]
+                    , Table.td [] [ text owner.percentOwnership ]
+                    , Table.td []
+                        [ span
+                            [ onClick <|
+                                if model.disabled then
+                                    NoOp
+
+                                else
+                                    ToggleEditOwner owner
+                            ]
+                            [ Asset.editGlyph [ class "hover-pointer mr-5" ]
+                            , span
+                                [ onClick <|
+                                    if model.disabled then
+                                        NoOp
+
+                                    else
+                                        OwnerDeleted owner
+                                ]
+                                [ Asset.deleteGlyph [ class "text-danger hover-pointer" ] ]
+                            ]
+                        ]
+                    ]
+            )
+            model.owners
 
 
-ownerRowMap : ( Maybe a, Maybe msg, Owner ) -> ( Maybe msg, DataRow msg )
-ownerRowMap ( _, maybeMsg, o ) =
-    ( maybeMsg
-    , [ ( "", text (getOwnerFullName o) )
-      , ( "", text o.percentOwnership )
-      , ( "", Asset.editGlyph [] )
-      , ( "", Asset.deleteGlyph [ class "text-danger" ] )
-      ]
-    )
-
-
-ownersGrid : Model -> Html Msg
-ownersGrid model =
-    Grid.row []
-        [ Grid.col []
-            [ if List.isEmpty model.owners then
-                text ""
-
-              else
-                DataTable.view "" ownerLabels ownerRowMap <|
-                    List.map (\d -> ( Nothing, Just OwnersUpdate, d )) <|
-                        model.owners
-            ]
+tableHead =
+    Table.simpleThead
+        [ Table.th [] [ text "Name" ]
+        , Table.th [] [ text "Percent Ownership" ]
+        , Table.th [] [ text "" ]
         ]
 
 
-getOwnerFullName : Owner -> String
-getOwnerFullName owner =
-    owner.firstName ++ " " ++ owner.lastName
+capTable model =
+    if List.length model.owners > 0 then
+        div [] [ Table.simpleTable ( tableHead, tableBody model ) ]
+
+    else
+        div [] []
 
 
 setEditOwner : Model -> Owner -> Model
@@ -260,20 +382,17 @@ setEditOwner model owner =
         , owners = model.owners
         , percentOwnership = owner.percentOwnership
         , isOwnerEditable = True
+        , currentOwner = owner
     }
 
 
 editOwnerInfo : Owner -> Model -> Model
 editOwnerInfo newOwnerInfo model =
-    let
-        newOwnerName =
-            getOwnerFullName newOwnerInfo
-    in
     { model
         | owners =
             List.map
                 (\owner ->
-                    if getOwnerFullName owner == newOwnerName then
+                    if Owner.toHash owner == Owner.toHash model.currentOwner then
                         newOwnerInfo
 
                     else

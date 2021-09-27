@@ -1,8 +1,9 @@
-module Owners exposing (Owner, Owners, decoder, encoder)
+module Owners exposing (Owner, Owners, decoder, encoder, foldOwnership, getOwnerFullName, toHash, validator)
 
 import Json.Decode as Decode exposing (Decoder, string)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
+import Validate exposing (Validator, ifBlank, ifFalse, isFloat)
 
 
 type alias Owner =
@@ -51,3 +52,47 @@ ownerDecoder =
 decoder : Decoder (List Owner)
 decoder =
     Decode.list ownerDecoder
+
+
+toHash : Owner -> String
+toHash owner =
+    owner.firstName
+        ++ "-"
+        ++ owner.lastName
+        ++ "-"
+        ++ owner.addressLine1
+        ++ "-"
+        ++ owner.city
+        ++ "-"
+        ++ owner.state
+        ++ "-"
+        ++ owner.postalCode
+
+
+foldOwnership : Owners -> Float
+foldOwnership owners =
+    List.foldl (+) 0 <|
+        List.map (Maybe.withDefault 0 << String.toFloat << .percentOwnership) owners
+
+
+validator : Validator String Owner
+validator =
+    Validate.firstError
+        [ ifBlank .percentOwnership "Ownership percentage must be a valid a number."
+        , ifBlank .firstName "Owner First name is missing."
+        , ifBlank .lastName "Owner Last name is missing."
+        , ifBlank .addressLine1 "Owner Address 1 is missing."
+        , ifBlank .city "Owner City is missing."
+        , ifBlank .state "Owner State is missing."
+        , ifBlank .postalCode "Owner Postal Code is missing."
+        ]
+
+
+ifNotFloat : (subject -> String) -> error -> Validator error subject
+ifNotFloat subjectToString error =
+    ifFalse (\subject -> isFloat (subjectToString subject)) error
+
+
+getOwnerFullName : Owner -> String
+getOwnerFullName owner =
+    owner.firstName ++ " " ++ owner.lastName

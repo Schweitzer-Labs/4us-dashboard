@@ -294,7 +294,7 @@ update msg model =
                 ( subModel, subCmd ) =
                     OwnersView.update subMsg model.ownersViewModel
             in
-            ( { model | ownersViewModel = subModel }, Cmd.map OwnersViewUpdated subCmd )
+            ( { model | ownersViewModel = subModel, owners = Just subModel.owners }, Cmd.map OwnersViewUpdated subCmd )
 
         PhoneNumberUpdated str ->
             ( { model | phoneNumber = str }, Cmd.none )
