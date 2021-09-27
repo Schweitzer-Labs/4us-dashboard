@@ -20,13 +20,13 @@ import Owner exposing (Owner, Owners)
 
 
 -- MODEL
-{--TODO 1. Add Owners to TXN and read owners data from txn to contribution forms
-        2. Write decoder for Owners on TXNs
-        3. Add validation to Owners View form
-        4. Ensure mutation data is hydrating properly
-        5. Create more than one Msg mapping for Data Grid to support Delete/Edit
-        6. Write Test to ensure validation of work
-        7. Clean up all previous usage of LLC Ownership work
+{--TODO
+        - Remove all abstracted View Functions to properly hydrate state
+        - Add validation to Owners View form
+        - Ensure mutation data is hydrating properly
+        - Create more than one Msg mapping for Data Grid to support Delete/Edit
+       - Write Test to ensure validation of work
+        - Clean up all previous usage of LLC Ownership work
 --}
 
 
@@ -204,7 +204,13 @@ ownersFormRows c =
                     [ Row.attrs [ Spacing.mt3 ] ]
                     [ Grid.col
                         []
-                        [ inputText (toMsg c.firstName) "First Name" (toData c.firstName) c.disabled ]
+                        [ Input.text
+                            [ Input.value <| toData c.firstName
+                            , Input.onInput <| toMsg c.firstName
+                            , Input.placeholder "First Name"
+                            , Input.disabled c.disabled
+                            ]
+                        ]
                     , Grid.col
                         []
                         [ inputText (toMsg c.lastName) "Last Name" (toData c.lastName) c.disabled ]
@@ -212,13 +218,17 @@ ownersFormRows c =
                ]
             ++ ownerAddressRows c
             ++ ownerPercentOwnershipRow
-            ++ [ Grid.row
-                    [ Row.attrs [ Spacing.mt3, Spacing.mr4 ] ]
-                    [ Grid.col
-                        [ Col.xs4, Col.offsetXs9 ]
-                        [ Button.button [ Button.success, Button.onClick (toMsg c.owners) ] [ text "Add Another Member" ] ]
-                    ]
-               ]
+
+
+
+--
+--
+--++ [ Grid.row
+--        [ Row.attrs [ Spacing.mt3, Spacing.mr4 ] ]
+--        [ Grid.col
+--            [ Col.xs4, Col.offsetXs9 ]
+--            [ Button.button [ Button.success, Button.onClick (toMsg c.owners) ] [ text "Add Another Member" ] ]
+--        ]
 
 
 ownerPercentOwnershipRow : List (Html msg)
