@@ -2,16 +2,12 @@ module OwnersView exposing (Model, Msg, init, toMaybeOwners, update, view)
 
 import Address
 import AppInput exposing (inputText)
-import Array
 import Asset
-import Bootstrap.Button as Button
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Copy
-import DataMsg exposing (toData, toMsg)
 import DataTable exposing (DataRow)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
@@ -20,21 +16,6 @@ import Owners exposing (Owner, Owners)
 
 
 -- MODEL
-
-
-type alias Config msg =
-    { firstName : DataMsg.MsgString msg
-    , lastName : DataMsg.MsgString msg
-    , addressLine1 : DataMsg.MsgString msg
-    , addressLine2 : DataMsg.MsgString msg
-    , city : DataMsg.MsgString msg
-    , state : DataMsg.MsgString msg
-    , postalCode : DataMsg.MsgString msg
-    , percentOwnership : DataMsg.MsgString msg
-    , owners : DataMsg.MsgOwners msg
-    , disabled : Bool
-    , isOwnerEditable : Bool
-    }
 
 
 type alias Model =
