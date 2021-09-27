@@ -60,8 +60,6 @@ type alias Model =
     , expirationYear : String
     , cvv : String
     , amount : String
-    , owners : Maybe Owners.Owners
-    , ownerName : String
     , ownersViewModel : OwnersView.Model
     , inKindType : Maybe InKindType.Model
     , inKindDesc : String
@@ -100,8 +98,6 @@ init committeeId =
     , expirationMonth = ""
     , expirationYear = ""
     , cvv = ""
-    , owners = Nothing
-    , ownerName = ""
     , ownersViewModel = OwnersView.init []
     , inKindType = Nothing
     , inKindDesc = ""
@@ -143,15 +139,8 @@ view model =
         , expirationYear = ( model.expirationYear, CardYearUpdated )
         , cvv = ( model.cvv, CVVUpdated )
         , amount = ( model.amount, AmountUpdated )
-        , owners = Maybe.withDefault [] model.owners
-        , ownerName = ( model.ownerName, OwnerNameUpdated )
-        , ownersViewModel = OwnersView.init <| Maybe.withDefault [] model.owners
-        , ownersView =
-            OwnersView.makeOwnersView
-                { updateMsg = OwnersViewUpdated
-                , subModel = OwnersView.init <| Maybe.withDefault [] model.owners
-                , subView = OwnersView.view
-                }
+        , ownersViewMsg = OwnersViewUpdated
+        , ownersViewModel = model.ownersViewModel
         , inKindType = ( model.inKindType, InKindTypeUpdated )
         , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
         , disabled = False
@@ -185,8 +174,6 @@ type Msg
     | EntityNameUpdated String
     | EntityTypeUpdated (Maybe EntityType.Model)
     | FamilyOrIndividualUpdated EntityType.Model
-    | OwnerAdded
-    | OwnerNameUpdated String
     | OwnersViewUpdated OwnersView.Msg
       -- Payment info
     | CardYearUpdated String
@@ -220,12 +207,6 @@ update msg model =
 
         EntityTypeUpdated maybeEntityType ->
             ( { model | maybeEntityType = maybeEntityType }, Cmd.none )
-
-        OwnerAdded ->
-            ( model, Cmd.none )
-
-        OwnerNameUpdated str ->
-            ( { model | ownerName = str }, Cmd.none )
 
         OwnersViewUpdated subMsg ->
             let
@@ -350,7 +331,7 @@ toEncodeModel model =
     , employmentStatus = model.employmentStatus
     , inKindType = model.inKindType
     , inKindDesc = model.inKindDesc
-    , owners = model.owners
+    , owners = OwnersView.toMaybeOwners model.ownersViewModel
     , processPayment = True
     }
 
@@ -379,8 +360,6 @@ validationMapper model =
     , entityName = model.entityName
     , maybeOrgOrInd = model.maybeOrgOrInd
     , maybeEntityType = model.maybeEntityType
-    , owners = Maybe.withDefault [] model.owners
-    , ownerName = model.ownerName
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
     }

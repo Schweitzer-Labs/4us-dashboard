@@ -235,15 +235,8 @@ contribFormRow model =
             , expirationYear = ( model.expirationYear, CardYearUpdated )
             , cvv = ( model.cvv, CVVUpdated )
             , amount = ( model.amount, AmountUpdated )
-            , owners = Maybe.withDefault [] model.owners
-            , ownerName = ( model.ownerName, OwnerNameUpdated )
-            , ownersViewModel = OwnersView.init <| Maybe.withDefault [] model.owners
-            , ownersView =
-                OwnersView.makeOwnersView
-                    { updateMsg = OwnersViewUpdated
-                    , subModel = OwnersView.init <| Maybe.withDefault [] model.owners
-                    , subView = OwnersView.view
-                    }
+            , ownersViewModel = model.ownersViewModel
+            , ownersViewMsg = OwnersViewUpdated
             , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
             , inKindType = ( model.inKindType, InKindTypeUpdated )
             , disabled = model.disabled

@@ -1,4 +1,4 @@
-module OwnersView exposing (Model, Msg, init, makeOwnersView, update, view)
+module OwnersView exposing (Model, Msg, init, toMaybeOwners, update, view)
 
 import Address
 import AppInput exposing (inputText)
@@ -31,7 +31,7 @@ type alias Config msg =
     , state : DataMsg.MsgString msg
     , postalCode : DataMsg.MsgString msg
     , percentOwnership : DataMsg.MsgString msg
-    , owners : DataMsg.MsgOwner msg
+    , owners : DataMsg.MsgOwners msg
     , disabled : Bool
     , isOwnerEditable : Bool
     }
@@ -150,65 +150,45 @@ init owners =
     }
 
 
+toMaybeOwners : Model -> Maybe Owners
+toMaybeOwners model =
+    if model.owners == [] then
+        Nothing
+
+    else
+        Just model.owners
+
+
 
 --- VIEW
 
 
-type alias MakeViewConfig msg subMsg subModel =
-    { updateMsg : subMsg -> msg
-    , subModel : subModel
-    , subView : subModel -> Html subMsg
-    }
-
-
-makeOwnersView : MakeViewConfig msg subMsg model -> Html msg
-makeOwnersView config =
-    Html.map config.updateMsg <| config.subView config.subModel
-
-
 view : Model -> Html Msg
 view model =
-    ownersFormRows
-        { firstName = ( model.firstName, OwnerFirstNameUpdated )
-        , lastName = ( model.lastName, OwnerLastNameUpdated )
-        , addressLine1 = ( model.addressLine1, OwnerAddressLine1Updated )
-        , addressLine2 = ( model.addressLine2, OwnerAddressLine2Updated )
-        , city = ( model.city, OwnerCityUpdated )
-        , state = ( model.state, OwnerStateUpdated )
-        , postalCode = ( model.postalCode, OwnerPostalCodeUpdated )
-        , owners = ( model.owners, OwnersUpdate )
-        , percentOwnership = ( model.percentOwnership, OwnerOwnershipUpdated )
-        , disabled = model.disabled
-        , isOwnerEditable = model.isOwnerEditable
-        }
-
-
-ownersFormRows : Config msg -> Html msg
-ownersFormRows c =
     div [] <|
         []
             ++ [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
                     [ Grid.col [] [ Copy.llcDialogue ]
                     ]
                ]
-            ++ [ ownersGrid c ]
+            ++ [ ownersGrid model ]
             ++ [ Grid.row
                     [ Row.attrs [ Spacing.mt3 ] ]
                     [ Grid.col
                         []
                         [ Input.text
-                            [ Input.value <| toData c.firstName
-                            , Input.onInput <| toMsg c.firstName
+                            [ Input.value <| model.firstName
+                            , Input.onInput <| OwnerFirstNameUpdated
                             , Input.placeholder "First Name"
-                            , Input.disabled c.disabled
+                            , Input.disabled model.disabled
                             ]
                         ]
                     , Grid.col
                         []
-                        [ inputText (toMsg c.lastName) "Last Name" (toData c.lastName) c.disabled ]
+                        [ inputText OwnerLastNameUpdated "Last Name" model.lastName model.disabled ]
                     ]
                ]
-            ++ ownerAddressRows c
+            ++ ownerAddressRows model
             ++ ownerPercentOwnershipRow
 
 
@@ -236,15 +216,15 @@ ownerPercentOwnershipRow =
     ]
 
 
-ownerAddressRows : Config msg -> List (Html msg)
-ownerAddressRows c =
+ownerAddressRows : Model -> List (Html Msg)
+ownerAddressRows model =
     Address.view
-        { addressLine1 = c.addressLine1
-        , addressLine2 = c.addressLine2
-        , city = c.city
-        , state = c.state
-        , postalCode = c.postalCode
-        , disabled = c.disabled
+        { addressLine1 = ( model.addressLine1, OwnerAddressLine1Updated )
+        , addressLine2 = ( model.addressLine2, OwnerAddressLine2Updated )
+        , city = ( model.city, OwnerCityUpdated )
+        , state = ( model.state, OwnerStateUpdated )
+        , postalCode = ( model.postalCode, OwnerPostalCodeUpdated )
+        , disabled = model.disabled
         }
 
 
@@ -266,24 +246,17 @@ ownerRowMap ( _, maybeMsg, o ) =
     )
 
 
-ownersGrid : Config msg -> Html msg
-ownersGrid { owners } =
-    let
-        ownersList =
-            toData owners
-
-        msg =
-            Just <| toMsg owners
-    in
+ownersGrid : Model -> Html Msg
+ownersGrid model =
     Grid.row []
         [ Grid.col []
-            [ if List.isEmpty ownersList then
+            [ if List.isEmpty model.owners then
                 text ""
 
               else
                 DataTable.view "" ownerLabels ownerRowMap <|
-                    List.map (\d -> ( Nothing, msg, d )) <|
-                        ownersList
+                    List.map (\d -> ( Nothing, Just OwnersUpdate, d )) <|
+                        model.owners
             ]
         ]
 

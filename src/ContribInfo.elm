@@ -51,10 +51,8 @@ type alias Config msg =
     , expirationYear : DataMsg.MsgString msg
     , cvv : DataMsg.MsgString msg
     , amount : DataMsg.MsgString msg
-    , owners : Owners.Owners
-    , ownerName : DataMsg.MsgString msg
+    , ownersViewMsg : OwnersView.Msg -> msg
     , ownersViewModel : OwnersView.Model
-    , ownersView : Html msg
     , inKindType : DataMsg.MsgMaybeInKindType msg
     , inKindDesc : DataMsg.MsgString msg
     , disabled : Bool
@@ -152,8 +150,6 @@ type alias ContribValidatorModel =
     , entityName : String
     , maybeOrgOrInd : Maybe OrgOrInd.Model
     , maybeEntityType : Maybe EntityType.Model
-    , owners : Owners.Owners
-    , ownerName : String
     , inKindType : Maybe InKindType.Model
     , inKindDesc : String
     }
@@ -499,7 +495,9 @@ orgRows c =
         ]
     ]
         ++ (if toData c.maybeEntityType == Just EntityType.LimitedLiabilityCompany then
-                [ c.ownersView ]
+                [ Html.map c.ownersViewMsg <|
+                    OwnersView.view c.ownersViewModel
+                ]
 
             else
                 []

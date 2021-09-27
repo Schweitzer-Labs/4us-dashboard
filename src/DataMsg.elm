@@ -6,7 +6,7 @@ module DataMsg exposing
     , MsgMaybeOrgOrInd
     , MsgMaybePaymentMethod
     , MsgMaybePurposeCode
-    , MsgOwner
+    , MsgOwners
     , MsgString
     , toData
     , toMsg
@@ -53,8 +53,8 @@ type alias MsgMaybeOrgOrInd msg =
     ( Maybe OrgOrInd.Model, Maybe OrgOrInd.Model -> msg )
 
 
-type alias MsgOwner msg =
-    ( Owners, msg )
+type alias MsgOwners msg =
+    ( Owners, Owner -> msg )
 
 
 toMsg : ( a, b ) -> b

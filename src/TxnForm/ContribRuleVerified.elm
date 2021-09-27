@@ -199,15 +199,8 @@ contribFormRow model =
         , expirationYear = ( model.expirationYear, CardYearUpdated )
         , cvv = ( model.cvv, CVVUpdated )
         , amount = ( model.amount, AmountUpdated )
-        , owners = Maybe.withDefault [] model.owners
-        , ownerName = ( model.ownerName, OwnerNameUpdated )
-        , ownersViewModel = OwnersView.init <| Maybe.withDefault [] model.owners
-        , ownersView =
-            OwnersView.makeOwnersView
-                { updateMsg = OwnersViewUpdated
-                , subModel = OwnersView.init <| Maybe.withDefault [] model.owners
-                , subView = OwnersView.view
-                }
+        , ownersViewModel = model.ownersViewModel
+        , ownersViewMsg = OwnersViewUpdated
         , inKindType = ( model.inKindType, InKindTypeUpdated )
         , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
         , disabled = model.disabled
@@ -452,8 +445,6 @@ validationMapper model =
     , entityName = model.entityName
     , maybeOrgOrInd = model.maybeOrgOrInd
     , maybeEntityType = model.maybeEntityType
-    , owners = Maybe.withDefault [] model.owners
-    , ownerName = model.ownerName
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
     }
