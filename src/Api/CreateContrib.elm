@@ -39,7 +39,7 @@ query =
       $cardCVC: String
       $checkNumber: String
       $entityName: String
-      $owners: [Owners!]
+      $owners: [Owner!]
       $employer: String
       $occupation: String
       $middleName: String
