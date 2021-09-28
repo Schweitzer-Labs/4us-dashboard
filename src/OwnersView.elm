@@ -8,7 +8,7 @@ import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
-import Bootstrap.Table as Table exposing (Cell, THead)
+import Bootstrap.Table as Table exposing (Cell, TBody, THead)
 import Bootstrap.Utilities.Spacing as Spacing
 import Copy
 import DataTable exposing (DataRow)
@@ -155,9 +155,6 @@ update msg model =
 
                 state =
                     clearForm model
-
-                _ =
-                    Debug.log "clear form state" state
             in
             ( { state | owners = newOwners }, Cmd.none )
 
@@ -318,6 +315,7 @@ ownerAddressRows model =
         }
 
 
+tableBody : Model -> TBody Msg
 tableBody model =
     Table.tbody [] <|
         List.map
