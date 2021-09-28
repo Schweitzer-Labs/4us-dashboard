@@ -13,7 +13,7 @@ import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
 import Errors exposing (fromEmailAddress, fromInKindType, fromOrgType, fromPhoneNumber, fromPostalCode)
-import Html exposing (Html, div, h5, span, text)
+import Html exposing (Html, div, h5, h6, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
 import InKindType exposing (Model(..))
@@ -505,6 +505,9 @@ orgRows c =
                 [ Html.map c.ownersViewMsg <|
                     OwnersView.view state
                 ]
+                    ++ [ Grid.row []
+                            [ Grid.col [ Col.md4 ] [ h6 [ class "font-weight-bold d-inline" ] [ text "Company Contact Info" ] ] ]
+                       ]
 
             else
                 []
