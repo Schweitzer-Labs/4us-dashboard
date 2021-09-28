@@ -233,24 +233,29 @@ view model =
                     ]
                ]
             ++ [ capTable model ]
-            ++ [ Grid.row
-                    [ Row.attrs [ Spacing.mt3 ] ]
-                    [ Grid.col
-                        []
-                        [ inputText OwnerFirstNameUpdated "First Name" model.firstName model.disabled
-                        ]
-                    , Grid.col
-                        []
-                        [ inputText OwnerLastNameUpdated "Last Name" model.lastName model.disabled ]
-                    ]
-               ]
-            ++ ownerAddressRows model
-            ++ [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
-                    [ Grid.col []
-                        [ inputText OwnerOwnershipUpdated "Percent Ownership" model.percentOwnership model.disabled
+            ++ (if model.disabled then
+                    []
+
+                else
+                    [ Grid.row
+                        [ Row.attrs [ Spacing.mt3 ] ]
+                        [ Grid.col
+                            []
+                            [ inputText OwnerFirstNameUpdated "First Name" model.firstName model.disabled
+                            ]
+                        , Grid.col
+                            []
+                            [ inputText OwnerLastNameUpdated "Last Name" model.lastName model.disabled ]
                         ]
                     ]
-               ]
+                        ++ ownerAddressRows model
+                        ++ [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
+                                [ Grid.col []
+                                    [ inputText OwnerOwnershipUpdated "Percent Ownership" model.percentOwnership model.disabled
+                                    ]
+                                ]
+                           ]
+               )
             ++ (case model.isOwnerEditable of
                     False ->
                         [ Grid.row
@@ -315,41 +320,13 @@ ownerAddressRows model =
         }
 
 
-tableBody : Model -> TBody Msg
-tableBody model =
-    Table.tbody [] <|
-        List.map
-            (\owner ->
-                Table.tr []
-                    [ Table.td [] [ text <| Owner.getOwnerFullName owner ]
-                    , Table.td [] [ text owner.percentOwnership ]
-                    , Table.td []
-                        [ span
-                            [ onClick
-                                (if model.disabled then
-                                    NoOp
+capTable : Model -> Html Msg
+capTable model =
+    if List.length model.owners > 0 then
+        div [] [ Table.simpleTable ( tableHead, tableBody model ) ]
 
-                                 else
-                                    ToggleEditOwner owner
-                                )
-                            ]
-                            [ Asset.editGlyph [ class "hover-pointer" ] ]
-                        ]
-                    , Table.td []
-                        [ span
-                            [ onClick
-                                (if model.disabled then
-                                    NoOp
-
-                                 else
-                                    OwnerDeleted owner
-                                )
-                            ]
-                            [ Asset.deleteGlyph [ class "text-danger hover-pointer" ] ]
-                        ]
-                    ]
-            )
-            model.owners
+    else
+        div [] []
 
 
 tableHead : THead msg
@@ -362,18 +339,42 @@ tableHead =
         ]
 
 
+tableBody : Model -> TBody Msg
+tableBody model =
+    Table.tbody [] <|
+        List.map
+            (\owner ->
+                Table.tr []
+                    [ Table.td [] [ text <| Owner.getOwnerFullName owner ]
+                    , Table.td [] [ text owner.percentOwnership ]
+                    , Table.td []
+                        [ if model.disabled then
+                            text ""
+
+                          else
+                            span
+                                [ onClick <| ToggleEditOwner owner
+                                ]
+                                [ Asset.editGlyph [ class "hover-pointer" ] ]
+                        ]
+                    , Table.td []
+                        [ if model.disabled then
+                            text ""
+
+                          else
+                            span
+                                [ onClick <| OwnerDeleted owner
+                                ]
+                                [ Asset.deleteGlyph [ class "text-danger hover-pointer" ] ]
+                        ]
+                    ]
+            )
+            model.owners
+
+
 emptyTableHead : Cell msg
 emptyTableHead =
     Table.th [] [ text "" ]
-
-
-capTable : Model -> Html Msg
-capTable model =
-    if List.length model.owners > 0 then
-        div [] [ Table.simpleTable ( tableHead, tableBody model ) ]
-
-    else
-        div [] []
 
 
 setEditOwner : Model -> Owner -> Model
