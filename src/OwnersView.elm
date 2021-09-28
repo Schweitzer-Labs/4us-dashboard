@@ -1,7 +1,7 @@
 module OwnersView exposing (Model, Msg, init, toMaybeOwners, update, view)
 
 import Address
-import AppInput exposing (inputText)
+import AppInput exposing (inputNumber, inputText)
 import Asset
 import Bootstrap.Button as Button
 import Bootstrap.Form.Input as Input
@@ -251,7 +251,7 @@ view model =
                         ++ ownerAddressRows model
                         ++ [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
                                 [ Grid.col []
-                                    [ inputText OwnerOwnershipUpdated "Percent Ownership" model.percentOwnership model.disabled
+                                    [ inputNumber OwnerOwnershipUpdated "Percent Ownership" model.percentOwnership model.disabled
                                     ]
                                 ]
                            ]
