@@ -8,7 +8,7 @@ import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
-import Bootstrap.Table as Table
+import Bootstrap.Table as Table exposing (Cell, THead)
 import Bootstrap.Utilities.Spacing as Spacing
 import Copy
 import DataTable exposing (DataRow)
@@ -155,6 +155,9 @@ update msg model =
 
                 state =
                     clearForm model
+
+                _ =
+                    Debug.log "clear form state" state
             in
             ( { state | owners = newOwners }, Cmd.none )
 
@@ -237,12 +240,7 @@ view model =
                     [ Row.attrs [ Spacing.mt3 ] ]
                     [ Grid.col
                         []
-                        [ Input.text
-                            [ Input.value <| model.firstName
-                            , Input.onInput <| OwnerFirstNameUpdated
-                            , Input.placeholder "First Name"
-                            , Input.disabled model.disabled
-                            ]
+                        [ inputText OwnerFirstNameUpdated "First Name" model.firstName model.disabled
                         ]
                     , Grid.col
                         []
@@ -329,38 +327,49 @@ tableBody model =
                     , Table.td [] [ text owner.percentOwnership ]
                     , Table.td []
                         [ span
-                            [ onClick <|
-                                if model.disabled then
+                            [ onClick
+                                (if model.disabled then
                                     NoOp
 
-                                else
+                                 else
                                     ToggleEditOwner owner
+                                )
                             ]
-                            [ Asset.editGlyph [ class "hover-pointer mr-5" ]
-                            , span
-                                [ onClick <|
-                                    if model.disabled then
-                                        NoOp
+                            [ Asset.editGlyph [ class "hover-pointer" ] ]
+                        ]
+                    , Table.td []
+                        [ span
+                            [ onClick
+                                (if model.disabled then
+                                    NoOp
 
-                                    else
-                                        OwnerDeleted owner
-                                ]
-                                [ Asset.deleteGlyph [ class "text-danger hover-pointer" ] ]
+                                 else
+                                    OwnerDeleted owner
+                                )
                             ]
+                            [ Asset.deleteGlyph [ class "text-danger hover-pointer" ] ]
                         ]
                     ]
             )
             model.owners
 
 
+tableHead : THead msg
 tableHead =
     Table.simpleThead
         [ Table.th [] [ text "Name" ]
         , Table.th [] [ text "Percent Ownership" ]
-        , Table.th [] [ text "" ]
+        , emptyTableHead
+        , emptyTableHead
         ]
 
 
+emptyTableHead : Cell msg
+emptyTableHead =
+    Table.th [] [ text "" ]
+
+
+capTable : Model -> Html Msg
 capTable model =
     if List.length model.owners > 0 then
         div [] [ Table.simpleTable ( tableHead, tableBody model ) ]
