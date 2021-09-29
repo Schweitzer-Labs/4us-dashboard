@@ -11,19 +11,26 @@ import Json.Encode as Encode
 query : String
 query =
     """
-    query($committeeId: String!) {
-      report(committeeId: $committeeId) {
+    query(
+      $committeeId: String!
+      $includeHeaders: Boolean!
+    ) {
+      report(
+        committeeId: $committeeId
+        includeHeaders: $includeHeaders
+      ) {
         csvData
       }
     }
     """
 
 
-encode : String -> Body
-encode committeeId =
+encode : String -> Bool -> Body
+encode committeeId includeHeaders =
     encodeQuery query <|
         Encode.object <|
             [ ( "committeeId", Encode.string committeeId )
+            , ( "includeHeaders", Encode.bool includeHeaders )
             ]
 
 

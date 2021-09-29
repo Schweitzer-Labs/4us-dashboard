@@ -654,7 +654,7 @@ openTxnFormModalLoaded model txn =
 type Msg
     = GotSession Session
     | GotTxnsData (Result Http.Error GetTxns.Model)
-    | GenerateReport FileFormat
+    | GenerateReport FileFormat Bool
     | HideCreateContributionModal
     | ShowCreateContributionModal
     | HideGenerateDisclosureModal
@@ -1052,10 +1052,10 @@ update msg model =
         GotSession session ->
             ( { model | session = session }, Cmd.none )
 
-        GenerateReport format ->
+        GenerateReport format includeHeaders ->
             case format of
                 FileFormat.CSV ->
-                    ( model, getReport model )
+                    ( model, getReport model includeHeaders )
 
                 FileFormat.PDF ->
                     ( model, Download.string "2021-periodic-report-july.pdf" "text/pdf" "2021-periodic-report-july" )
@@ -1450,9 +1450,9 @@ getTransaction model txnId =
     GetTxn.send GotTxnData model.config <| GetTxn.encode model.committeeId txnId
 
 
-getReport : Model -> Cmd Msg
-getReport model =
-    GetReport.send GotReportData model.config <| GetReport.encode model.committeeId
+getReport : Model -> Bool -> Cmd Msg
+getReport model includeHeaders =
+    GetReport.send GotReportData model.config <| GetReport.encode model.committeeId includeHeaders
 
 
 amendDisb : Model -> Cmd Msg
