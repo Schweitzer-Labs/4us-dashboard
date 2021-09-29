@@ -31,7 +31,7 @@ type alias DropdownConfig msg =
     ( Dropdown.State -> msg, Dropdown.State )
 
 
-view : Aggregations.Model -> DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> msg) -> msg -> Bool -> Maybe String -> msg -> Html msg
+view : Aggregations.Model -> DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> Bool -> msg) -> msg -> Bool -> Maybe String -> msg -> Html msg
 view aggs dropdownDownloadConfig dropdownPreviewConfig downloadMsg goToNeedsReviewMsg submitted preview backMsg =
     case preview of
         Just a ->
@@ -148,7 +148,7 @@ aggregateCol name data =
         ]
 
 
-downloadRows : DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> msg) -> List (Html msg)
+downloadRows : DropdownConfig msg -> DropdownConfig msg -> (FileFormat -> Bool -> msg) -> List (Html msg)
 downloadRows ( dropdownToggleDownloadMsg, dropdownDownloadState ) ( dropdownTogglePreviewMsg, dropdownTogglePreviewState ) downloadMsg =
     let
         pdfMsg =
@@ -168,7 +168,7 @@ downloadRows ( dropdownToggleDownloadMsg, dropdownDownloadState ) ( dropdownTogg
                 , toggleButton =
                     Dropdown.toggle [ Button.outlineSuccess, Button.attrs [ Spacing.mb3, Spacing.mt4 ] ] [ text "Download as " ]
                 , items =
-                    [ Dropdown.buttonItem [ onClick csvMsg ] [ text "CSV" ]
+                    [ Dropdown.buttonItem [ onClick (csvMsg False) ] [ text "CSV" ]
 
                     --, Dropdown.buttonItem [ onClick pdfMsg ] [ text "PDF" ]
                     ]
@@ -180,7 +180,7 @@ downloadRows ( dropdownToggleDownloadMsg, dropdownDownloadState ) ( dropdownTogg
                 , toggleButton =
                     Dropdown.toggle [ Button.outlineSuccess, Button.attrs [ Spacing.mb3, Spacing.mt4, Spacing.ml2 ] ] [ text "Preview" ]
                 , items =
-                    [ Dropdown.buttonItem [ onClick csvMsg ] [ text "CSV" ]
+                    [ Dropdown.buttonItem [ onClick (csvMsg True) ] [ text "CSV" ]
 
                     --, Dropdown.buttonItem [ onClick pdfMsg ] [ text "PDF" ]
                     ]
