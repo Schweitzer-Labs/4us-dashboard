@@ -156,16 +156,4 @@ describe('demo organization contributions',()=>{
     })
 
 
-/*
-Part
-Corp
-Union
-Assoc
-Pac
-Plc
-Oth
-Llc
- */
-
-
 })
