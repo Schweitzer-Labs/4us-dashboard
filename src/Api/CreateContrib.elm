@@ -1,6 +1,6 @@
 module Api.CreateContrib exposing (EncodeModel, encode, send)
 
-import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldNotZero, optionalFieldString, optionalFieldStringInt)
+import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldNotZero, optionalFieldOwners, optionalFieldString, optionalFieldStringInt)
 import Cents
 import Config exposing (Config)
 import Date
@@ -10,6 +10,7 @@ import Http
 import InKindType
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Owners
 import PaymentMethod
 import Timestamp exposing (dateStringToMillis)
 import TransactionType
@@ -38,6 +39,7 @@ query =
       $cardCVC: String
       $checkNumber: String
       $entityName: String
+      $owners: [Owner!]
       $employer: String
       $occupation: String
       $middleName: String
@@ -66,6 +68,7 @@ query =
         cardCVC: $cardCVC
         checkNumber: $checkNumber
         entityName: $entityName
+        owners: $owners
         employer: $employer
         occupation: $occupation
         middleName: $middleName
@@ -99,6 +102,7 @@ type alias EncodeModel =
     , cvv : String
     , checkNumber : String
     , entityName : String
+    , owners : Maybe Owners.Owners
     , employer : String
     , occupation : String
     , middleName : String
@@ -140,6 +144,7 @@ encode mapper val =
                     ++ optionalFieldString "cardCVC" model.cvv
                     ++ optionalFieldString "checkNumber" model.checkNumber
                     ++ optionalFieldString "entityName" model.entityName
+                    ++ optionalFieldOwners "owners" (Maybe.withDefault [] model.owners)
                     ++ optionalFieldString "employer" model.employer
                     ++ optionalFieldString "occupation" model.occupation
                     ++ optionalFieldString "middleName" model.middleName

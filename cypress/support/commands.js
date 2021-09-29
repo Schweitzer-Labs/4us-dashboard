@@ -1,25 +1,112 @@
-// ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+
+const individual = {
+    firstName : 'John',
+    lastName: 'Williams',
+    amount: '10',
+    paymentDate: '2021-09-17',
+    email: '4us@gmail.com',
+    phoneNumber: '2369860981',
+    addressLine1 :'1234 Broadway',
+    addressLine2: 'Apartment 5',
+    city : 'Manhattan',
+    state: 'New York',
+    postalCode: '10356',
+    company: 'Toyota',
+    job: 'Marketing',
+    purposeCode: 'LITER'
+}
+
+const appUrl = 'http://localhost:3000/committee/nelson-lopez'
+const demoPassword = 'f4jp1i'
+
+
+Cypress.Commands.add('generateDemo', () => {
+
+    cy.visit(appUrl)
+    cy.visit(`${appUrl}/demo`)
+
+    cy.get('#password').type(demoPassword)
+    cy.get('.btn').click()
+    cy.wait(12000)
+    cy.get('.col-12 > a').then((e)=>{
+        cy.visit(e.text())
+    })
+})
+
+// Contribution Commands
+Cypress.Commands.add ('initContrib',()=>{
+
+    cy.get('#actions-dropdown').click()
+    cy.get('button').contains('Create Contribution').click()
+
+    cy.get('#amount').type(individual.amount)
+    cy.get('#date').type(individual.paymentDate)
+})
+
+Cypress.Commands.add('fillContribFormInd', ()=>{
+
+    cy.get('#Individual').click()
+
+    cy.get(':nth-child(5) > :nth-child(1) > .form-control').type(individual.email)
+    cy.get(':nth-child(5) > :nth-child(2) > .form-control').type(individual.phoneNumber)
+    cy.get(':nth-child(4) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > :nth-child(6) > :nth-child(1) > .form-control')
+        .type(individual.firstName)
+    cy.get(':nth-child(4) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > :nth-child(6) > :nth-child(2) > .form-control')
+        .type(individual.lastName)
+
+    cy.get('#addressLine1').type(individual.addressLine1)
+    cy.get('#addressLine2').type(individual.addressLine2)
+    cy.get('#city').type(individual.city)
+    cy.get('#State').select(individual.state)
+    cy.get('#postalCode').type(individual.postalCode)
+
+
+    cy.get(':nth-child(5) > .custom-control-label').click()
+    cy.get(':nth-child(11) > :nth-child(1) > .form-control').type(individual.company)
+    cy.get(':nth-child(11) > :nth-child(2) > .form-control').type(individual.job)
+    cy.get('.col-8 > form > .form-group > :nth-child(4) > .custom-control-label').click()
+
+})
+
+// Disbursement Commands
+
+Cypress.Commands.add ('initDisb',()=>{
+
+    cy.get('#actions-dropdown').click()
+    cy.get('button').contains('Create Disbursement').click()
+
+})
+
+Cypress.Commands.add('fillDisbForm', ()=>{
+    cy.get('.container-fluid > .fade-in > .col > #recipient-name')
+        .type(`${individual.firstName} ${individual.lastName}`)
+    cy.get(':nth-child(2) > :nth-child(1) > #addressLine1').type(individual.addressLine1)
+    cy.get(':nth-child(2) > :nth-child(2) > #addressLine2').type(individual.addressLine2)
+    cy.get(':nth-child(3) > .col-lg-6 > #city').type(individual.city)
+    cy.get(':nth-child(3) > :nth-child(2) > #State').select(individual.state)
+    cy.get(':nth-child(3) > :nth-child(3) > #postalCode').type(individual.postalCode)
+
+    cy.get(':nth-child(4) > .col > .form-group > #purpose').select(individual.purposeCode)
+
+    cy.get(':nth-child(5) > :nth-child(1) > form > .form-group').click()
+    cy.get(':nth-child(5) > :nth-child(1) > form > .form-group > :nth-child(2) > .custom-control-label').click()
+    cy.get(':nth-child(5) > :nth-child(2) > form > .form-group > :nth-child(2) > .custom-control-label').click()
+    cy.get(':nth-child(5) > :nth-child(3) > form > .form-group > :nth-child(3) > .custom-control-label').click()
+    cy.get(':nth-child(5) > :nth-child(4) > form > .form-group > :nth-child(3) > .custom-control-label').click()
+
+    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(1) > #amount')
+        .type(individual.amount)
+    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(2) > #date')
+        .type(individual.paymentDate)
+
+
+})
+
+Cypress.Commands.add('contribSubmit', ()=> {
+    cy.get('button').contains('Submit').click()
+})
+
+Cypress.Commands.add('disbSubmit', ()=> {
+    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-footer > .container-fluid > .row > :nth-child(2) > .btn')
+        .click()
+})

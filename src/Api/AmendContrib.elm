@@ -1,6 +1,6 @@
 module Api.AmendContrib exposing (EncodeModel, decoder, encode, query, send, successDecoder)
 
-import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldNotZero, optionalFieldString, optionalFieldStringInt)
+import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldNotZero, optionalFieldOwners, optionalFieldString, optionalFieldStringInt)
 import Config exposing (Config)
 import EmploymentStatus
 import EntityType exposing (fromMaybeToStringWithDefaultInd)
@@ -23,6 +23,7 @@ query =
       $transactionId: String!
       $amount: Float
       $paymentMethod: PaymentMethod
+      $owners: [Owner!]
       $firstName: String
       $lastName: String
       $addressLine1: String
@@ -50,6 +51,7 @@ query =
           transactionId: $transactionId
           amount: $amount
           paymentMethod: $paymentMethod
+          owners: $owners
           firstName: $firstName
           lastName: $lastName
           addressLine1: $addressLine1
@@ -100,9 +102,8 @@ type alias EncodeModel =
     , maybeOrgOrInd : Maybe OrgOrInd.Model
     , maybeEntityType : Maybe EntityType.Model
     , amount : Int
-    , owners : Owners
+    , owners : Maybe Owners.Owners
     , ownerName : String
-    , ownerOwnership : String
     , committeeId : String
     , inKindDesc : String
     , inKindType : Maybe InKindType.Model
@@ -133,6 +134,7 @@ encode mapper val =
                     ++ optionalFieldNotZero "paymentDate" (dateStringToMillis model.paymentDate)
                     ++ optionalFieldString "checkNumber" model.checkNumber
                     ++ optionalFieldString "entityName" model.entityName
+                    ++ optionalFieldOwners "owners" (Maybe.withDefault [] model.owners)
                     ++ optionalFieldString "employer" model.employer
                     ++ optionalFieldString "occupation" model.occupation
                     ++ optionalFieldString "addressLine2" model.addressLine2

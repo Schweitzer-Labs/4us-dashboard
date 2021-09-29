@@ -33,7 +33,8 @@ import InKindType
 import LabelWithData exposing (labelWithContent, labelWithData)
 import List exposing (sortBy)
 import OrgOrInd
-import Owners exposing (Owner, Owners)
+import Owners
+import OwnersView
 import PaymentMethod
 import SubmitButton exposing (submitButton)
 import Time exposing (utc)
@@ -79,9 +80,9 @@ type alias Model =
     , expirationYear : String
     , cvv : String
     , amount : String
-    , owners : Owners
+    , owners : Maybe Owners.Owners
     , ownerName : String
-    , ownerOwnership : String
+    , ownersViewModel : OwnersView.Model
     , inKindDesc : String
     , inKindType : Maybe InKindType.Model
     , maybeError : Maybe String
@@ -129,9 +130,9 @@ init config txns bankTxn =
     , expirationMonth = ""
     , expirationYear = ""
     , cvv = ""
-    , owners = []
+    , owners = bankTxn.owners
     , ownerName = ""
-    , ownerOwnership = ""
+    , ownersViewModel = OwnersView.init <| Maybe.withDefault [] bankTxn.owners
     , inKindType = Nothing
     , inKindDesc = ""
     , paymentMethod = Nothing
@@ -172,9 +173,9 @@ clearForm model =
         , expirationMonth = ""
         , expirationYear = ""
         , cvv = ""
-        , owners = []
+        , owners = Nothing
         , ownerName = ""
-        , ownerOwnership = ""
+        , ownersViewModel = OwnersView.init <| Maybe.withDefault [] model.owners
         , paymentMethod = Nothing
         , createContribIsVisible = False
         , createContribButtonIsDisabled = False
@@ -234,9 +235,8 @@ contribFormRow model =
             , expirationYear = ( model.expirationYear, CardYearUpdated )
             , cvv = ( model.cvv, CVVUpdated )
             , amount = ( model.amount, AmountUpdated )
-            , owners = ( model.owners, OwnerAdded )
-            , ownerName = ( model.ownerName, OwnerNameUpdated )
-            , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
+            , ownersViewModel = model.ownersViewModel
+            , ownersViewMsg = OwnersViewUpdated
             , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
             , inKindType = ( model.inKindType, InKindTypeUpdated )
             , disabled = model.disabled
@@ -274,9 +274,10 @@ type Msg
     | EntityNameUpdated String
     | EntityTypeUpdated (Maybe EntityType.Model)
     | FamilyOrIndividualUpdated EntityType.Model
+      -- Owners Info
     | OwnerAdded
     | OwnerNameUpdated String
-    | OwnerOwnershipUpdated String
+    | OwnersViewUpdated OwnersView.Msg
       -- Payment info
     | CardYearUpdated String
     | CardMonthUpdated String
@@ -316,17 +317,17 @@ update msg model =
             ( { model | maybeEntityType = maybeEntityType }, Cmd.none )
 
         OwnerAdded ->
-            let
-                newOwner =
-                    Owners.Owner model.ownerName model.ownerOwnership
-            in
-            ( { model | owners = model.owners ++ [ newOwner ], ownerOwnership = "", ownerName = "" }, Cmd.none )
+            ( model, Cmd.none )
 
         OwnerNameUpdated str ->
             ( { model | ownerName = str }, Cmd.none )
 
-        OwnerOwnershipUpdated str ->
-            ( { model | ownerOwnership = str }, Cmd.none )
+        OwnersViewUpdated subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    OwnersView.update subMsg model.ownersViewModel
+            in
+            ( { model | ownersViewModel = subModel }, Cmd.map OwnersViewUpdated subCmd )
 
         PhoneNumberUpdated str ->
             ( { model | phoneNumber = str }, Cmd.none )
@@ -755,6 +756,7 @@ createContribEncoder model =
     , employmentStatus = model.employmentStatus
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
+    , owners = model.owners
     , processPayment = False
     }
 

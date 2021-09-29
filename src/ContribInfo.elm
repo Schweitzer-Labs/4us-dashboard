@@ -4,7 +4,6 @@ import Address
 import AmountDate
 import AppInput exposing (inputEmail, inputText)
 import Asset
-import Bootstrap.Alert as Alert
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid exposing (Column)
 import Bootstrap.Grid.Col as Col
@@ -14,13 +13,14 @@ import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
 import Errors exposing (fromEmailAddress, fromInKindType, fromOrgType, fromPhoneNumber, fromPostalCode)
-import Html exposing (Html, div, h5, span, text)
+import Html exposing (Html, div, h5, h6, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
 import InKindType exposing (Model(..))
 import MonthSelector
 import OrgOrInd
-import Owners exposing (Owners)
+import Owners
+import OwnersView
 import PaymentMethod
 import Validate exposing (Valid, Validator, fromErrors, ifBlank, ifNothing, validate)
 import YearSelector
@@ -51,9 +51,8 @@ type alias Config msg =
     , expirationYear : DataMsg.MsgString msg
     , cvv : DataMsg.MsgString msg
     , amount : DataMsg.MsgString msg
-    , owners : DataMsg.MsgOwner msg
-    , ownerName : DataMsg.MsgString msg
-    , ownerOwnership : DataMsg.MsgString msg
+    , ownersViewMsg : OwnersView.Msg -> msg
+    , ownersViewModel : OwnersView.Model
     , inKindType : DataMsg.MsgMaybeInKindType msg
     , inKindDesc : DataMsg.MsgString msg
     , disabled : Bool
@@ -151,9 +150,6 @@ type alias ContribValidatorModel =
     , entityName : String
     , maybeOrgOrInd : Maybe OrgOrInd.Model
     , maybeEntityType : Maybe EntityType.Model
-    , owners : Owners
-    , ownerName : String
-    , ownerOwnership : String
     , inKindType : Maybe InKindType.Model
     , inKindDesc : String
     }
@@ -471,7 +467,7 @@ employmentRows c =
 --                [ Row.attrs [ Spacing.mt3 ] ]
 --                [ Grid.col
 --                    []
---                    [ inputText OwnerNameUpdated "Owner Name" model.ownerName
+--                    [ inputText OwnerNameUpdated "Owners Name" model.ownerName
 --                    ]
 --                , Grid.col
 --                    []
@@ -490,23 +486,41 @@ employmentRows c =
 
 
 orgRows : Config msg -> List (Html msg)
-orgRows { maybeEntityType, entityName, disabled } =
+orgRows c =
     [ Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ EntityType.orgView (toMsg maybeEntityType) (toData maybeEntityType) disabled ]
+            [ EntityType.orgView (toMsg c.maybeEntityType) (toData c.maybeEntityType) c.disabled ]
         ]
     ]
+        ++ (if toData c.maybeEntityType == Just EntityType.LimitedLiabilityCompany then
+                let
+                    viewModel =
+                        c.ownersViewModel
+
+                    state =
+                        { viewModel | disabled = c.disabled }
+                in
+                [ Html.map c.ownersViewMsg <|
+                    OwnersView.view state
+                ]
+                    ++ [ Grid.row []
+                            [ Grid.col [ Col.md4 ] [ h6 [ class "font-weight-bold d-inline" ] [ text "Company Contact Info" ] ] ]
+                       ]
+
+            else
+                []
+           )
         ++ [ Grid.row
                 [ Row.attrs [ Spacing.mt3 ] ]
                 [ Grid.col
                     []
                     [ Input.text
-                        [ Input.onInput <| toMsg entityName
+                        [ Input.onInput <| toMsg c.entityName
                         , Input.placeholder "Organization Name"
-                        , Input.value <| toData entityName
-                        , Input.disabled disabled
+                        , Input.value <| toData c.entityName
+                        , Input.disabled c.disabled
                         ]
                     ]
                 ]

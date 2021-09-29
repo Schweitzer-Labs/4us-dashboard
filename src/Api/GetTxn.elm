@@ -38,6 +38,16 @@ query =
             occupation
             entityType
             companyName
+            owners {
+              firstName
+              lastName
+              addressLine1
+              addressLine2
+              city
+              state
+              postalCode
+              percentOwnership
+            }
             phoneNumber
             emailAddress
             transactionType

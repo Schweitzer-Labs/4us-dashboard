@@ -9,7 +9,8 @@ import InKindType
 import Json.Decode as Decode exposing (bool, decodeValue)
 import Json.Encode exposing (Value)
 import OrgOrInd
-import Owners exposing (Owners)
+import Owners
+import OwnersView
 import PaymentMethod
 
 
@@ -59,9 +60,7 @@ type alias Model =
     , expirationYear : String
     , cvv : String
     , amount : String
-    , owners : Owners
-    , ownerName : String
-    , ownerOwnership : String
+    , ownersViewModel : OwnersView.Model
     , inKindType : Maybe InKindType.Model
     , inKindDesc : String
     , committeeId : String
@@ -99,9 +98,7 @@ init committeeId =
     , expirationMonth = ""
     , expirationYear = ""
     , cvv = ""
-    , owners = []
-    , ownerName = ""
-    , ownerOwnership = ""
+    , ownersViewModel = OwnersView.init []
     , inKindType = Nothing
     , inKindDesc = ""
     , paymentMethod = Nothing
@@ -142,9 +139,8 @@ view model =
         , expirationYear = ( model.expirationYear, CardYearUpdated )
         , cvv = ( model.cvv, CVVUpdated )
         , amount = ( model.amount, AmountUpdated )
-        , owners = ( model.owners, OwnerAdded )
-        , ownerName = ( model.ownerName, OwnerNameUpdated )
-        , ownerOwnership = ( model.ownerOwnership, OwnerOwnershipUpdated )
+        , ownersViewMsg = OwnersViewUpdated
+        , ownersViewModel = model.ownersViewModel
         , inKindType = ( model.inKindType, InKindTypeUpdated )
         , inKindDesc = ( model.inKindDesc, InKindDescUpdated )
         , disabled = False
@@ -178,9 +174,7 @@ type Msg
     | EntityNameUpdated String
     | EntityTypeUpdated (Maybe EntityType.Model)
     | FamilyOrIndividualUpdated EntityType.Model
-    | OwnerAdded
-    | OwnerNameUpdated String
-    | OwnerOwnershipUpdated String
+    | OwnersViewUpdated OwnersView.Msg
       -- Payment info
     | CardYearUpdated String
     | CardMonthUpdated String
@@ -214,18 +208,12 @@ update msg model =
         EntityTypeUpdated maybeEntityType ->
             ( { model | maybeEntityType = maybeEntityType }, Cmd.none )
 
-        OwnerAdded ->
+        OwnersViewUpdated subMsg ->
             let
-                newOwner =
-                    Owners.Owner model.ownerName model.ownerOwnership
+                ( subModel, subCmd ) =
+                    OwnersView.update subMsg model.ownersViewModel
             in
-            ( { model | owners = model.owners ++ [ newOwner ], ownerOwnership = "", ownerName = "" }, Cmd.none )
-
-        OwnerNameUpdated str ->
-            ( { model | ownerName = str }, Cmd.none )
-
-        OwnerOwnershipUpdated str ->
-            ( { model | ownerOwnership = str }, Cmd.none )
+            ( { model | ownersViewModel = subModel }, Cmd.map OwnersViewUpdated subCmd )
 
         PhoneNumberUpdated str ->
             ( { model | phoneNumber = str }, sendPhone str )
@@ -343,6 +331,7 @@ toEncodeModel model =
     , employmentStatus = model.employmentStatus
     , inKindType = model.inKindType
     , inKindDesc = model.inKindDesc
+    , owners = OwnersView.toMaybeOwners model.ownersViewModel
     , processPayment = True
     }
 
@@ -371,9 +360,6 @@ validationMapper model =
     , entityName = model.entityName
     , maybeOrgOrInd = model.maybeOrgOrInd
     , maybeEntityType = model.maybeEntityType
-    , owners = model.owners
-    , ownerName = model.ownerName
-    , ownerOwnership = model.ownerOwnership
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
     }
