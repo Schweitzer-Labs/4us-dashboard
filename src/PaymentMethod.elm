@@ -10,7 +10,8 @@ import Json.Decode as Decode exposing (Decoder)
 
 
 type Model
-    = Ach
+    = Cash
+    | Ach
     | Wire
     | Check
     | Credit
@@ -24,6 +25,9 @@ type Model
 toDataString : Model -> String
 toDataString method =
     case method of
+        Cash ->
+            "Cash"
+
         Ach ->
             "Ach"
 
@@ -58,6 +62,9 @@ decoder =
         |> Decode.andThen
             (\str ->
                 case str of
+                    "Cash" ->
+                        Decode.succeed Cash
+
                     "Ach" ->
                         Decode.succeed Ach
 
@@ -92,7 +99,8 @@ decoder =
 
 paymentMethods : List Model
 paymentMethods =
-    [ Ach
+    [ Cash
+    , Ach
     , Wire
     , Check
     , Credit
@@ -105,6 +113,9 @@ paymentMethods =
 toDisplayString : Model -> String
 toDisplayString src =
     case src of
+        Cash ->
+            "Cash"
+
         Ach ->
             "ACH"
 
@@ -141,6 +152,9 @@ fromMaybeToString =
 fromString : String -> Maybe Model
 fromString str =
     case str of
+        "Cash" ->
+            Just Cash
+
         "Ach" ->
             Just Ach
 
@@ -222,6 +236,14 @@ select processPayment msg currentValue disabled txnId =
                         , Radio.disabled disabled
                         ]
                         "Credit"
+                    , Radio.createCustom
+                        [ Radio.id <| id ++ "paymentMethod-cash"
+                        , Radio.inline
+                        , Radio.onClick (msg Cash)
+                        , Radio.checked (currentValue == Just Cash)
+                        , Radio.disabled disabled
+                        ]
+                        "Cash"
                     ]
                         ++ inKindRadio
                 )
