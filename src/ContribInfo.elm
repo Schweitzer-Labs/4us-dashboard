@@ -385,7 +385,7 @@ donorInfoRows model =
                     orgRows model ++ piiRows model
 
                 Just OrgOrInd.Ind ->
-                    piiRows model ++ employmentRows model ++ familyRow model
+                    piiRows model ++ familyRow model
 
                 Nothing ->
                     []

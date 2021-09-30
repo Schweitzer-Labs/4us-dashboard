@@ -112,10 +112,6 @@ Cypress.Commands.add('fillContribFormInd', ()=>{
     cy.get('#State').select(individual.state)
     cy.get('#postalCode').type(individual.postalCode)
 
-
-    cy.get(':nth-child(5) > .custom-control-label').click()
-    cy.get(':nth-child(11) > :nth-child(1) > .form-control').type(individual.company)
-    cy.get(':nth-child(11) > :nth-child(2) > .form-control').type(individual.job)
     cy.get('.col-8 > form > .form-group > :nth-child(4) > .custom-control-label').click()
 
 })

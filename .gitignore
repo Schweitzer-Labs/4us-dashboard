@@ -19,3 +19,5 @@ src/Config/EnvConfig.elm
 
 .idea
 .env
+
+cypress/screenshots/

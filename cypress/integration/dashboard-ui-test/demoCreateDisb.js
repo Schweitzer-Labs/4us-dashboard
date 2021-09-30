@@ -17,6 +17,11 @@ describe('demo individual disbursements',()=>{
     it( 'can create Wire disbursements',()=>{
         cy.get('#paymentMethod').select('Wire')
     })
+
+    it( 'can create Cash disbursements',()=>{
+        cy.get('#paymentMethod').select('Cash')
+    })
+
     it( 'can create Check disbursements',()=>{
 
         cy.get('#paymentMethod').select('Check')
