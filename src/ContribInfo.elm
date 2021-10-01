@@ -294,7 +294,7 @@ inKindRow { inKindType, inKindDesc, disabled } =
                     []
                   <|
                     InKindType.radioList msg (toData inKindType) disabled
-                        ++ [ inputText (toMsg inKindDesc) "Description" (toData inKindDesc) disabled ]
+                        ++ [ inputText (toMsg inKindDesc) "Description" (toData inKindDesc) disabled "createContribDescription" ]
                 ]
            ]
 
@@ -536,6 +536,7 @@ addressRows c =
         , state = c.state
         , postalCode = c.postalCode
         , disabled = c.disabled
+        , id = "createContrib"
         }
 
 
@@ -545,19 +546,19 @@ piiRows c =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputEmail (toMsg c.emailAddress) "Email Address" (toData c.emailAddress) c.disabled ]
+            [ inputEmail (toMsg c.emailAddress) "Email Address" (toData c.emailAddress) c.disabled "createContribEmail" ]
         , Grid.col
             []
-            [ inputText (toMsg c.phoneNumber) "Phone Number" (toData c.phoneNumber) c.disabled ]
+            [ inputText (toMsg c.phoneNumber) "Phone Number" (toData c.phoneNumber) c.disabled "createContribPhoneNumber" ]
         ]
     , Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputText (toMsg c.firstName) "First Name" (toData c.firstName) c.disabled ]
+            [ inputText (toMsg c.firstName) "First Name" (toData c.firstName) c.disabled "createContribFirstName" ]
         , Grid.col
             []
-            [ inputText (toMsg c.lastName) "Last Name" (toData c.lastName) c.disabled ]
+            [ inputText (toMsg c.lastName) "Last Name" (toData c.lastName) c.disabled "createContribLastName" ]
         ]
     ]
         ++ addressRows c
@@ -640,10 +641,10 @@ employerOccupationRow { occupation, employer, disabled } =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputText (toMsg employer) "Employer Name" (toData employer) disabled ]
+            [ inputText (toMsg employer) "Employer Name" (toData employer) disabled "createContribEmployerName" ]
         , Grid.col
             []
-            [ inputText (toMsg occupation) "Occupation" (toData occupation) disabled ]
+            [ inputText (toMsg occupation) "Occupation" (toData occupation) disabled "createContribOccupation" ]
         ]
 
 

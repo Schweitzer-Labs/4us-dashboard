@@ -3,7 +3,7 @@ module State exposing (view, withAbbrKeys, withStateKeys)
 import Bootstrap.Form.Select as Select
 import Dict
 import Html exposing (Html, text)
-import Html.Attributes exposing (class, selected, value)
+import Html.Attributes exposing (attribute, class, selected, value)
 import String exposing (toUpper)
 
 
@@ -78,10 +78,10 @@ withStateKeys =
     Dict.fromList <| List.map (\( a, b ) -> ( b, a )) statesAndAbbrsList
 
 
-view : (String -> msg) -> String -> Bool -> Html msg
-view msg currentValue isDisabled =
+view : (String -> msg) -> String -> Bool -> String -> Html msg
+view msg currentValue isDisabled id =
     Select.select
-        [ Select.id "State", Select.onChange msg, Select.disabled isDisabled ]
+        [ Select.id "State", Select.onChange msg, Select.disabled isDisabled, Select.attrs [ attribute "data-cy" (id ++ "state") ] ]
     <|
         [ Select.item [ value "" ] [ text "-- State --" ] ]
             ++ List.map

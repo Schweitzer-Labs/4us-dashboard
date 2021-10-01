@@ -241,17 +241,17 @@ view model =
                         [ Row.attrs [ Spacing.mt3 ] ]
                         [ Grid.col
                             []
-                            [ inputText OwnerFirstNameUpdated "First Name" model.firstName model.disabled
+                            [ inputText OwnerFirstNameUpdated "First Name" model.firstName model.disabled "createOwnerFirstName"
                             ]
                         , Grid.col
                             []
-                            [ inputText OwnerLastNameUpdated "Last Name" model.lastName model.disabled ]
+                            [ inputText OwnerLastNameUpdated "Last Name" model.lastName model.disabled "createContribLastName" ]
                         ]
                     ]
                         ++ ownerAddressRows model
                         ++ [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
                                 [ Grid.col []
-                                    [ inputNumber OwnerOwnershipUpdated "Percent Ownership" model.percentOwnership model.disabled
+                                    [ inputNumber OwnerOwnershipUpdated "Percent Ownership" model.percentOwnership model.disabled "createOwnerEmail"
                                     ]
                                 ]
                            ]
@@ -317,6 +317,7 @@ ownerAddressRows model =
         , state = ( model.state, OwnerStateUpdated )
         , postalCode = ( model.postalCode, OwnerPostalCodeUpdated )
         , disabled = model.disabled
+        , id = "createOwner"
         }
 
 

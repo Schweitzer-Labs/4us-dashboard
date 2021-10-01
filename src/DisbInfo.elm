@@ -90,6 +90,7 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
             , state = state
             , postalCode = postalCode
             , disabled = disabled
+            , id = "createDisb"
             }
         ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ PurposeCode.select (toData purposeCode) (toMsg purposeCode) disabled ] ]
            ]
@@ -108,7 +109,7 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
                         ++ (if toData pm == Just PaymentMethod.Check then
                                 [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
                                     [ Grid.col []
-                                        [ inputText (toMsg checkNumber) "Check Number" (toData checkNumber) False ]
+                                        [ inputText (toMsg checkNumber) "Check Number" (toData checkNumber) False "createDisbEmail" ]
                                     ]
                                 ]
 
