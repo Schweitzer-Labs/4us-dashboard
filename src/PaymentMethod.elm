@@ -5,7 +5,7 @@ import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Radio as Radio exposing (Radio)
 import Bootstrap.Form.Select as Select
 import Html exposing (Html, text)
-import Html.Attributes as Attribute exposing (for, value)
+import Html.Attributes as Attribute exposing (attribute, for, value)
 import Json.Decode as Decode exposing (Decoder)
 
 
@@ -199,14 +199,16 @@ select processPayment msg currentValue disabled txnId =
 
         inKindRadio =
             if processPayment then
-                [ Radio.createCustom
+                [ Radio.createCustomAdvanced
                     [ Radio.id <| id ++ "paymentMethodInKind-retired"
                     , Radio.inline
                     , Radio.onClick (msg InKind)
                     , Radio.checked (currentValue == Just InKind)
                     , Radio.disabled disabled
                     ]
-                    "In-Kind"
+                    (Radio.label [ attribute "data-cy" "payMethod-inKind" ]
+                        [ text "In-Kind" ]
+                    )
                 ]
 
             else
@@ -220,30 +222,36 @@ select processPayment msg currentValue disabled txnId =
                 (Radio.radioList
                     "paymentMethod"
                  <|
-                    [ Radio.createCustom
+                    [ Radio.createCustomAdvanced
                         [ Radio.id <| id ++ "paymentMethod-check"
                         , Radio.inline
                         , Radio.onClick (msg Check)
                         , Radio.checked (currentValue == Just Check)
                         , Radio.disabled disabled
                         ]
-                        "Check"
-                    , Radio.createCustom
+                        (Radio.label [ attribute "data-cy" "payMethod-check" ]
+                            [ text "Check" ]
+                        )
+                    , Radio.createCustomAdvanced
                         [ Radio.id <| id ++ "paymentMethod-credit"
                         , Radio.inline
                         , Radio.onClick (msg Credit)
                         , Radio.checked (currentValue == Just Credit)
                         , Radio.disabled disabled
                         ]
-                        "Credit"
-                    , Radio.createCustom
+                        (Radio.label [ attribute "data-cy" "payMethod-credit" ]
+                            [ text "Credit" ]
+                        )
+                    , Radio.createCustomAdvanced
                         [ Radio.id <| id ++ "paymentMethod-cash"
                         , Radio.inline
                         , Radio.onClick (msg Cash)
                         , Radio.checked (currentValue == Just Cash)
                         , Radio.disabled disabled
                         ]
-                        "Cash"
+                        (Radio.label [ attribute "data-cy" "payMethod-cash" ]
+                            [ text "Cash" ]
+                        )
                     ]
                         ++ inKindRadio
                 )

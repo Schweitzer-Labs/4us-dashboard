@@ -53,7 +53,7 @@ Cypress.Commands.add ('initContrib',()=>{
 })
 
 Cypress.Commands.add('selectOrg', ()=>{
-    cy.get('#Organization').click()
+    cy.contains('Organization').click()
 })
 
 Cypress.Commands.add('fillContribOrgPii',()=>{
@@ -74,20 +74,25 @@ Cypress.Commands.add('fillContribOrgPii',()=>{
 
 Cypress.Commands.add('fillContribOrgCheck',(entityType)=>{
     cy.get('#entityType').select(entityType)
-    cy.get('.container-fluid > form > .form-group > :nth-child(2) > .custom-control-label').click()
+    cy.get('[data-cy=payMethod-check]').click()
     cy.get('#check-number').type('123')
 })
 
 Cypress.Commands.add('fillContribOrgCredit',(entityType)=>{
     cy.get('#entityType').select(entityType)
-    cy.get('.container-fluid > form > .form-group > :nth-child(3) > .custom-control-label').click()
+    cy.get('[data-cy=payMethod-credit]').click()
+    cy.fillCCForm()
+})
+
+Cypress.Commands.add('fillContribOrgCash',(entityType)=>{
+    cy.get('#entityType').select(entityType)
+    cy.get('[data-cy=payMethod-cash]').click()
 })
 
 Cypress.Commands.add('fillContribOrgInKind',(entityType)=>{
     cy.get('#entityType').select(entityType)
-    cy.get('.container-fluid > form > .form-group > :nth-child(4) > .custom-control-label').click()
-    cy.get('.fade-in > .col > form > .form-group > :nth-child(2) > .custom-control-label').click()
-
+    cy.get('[data-cy=payMethod-inKind]').click()
+    cy.contains('Service/Facilities Provided').click()
     cy.get(':nth-child(4) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .fade-in > .col > .form-control')
         .type('Pizza Party')
 })
