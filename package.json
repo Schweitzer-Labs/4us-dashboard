@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "cypress": "^8.4.0",
+    "elm-review": "^2.6.1",
     "express": "^4.17.1",
     "query-string": "^7.0.0"
   }
