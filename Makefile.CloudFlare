@@ -18,8 +18,12 @@ else
 	export AWS_SECRET_ACCESS_KEY	:= $(AWS_SECRET_ACCESS_KEY_QA)
 endif
 
+export SLACK_HOOK	:= $(SLACK_HOOK)
+
 AWS_SRC := awscli-exe-linux-x86_64.zip
 AWS_BIN	:= $(LOCAL_BIN)/aws
+
+SLACK_URL	:= https://hooks.slack.com/services/$(SLACK_HOOK)
 
 include Makefile
 
@@ -33,3 +37,15 @@ $(AWS_BIN):
 cloudflare-dep: dep $(AWS_BIN)
 
 cloudflare-web: cloudflare-dep build
+	curl \
+		-X POST \
+		-H 'Content-type: application/json' \
+		--data '{"text":"Build succeeded: $(RUNENV) branch of 4us-dashboard"}' $(SLACK_URL)
+
+
+cloudflare-failed:
+	curl \
+		-X POST \
+		-H 'Content-type: application/json' \
+		--data '{"text":"Build failed: $(RUNENV) branch of 4us-dashboard"}' $(SLACK_URL)
+
