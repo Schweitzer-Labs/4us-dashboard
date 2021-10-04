@@ -104,18 +104,15 @@ Cypress.Commands.add('selectInd', ()=>{
 
 Cypress.Commands.add('fillContribFormInd', ()=>{
 
-    cy.get(':nth-child(5) > :nth-child(1) > .form-control').type(individual.email)
-    cy.get(':nth-child(5) > :nth-child(2) > .form-control').type(individual.phoneNumber)
-    cy.get(':nth-child(4) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > :nth-child(6) > :nth-child(1) > .form-control')
-        .type(individual.firstName)
-    cy.get(':nth-child(4) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > :nth-child(6) > :nth-child(2) > .form-control')
-        .type(individual.lastName)
-
-    cy.get('#addressLine1').type(individual.addressLine1)
-    cy.get('#addressLine2').type(individual.addressLine2)
-    cy.get('#city').type(individual.city)
-    cy.get('#State').select(individual.state)
-    cy.get('#postalCode').type(individual.postalCode)
+    cy.get('[data-cy=createContribEmail]').type(individual.email)
+    cy.get('[data-cy=createContribPhoneNumber]').type(individual.phoneNumber)
+    cy.get('[data-cy=createContribFirstName]').type(individual.firstName)
+    cy.get('[data-cy=createContribLastName]').type(individual.lastName)
+    cy.get('[data-cy=createContribaddressLine1]').type(individual.addressLine1)
+    cy.get('[data-cy=createContribaddressLine2]').type(individual.addressLine2)
+    cy.get('[data-cy=createContribcity]').type(individual.city)
+    cy.get('[data-cy=createContribstate]').select(individual.state)
+    cy.get('[data-cy=createContribpostalCode]').type(individual.postalCode)
 
     cy.get('.col-8 > form > .form-group > :nth-child(4) > .custom-control-label').click()
 
