@@ -5,6 +5,8 @@
 export LOCAL_BIN	:= $(HOME)/.local/bin
 export PATH 		:= $(PATH):$(LOCAL_BIN)
 
+export CF_PAGES_BRANCH	:= $(CF_PAGES_BRANCH)
+export SLACK_HOOK	:= $(SLACK_HOOK)
 
 ifeq ($(CF_PAGES_BRANCH), prod)
 	export RUNENV			:= $(CF_PAGES_BRANCH)
@@ -18,8 +20,11 @@ else
 	export AWS_SECRET_ACCESS_KEY	:= $(AWS_SECRET_ACCESS_KEY_QA)
 endif
 
+
 AWS_SRC := awscli-exe-linux-x86_64.zip
 AWS_BIN	:= $(LOCAL_BIN)/aws
+
+SLACK_URL	:= https://hooks.slack.com/services/$(SLACK_HOOK)
 
 include Makefile
 
@@ -33,3 +38,15 @@ $(AWS_BIN):
 cloudflare-dep: dep $(AWS_BIN)
 
 cloudflare-web: cloudflare-dep build
+	curl \
+		-X POST \
+		-H 'Content-type: application/json' \
+		--data '{"text":"Build succeeded: $(CF_PAGES_BRANCH) branch of 4us-dashboard"}' $(SLACK_URL)
+
+
+cloudflare-failed:
+	curl \
+		-X POST \
+		-H 'Content-type: application/json' \
+		--data '{"text":"Build failed: $(CF_PAGES_BRANCH) branch of 4us-dashboard"}' $(SLACK_URL)
+
