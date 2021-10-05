@@ -25,6 +25,8 @@ AWS_SRC := awscli-exe-linux-x86_64.zip
 AWS_BIN	:= $(LOCAL_BIN)/aws
 
 SLACK_URL	:= https://hooks.slack.com/services/$(SLACK_HOOK)
+REPO_NAME	:= 4us-dashboard
+SLACK_MSG	:= "Build $(BUILD_STATUS): $(CF_PAGES_BRANCH) branch of $(REPO_NAME)"
 
 include Makefile
 
@@ -38,15 +40,16 @@ $(AWS_BIN):
 cloudflare-dep: dep $(AWS_BIN)
 
 cloudflare-web: cloudflare-dep build
-	curl \
-		-X POST \
-		-H 'Content-type: application/json' \
-		--data '{"text":"Build succeeded: $(CF_PAGES_BRANCH) branch of 4us-dashboard"}' $(SLACK_URL)
+	$(MAKE) BUILD_STATUS=succeeded slack-msg
 
 
 cloudflare-failed:
+	$(MAKE) BUILD_STATUS=failed slack_msg
+
+slack-msg:
 	curl \
 		-X POST \
 		-H 'Content-type: application/json' \
-		--data '{"text":"Build failed: $(CF_PAGES_BRANCH) branch of 4us-dashboard"}' $(SLACK_URL)
+		--data '{"text":"$(SLACK_MSG)"}' $(SLACK_URL)
+
 
