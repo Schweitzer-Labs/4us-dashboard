@@ -6,7 +6,7 @@ export LOCAL_BIN	:= $(HOME)/.local/bin
 export PATH 		:= $(PATH):$(LOCAL_BIN)
 
 export CF_PAGES_BRANCH	:= $(CF_PAGES_BRANCH)
-export SLACK_HOOK	:= $(SLACK_HOOK)
+REPO_NAME		:= 4us-dashboard
 
 ifeq ($(CF_PAGES_BRANCH), prod)
 	export RUNENV			:= $(CF_PAGES_BRANCH)
@@ -24,30 +24,25 @@ endif
 AWS_SRC := awscli-exe-linux-x86_64.zip
 AWS_BIN	:= $(LOCAL_BIN)/aws
 
-SLACK_URL	:= https://hooks.slack.com/services/$(SLACK_HOOK)
-REPO_NAME	:= 4us-dashboard
-SLACK_MSG	:= "Build $(BUILD_STATUS): $(CF_PAGES_BRANCH) branch of $(REPO_NAME)"
 
 include Makefile
 
-$(AWS_BIN):
-	curl -s "https://awscli.amazonaws.com/$(AWS_SRC)" -O
-	unzip -q $(AWS_SRC)
+$(AWS_BIN): $(AWS_SRC)
 	./aws/install -u -i ~/.local/aws-cli -b $(LOCAL_BIN)
 	@aws configure set aws_access_key_id $(AWS_ACCESS_KEY_ID)
 	@aws configure set aws_secret_access_key $(AWS_SECRET_ACCESS_KEY)
 
-slack-msg:
-	curl \
-		-X POST \
-		-H 'Content-type: application/json' \
-		--data '{"text":"$(SLACK_MSG)"}' $(SLACK_URL)
+$(AWS_SRC):
+	curl -s "https://awscli.amazonaws.com/$@" -O
+	unzip -q $(AWS_SRC)
 
 cloudflare-dep: dep $(AWS_BIN)
 
-cloudflare-web: cloudflare-dep build
-	$(MAKE) BUILD_STATUS=succeeded slack-msg
+cloudflare-begin:
+	./send_slack.sh $(REPO_NAME) started
 
+cloudflare-web: cloudflare-dep build
+	./send_slack.sh $(REPO_NAME) succeeded
 
 cloudflare-failed:
-	$(MAKE) BUILD_STATUS=failed slack_msg
+	./send_slack.sh $(REPO_NAME) failed
