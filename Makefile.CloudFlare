@@ -39,10 +39,10 @@ $(AWS_SRC):
 cloudflare-dep: dep $(AWS_BIN)
 
 cloudflare-begin:
-	./send_slack.sh $(REPO_NAME) started
+	bash send_slack.sh $(REPO_NAME) started
 
 cloudflare-web: cloudflare-dep build
-	./send_slack.sh $(REPO_NAME) succeeded
+	bash send_slack.sh $(REPO_NAME) succeeded
 
 cloudflare-failed:
-	./send_slack.sh $(REPO_NAME) failed
+	bash send_slack.sh $(REPO_NAME) failed
