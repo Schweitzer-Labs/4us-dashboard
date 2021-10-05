@@ -1,7 +1,7 @@
 module Owners exposing (Owner, Owners, decoder, encoder, foldOwnership, getOwnerFullName, toHash, validator)
 
 import Json.Decode as Decode exposing (Decoder, string)
-import Json.Decode.Pipeline exposing (required)
+import Json.Decode.Pipeline exposing (optional, required)
 import Json.Encode as Encode
 import Validate exposing (Validator, ifBlank, ifFalse, isFloat)
 
@@ -42,7 +42,7 @@ ownerDecoder =
         |> required "firstName" string
         |> required "lastName" string
         |> required "addressLine1" string
-        |> required "addressLine2" string
+        |> optional "addressLine2" string ""
         |> required "city" string
         |> required "state" string
         |> required "postalCode" string
