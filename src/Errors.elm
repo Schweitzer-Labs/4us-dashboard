@@ -140,12 +140,12 @@ fromOwners owners =
         totalPercentage =
             Owner.foldOwnership owners
     in
-    if totalPercentage < 100 then
+    if totalPercentage /= 100 then
         let
             remainder =
-                String.fromFloat (100 - totalPercentage) ++ "%"
+                String.fromFloat (abs <| 100 - totalPercentage) ++ "%"
         in
-        [ "A list of ownership percentages adding up to 100 is required " ++ "please add the remaining " ++ remainder ]
+        [ "Ownership percentage total must add up to 100%. Total is off by " ++ remainder ]
 
     else
         []
