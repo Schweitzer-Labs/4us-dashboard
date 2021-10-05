@@ -104,18 +104,15 @@ Cypress.Commands.add('selectInd', ()=>{
 
 Cypress.Commands.add('fillContribFormInd', ()=>{
 
-    cy.get(':nth-child(5) > :nth-child(1) > .form-control').type(individual.email)
-    cy.get(':nth-child(5) > :nth-child(2) > .form-control').type(individual.phoneNumber)
-    cy.get(':nth-child(4) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > :nth-child(6) > :nth-child(1) > .form-control')
-        .type(individual.firstName)
-    cy.get(':nth-child(4) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > :nth-child(6) > :nth-child(2) > .form-control')
-        .type(individual.lastName)
-
-    cy.get('#addressLine1').type(individual.addressLine1)
-    cy.get('#addressLine2').type(individual.addressLine2)
-    cy.get('#city').type(individual.city)
-    cy.get('#State').select(individual.state)
-    cy.get('#postalCode').type(individual.postalCode)
+    cy.get('[data-cy=createContribEmail]').type(individual.email)
+    cy.get('[data-cy=createContribPhoneNumber]').type(individual.phoneNumber)
+    cy.get('[data-cy=createContribFirstName]').type(individual.firstName)
+    cy.get('[data-cy=createContribLastName]').type(individual.lastName)
+    cy.get('[data-cy=createContribaddressLine1]').type(individual.addressLine1)
+    cy.get('[data-cy=createContribaddressLine2]').type(individual.addressLine2)
+    cy.get('[data-cy=createContribcity]').type(individual.city)
+    cy.get('[data-cy=createContribstate]').select(individual.state)
+    cy.get('[data-cy=createContribpostalCode]').type(individual.postalCode)
 
     cy.get('.col-8 > form > .form-group > :nth-child(4) > .custom-control-label').click()
 
@@ -133,11 +130,11 @@ Cypress.Commands.add ('initDisb',()=>{
 Cypress.Commands.add('fillDisbForm', ()=>{
     cy.get('.container-fluid > .fade-in > .col > #recipient-name')
         .type(`${individual.firstName} ${individual.lastName}`)
-    cy.get(':nth-child(2) > :nth-child(1) > #addressLine1').type(individual.addressLine1)
-    cy.get(':nth-child(2) > :nth-child(2) > #addressLine2').type(individual.addressLine2)
-    cy.get(':nth-child(3) > .col-lg-6 > #city').type(individual.city)
-    cy.get(':nth-child(3) > :nth-child(2) > #State').select(individual.state)
-    cy.get(':nth-child(3) > :nth-child(3) > #postalCode').type(individual.postalCode)
+    cy.get('[data-cy=createDisbaddressLine1]').first().type(individual.addressLine1)
+    cy.get('[data-cy=createDisbaddressLine2]').first().type(individual.addressLine2)
+    cy.get('[data-cy=createDisbcity]').first().type(individual.city)
+    cy.get('[data-cy=createDisbstate]').first().select(individual.state)
+    cy.get('[data-cy=createDisbpostalCode]').first().type(individual.postalCode)
 
     cy.get(':nth-child(4) > .col > .form-group > #purpose').select(individual.purposeCode)
 
