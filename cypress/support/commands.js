@@ -58,8 +58,7 @@ Cypress.Commands.add('selectOrg', ()=>{
 
 Cypress.Commands.add('fillContribOrgPii',()=>{
 
-    cy.get(':nth-child(4) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > :nth-child(6) > .col > .form-control')
-        .type(individual.organizationName)
+    cy.get('[data-cy=contribOwnerName]').type(individual.organizationName)
     cy.get('[data-cy=createContribEmail]').type(individual.email)
     cy.get('[data-cy=createContribPhoneNumber]').type(individual.phoneNumber)
     cy.get('[data-cy=createContribFirstName]').type(individual.firstName)
