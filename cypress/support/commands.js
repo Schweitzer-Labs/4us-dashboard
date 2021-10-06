@@ -48,8 +48,8 @@ Cypress.Commands.add ('initContrib',()=>{
     cy.get('#actions-dropdown').click()
     cy.get('button').contains('Create Contribution').click()
 
-    cy.get('#amount').type(individual.amount)
-    cy.get('#date').type(individual.paymentDate)
+    cy.get(':nth-child(2) > :nth-child(1) > .form-group > [data-cy=paymentAmount]').type(individual.amount)
+    cy.get(':nth-child(2) > :nth-child(2) > .form-group > [data-cy=paymentDate]').type(individual.paymentDate)
 })
 
 Cypress.Commands.add('selectOrg', ()=>{
@@ -93,7 +93,7 @@ Cypress.Commands.add('fillContribOrgInKind',(entityType)=>{
     cy.get('#entityType').select(entityType)
     cy.get('[data-cy=payMethod-inKind]').click()
     cy.contains('Service/Facilities Provided').click()
-    cy.get(':nth-child(4) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .fade-in > .col > .form-control')
+    cy.get('[data-cy=createContribDescription]')
         .type('Pizza Party')
 })
 

@@ -35,8 +35,7 @@ describe('demo individual contributions',()=>{
 
         cy.contains('In-Kind').click()
         cy.contains('Service/Facilities Provided').click()
-        cy.get(':nth-child(4) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .fade-in > .col > .form-control')
-            .type('Pizza Party')
+        cy.get('[data-cy=createContribDescription]').type('Pizza Party')
 
     })
 })
