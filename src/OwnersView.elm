@@ -241,17 +241,22 @@ view model =
                         [ Row.attrs [ Spacing.mt3 ] ]
                         [ Grid.col
                             []
-                            [ inputText OwnerFirstNameUpdated "First Name" model.firstName model.disabled "createOwnerFirstName"
-                            ]
+                            [ inputText OwnerFirstNameUpdated "Enter First Name" model.firstName model.disabled "createOwnerFirstName" "First Name" ]
                         , Grid.col
                             []
-                            [ inputText OwnerLastNameUpdated "Last Name" model.lastName model.disabled "createContribLastName" ]
+                            [ inputText OwnerLastNameUpdated "Enter Last Name" model.lastName model.disabled "createContribLastName" "Last Name" ]
                         ]
                     ]
                         ++ ownerAddressRows model
                         ++ [ Grid.row [ Row.attrs [ Spacing.mt3 ] ]
                                 [ Grid.col []
-                                    [ inputNumber OwnerOwnershipUpdated "Percent Ownership" model.percentOwnership model.disabled "createOwnerEmail"
+                                    [ inputNumber
+                                        OwnerOwnershipUpdated
+                                        "Enter Percent Ownership"
+                                        model.percentOwnership
+                                        model.disabled
+                                        "createOwnerEmail"
+                                        "Percent Ownership"
                                     ]
                                 ]
                            ]

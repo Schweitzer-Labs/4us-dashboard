@@ -1,5 +1,6 @@
 module AmountDate exposing (Config, row, view)
 
+import AppInput exposing (inputDate, inputText)
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
@@ -29,21 +30,16 @@ row ( amount, amountMsg ) ( paymentDate, paymentDateMsg ) disabled =
     Grid.row [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ Input.text
-                [ Input.id "amount"
-                , Input.onInput amountMsg
-                , Input.value amount
-                , Input.placeholder "Enter amount"
-                , Input.disabled disabled
-                ]
+            [ inputText
+                amountMsg
+                "Enter Amount"
+                amount
+                disabled
+                "paymentAmount"
+                "Payment Amount"
             ]
         , Grid.col
             []
-            [ Input.date
-                [ Input.id "date"
-                , Input.onInput paymentDateMsg
-                , Input.value paymentDate
-                , Input.disabled disabled
-                ]
+            [ inputDate paymentDateMsg "MM/DD/YYYY" paymentDate disabled "paymentDate" "Payment Date"
             ]
         ]

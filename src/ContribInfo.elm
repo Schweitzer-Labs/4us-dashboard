@@ -294,7 +294,7 @@ inKindRow { inKindType, inKindDesc, disabled } =
                     []
                   <|
                     InKindType.radioList msg (toData inKindType) disabled
-                        ++ [ inputText (toMsg inKindDesc) "Description" (toData inKindDesc) disabled "createContribDescription" ]
+                        ++ [ inputText (toMsg inKindDesc) "Enter Description" (toData inKindDesc) disabled "createContribDescription" "Description" ]
                 ]
            ]
 
@@ -516,12 +516,13 @@ orgRows c =
                 [ Row.attrs [ Spacing.mt3 ] ]
                 [ Grid.col
                     []
-                    [ Input.text
-                        [ Input.onInput <| toMsg c.entityName
-                        , Input.placeholder "Organization Name"
-                        , Input.value <| toData c.entityName
-                        , Input.disabled c.disabled
-                        ]
+                    [ inputText
+                        (toMsg c.entityName)
+                        "Enter Organization Name"
+                        (toData c.entityName)
+                        c.disabled
+                        "contribOwnerName"
+                        "Organization Name"
                     ]
                 ]
            ]
@@ -546,19 +547,19 @@ piiRows c =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputEmail (toMsg c.emailAddress) "Email Address" (toData c.emailAddress) c.disabled "createContribEmail" ]
+            [ inputEmail (toMsg c.emailAddress) "Enter Email Address" (toData c.emailAddress) c.disabled "createContribEmail" "Email Address" ]
         , Grid.col
             []
-            [ inputText (toMsg c.phoneNumber) "Phone Number" (toData c.phoneNumber) c.disabled "createContribPhoneNumber" ]
+            [ inputText (toMsg c.phoneNumber) "Enter Phone Number" (toData c.phoneNumber) c.disabled "createContribPhoneNumber" "Phone Number" ]
         ]
     , Grid.row
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputText (toMsg c.firstName) "First Name" (toData c.firstName) c.disabled "createContribFirstName" ]
+            [ inputText (toMsg c.firstName) "Enter First Name" (toData c.firstName) c.disabled "createContribFirstName" "First Name" ]
         , Grid.col
             []
-            [ inputText (toMsg c.lastName) "Last Name" (toData c.lastName) c.disabled "createContribLastName" ]
+            [ inputText (toMsg c.lastName) "Enter Last Name" (toData c.lastName) c.disabled "createContribLastName" "Last Name" ]
         ]
     ]
         ++ addressRows c
@@ -641,10 +642,10 @@ employerOccupationRow { occupation, employer, disabled } =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputText (toMsg employer) "Employer Name" (toData employer) disabled "createContribEmployerName" ]
+            [ inputText (toMsg employer) "Enter Employer Name" (toData employer) disabled "createContribEmployerName" "Employer Name" ]
         , Grid.col
             []
-            [ inputText (toMsg occupation) "Occupation" (toData occupation) disabled "createContribOccupation" ]
+            [ inputText (toMsg occupation) "Enter Occupation" (toData occupation) disabled "createContribOccupation" "Occupation" ]
         ]
 
 
