@@ -1,4 +1,4 @@
-module Errors exposing (fromEmailAddress, fromInKind, fromInKindType, fromMaxAmount, fromMaxDate, fromOrgType, fromPhoneNumber, fromPostalCode, view)
+module Errors exposing (fromEmailAddress, fromInKind, fromInKindType, fromMaxAmount, fromMaxDate, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode, view)
 
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
@@ -8,6 +8,7 @@ import Html.Attributes exposing (class)
 import InKindType
 import List exposing (singleton)
 import OrgOrInd
+import Owners as Owner
 import PaymentMethod
 import Time
 import Timestamp
@@ -131,6 +132,23 @@ fromPhoneNumber phoneNum phoneNumberValidated =
 
     else
         [ "Phone number is invalid" ]
+
+
+fromOwners : Owner.Owners -> List String
+fromOwners owners =
+    let
+        totalPercentage =
+            Owner.foldOwnership owners
+    in
+    if totalPercentage /= 100 then
+        let
+            remainder =
+                String.fromFloat (abs <| 100 - totalPercentage) ++ "%"
+        in
+        [ "Ownership percentage total must add up to 100%. Total is off by " ++ remainder ++ "." ]
+
+    else
+        []
 
 
 view : Errors -> List (Html msg)

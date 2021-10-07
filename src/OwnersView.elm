@@ -34,9 +34,10 @@ type alias Model =
     , percentOwnership : String
     , owners : Owners
     , disabled : Bool
-    , isOwnerEditable : Bool
+    , isFormEnabled : Bool
     , currentOwner : Owner
     , errors : List String
+    , formType : Maybe FormType
     }
 
 
@@ -51,9 +52,15 @@ type Msg
     | OwnerOwnershipUpdated String
     | OwnersUpdate
     | OwnerDeleted Owner
-    | ToggleEditOwner Owner
+    | EditOwner Owner
     | AddOwner
+    | ToggleOwnerForm (Maybe FormType)
     | NoOp
+
+
+type FormType
+    = EditingOwner
+    | CreatingOwner
 
 
 
@@ -82,10 +89,14 @@ update msg model =
                 _ ->
                     let
                         totalPercentage =
-                            Owner.foldOwnership model.owners + (Maybe.withDefault 0 <| String.toFloat newOwner.percentOwnership)
+                            Owner.foldOwnership model.owners + Owner.ownershipToFloat newOwner
                     in
                     if totalPercentage > 100 then
-                        ( { model | errors = [ "Total percentage exceeds 100." ] }, Cmd.none )
+                        let
+                            remainder =
+                                String.fromFloat <| Owner.ownershipToFloat newOwner - (totalPercentage - 100)
+                        in
+                        ( { model | errors = [ "Ownership percentage total must add up to 100%. You have " ++ remainder ++ "% left to attribute." ] }, Cmd.none )
 
                     else
                         ( { model
@@ -143,7 +154,7 @@ update msg model =
                 stateWithClearForm =
                     clearForm state
             in
-            ( { stateWithClearForm | isOwnerEditable = False }, Cmd.none )
+            ( { stateWithClearForm | isFormEnabled = False }, Cmd.none )
 
         OwnerOwnershipUpdated str ->
             ( { model | percentOwnership = str }, Cmd.none )
@@ -158,15 +169,22 @@ update msg model =
             in
             ( { state | owners = newOwners }, Cmd.none )
 
-        ToggleEditOwner owner ->
+        EditOwner owner ->
             let
                 state =
                     setEditOwner model owner
             in
-            ( state, Cmd.none )
+            ( { state | formType = Just EditingOwner }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
+
+        ToggleOwnerForm form ->
+            let
+                state =
+                    clearForm model
+            in
+            ( { state | isFormEnabled = not model.isFormEnabled, formType = form }, Cmd.none )
 
 
 init : Owners -> Model
@@ -191,8 +209,9 @@ init owners =
         , percentOwnership = ""
         }
     , disabled = False
-    , isOwnerEditable = False
+    , isFormEnabled = False
     , errors = []
+    , formType = Nothing
     }
 
 
@@ -225,18 +244,24 @@ toMaybeOwners model =
 
 view : Model -> Html Msg
 view model =
-    div [] <|
+    div [ Spacing.mb4 ] <|
         []
             ++ errorMessages model.errors
             ++ [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
                     [ Grid.col [] [ Copy.llcDialogue ]
                     ]
                ]
-            ++ [ capTable model ]
             ++ (if model.disabled then
                     []
 
                 else
+                    [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
+                        [ Grid.col [] [ addOwnerButton ]
+                        ]
+                    ]
+               )
+            ++ [ capTable model ]
+            ++ (if model.isFormEnabled then
                     [ Grid.row
                         [ Row.attrs [ Spacing.mt3 ] ]
                         [ Grid.col
@@ -260,41 +285,38 @@ view model =
                                     ]
                                 ]
                            ]
-               )
-            ++ (case model.isOwnerEditable of
-                    False ->
-                        if model.disabled then
-                            []
 
-                        else
-                            [ Grid.row
-                                [ Row.attrs [ Spacing.mt3, Spacing.mr4 ] ]
-                                [ Grid.col
-                                    [ Col.xs4, Col.offsetXs9 ]
-                                    [ Button.button
-                                        [ Button.success
-                                        , Button.onClick AddOwner
-                                        , Button.disabled model.disabled
-                                        ]
-                                        [ text "Add Another Member" ]
-                                    ]
-                                ]
-                            ]
+                else
+                    []
+               )
+            ++ (case model.isFormEnabled of
+                    False ->
+                        []
 
                     True ->
-                        [ Grid.row
-                            [ Row.attrs [ Spacing.mt3 ] ]
-                            [ Grid.col
-                                [ Col.offsetXs10 ]
-                                [ Button.button
-                                    [ Button.success
-                                    , Button.onClick OwnersUpdate
-                                    , Button.disabled model.disabled
+                        case model.formType of
+                            Just EditingOwner ->
+                                [ Grid.row
+                                    [ Row.betweenXs, Row.attrs [ Spacing.mt3 ] ]
+                                    [ Grid.col [ Col.xs4, Col.attrs [ Spacing.mb3 ] ]
+                                        (cancelButton (ToggleOwnerForm Nothing) False "Cancel")
+                                    , Grid.col [ Col.xs2, Col.attrs [ Spacing.mb3 ] ]
+                                        (saveButton OwnersUpdate model model.disabled "Save")
                                     ]
-                                    [ text "Save" ]
                                 ]
-                            ]
-                        ]
+
+                            Just CreatingOwner ->
+                                [ Grid.row
+                                    [ Row.betweenXs, Row.attrs [ Spacing.mt3 ] ]
+                                    [ Grid.col [ Col.xs4, Col.attrs [ Spacing.mb3 ] ]
+                                        (cancelButton (ToggleOwnerForm Nothing) False "Cancel")
+                                    , Grid.col [ Col.xs3, Col.attrs [ Spacing.mb3 ] ]
+                                        (ownersSubmitButton AddOwner "Add Member")
+                                    ]
+                                ]
+
+                            Nothing ->
+                                []
                )
 
 
@@ -363,7 +385,7 @@ tableBody model =
 
                           else
                             span
-                                [ onClick <| ToggleEditOwner owner
+                                [ onClick <| EditOwner owner
                                 ]
                                 [ Asset.editGlyph [ class "hover-pointer" ] ]
                         ]
@@ -399,7 +421,7 @@ setEditOwner model owner =
         , postalCode = owner.postalCode
         , owners = model.owners
         , percentOwnership = owner.percentOwnership
-        , isOwnerEditable = True
+        , isFormEnabled = True
         , currentOwner = owner
     }
 
@@ -417,5 +439,55 @@ editOwnerInfo newOwnerInfo model =
                         owner
                 )
                 model.owners
-        , isOwnerEditable = False
+        , isFormEnabled = False
     }
+
+
+ownersSubmitButton : Msg -> String -> List (Html Msg)
+ownersSubmitButton msg btnName =
+    [ Button.button
+        [ Button.success
+        , Button.onClick msg
+        , Button.disabled False
+        , Button.block
+        ]
+        [ text btnName ]
+    ]
+
+
+saveButton : Msg -> Model -> Bool -> String -> List (Html Msg)
+saveButton msg model disabled btnName =
+    let
+        totalOwnership =
+            Owner.foldOwnership model.owners + (Maybe.withDefault 0 <| String.toFloat model.percentOwnership)
+
+        disabledSave =
+            (totalOwnership - Owner.ownershipToFloat model.currentOwner) > 100
+    in
+    [ Button.button
+        [ Button.success
+        , Button.onClick msg
+        , Button.disabled (disabled || disabledSave)
+        ]
+        [ text btnName ]
+    ]
+
+
+cancelButton : Msg -> Bool -> String -> List (Html Msg)
+cancelButton msg disabled btnName =
+    [ Button.button
+        [ Button.success
+        , Button.onClick msg
+        , Button.disabled disabled
+        , Button.outlinePrimary
+        ]
+        [ text btnName ]
+    ]
+
+
+addOwnerButton : Html Msg
+addOwnerButton =
+    div [ Spacing.mt4, class "text-slate-blue font-size-medium hover-underline hover-pointer", onClick (ToggleOwnerForm (Just CreatingOwner)) ]
+        [ Asset.plusCircleGlyph [ class "text-slate-blue font-size-22" ]
+        , span [ Spacing.ml1, class "align-middle" ] [ text "Add Owner" ]
+        ]

@@ -24,7 +24,7 @@ import DataTable exposing (DataRow)
 import Direction
 import EmploymentStatus
 import EntityType
-import Errors exposing (fromPostalCode)
+import Errors exposing (fromOwners, fromPostalCode)
 import Html exposing (Html, div, h6, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -698,6 +698,16 @@ amountValidator =
         ]
 
 
+postalCodeValidator : Validator String Model
+postalCodeValidator =
+    fromErrors postalCodeOnModelToErrors
+
+
+ownersValidator : Validator String Model
+ownersValidator =
+    fromErrors ownersOnModelToErrors
+
+
 dateMaxToErrors : Model -> List String
 dateMaxToErrors model =
     Errors.fromMaxDate model.timezone
@@ -710,14 +720,14 @@ amountMaxToErrors model =
     Errors.fromMaxAmount model.bankTxn.amount model.amount
 
 
-postalCodeValidator : Validator String Model
-postalCodeValidator =
-    fromErrors postalCodeOnModelToErrors
-
-
 postalCodeOnModelToErrors : Model -> List String
 postalCodeOnModelToErrors model =
     fromPostalCode model.postalCode
+
+
+ownersOnModelToErrors : Model -> List String
+ownersOnModelToErrors { ownersViewModel } =
+    fromOwners ownersViewModel.owners
 
 
 reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel
@@ -756,7 +766,7 @@ createContribEncoder model =
     , employmentStatus = model.employmentStatus
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
-    , owners = model.owners
+    , owners = OwnersView.toMaybeOwners model.ownersViewModel
     , processPayment = False
     }
 

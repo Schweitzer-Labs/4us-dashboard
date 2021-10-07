@@ -1,4 +1,4 @@
-module Owners exposing (Owner, Owners, decoder, encoder, foldOwnership, getOwnerFullName, toHash, validator)
+module Owners exposing (Owner, Owners, decoder, encoder, foldOwnership, getOwnerFullName, ownershipToFloat, toHash, validator)
 
 import Json.Decode as Decode exposing (Decoder, string)
 import Json.Decode.Pipeline exposing (optional, required)
@@ -96,3 +96,8 @@ ifNotFloat subjectToString error =
 getOwnerFullName : Owner -> String
 getOwnerFullName owner =
     owner.firstName ++ " " ++ owner.lastName
+
+
+ownershipToFloat : Owner -> Float
+ownershipToFloat newOwner =
+    Maybe.withDefault 0 <| String.toFloat newOwner.percentOwnership

@@ -362,6 +362,7 @@ validationMapper model =
     , maybeEntityType = model.maybeEntityType
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
+    , owners = model.ownersViewModel.owners
     }
 
 
