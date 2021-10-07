@@ -145,7 +145,7 @@ fromOwners owners =
             remainder =
                 String.fromFloat (abs <| 100 - totalPercentage) ++ "%"
         in
-        [ "Ownership percentage total must add up to 100%. Total is off by " ++ remainder ]
+        [ "Ownership percentage total must add up to 100%. Total is off by " ++ remainder ++ "." ]
 
     else
         []

@@ -96,7 +96,7 @@ update msg model =
                             remainder =
                                 String.fromFloat <| Owner.ownershipToFloat newOwner - (totalPercentage - 100)
                         in
-                        ( { model | errors = [ "Ownership percentage total must add up to 100%. Please add " ++ remainder ++ "% instead." ] }, Cmd.none )
+                        ( { model | errors = [ "Ownership percentage total must add up to 100%. You have " ++ remainder ++ "% left to attribute." ] }, Cmd.none )
 
                     else
                         ( { model
@@ -444,6 +444,7 @@ ownersSubmitButton msg btnName =
         [ Button.success
         , Button.onClick msg
         , Button.disabled False
+        , Button.block
         ]
         [ text btnName ]
     ]
@@ -473,6 +474,7 @@ cancelButton msg disabled btnName =
         [ Button.success
         , Button.onClick msg
         , Button.disabled disabled
+        , Button.outlinePrimary
         ]
         [ text btnName ]
     ]
