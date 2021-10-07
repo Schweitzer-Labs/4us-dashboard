@@ -109,7 +109,7 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
                         ++ (if toData pm == Just PaymentMethod.Check then
                                 [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
                                     [ Grid.col []
-                                        [ inputText (toMsg checkNumber) "Check Number" (toData checkNumber) False "createDisbEmail" ]
+                                        [ inputText (toMsg checkNumber) "Enter Check Number" (toData checkNumber) False "createDisbCheck" "Check Number" ]
                                     ]
                                 ]
 

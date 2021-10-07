@@ -48,8 +48,8 @@ Cypress.Commands.add ('initContrib',()=>{
     cy.get('#actions-dropdown').click()
     cy.get('button').contains('Create Contribution').click()
 
-    cy.get('#amount').type(individual.amount)
-    cy.get('#date').type(individual.paymentDate)
+    cy.get(':nth-child(2) > :nth-child(1) > .form-group > [data-cy=paymentAmount]').type(individual.amount)
+    cy.get(':nth-child(2) > :nth-child(2) > .form-group > [data-cy=paymentDate]').type(individual.paymentDate)
 })
 
 Cypress.Commands.add('selectOrg', ()=>{
@@ -58,8 +58,7 @@ Cypress.Commands.add('selectOrg', ()=>{
 
 Cypress.Commands.add('fillContribOrgPii',()=>{
 
-    cy.get(':nth-child(4) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > :nth-child(6) > .col > .form-control')
-        .type(individual.organizationName)
+    cy.get('[data-cy=contribOwnerName]').type(individual.organizationName)
     cy.get('[data-cy=createContribEmail]').type(individual.email)
     cy.get('[data-cy=createContribPhoneNumber]').type(individual.phoneNumber)
     cy.get('[data-cy=createContribFirstName]').type(individual.firstName)
@@ -93,7 +92,7 @@ Cypress.Commands.add('fillContribOrgInKind',(entityType)=>{
     cy.get('#entityType').select(entityType)
     cy.get('[data-cy=payMethod-inKind]').click()
     cy.contains('Service/Facilities Provided').click()
-    cy.get(':nth-child(4) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .fade-in > .col > .form-control')
+    cy.get('[data-cy=createContribDescription]')
         .type('Pizza Party')
 })
 
@@ -144,9 +143,9 @@ Cypress.Commands.add('fillDisbForm', ()=>{
     cy.get(':nth-child(5) > :nth-child(3) > form > .form-group > :nth-child(3) > .custom-control-label').click()
     cy.get(':nth-child(5) > :nth-child(4) > form > .form-group > :nth-child(3) > .custom-control-label').click()
 
-    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(1) > #amount')
+    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(1) > .form-group > [data-cy=paymentAmount]')
         .type(individual.amount)
-    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(2) > #date')
+    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(2) > .form-group > [data-cy=paymentDate]')
         .type(individual.paymentDate)
 
 

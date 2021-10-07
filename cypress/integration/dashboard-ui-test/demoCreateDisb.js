@@ -25,7 +25,7 @@ describe('demo individual disbursements',()=>{
     it( 'can create Check disbursements',()=>{
 
         cy.get('#paymentMethod').select('Check')
-        cy.get(':nth-child(8) > .col > .form-control').type('123')
+        cy.get('[data-cy=createDisbCheck]').type('123')
     })
     it( 'can create Credit disbursements',()=>{
         cy.get('#paymentMethod').select('Credit')

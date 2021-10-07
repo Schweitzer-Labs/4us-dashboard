@@ -1,5 +1,6 @@
 module Address exposing (Config, view)
 
+import AppInput exposing (inputText)
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
@@ -39,48 +40,44 @@ rows :
 rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg ) ( state, stateMsg ) ( postalCode, postalCodeMsg ) disabled id =
     [ Grid.row [ Row.centerLg, Row.attrs [ Spacing.mt2 ] ]
         [ Grid.col [ Col.lg6 ]
-            [ Input.text
-                [ Input.id <| id ++ "addressLine1"
-                , Input.value addressLine1
-                , Input.onInput address1Msg
-                , Input.placeholder "Street Address"
-                , Input.disabled disabled
-                , Input.attrs [ attribute "data-cy" (id ++ "addressLine1") ]
-                ]
+            [ inputText
+                address1Msg
+                "Enter Street Address"
+                addressLine1
+                disabled
+                (id ++ "addressLine1")
+                "Street Address"
             ]
         , Grid.col [ Col.lg6 ]
-            [ Input.text
-                [ Input.id <| id ++ "addressLine2"
-                , Input.value addressLine2
-                , Input.onInput address2Msg
-                , Input.placeholder "Secondary Address"
-                , Input.disabled disabled
-                , Input.attrs [ attribute "data-cy" (id ++ "addressLine2") ]
-                ]
+            [ inputText
+                address2Msg
+                "Enter Secondary Address"
+                addressLine2
+                disabled
+                (id ++ "addressLine2")
+                "Secondary Address"
             ]
         ]
     , Grid.row [ Row.centerLg, Row.attrs [ Spacing.mt2 ] ]
         [ Grid.col [ Col.lg6 ]
-            [ Input.text
-                [ Input.id <| id ++ "city"
-                , Input.value city
-                , Input.onInput cityMsg
-                , Input.placeholder "City"
-                , Input.disabled disabled
-                , Input.attrs [ attribute "data-cy" (id ++ "city") ]
-                ]
+            [ inputText
+                cityMsg
+                "Enter City"
+                city
+                disabled
+                (id ++ "city")
+                "City"
             ]
         , Grid.col [ Col.lg3 ]
             [ State.view stateMsg state disabled id ]
         , Grid.col [ Col.lg3 ]
-            [ Input.text
-                [ Input.id <| id ++ "postalCode"
-                , Input.value postalCode
-                , Input.onInput postalCodeMsg
-                , Input.placeholder "Postal Code"
-                , Input.disabled disabled
-                , Input.attrs [ attribute "data-cy" (id ++ "postalCode") ]
-                ]
+            [ inputText
+                postalCodeMsg
+                "Enter Postal Code"
+                postalCode
+                disabled
+                (id ++ "postalCode")
+                "Postal Code"
             ]
         ]
     ]
