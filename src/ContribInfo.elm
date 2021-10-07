@@ -12,13 +12,14 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromEmailAddress, fromInKindType, fromOrgType, fromPhoneNumber, fromPostalCode)
+import Errors exposing (fromEmailAddress, fromInKindType, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode)
 import Html exposing (Html, div, h5, h6, span, text)
 import Html.Attributes exposing (class, for)
 import Html.Events exposing (onClick)
 import InKindType exposing (Model(..))
 import MonthSelector
 import OrgOrInd
+import Owners as Owner
 import OwnersView
 import PaymentMethod
 import Validate exposing (Valid, Validator, fromErrors, ifBlank, ifNothing, validate)
@@ -151,6 +152,7 @@ type alias ContribValidatorModel =
     , maybeEntityType : Maybe EntityType.Model
     , inKindType : Maybe InKindType.Model
     , inKindDesc : String
+    , owners : Owner.Owners
     }
 
 
@@ -171,6 +173,7 @@ contribInfoValidator =
         , orgTypeValidator
         , emailValidator
         , phoneValidator
+        , ownersValidator
         ]
 
 
@@ -203,6 +206,11 @@ emailValidator =
     fromErrors emailAddressOnModelToErrors
 
 
+ownersValidator : Validator String ContribValidatorModel
+ownersValidator =
+    fromErrors ownersOnModelToErrors
+
+
 phoneValidator : Validator String ContribValidatorModel
 phoneValidator =
     fromErrors phoneNumberOnModelToErrors
@@ -231,6 +239,11 @@ inKindTypeOnModelToErrors { paymentMethod, inKindType, inKindDesc } =
 orgTypeOnModelToErrors : ContribValidatorModel -> List String
 orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType } =
     fromOrgType maybeOrgOrInd maybeEntityType
+
+
+ownersOnModelToErrors : ContribValidatorModel -> List String
+ownersOnModelToErrors { owners } =
+    fromOwners owners
 
 
 errorRow : Maybe String -> List (Html msg)
