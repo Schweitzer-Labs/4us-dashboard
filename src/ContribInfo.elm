@@ -19,7 +19,6 @@ import Html.Events exposing (onClick)
 import InKindType exposing (Model(..))
 import MonthSelector
 import OrgOrInd
-import Owners
 import OwnersView
 import PaymentMethod
 import Validate exposing (Valid, Validator, fromErrors, ifBlank, ifNothing, validate)

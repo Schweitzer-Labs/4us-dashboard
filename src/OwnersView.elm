@@ -263,15 +263,17 @@ view model =
 
                         else
                             [ Grid.row
-                                [ Row.attrs [ Spacing.mt3, Spacing.mr4 ] ]
-                                [ Grid.col
-                                    [ Col.xs4, Col.offsetXs9 ]
+                                [ Row.attrs [ Spacing.mt3 ], Row.betweenXs ]
+                                [ Grid.col [] []
+                                , Grid.col
+                                    [ Col.xs4 ]
                                     [ Button.button
                                         [ Button.success
                                         , Button.onClick AddOwner
                                         , Button.disabled model.disabled
+                                        , Button.block
                                         ]
-                                        [ text "Add Another Member" ]
+                                        [ text "Add Member" ]
                                     ]
                                 ]
                             ]
