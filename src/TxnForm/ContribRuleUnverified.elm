@@ -766,7 +766,7 @@ createContribEncoder model =
     , employmentStatus = model.employmentStatus
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
-    , owners = Just model.ownersViewModel.owners
+    , owners = OwnersView.toMaybeOwners model.ownersViewModel
     , processPayment = False
     }
 
