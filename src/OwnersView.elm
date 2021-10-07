@@ -82,13 +82,14 @@ update msg model =
                 _ ->
                     let
                         totalPercentage =
-                            Owner.foldOwnership model.owners + (Maybe.withDefault 0 <| String.toFloat newOwner.percentOwnership)
-
-                        remainder =
-                            String.fromFloat (totalPercentage - 100) ++ "%"
+                            Owner.foldOwnership model.owners + Owner.ownershipToFloat newOwner
                     in
                     if totalPercentage > 100 then
-                        ( { model | errors = [ "Ownership percentage total must add up to 100%. Total is off by " ++ remainder ] }, Cmd.none )
+                        let
+                            remainder =
+                                String.fromFloat <| Owner.ownershipToFloat newOwner - (totalPercentage - 100)
+                        in
+                        ( { model | errors = [ "Ownership percentage total must add up to 100%. Please add " ++ remainder ++ "% instead." ] }, Cmd.none )
 
                     else
                         ( { model
