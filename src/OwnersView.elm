@@ -37,6 +37,7 @@ type alias Model =
     , isFormEnabled : Bool
     , currentOwner : Owner
     , errors : List String
+    , formType : Maybe FormType
     }
 
 
@@ -53,8 +54,13 @@ type Msg
     | OwnerDeleted Owner
     | EditOwner Owner
     | AddOwner
-    | ToggleOwnerForm
+    | ToggleOwnerForm (Maybe FormType)
     | NoOp
+
+
+type FormType
+    = EditingOwner
+    | CreatingOwner
 
 
 
@@ -168,17 +174,17 @@ update msg model =
                 state =
                     setEditOwner model owner
             in
-            ( state, Cmd.none )
+            ( { state | formType = Just EditingOwner }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
 
-        ToggleOwnerForm ->
+        ToggleOwnerForm form ->
             let
                 state =
                     clearForm model
             in
-            ( { state | isFormEnabled = not model.isFormEnabled }, Cmd.none )
+            ( { state | isFormEnabled = not model.isFormEnabled, formType = form }, Cmd.none )
 
 
 init : Owners -> Model
@@ -205,6 +211,7 @@ init owners =
     , disabled = False
     , isFormEnabled = False
     , errors = []
+    , formType = Nothing
     }
 
 
@@ -244,10 +251,15 @@ view model =
                     [ Grid.col [] [ Copy.llcDialogue ]
                     ]
                ]
-            ++ [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
-                    [ Grid.col [] [ addOwnerButton ]
+            ++ (if model.disabled then
+                    []
+
+                else
+                    [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
+                        [ Grid.col [] [ addOwnerButton ]
+                        ]
                     ]
-               ]
+               )
             ++ [ capTable model ]
             ++ (if model.isFormEnabled then
                     [ Grid.row
@@ -274,27 +286,32 @@ view model =
                )
             ++ (case model.isFormEnabled of
                     False ->
-                        if model.disabled then
-                            []
-
-                        else
-                            [ Grid.row
-                                [ Row.attrs [ Spacing.mt3, Spacing.mr4 ] ]
-                                [ Grid.col
-                                    [ Col.xs4, Col.offsetXs10 ]
-                                    (ownersSubmitButton AddOwner model "Add Member")
-                                ]
-                            ]
+                        []
 
                     True ->
-                        [ Grid.row
-                            [ Row.betweenXs, Row.attrs [ Spacing.mt3 ] ]
-                            [ Grid.col [ Col.xs4, Col.attrs [ Spacing.mb3 ] ]
-                                (cancelButton ToggleOwnerForm False "Cancel")
-                            , Grid.col [ Col.xs2, Col.attrs [ Spacing.mb3 ] ]
-                                (saveButton OwnersUpdate model model.disabled "Save")
-                            ]
-                        ]
+                        case model.formType of
+                            Just EditingOwner ->
+                                [ Grid.row
+                                    [ Row.betweenXs, Row.attrs [ Spacing.mt3 ] ]
+                                    [ Grid.col [ Col.xs4, Col.attrs [ Spacing.mb3 ] ]
+                                        (cancelButton (ToggleOwnerForm Nothing) False "Cancel")
+                                    , Grid.col [ Col.xs2, Col.attrs [ Spacing.mb3 ] ]
+                                        (saveButton OwnersUpdate model model.disabled "Save")
+                                    ]
+                                ]
+
+                            Just CreatingOwner ->
+                                [ Grid.row
+                                    [ Row.betweenXs, Row.attrs [ Spacing.mt3 ] ]
+                                    [ Grid.col [ Col.xs4, Col.attrs [ Spacing.mb3 ] ]
+                                        (cancelButton (ToggleOwnerForm Nothing) False "Cancel")
+                                    , Grid.col [ Col.xs3, Col.attrs [ Spacing.mb3 ] ]
+                                        (ownersSubmitButton AddOwner "Add Member")
+                                    ]
+                                ]
+
+                            Nothing ->
+                                []
                )
 
 
@@ -421,12 +438,12 @@ editOwnerInfo newOwnerInfo model =
     }
 
 
-ownersSubmitButton : Msg -> Model -> String -> List (Html Msg)
-ownersSubmitButton msg model btnName =
+ownersSubmitButton : Msg -> String -> List (Html Msg)
+ownersSubmitButton msg btnName =
     [ Button.button
         [ Button.success
         , Button.onClick msg
-        , Button.disabled (model.disabled || Owner.foldOwnership model.owners == 100)
+        , Button.disabled False
         ]
         [ text btnName ]
     ]
@@ -463,7 +480,7 @@ cancelButton msg disabled btnName =
 
 addOwnerButton : Html Msg
 addOwnerButton =
-    div [ Spacing.mt4, class "text-slate-blue font-size-medium hover-underline hover-pointer", onClick ToggleOwnerForm ]
+    div [ Spacing.mt4, class "text-slate-blue font-size-medium hover-underline hover-pointer", onClick (ToggleOwnerForm (Just CreatingOwner)) ]
         [ Asset.plusCircleGlyph [ class "text-slate-blue font-size-22" ]
         , span [ Spacing.ml1, class "align-middle" ] [ text "Add Owner" ]
         ]
