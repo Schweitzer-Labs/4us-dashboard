@@ -766,13 +766,17 @@ createContribEncoder model =
     , employmentStatus = model.employmentStatus
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
-    , owners = model.owners
+    , owners = Just model.ownersViewModel.owners
     , processPayment = False
     }
 
 
 createContrib : Model -> Cmd Msg
 createContrib model =
+    let
+        _ =
+            Debug.log "owners" model.owners
+    in
     CreateContrib.send CreateContribMutResp model.config <| CreateContrib.encode createContribEncoder model
 
 

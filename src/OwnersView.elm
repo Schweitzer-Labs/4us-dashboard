@@ -53,6 +53,7 @@ type Msg
     | OwnerDeleted Owner
     | ToggleEditOwner Owner
     | AddOwner
+    | CancelEditOwner
     | NoOp
 
 
@@ -172,6 +173,13 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+        CancelEditOwner ->
+            let
+                state =
+                    clearForm model
+            in
+            ( { state | isOwnerEditable = False }, Cmd.none )
+
 
 init : Owners -> Model
 init owners =
@@ -269,29 +277,18 @@ view model =
                             [ Grid.row
                                 [ Row.attrs [ Spacing.mt3, Spacing.mr4 ] ]
                                 [ Grid.col
-                                    [ Col.xs4, Col.offsetXs9 ]
-                                    [ Button.button
-                                        [ Button.success
-                                        , Button.onClick AddOwner
-                                        , Button.disabled model.disabled
-                                        ]
-                                        [ text "Add Another Member" ]
-                                    ]
+                                    [ Col.xs4, Col.offsetXs10 ]
+                                    (ownersSubmitButton AddOwner model "Add Member")
                                 ]
                             ]
 
                     True ->
                         [ Grid.row
-                            [ Row.attrs [ Spacing.mt3 ] ]
-                            [ Grid.col
-                                [ Col.offsetXs10 ]
-                                [ Button.button
-                                    [ Button.success
-                                    , Button.onClick OwnersUpdate
-                                    , Button.disabled model.disabled
-                                    ]
-                                    [ text "Save" ]
-                                ]
+                            [ Row.betweenXs, Row.attrs [ Spacing.mt3 ] ]
+                            [ Grid.col [ Col.xs4, Col.attrs [ Spacing.mb3 ] ]
+                                (cancelButton CancelEditOwner False "Cancel")
+                            , Grid.col [ Col.xs2, Col.attrs [ Spacing.mb3 ] ]
+                                (saveButton OwnersUpdate model model.disabled "Save")
                             ]
                         ]
                )
@@ -418,3 +415,49 @@ editOwnerInfo newOwnerInfo model =
                 model.owners
         , isOwnerEditable = False
     }
+
+
+ownersSubmitButton : Msg -> Model -> String -> List (Html Msg)
+ownersSubmitButton msg model btnName =
+    [ Button.button
+        [ Button.success
+        , Button.onClick msg
+        , Button.disabled (model.disabled || Owner.foldOwnership model.owners == 100)
+        ]
+        [ text btnName ]
+    ]
+
+
+saveButton : Msg -> Model -> Bool -> String -> List (Html Msg)
+saveButton msg model disabled btnName =
+    let
+        totalOwnership =
+            Owner.foldOwnership model.owners + (Maybe.withDefault 0 <| String.toFloat model.percentOwnership)
+
+        disabledSave =
+            totalOwnership >= 100
+
+        _ =
+            Debug.log "disable save" disabledSave
+
+        _ =
+            Debug.log "disable save" totalOwnership
+    in
+    [ Button.button
+        [ Button.success
+        , Button.onClick msg
+        , Button.disabled (disabled || disabledSave)
+        ]
+        [ text btnName ]
+    ]
+
+
+cancelButton : Msg -> Bool -> String -> List (Html Msg)
+cancelButton msg disabled btnName =
+    [ Button.button
+        [ Button.success
+        , Button.onClick msg
+        , Button.disabled disabled
+        ]
+        [ text btnName ]
+    ]
