@@ -773,10 +773,6 @@ createContribEncoder model =
 
 createContrib : Model -> Cmd Msg
 createContrib model =
-    let
-        _ =
-            Debug.log "owners" model.owners
-    in
     CreateContrib.send CreateContribMutResp model.config <| CreateContrib.encode createContribEncoder model
 
 
