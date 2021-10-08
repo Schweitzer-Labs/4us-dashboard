@@ -19,7 +19,7 @@ import Committee
 import Config exposing (Config)
 import Errors
 import Html exposing (..)
-import Html.Attributes as SvgA exposing (class, for, href, target)
+import Html.Attributes as SvgA exposing (attribute, class, for, href, target)
 import Http
 import LabelWithData exposing (dataText)
 import Session exposing (Session)
@@ -165,9 +165,9 @@ manageDemoView model =
                 [ Col.xs3 ]
               <|
                 demoLabel "Actions"
-                    ++ [ SubmitButton.block [] "Seed Money In" (SeedBankRecordClicked Contribution) model.seedMoneyInLoading False ]
-                    ++ [ SubmitButton.block [ Spacing.mt3 ] "Seed Money Out" (SeedBankRecordClicked Disbursement) model.seedMoneyOutLoading False ]
-                    ++ [ SubmitButton.block [ Spacing.mt3 ] "Reconcile One" ReconcileDemoTxnClicked model.reconcileOneLoading False ]
+                    ++ [ SubmitButton.block [ attribute "data-cy" "seedMoneyIn" ] "Seed Money In" (SeedBankRecordClicked Contribution) model.seedMoneyInLoading False ]
+                    ++ [ SubmitButton.block [ attribute "data-cy" "seedMoneyOut", Spacing.mt3 ] "Seed Money Out" (SeedBankRecordClicked Disbursement) model.seedMoneyOutLoading False ]
+                    ++ [ SubmitButton.block [ attribute "data-cy" "reconcileOne", Spacing.mt3 ] "Reconcile One" ReconcileDemoTxnClicked model.reconcileOneLoading False ]
                     ++ [ resetButton ResetView ]
                     ++ demoLabel "Event Log"
                     ++ [ eventList model ]

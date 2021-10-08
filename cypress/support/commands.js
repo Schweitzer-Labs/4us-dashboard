@@ -22,18 +22,32 @@ const appUrl = 'http://localhost:3000/committee/nelson-lopez'
 const demoPassword = 'f4jp1i'
 
 
-Cypress.Commands.add('generateDemo', () => {
-
+Cypress.Commands.add('createDemo', ()=>{
     cy.visit(appUrl)
     cy.visit(`${appUrl}/demo`)
 
     cy.get('#password').type(demoPassword)
     cy.get('.btn').click()
     cy.wait(12000)
+
+})
+
+Cypress.Commands.add('generateDemo', () => {
+    cy.createDemo()
     cy.get('.col-12 > a').then((e)=>{
         cy.visit(e.text())
     })
 })
+
+Cypress.Commands.add('generateReconcileDisbDemo', () => {
+    cy.createDemo()
+    cy.get('[data-cy=seedMoneyOut]').click()
+    cy.get('.col-12 > a').then((e)=>{
+        cy.visit(e.text())
+    })
+    cy.get('tbody > .hover-pointer > :nth-child(1)').click()
+})
+
 // Generic Form Commands
 
 Cypress.Commands.add('fillCheck',()=>{
@@ -137,6 +151,31 @@ Cypress.Commands.add ('initDisb',()=>{
 
     cy.get('#actions-dropdown').click()
     cy.get('button').contains('Create Disbursement').click()
+
+})
+
+Cypress.Commands.add('fillDisbForm', ()=>{
+    cy.get('.container-fluid > .fade-in > .col > #recipient-name')
+        .type(`${individual.firstName} ${individual.lastName}`)
+    cy.get('[data-cy=createDisbaddressLine1]').first().type(individual.addressLine1)
+    cy.get('[data-cy=createDisbaddressLine2]').first().type(individual.addressLine2)
+    cy.get('[data-cy=createDisbcity]').first().type(individual.city)
+    cy.get('[data-cy=createDisbstate]').first().select(individual.state)
+    cy.get('[data-cy=createDisbpostalCode]').first().type(individual.postalCode)
+
+    cy.get(':nth-child(4) > .col > .form-group > #purpose').select(individual.purposeCode)
+
+    cy.get(':nth-child(5) > :nth-child(1) > form > .form-group').click()
+    cy.get(':nth-child(5) > :nth-child(1) > form > .form-group > :nth-child(2) > .custom-control-label').click()
+    cy.get(':nth-child(5) > :nth-child(2) > form > .form-group > :nth-child(2) > .custom-control-label').click()
+    cy.get(':nth-child(5) > :nth-child(3) > form > .form-group > :nth-child(3) > .custom-control-label').click()
+    cy.get(':nth-child(5) > :nth-child(4) > form > .form-group > :nth-child(3) > .custom-control-label').click()
+
+    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(1) > .form-group > [data-cy=paymentAmount]')
+        .type(individual.amount)
+    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(2) > .form-group > [data-cy=paymentDate]')
+        .type(individual.paymentDate)
+
 
 })
 

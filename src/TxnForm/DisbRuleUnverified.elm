@@ -35,7 +35,7 @@ import Direction
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
 import Html exposing (Html, div, h6, input, span, text)
-import Html.Attributes exposing (class, type_)
+import Html.Attributes exposing (attribute, class, type_)
 import Html.Events exposing (onClick)
 import Http
 import LabelWithData exposing (labelWithContent, labelWithData)
@@ -232,7 +232,7 @@ addDisbButton : Html Msg
 addDisbButton =
     div [ Spacing.mt4, class "text-slate-blue font-size-medium hover-underline hover-pointer", onClick CreateDisbToggled ]
         [ Asset.plusCircleGlyph [ class "text-slate-blue font-size-22" ]
-        , span [ Spacing.ml1, class "align-middle" ] [ text "Add Disbursement" ]
+        , span [ Spacing.ml1, class "align-middle", attribute "data-cy" "addDisbBtn" ] [ text "Add Disbursement" ]
         ]
 
 
