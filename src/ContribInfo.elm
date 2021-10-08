@@ -242,8 +242,8 @@ orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType } =
 
 
 ownersOnModelToErrors : ContribValidatorModel -> List String
-ownersOnModelToErrors { owners } =
-    fromOwners owners
+ownersOnModelToErrors { owners, maybeEntityType } =
+    fromOwners owners maybeEntityType
 
 
 errorRow : Maybe String -> List (Html msg)
@@ -361,33 +361,6 @@ creditRow { cardNumber, expirationMonth, expirationYear, cvv, disabled } =
     ]
 
 
-editRow : msg -> List (Html msg)
-editRow msg =
-    [ Grid.row [ Row.attrs [ class "fade-in" ] ]
-        [ Grid.col
-            []
-            [ text "Edit Info"
-            , span [ class "hover-underline hover-pointer", Spacing.ml2, onClick msg ]
-                [ Asset.editGlyph []
-                ]
-            ]
-        ]
-    ]
-
-
-entityToOrgOrInd : EntityType.Model -> OrgOrInd.Model
-entityToOrgOrInd entityType =
-    case entityType of
-        EntityType.Family ->
-            OrgOrInd.Ind
-
-        EntityType.Individual ->
-            OrgOrInd.Ind
-
-        _ ->
-            OrgOrInd.Org
-
-
 donorInfoRows : Config msg -> List (Html msg)
 donorInfoRows model =
     let
@@ -429,72 +402,6 @@ employmentRows c =
                 []
     in
     employmentStatusRows c ++ employerRowOrEmpty
-
-
-
---manageOwnerRows : Config msg -> List (Html msg)
---manageOwnerRows c =
---    let
---        tableBody =
---            Table.tbody [] <|
---                List.map
---                    (\owner ->
---                        Table.tr []
---                            [ Table.td [] [ text <| toData c.ownerName ]
---                            , Table.td [] [ text <| toData c.ownerOwnership ]
---                            ]
---                    )
---                    <| toData c.owners
---
---        tableHead =
---            Table.simpleThead
---                [ Table.th [] [ text "Name" ]
---                , Table.th [] [ text "Percent Ownership" ]
---                ]
---
---        capTable =
---            if List.length (toData c.owners) > 0 then
---                [ Table.simpleTable ( tableHead, tableBody ) ]
---
---            else
---                []
---    in
---    [ Grid.row
---        [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
---        [ Grid.col
---            []
---            [ text "Please specify the current ownership breakdown of your company."
---            ]
---        ]
---    , Grid.row
---        [ Row.attrs [ Spacing.mb3 ] ]
---        [ Grid.col
---            []
---            [ text "*Total percent ownership must equal 100%"
---            ]
---        ]
---    ]
---        ++ capTable
---        ++ [ Grid.row
---                [ Row.attrs [ Spacing.mt3 ] ]
---                [ Grid.col
---                    []
---                    [ inputText OwnerNameUpdated "Owners Name" model.ownerName
---                    ]
---                , Grid.col
---                    []
---                    [ inputText OwnerOwnershipUpdated "Percent Ownership" model.ownerOwnership ]
---                ]
---           , Grid.row
---                [ Row.attrs [ Spacing.mt3 ] ]
---                [ Grid.col
---                    [ Col.xs6, Col.offsetXs6 ]
---                    [ submitButton "Add another member" OwnerAdded False False ]
---                ]
---           ]
---isLLCDonor : Config msg -> Bool
---isLLCDonor con =
---    Maybe.withDefault False (Maybe.map EntityType.isLLC model.maybeEntityType)
 
 
 orgRows : Config msg -> List (Html msg)
@@ -577,12 +484,6 @@ piiRows c =
         ++ addressRows c
 
 
-
--- Maybe EntityType -> Msg
--- EntityType -> Msg
--- a -> b, b -> c
-
-
 familyRow : Config msg -> List (Html msg)
 familyRow { maybeEntityType, disabled, txnId } =
     let
@@ -606,29 +507,6 @@ familyRow { maybeEntityType, disabled, txnId } =
             EntityType.familyRadioList entityMsg (toData maybeEntityType) disabled txnId
         ]
     ]
-
-
-attestsToBeingAnAdultCitizenRow : Config msg -> List (Html msg)
-attestsToBeingAnAdultCitizenRow { maybeEntityType, disabled, txnId } =
-    [ Grid.row
-        [ Row.attrs [ Spacing.mt3 ] ]
-        [ Grid.col
-            []
-            [ text "Is the donor an American citizen and at least eighteen years of age?" ]
-        ]
-    , Grid.row
-        [ Row.attrs [ Spacing.mt3 ] ]
-        [ Grid.col
-            []
-          <|
-            EntityType.familyRadioList (Just >> toMsg maybeEntityType) (toData maybeEntityType) disabled txnId
-        ]
-    ]
-
-
-
--- Maybe OrgOrInd -> msg
--- Maybe EntityType
 
 
 orgOrIndRow : Config msg -> List (Html msg)

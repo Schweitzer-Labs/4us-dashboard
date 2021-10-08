@@ -134,18 +134,22 @@ fromPhoneNumber phoneNum phoneNumberValidated =
         [ "Phone number is invalid" ]
 
 
-fromOwners : Owner.Owners -> List String
-fromOwners owners =
-    let
-        totalPercentage =
-            Owner.foldOwnership owners
-    in
-    if totalPercentage /= 100 then
+fromOwners : Owner.Owners -> Maybe EntityType.Model -> List String
+fromOwners owners maybeEntity =
+    if EntityType.isLLCorLLP maybeEntity then
         let
-            remainder =
-                String.fromFloat (abs <| 100 - totalPercentage) ++ "%"
+            totalPercentage =
+                Owner.foldOwnership owners
         in
-        [ "Ownership percentage total must add up to 100%. Total is off by " ++ remainder ++ "." ]
+        if totalPercentage /= 100 then
+            let
+                remainder =
+                    String.fromFloat (abs <| 100 - totalPercentage) ++ "%"
+            in
+            [ "Ownership percentage total must add up to 100%. Total is off by " ++ remainder ++ "." ]
+
+        else
+            []
 
     else
         []

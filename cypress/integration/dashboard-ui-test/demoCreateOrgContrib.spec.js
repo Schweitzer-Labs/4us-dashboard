@@ -13,190 +13,229 @@ describe('demo organization contributions',()=>{
     })
 
     it('can create a Sole Proprietorship Check contribution',()=>{
-        cy.fillContribOrgCheck('Solep')
+        cy.selectEntityType('Solep')
         cy.fillContribOrgPii()
-
+        cy.fillCheck()
     })
-    
+
     it('can create a Sole Proprietorship Credit contribution',()=>{
-        cy.fillContribOrgCredit('Solep')
+        cy.selectEntityType('Solep')
         cy.fillContribOrgPii()
+        cy.fillCCForm()
     })
     it('can create a Sole Proprietorship Cash contribution',()=>{
-        cy.fillContribOrgCash('Solep')
+        cy.selectEntityType('Solep')
         cy.fillContribOrgPii()
-
+        cy.fillCash()
     })
 
     it('can create a Sole Proprietorship In-kind contribution',()=>{
-        cy.fillContribOrgInKind('Solep')
+        cy.selectEntityType('Solep')
         cy.fillContribOrgPii()
+        cy.fillInKind()
 
     })
 
     it('can create a Partnership Check contribution',()=>{
-        cy.fillContribOrgCheck('Part')
+        cy.selectEntityType('Part')
+        cy.fillContribOwnersForm()
         cy.fillContribOrgPii()
+        cy.fillCheck()
 
     })
     it('can create a Partnership Credit contribution',()=>{
-        cy.fillContribOrgCredit('Part')
+        cy.selectEntityType('Part')
+        cy.fillContribOwnersForm()
         cy.fillContribOrgPii()
-
+        cy.fillCCForm()
     })
 
     it('can create a Partnership Cash contribution',()=>{
-        cy.fillContribOrgCash('Part')
+        cy.selectEntityType('Part')
+        cy.fillContribOwnersForm()
         cy.fillContribOrgPii()
-
+        cy.fillCash()
     })
 
     it('can create a Partnership In-kind contribution',()=>{
-        cy.fillContribOrgInKind('Part')
+        cy.selectEntityType('Part')
+        cy.fillContribOwnersForm()
         cy.fillContribOrgPii()
+        cy.fillInKind()
 
     })
 
     it('can create a Corporation Check contribution',()=>{
-        cy.fillContribOrgCheck('Corp')
+        cy.selectEntityType('Corp')
         cy.fillContribOrgPii()
-
+        cy.fillCheck()
     })
     it('can create a Corporation Credit contribution',()=>{
-        cy.fillContribOrgCredit('Corp')
+        cy.selectEntityType('Corp')
         cy.fillContribOrgPii()
-
+        cy.fillCCForm()
     })
 
     it('can create a Corporation Cash contribution',()=>{
-        cy.fillContribOrgCash('Corp')
+        cy.selectEntityType('Corp')
         cy.fillContribOrgPii()
-
+        cy.fillCash()
     })
 
 
     it('can create a Corporation In-kind contribution',()=>{
-        cy.fillContribOrgInKind('Corp')
+        cy.selectEntityType('Corp')
         cy.fillContribOrgPii()
+        cy.fillInKind()
 
     })
 
     it('can create a Union Check contribution',()=>{
-        cy.fillContribOrgCheck('Union')
+        cy.selectEntityType('Union')
         cy.fillContribOrgPii()
-
+        cy.fillCheck()
     })
     it('can create a Union Credit contribution',()=>{
-        cy.fillContribOrgCredit('Union')
+        cy.selectEntityType('Union')
         cy.fillContribOrgPii()
-
+        cy.fillCCForm()
     })
 
     it('can create a Union Cash contribution',()=>{
-        cy.fillContribOrgCash('Union')
+        cy.selectEntityType('Union')
         cy.fillContribOrgPii()
-
+        cy.fillCash()
     })
 
 
     it('can create a Union In-kind contribution',()=>{
-        cy.fillContribOrgInKind('Union')
+        cy.selectEntityType('Union')
         cy.fillContribOrgPii()
+        cy.fillInKind()
 
     })
 
     it('can create a Association Check contribution',()=>{
-        cy.fillContribOrgCheck('Assoc')
+        cy.selectEntityType('Assoc')
         cy.fillContribOrgPii()
-
+        cy.fillCheck()
     })
     it('can create a Association Credit contribution',()=>{
-        cy.fillContribOrgCredit('Assoc')
+        cy.selectEntityType('Assoc')
         cy.fillContribOrgPii()
-
+        cy.fillCCForm()
     })
     it('can create a Association Cash contribution',()=>{
-        cy.fillContribOrgCash('Assoc')
+        cy.selectEntityType('Assoc')
         cy.fillContribOrgPii()
-
+        cy.fillCash()
     })
 
     it('can create a Association In-kind contribution',()=>{
-        cy.fillContribOrgInKind('Assoc')
+        cy.selectEntityType('Assoc')
         cy.fillContribOrgPii()
+        cy.fillInKind()
+    })
+
+    it('can create a LLC Check contribution',()=>{
+        cy.selectEntityType('Llc')
+        cy.fillContribOwnersForm()
+        cy.fillContribOrgPii()
+        cy.fillCheck()
+
+    })
+    it('can create a LLC Credit contribution',()=>{
+        cy.selectEntityType('Llc')
+        cy.fillContribOwnersForm()
+        cy.fillContribOrgPii()
+        cy.fillCCForm()
+    })
+
+    it('can create a LLC Cash contribution',()=>{
+        cy.selectEntityType('Llc')
+        cy.fillContribOwnersForm()
+        cy.fillContribOrgPii()
+        cy.fillCash()
+    })
+
+    it('can create a LLC In-kind contribution',()=>{
+        cy.selectEntityType('Llc')
+        cy.fillContribOwnersForm()
+        cy.fillContribOrgPii()
+        cy.fillInKind()
 
     })
 
     it('can create a Political Action Committee Check contribution',()=>{
-        cy.fillContribOrgCheck('Pac')
+        cy.selectEntityType('Pac')
         cy.fillContribOrgPii()
-
+        cy.fillCheck()
     })
     it('can create a Political Action Committee Credit contribution',()=>{
-        cy.fillContribOrgCredit('Pac')
+        cy.selectEntityType('Pac')
         cy.fillContribOrgPii()
-
+        cy.fillCCForm()
     })
 
     it('can create a Political Action Committee Cash contribution',()=>{
-        cy.fillContribOrgCash('Pac')
+        cy.selectEntityType('Pac')
         cy.fillContribOrgPii()
-
+        cy.fillCash()
     })
 
 
     it('can create a Political Action Committee In-kind contribution',()=>{
-        cy.fillContribOrgInKind('Pac')
+        cy.selectEntityType('Pac')
         cy.fillContribOrgPii()
-
+        cy.fillInKind()
     })
 
     it('can create a Political Committee Check contribution',()=>{
-        cy.fillContribOrgCheck('Plc')
+        cy.selectEntityType('Plc')
         cy.fillContribOrgPii()
-
+        cy.fillCheck()
     })
     it('can create a Political Committee Credit contribution',()=>{
-        cy.fillContribOrgCredit('Plc')
+        cy.selectEntityType('Plc')
         cy.fillContribOrgPii()
-
+        cy.fillCCForm()
     })
 
     it('can create a Political Committee Cash contribution',()=>{
-        cy.fillContribOrgCash('Plc')
+        cy.selectEntityType('Plc')
         cy.fillContribOrgPii()
-
+        cy.fillCash()
     })
 
 
     it('can create a Political Committee In-kind contribution',()=>{
-        cy.fillContribOrgInKind('Plc')
+        cy.selectEntityType('Plc')
         cy.fillContribOrgPii()
-
+        cy.fillInKind()
     })
 
     it('can create a Other Check contribution',()=>{
-        cy.fillContribOrgCheck('Oth')
+        cy.selectEntityType('Oth')
         cy.fillContribOrgPii()
-
+        cy.fillCheck()
     })
     it('can create a Other Credit contribution',()=>{
-        cy.fillContribOrgCredit('Oth')
+        cy.selectEntityType('Oth')
         cy.fillContribOrgPii()
-
+        cy.fillCCForm()
     })
 
     it('can create a Other Cash contribution',()=>{
-        cy.fillContribOrgCash('Oth')
+        cy.selectEntityType('Oth')
         cy.fillContribOrgPii()
-
+        cy.fillCash()
     })
 
 
     it('can create a Other In-kind contribution',()=>{
-        cy.fillContribOrgInKind('Oth')
+        cy.selectEntityType('Oth')
         cy.fillContribOrgPii()
-
+        cy.fillInKind()
     })
 
 

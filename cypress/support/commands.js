@@ -35,11 +35,30 @@ Cypress.Commands.add('generateDemo', () => {
     })
 })
 // Generic Form Commands
+
+Cypress.Commands.add('fillCheck',()=>{
+    cy.get('[data-cy=payMethod-check]').click()
+    cy.get('#check-number').type('123')
+})
+
 Cypress.Commands.add('fillCCForm',()=>{
+    cy.get('[data-cy=payMethod-credit]').click()
     cy.get('#card-number').type('4242424242424242')
     cy.get('#card-month').select('4 - Apr')
     cy.get('#card-year').select('2024')
     cy.get('#cvv').type('123')
+})
+
+Cypress.Commands.add('fillCash', ()=>{
+    cy.get('[data-cy=payMethod-cash]').click()
+})
+
+Cypress.Commands.add('fillInKind', ()=> {
+
+    cy.get('[data-cy=payMethod-inKind]').click()
+    cy.contains('Service/Facilities Provided').click()
+    cy.get('[data-cy=createContribDescription]')
+        .type('Pizza Party')
 })
 
 // Contribution Commands
@@ -71,30 +90,25 @@ Cypress.Commands.add('fillContribOrgPii',()=>{
 
 })
 
-Cypress.Commands.add('fillContribOrgCheck',(entityType)=>{
+Cypress.Commands.add('fillContribOwnersForm', ()=>{
+    cy.get('[data-cy=addOwner]').click()
+    cy.get('[data-cy=createOwnerFirstName]').type(individual.firstName)
+    cy.get('[data-cy=createOwnerLastName]').type(individual.lastName)
+    cy.get('[data-cy=createOwneraddressLine1]').type(individual.addressLine1)
+    cy.get('[data-cy=createOwneraddressLine2]').type(individual.addressLine2)
+    cy.get('[data-cy=createOwnercity]').type(individual.city)
+    cy.get('[data-cy=createOwnerstate]').select(individual.state)
+    cy.get('[data-cy=createOwnerpostalCode]').type(individual.postalCode)
+    cy.get('[data-cy=createOwnerPercent]').type('100')
+    cy.get('.col-3 > .btn').click()
+
+})
+Cypress.Commands.add('selectEntityType',(entityType)=>{
     cy.get('#entityType').select(entityType)
-    cy.get('[data-cy=payMethod-check]').click()
-    cy.get('#check-number').type('123')
 })
 
-Cypress.Commands.add('fillContribOrgCredit',(entityType)=>{
-    cy.get('#entityType').select(entityType)
-    cy.get('[data-cy=payMethod-credit]').click()
-    cy.fillCCForm()
-})
 
-Cypress.Commands.add('fillContribOrgCash',(entityType)=>{
-    cy.get('#entityType').select(entityType)
-    cy.get('[data-cy=payMethod-cash]').click()
-})
 
-Cypress.Commands.add('fillContribOrgInKind',(entityType)=>{
-    cy.get('#entityType').select(entityType)
-    cy.get('[data-cy=payMethod-inKind]').click()
-    cy.contains('Service/Facilities Provided').click()
-    cy.get('[data-cy=createContribDescription]')
-        .type('Pizza Party')
-})
 
 Cypress.Commands.add('selectInd', ()=>{
     cy.get('#Individual').click()
