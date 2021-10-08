@@ -506,7 +506,7 @@ orgRows c =
             [ EntityType.orgView (toMsg c.maybeEntityType) (toData c.maybeEntityType) c.disabled ]
         ]
     ]
-        ++ (if toData c.maybeEntityType == Just EntityType.LimitedLiabilityCompany then
+        ++ (if EntityType.isLLCorLLP (toData c.maybeEntityType) then
                 let
                     viewModel =
                         c.ownersViewModel
