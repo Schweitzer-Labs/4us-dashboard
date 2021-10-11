@@ -1,17 +1,21 @@
+const faker = require("faker")
 // Demo Setup
 
-const individual = {
-    firstName : 'John',
-    lastName: 'Williams',
-    amount: '10',
+let donor = {
+    firstName : faker.name.firstName(),
+    lastName: faker.name.lastName(),
+    amount: faker.datatype.number({
+        min: 10,
+        max: 100,
+    }),
     paymentDate: '2021-09-17',
-    email: '4us@gmail.com',
+    email: faker.internet.email(),
     phoneNumber: '2369860981',
-    addressLine1 :'1234 Broadway',
+    addressLine1 :faker.address.streetAddress(),
     addressLine2: 'Apartment 5',
-    city : 'Manhattan',
-    state: 'New York',
-    postalCode: '10356',
+    city : faker.address.city(),
+    state: faker.address.state(),
+    postalCode: faker.address.zipCode().substring(0, 5),
     company: 'Toyota',
     job: 'Marketing',
     purposeCode: 'LITER',
@@ -20,6 +24,7 @@ const individual = {
 
 const appUrl = 'http://localhost:3000/committee/nelson-lopez'
 const demoPassword = 'f4jp1i'
+
 
 
 Cypress.Commands.add('createDemo', ()=>{
@@ -81,8 +86,8 @@ Cypress.Commands.add ('initContrib',()=>{
     cy.get('#actions-dropdown').click()
     cy.get('button').contains('Create Contribution').click()
 
-    cy.get(':nth-child(2) > :nth-child(1) > .form-group > [data-cy=paymentAmount]').type(individual.amount)
-    cy.get(':nth-child(2) > :nth-child(2) > .form-group > [data-cy=paymentDate]').type(individual.paymentDate)
+    cy.get(':nth-child(2) > :nth-child(1) > .form-group > [data-cy=paymentAmount]').type(donor.amount)
+    cy.get(':nth-child(2) > :nth-child(2) > .form-group > [data-cy=paymentDate]').type(donor.paymentDate)
 })
 
 Cypress.Commands.add('selectOrg', ()=>{
@@ -91,28 +96,28 @@ Cypress.Commands.add('selectOrg', ()=>{
 
 Cypress.Commands.add('fillContribOrgPii',()=>{
 
-    cy.get('[data-cy=contribOwnerName]').type(individual.organizationName)
-    cy.get('[data-cy=createContribEmail]').type(individual.email)
-    cy.get('[data-cy=createContribPhoneNumber]').type(individual.phoneNumber)
-    cy.get('[data-cy=createContribFirstName]').type(individual.firstName)
-    cy.get('[data-cy=createContribLastName]').type(individual.lastName)
-    cy.get('[data-cy=createContribaddressLine1]').type(individual.addressLine1)
-    cy.get('[data-cy=createContribaddressLine2]').type(individual.addressLine2)
-    cy.get('[data-cy=createContribcity]').type(individual.city)
-    cy.get('[data-cy=createContribstate]').select(individual.state)
-    cy.get('[data-cy=createContribpostalCode]').type(individual.postalCode)
+    cy.get('[data-cy=contribOwnerName]').type(donor.organizationName)
+    cy.get('[data-cy=createContribEmail]').type(donor.email)
+    cy.get('[data-cy=createContribPhoneNumber]').type(donor.phoneNumber)
+    cy.get('[data-cy=createContribFirstName]').type(faker.name.firstName())
+    cy.get('[data-cy=createContribLastName]').type(donor.lastName)
+    cy.get('[data-cy=createContribaddressLine1]').type(donor.addressLine1)
+    cy.get('[data-cy=createContribaddressLine2]').type(donor.addressLine2)
+    cy.get('[data-cy=createContribcity]').type(donor.city)
+    cy.get('[data-cy=createContribstate]').select(donor.state)
+    cy.get('[data-cy=createContribpostalCode]').type(donor.postalCode)
 
 })
 
 Cypress.Commands.add('fillContribOwnersForm', ()=>{
     cy.get('[data-cy=addOwner]').click()
-    cy.get('[data-cy=createOwnerFirstName]').type(individual.firstName)
-    cy.get('[data-cy=createOwnerLastName]').type(individual.lastName)
-    cy.get('[data-cy=createOwneraddressLine1]').type(individual.addressLine1)
-    cy.get('[data-cy=createOwneraddressLine2]').type(individual.addressLine2)
-    cy.get('[data-cy=createOwnercity]').type(individual.city)
-    cy.get('[data-cy=createOwnerstate]').select(individual.state)
-    cy.get('[data-cy=createOwnerpostalCode]').type(individual.postalCode)
+    cy.get('[data-cy=createOwnerFirstName]').type(faker.name.firstName())
+    cy.get('[data-cy=createOwnerLastName]').type(faker.name.lastName())
+    cy.get('[data-cy=createOwneraddressLine1]').type(faker.address.streetAddress())
+    cy.get('[data-cy=createOwneraddressLine2]').type('Apartment 5')
+    cy.get('[data-cy=createOwnercity]').type(faker.address.city())
+    cy.get('[data-cy=createOwnerstate]').select(faker.address.state())
+    cy.get('[data-cy=createOwnerpostalCode]').type(faker.address.zipCode().substring(0, 5))
     cy.get('[data-cy=createOwnerPercent]').type('100')
     cy.get('.col-3 > .btn').click()
 
@@ -131,15 +136,15 @@ Cypress.Commands.add('selectInd', ()=>{
 
 Cypress.Commands.add('fillContribFormInd', ()=>{
 
-    cy.get('[data-cy=createContribEmail]').type(individual.email)
-    cy.get('[data-cy=createContribPhoneNumber]').type(individual.phoneNumber)
-    cy.get('[data-cy=createContribFirstName]').type(individual.firstName)
-    cy.get('[data-cy=createContribLastName]').type(individual.lastName)
-    cy.get('[data-cy=createContribaddressLine1]').type(individual.addressLine1)
-    cy.get('[data-cy=createContribaddressLine2]').type(individual.addressLine2)
-    cy.get('[data-cy=createContribcity]').type(individual.city)
-    cy.get('[data-cy=createContribstate]').select(individual.state)
-    cy.get('[data-cy=createContribpostalCode]').type(individual.postalCode)
+    cy.get('[data-cy=createContribEmail]').type(faker.internet.email())
+    cy.get('[data-cy=createContribPhoneNumber]').type(donor.phoneNumber)
+    cy.get('[data-cy=createContribFirstName]').type(faker.name.firstName())
+    cy.get('[data-cy=createContribLastName]').type(faker.name.lastName())
+    cy.get('[data-cy=createContribaddressLine1]').type(faker.address.streetAddress())
+    cy.get('[data-cy=createContribaddressLine2]').type('Apartment 5')
+    cy.get('[data-cy=createContribcity]').type(faker.address.city())
+    cy.get('[data-cy=createContribstate]').select(faker.address.state())
+    cy.get('[data-cy=createContribpostalCode]').type(faker.address.zipCode().substring(0, 5))
 
     cy.get('.col-8 > form > .form-group > :nth-child(4) > .custom-control-label').click()
 
@@ -156,14 +161,14 @@ Cypress.Commands.add ('initDisb',()=>{
 
 Cypress.Commands.add('fillDisbForm', ()=>{
     cy.get('.container-fluid > .fade-in > .col > #recipient-name')
-        .type(`${individual.firstName} ${individual.lastName}`)
-    cy.get('[data-cy=createDisbaddressLine1]').first().type(individual.addressLine1)
-    cy.get('[data-cy=createDisbaddressLine2]').first().type(individual.addressLine2)
-    cy.get('[data-cy=createDisbcity]').first().type(individual.city)
-    cy.get('[data-cy=createDisbstate]').first().select(individual.state)
-    cy.get('[data-cy=createDisbpostalCode]').first().type(individual.postalCode)
+        .type(`${faker.name.firstName()} ${faker.name.lastName()}`)
+    cy.get('[data-cy=createDisbaddressLine1]').first().type(faker.address.streetAddress())
+    cy.get('[data-cy=createDisbaddressLine2]').first().type('Apartment 5')
+    cy.get('[data-cy=createDisbcity]').first().type(faker.address.city())
+    cy.get('[data-cy=createDisbstate]').first().select(faker.address.state())
+    cy.get('[data-cy=createDisbpostalCode]').first().type(faker.address.zipCode().substring(0, 5))
 
-    cy.get(':nth-child(4) > .col > .form-group > #purpose').select(individual.purposeCode)
+    cy.get(':nth-child(4) > .col > .form-group > #purpose').select("LITER")
 
     cy.get(':nth-child(5) > :nth-child(1) > form > .form-group').click()
     cy.get(':nth-child(5) > :nth-child(1) > form > .form-group > :nth-child(2) > .custom-control-label').click()
@@ -172,23 +177,26 @@ Cypress.Commands.add('fillDisbForm', ()=>{
     cy.get(':nth-child(5) > :nth-child(4) > form > .form-group > :nth-child(3) > .custom-control-label').click()
 
     cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(1) > .form-group > [data-cy=paymentAmount]')
-        .type(individual.amount)
+        .type(faker.datatype.number({
+            min: 10,
+            max: 100,
+        }))
     cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(2) > .form-group > [data-cy=paymentDate]')
-        .type(individual.paymentDate)
+        .type('2021-09-17')
 
 
 })
 
 Cypress.Commands.add('fillDisbForm', ()=>{
     cy.get('.container-fluid > .fade-in > .col > #recipient-name')
-        .type(`${individual.firstName} ${individual.lastName}`)
-    cy.get('[data-cy=createDisbaddressLine1]').first().type(individual.addressLine1)
-    cy.get('[data-cy=createDisbaddressLine2]').first().type(individual.addressLine2)
-    cy.get('[data-cy=createDisbcity]').first().type(individual.city)
-    cy.get('[data-cy=createDisbstate]').first().select(individual.state)
-    cy.get('[data-cy=createDisbpostalCode]').first().type(individual.postalCode)
+        .type(`${faker.name.firstName()} ${faker.name.lastName()}`)
+    cy.get('[data-cy=createDisbaddressLine1]').first().type(faker.address.streetAddress())
+    cy.get('[data-cy=createDisbaddressLine2]').first().type('Apartment 5')
+    cy.get('[data-cy=createDisbcity]').first().type(faker.address.city())
+    cy.get('[data-cy=createDisbstate]').first().select(faker.address.state())
+    cy.get('[data-cy=createDisbpostalCode]').first().type(faker.address.zipCode().substring(0, 5))
 
-    cy.get(':nth-child(4) > .col > .form-group > #purpose').select(individual.purposeCode)
+    cy.get(':nth-child(4) > .col > .form-group > #purpose').select("LITER")
 
     cy.get(':nth-child(5) > :nth-child(1) > form > .form-group').click()
     cy.get(':nth-child(5) > :nth-child(1) > form > .form-group > :nth-child(2) > .custom-control-label').click()
@@ -197,16 +205,19 @@ Cypress.Commands.add('fillDisbForm', ()=>{
     cy.get(':nth-child(5) > :nth-child(4) > form > .form-group > :nth-child(3) > .custom-control-label').click()
 
     cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(1) > .form-group > [data-cy=paymentAmount]')
-        .type(individual.amount)
+        .type(faker.datatype.number({
+            min: 10,
+            max: 100,
+        }))
     cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(2) > .form-group > [data-cy=paymentDate]')
-        .type(individual.paymentDate)
+        .type('2021-09-17')
 
 
 })
 
 Cypress.Commands.add('contribSubmit', ()=> {
     cy.get('button').contains('Submit').click()
-    cy.wait(1000)
+    cy.wait(1600)
 })
 
 Cypress.Commands.add('disbSubmit', ()=> {
