@@ -53,6 +53,13 @@ Cypress.Commands.add('generateReconcileDisbDemo', () => {
     cy.get('tbody > .hover-pointer > :nth-child(1)').click()
 })
 
+Cypress.Commands.add('generateAmendDisbDemo', () => {
+    cy.createDemo()
+    cy.get('.col-12 > a').then((e)=>{
+        cy.visit(e.text())
+    })
+})
+
 // Generic Form Commands
 
 Cypress.Commands.add('fillCheck',()=>{
@@ -100,12 +107,12 @@ Cypress.Commands.add('fillContribOrgPii',()=>{
     cy.get('[data-cy=createContribEmail]').type(donor.email)
     cy.get('[data-cy=createContribPhoneNumber]').type(donor.phoneNumber)
     cy.get('[data-cy=createContribFirstName]').type(faker.name.firstName())
-    cy.get('[data-cy=createContribLastName]').type(donor.lastName)
-    cy.get('[data-cy=createContribaddressLine1]').type(donor.addressLine1)
-    cy.get('[data-cy=createContribaddressLine2]').type(donor.addressLine2)
-    cy.get('[data-cy=createContribcity]').type(donor.city)
-    cy.get('[data-cy=createContribstate]').select(donor.state)
-    cy.get('[data-cy=createContribpostalCode]').type(donor.postalCode)
+    cy.get('[data-cy=createContribLastName]').type(faker.name.lastName())
+    cy.get('[data-cy=createContribaddressLine1]').type(faker.address.streetAddress())
+    cy.get('[data-cy=createContribaddressLine2]').type('Apartment 5')
+    cy.get('[data-cy=createContribcity]').type(faker.address.city())
+    cy.get('[data-cy=createContribstate]').select(faker.address.state())
+    cy.get('[data-cy=createContribpostalCode]').type(faker.address.zipCode().substring(0, 5))
 
 })
 
