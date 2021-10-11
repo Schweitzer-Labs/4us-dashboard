@@ -37,6 +37,24 @@ verified label isVerified =
     labelWithContent label <| statusContent isVerified
 
 
+unverified : String -> Html msg
+unverified label =
+    labelWithContent label (Asset.exclamationCircleGlyph [ class "text-warning font-size-large" ])
+
+
+ruleVerifiedContent : Maybe Int -> Bool -> Html msg
+ruleVerifiedContent score ruleVerified =
+    let
+        verificationScore =
+            toInt score
+    in
+    if verificationScore == 0 then
+        unverified "Rule Verified"
+
+    else
+        verified "Rule Verified" ruleVerified
+
+
 dataView : Transaction.Model -> Html msg
 dataView txn =
     Grid.container []
@@ -46,7 +64,7 @@ dataView txn =
             , Grid.col [] [ labelWithData "Payment Type" <| PaymentMethod.toDisplayString txn.paymentMethod ]
             ]
         , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
-            [ Grid.col [] [ verified "Rule Verified" txn.ruleVerified ]
+            [ Grid.col [] [ ruleVerifiedContent txn.donorVerificationScore txn.ruleVerified ]
             , Grid.col [] [ verified "Bank Verified" txn.bankVerified ]
             , Grid.col [] [ labelWithData "Verification Score" <| toDisplayScore txn.donorVerificationScore ]
             ]
@@ -56,6 +74,11 @@ dataView txn =
 toDisplayScore : Maybe Int -> String
 toDisplayScore =
     Maybe.withDefault "N/A" << Maybe.map String.fromInt
+
+
+toInt : Maybe Int -> Int
+toInt score =
+    Maybe.withDefault 0 score
 
 
 
