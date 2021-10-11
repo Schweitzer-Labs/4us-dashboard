@@ -3,7 +3,7 @@ module EntityType exposing
     , familyRadioList
     , fromMaybeToStringWithDefaultInd
     , fromString
-    , isLLC
+    , isLLCorLLP
     , llc
     , orgView
     , toDataString
@@ -279,9 +279,17 @@ familyRadioList msg currentValue disabled txnId =
     ]
 
 
-isLLC : Model -> Bool
-isLLC contributorType =
-    contributorType == LimitedLiabilityCompany
+isLLCorLLP : Maybe Model -> Bool
+isLLCorLLP contributorType =
+    case contributorType of
+        Just LimitedLiabilityCompany ->
+            True
+
+        Just PartnershipIncludingLLPs ->
+            True
+
+        _ ->
+            False
 
 
 llc : Model

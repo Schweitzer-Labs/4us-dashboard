@@ -726,8 +726,8 @@ postalCodeOnModelToErrors model =
 
 
 ownersOnModelToErrors : Model -> List String
-ownersOnModelToErrors { ownersViewModel } =
-    fromOwners ownersViewModel.owners
+ownersOnModelToErrors { ownersViewModel, maybeEntityType } =
+    fromOwners ownersViewModel.owners maybeEntityType
 
 
 reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel

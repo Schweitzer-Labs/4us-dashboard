@@ -13,7 +13,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Copy
 import DataTable exposing (DataRow)
 import Html exposing (Html, div, span, text)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (attribute, class)
 import Html.Events exposing (onClick)
 import Owners as Owner exposing (Owner, Owners)
 import Validate exposing (validate)
@@ -269,7 +269,7 @@ view model =
                             [ inputText OwnerFirstNameUpdated "Enter First Name" model.firstName model.disabled "createOwnerFirstName" "First Name" ]
                         , Grid.col
                             []
-                            [ inputText OwnerLastNameUpdated "Enter Last Name" model.lastName model.disabled "createContribLastName" "Last Name" ]
+                            [ inputText OwnerLastNameUpdated "Enter Last Name" model.lastName model.disabled "createOwnerLastName" "Last Name" ]
                         ]
                     ]
                         ++ ownerAddressRows model
@@ -280,7 +280,7 @@ view model =
                                         "Enter Percent Ownership"
                                         model.percentOwnership
                                         model.disabled
-                                        "createOwnerEmail"
+                                        "createOwnerPercent"
                                         "Percent Ownership"
                                     ]
                                 ]
@@ -489,5 +489,5 @@ addOwnerButton : Html Msg
 addOwnerButton =
     div [ Spacing.mt4, class "text-slate-blue font-size-medium hover-underline hover-pointer", onClick (ToggleOwnerForm (Just CreatingOwner)) ]
         [ Asset.plusCircleGlyph [ class "text-slate-blue font-size-22" ]
-        , span [ Spacing.ml1, class "align-middle" ] [ text "Add Owner" ]
+        , span [ Spacing.ml1, class "align-middle", attribute "data-cy" "addOwner" ] [ text "Add Owner" ]
         ]
