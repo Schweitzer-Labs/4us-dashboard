@@ -43,7 +43,7 @@ unverified label =
 
 
 ruleVerifiedContent : Maybe Int -> Bool -> Html msg
-ruleVerifiedContent score ruleVerified =
+ruleVerifiedContent score isRuleVerified =
     let
         verificationScore =
             toInt score
@@ -52,7 +52,7 @@ ruleVerifiedContent score ruleVerified =
         unverified "Rule Verified"
 
     else
-        verified "Rule Verified" ruleVerified
+        verified "Rule Verified" isRuleVerified
 
 
 dataView : Transaction.Model -> Html msg
