@@ -39,7 +39,7 @@ verified label isVerified =
 
 unverified : String -> Html msg
 unverified label =
-    labelWithContent label (Asset.exclamationCircleGlyph [ class "text-warning font-size-large" ])
+    labelWithContent label (Asset.exclamationCircleGlyph [ class "text-danger font-size-large" ])
 
 
 ruleVerifiedContent : Maybe Int -> Bool -> Html msg
