@@ -44,6 +44,10 @@ disbVerifiedDialogue =
     ]
 
 
-llcDialogue : Html msg
-llcDialogue =
-    text "Please specify the current ownership breakdown of your company."
+llcDialogue : Bool -> Html msg
+llcDialogue disabled =
+    if disabled then
+        text "Ownership Breakdown"
+
+    else
+        text "Please specify the current ownership breakdown of your company."

@@ -249,7 +249,7 @@ view model =
         []
             ++ errorMessages model.errors
             ++ [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
-                    [ Grid.col [] [ Copy.llcDialogue ]
+                    [ Grid.col [] [ Copy.llcDialogue model.disabled ]
                     ]
                ]
             ++ (if model.disabled then
