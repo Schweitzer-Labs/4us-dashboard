@@ -110,6 +110,7 @@ update msg model =
                             , state = ""
                             , postalCode = ""
                             , errors = []
+                            , isFormEnabled = False
                           }
                         , Cmd.none
                         )
@@ -248,18 +249,9 @@ view model =
         []
             ++ errorMessages model.errors
             ++ [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
-                    [ Grid.col [] [ Copy.llcDialogue ]
+                    [ Grid.col [] [ Copy.llcDialogue model.disabled ]
                     ]
                ]
-            ++ (if model.disabled then
-                    []
-
-                else
-                    [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
-                        [ Grid.col [] [ addOwnerButton ]
-                        ]
-                    ]
-               )
             ++ [ capTable model ]
             ++ (if model.isFormEnabled then
                     [ Grid.row
@@ -316,6 +308,17 @@ view model =
 
                             Nothing ->
                                 []
+               )
+            ++ (case model.disabled of
+                    True ->
+                        []
+
+                    False ->
+                        if model.isFormEnabled then
+                            []
+
+                        else
+                            addOwnerRow
                )
 
 
@@ -490,3 +493,11 @@ addOwnerButton =
         [ Asset.plusCircleGlyph [ class "text-slate-blue font-size-22" ]
         , span [ Spacing.ml1, class "align-middle", attribute "data-cy" "addOwner" ] [ text "Add Owner" ]
         ]
+
+
+addOwnerRow : List (Html Msg)
+addOwnerRow =
+    [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
+        [ Grid.col [] [ addOwnerButton ]
+        ]
+    ]
