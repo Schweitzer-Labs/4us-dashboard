@@ -78,7 +78,7 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
                         , Input.onInput (toMsg entityName)
                         , Input.value (toData entityName)
                         , Input.disabled disabled
-                        , Input.attrs [ attribute "data-cy" "recipientName" ]
+                        , Input.attrs [ attribute "data-cy" "recipientName", class <| AppInput.inputStyle disabled ]
                         ]
                     ]
                 ]

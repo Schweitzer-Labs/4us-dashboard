@@ -1,11 +1,12 @@
 module PaymentMethod exposing (Model(..), decoder, dropdown, fromMaybeToString, fromString, select, toDataString, toDisplayString)
 
+import AppInput
 import Bootstrap.Form as Form
 import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Radio as Radio exposing (Radio)
 import Bootstrap.Form.Select as Select
 import Html exposing (Html, text)
-import Html.Attributes as Attribute exposing (attribute, for, value)
+import Html.Attributes as Attribute exposing (attribute, class, for, value)
 import Json.Decode as Decode exposing (Decoder)
 
 
@@ -268,7 +269,7 @@ dropdown maybePaymentMethod updateMsg isDisbursement =
         , Select.select
             [ Select.id "paymentMethod"
             , Select.onChange (fromString >> updateMsg)
-            , Select.attrs <| [ Attribute.value <| fromMaybeToString maybePaymentMethod ]
+            , Select.attrs <| [ Attribute.value <| fromMaybeToString maybePaymentMethod, class <| AppInput.inputStyle False ]
             ]
           <|
             (++)
