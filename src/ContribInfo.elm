@@ -279,7 +279,7 @@ checkRow { checkNumber, disabled } =
     [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
         [ Grid.col
             []
-            [ inputText (toMsg checkNumber) (toData checkNumber) False "createDisbCheck" "Check Number" ]
+            [ inputText (toMsg checkNumber) (toData checkNumber) disabled "createDisbCheck" "Check Number" ]
         ]
     ]
 
