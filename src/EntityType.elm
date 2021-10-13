@@ -11,6 +11,7 @@ module EntityType exposing
     , toGridString
     )
 
+import AppInput
 import Bootstrap.Form as Form
 import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Radio as Radio
@@ -205,21 +206,25 @@ toGridString entityType =
 
 orgView : (Maybe Model -> msg) -> Maybe Model -> Bool -> Html msg
 orgView msg currentValue disabled =
-    Select.select
-        [ Select.id "entityType"
-        , Select.onChange (fromString >> msg)
-        , Select.disabled disabled
-        ]
-        [ Select.item [ value "" ] [ text "-- Organization Classification --" ]
-        , orgSelect SoleProprietorship currentValue
-        , orgSelect PartnershipIncludingLLPs currentValue
-        , orgSelect Corporation currentValue
-        , orgSelect Union currentValue
-        , orgSelect Association currentValue
-        , orgSelect LimitedLiabilityCompany currentValue
-        , orgSelect PoliticalActionCommittee currentValue
-        , orgSelect PoliticalCommittee currentValue
-        , orgSelect Other currentValue
+    Form.group []
+        [ Form.label [] [ text "Classification" ]
+        , Select.select
+            [ Select.id "entityType"
+            , Select.onChange (fromString >> msg)
+            , Select.disabled disabled
+            , Select.attrs [ class <| AppInput.inputStyle disabled ]
+            ]
+            [ Select.item [ value "" ] [ text "--Classification--" ]
+            , orgSelect SoleProprietorship currentValue
+            , orgSelect PartnershipIncludingLLPs currentValue
+            , orgSelect Corporation currentValue
+            , orgSelect Union currentValue
+            , orgSelect Association currentValue
+            , orgSelect LimitedLiabilityCompany currentValue
+            , orgSelect PoliticalActionCommittee currentValue
+            , orgSelect PoliticalCommittee currentValue
+            , orgSelect Other currentValue
+            ]
         ]
 
 

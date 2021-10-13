@@ -406,7 +406,7 @@ employmentRows c =
 orgRows : Config msg -> List (Html msg)
 orgRows c =
     [ Grid.row
-        [ Row.attrs [ Spacing.mt3 ] ]
+        [ Row.attrs [ Spacing.mt1 ] ]
         [ Grid.col
             []
             [ EntityType.orgView (toMsg c.maybeEntityType) (toData c.maybeEntityType) c.disabled ]
@@ -431,7 +431,7 @@ orgRows c =
                 []
            )
         ++ [ Grid.row
-                [ Row.attrs [ Spacing.mt3 ] ]
+                []
                 [ Grid.col
                     []
                     [ inputText
@@ -470,7 +470,7 @@ piiRows c =
             [ inputText (toMsg c.phoneNumber) (toData c.phoneNumber) c.disabled "createContribPhoneNumber" "Phone Number" ]
         ]
     , Grid.row
-        [ Row.attrs [ Spacing.mt3 ] ]
+        [ Row.attrs [ Spacing.mt1 ] ]
         [ Grid.col
             []
             [ inputText (toMsg c.firstName) (toData c.firstName) c.disabled "createContribFirstName" "First Name" ]
