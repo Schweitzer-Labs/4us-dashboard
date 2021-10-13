@@ -48,40 +48,40 @@ dataView txn =
         , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
             [ Grid.col [] [ verified "Rule Verified" txn.ruleVerified ]
             , Grid.col [] [ verified "Bank Verified" txn.bankVerified ]
-            , Grid.col [] [ labelWithScore (toInt txn.donorVerificationScore) "Verification Score" <| toDisplayScore txn.donorVerificationScore ]
+            , Grid.col [] [ labelWithScore txn.donorVerificationScore "Verification Score" ]
             ]
         ]
 
 
-toDisplayScore : Maybe Int -> String
-toDisplayScore =
-    Maybe.withDefault "N/A" << Maybe.map String.fromInt
+scoreToString : Maybe Int -> String
+scoreToString score =
+    case score of
+        Nothing ->
+            "N/A"
+
+        Just a ->
+            String.fromInt a
 
 
-toInt : Maybe Int -> Int
-toInt score =
-    Maybe.withDefault 0 score
-
-
-labelWithScore : Int -> String -> String -> Html msg
-labelWithScore score label data =
+labelWithScore : Maybe Int -> String -> Html msg
+labelWithScore score label =
     div []
         [ dataLabel label
-        , scoreText data score
+        , scoreText <| scoreToString score
         ]
 
 
-scoreText : String -> Int -> Html msg
-scoreText data score =
+scoreText : String -> Html msg
+scoreText score =
     let
         style =
-            if score /= 0 then
+            if score /= "0" then
                 "font-size-large"
 
             else
                 "text-danger font-size-large"
     in
-    div [ class style ] [ text data ]
+    div [ class style ] [ text score ]
 
 
 
