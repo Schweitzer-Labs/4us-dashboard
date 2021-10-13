@@ -244,7 +244,7 @@ toMaybeOwners model =
 
 view : Model -> Html Msg
 view model =
-    div [ Spacing.mb4 ] <|
+    div [ Spacing.mt3, Spacing.mb4, class "border rounded", Spacing.p2, Spacing.pl4, Spacing.pr4 ] <|
         []
             ++ errorMessages model.errors
             ++ [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
