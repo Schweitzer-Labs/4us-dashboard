@@ -277,7 +277,7 @@ dropdown maybePaymentMethod updateMsg isDisbursement =
                     [ Attribute.selected (maybePaymentMethod == Nothing)
                     , Attribute.value "---"
                     ]
-                    [ text "---" ]
+                    [ text "-- Payment Method --" ]
                 ]
             <|
                 List.map

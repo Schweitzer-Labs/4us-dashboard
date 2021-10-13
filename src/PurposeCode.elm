@@ -152,7 +152,7 @@ select maybePurposeCode updateMsg disabled =
                     [ Attribute.selected (maybePurposeCode == Nothing)
                     , Attribute.value "---"
                     ]
-                    [ text "" ]
+                    [ text "-- Purpose --" ]
                 ]
             <|
                 List.map

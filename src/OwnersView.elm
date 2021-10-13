@@ -380,7 +380,7 @@ tableBody model =
             (\owner ->
                 Table.tr []
                     [ Table.td [] [ text <| Owner.getOwnerFullName owner ]
-                    , Table.td [] [ text owner.percentOwnership ]
+                    , Table.td [] [ text <| owner.percentOwnership ++ "%" ]
                     , Table.td []
                         [ if model.disabled then
                             text ""
