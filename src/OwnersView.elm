@@ -314,7 +314,7 @@ view model =
                         []
 
                     False ->
-                        if model.isFormEnabled then
+                        if model.isFormEnabled || (Owner.foldOwnership model.owners == 100) then
                             []
 
                         else
