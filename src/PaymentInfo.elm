@@ -8,7 +8,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import Html exposing (Html, div, h4, h6, span, text)
 import Html.Attributes exposing (class)
-import LabelWithData exposing (labelWithContent, labelWithData, labelWithTimeData)
+import LabelWithData exposing (dataLabel, labelWithContent, labelWithData, labelWithTimeData)
 import PaymentMethod
 import Transaction
 
@@ -48,14 +48,40 @@ dataView txn =
         , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
             [ Grid.col [] [ verified "Rule Verified" txn.ruleVerified ]
             , Grid.col [] [ verified "Bank Verified" txn.bankVerified ]
-            , Grid.col [] [ labelWithData "Verification Score" <| toDisplayScore txn.donorVerificationScore ]
+            , Grid.col [] [ labelWithScore txn.donorVerificationScore "Verification Score" ]
             ]
         ]
 
 
-toDisplayScore : Maybe Int -> String
-toDisplayScore =
-    Maybe.withDefault "N/A" << Maybe.map String.fromInt
+scoreToString : Maybe Int -> String
+scoreToString score =
+    case score of
+        Nothing ->
+            "N/A"
+
+        Just a ->
+            String.fromInt a
+
+
+labelWithScore : Maybe Int -> String -> Html msg
+labelWithScore score label =
+    div []
+        [ dataLabel label
+        , scoreText <| scoreToString score
+        ]
+
+
+scoreText : String -> Html msg
+scoreText score =
+    let
+        style =
+            if score /= "0" then
+                "font-size-large"
+
+            else
+                "text-danger font-size-large"
+    in
+    div [ class style ] [ text score ]
 
 
 
