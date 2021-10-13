@@ -8,7 +8,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Cents
 import Html exposing (Html, div, h4, h6, span, text)
 import Html.Attributes exposing (class)
-import LabelWithData exposing (labelWithContent, labelWithData, labelWithTimeData)
+import LabelWithData exposing (dataLabel, labelWithContent, labelWithData, labelWithTimeData)
 import PaymentMethod
 import Transaction
 
@@ -37,24 +37,6 @@ verified label isVerified =
     labelWithContent label <| statusContent isVerified
 
 
-unverified : String -> Html msg
-unverified label =
-    labelWithContent label (Asset.exclamationCircleGlyph [ class "text-danger font-size-large" ])
-
-
-ruleVerifiedContent : Maybe Int -> Bool -> Html msg
-ruleVerifiedContent score isRuleVerified =
-    let
-        verificationScore =
-            toInt score
-    in
-    if verificationScore == 0 then
-        unverified "Rule Verified"
-
-    else
-        verified "Rule Verified" isRuleVerified
-
-
 dataView : Transaction.Model -> Html msg
 dataView txn =
     Grid.container []
@@ -64,9 +46,9 @@ dataView txn =
             , Grid.col [] [ labelWithData "Payment Type" <| PaymentMethod.toDisplayString txn.paymentMethod ]
             ]
         , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
-            [ Grid.col [] [ ruleVerifiedContent txn.donorVerificationScore txn.ruleVerified ]
+            [ Grid.col [] [ verified "Rule Verified" txn.ruleVerified ]
             , Grid.col [] [ verified "Bank Verified" txn.bankVerified ]
-            , Grid.col [] [ labelWithData "Verification Score" <| toDisplayScore txn.donorVerificationScore ]
+            , Grid.col [] [ labelWithScore (toInt txn.donorVerificationScore) "Verification Score" <| toDisplayScore txn.donorVerificationScore ]
             ]
         ]
 
@@ -79,6 +61,27 @@ toDisplayScore =
 toInt : Maybe Int -> Int
 toInt score =
     Maybe.withDefault 0 score
+
+
+labelWithScore : Int -> String -> String -> Html msg
+labelWithScore score label data =
+    div []
+        [ dataLabel label
+        , scoreText data score
+        ]
+
+
+scoreText : String -> Int -> Html msg
+scoreText data score =
+    let
+        style =
+            if score /= 0 then
+                "font-size-large"
+
+            else
+                "text-danger font-size-large"
+    in
+    div [ class style ] [ text data ]
 
 
 
