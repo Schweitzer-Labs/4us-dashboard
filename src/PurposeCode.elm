@@ -1,9 +1,10 @@
 module PurposeCode exposing (PurposeCode(..), fromMaybeToString, fromString, purposeCodeText, select, toString)
 
+import AppInput
 import Bootstrap.Form as Form
 import Bootstrap.Form.Select as Select
 import Html exposing (Html, text)
-import Html.Attributes as Attribute exposing (for, value)
+import Html.Attributes as Attribute exposing (class, for, value)
 
 
 type PurposeCode
@@ -143,6 +144,7 @@ select maybePurposeCode updateMsg disabled =
             , Select.onChange (fromString >> updateMsg)
             , Select.attrs <| [ Attribute.value <| fromMaybeToString maybePurposeCode ]
             , Select.disabled disabled
+            , Select.attrs [ class <| AppInput.inputStyle disabled ]
             ]
           <|
             (++)
@@ -150,7 +152,7 @@ select maybePurposeCode updateMsg disabled =
                     [ Attribute.selected (maybePurposeCode == Nothing)
                     , Attribute.value "---"
                     ]
-                    [ text "---" ]
+                    [ text "" ]
                 ]
             <|
                 List.map

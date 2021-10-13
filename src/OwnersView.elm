@@ -266,10 +266,10 @@ view model =
                         [ Row.attrs [ Spacing.mt3 ] ]
                         [ Grid.col
                             []
-                            [ inputText OwnerFirstNameUpdated "Enter First Name" model.firstName model.disabled "createOwnerFirstName" "First Name" ]
+                            [ inputText OwnerFirstNameUpdated model.firstName model.disabled "createOwnerFirstName" "First Name" ]
                         , Grid.col
                             []
-                            [ inputText OwnerLastNameUpdated "Enter Last Name" model.lastName model.disabled "createOwnerLastName" "Last Name" ]
+                            [ inputText OwnerLastNameUpdated model.lastName model.disabled "createOwnerLastName" "Last Name" ]
                         ]
                     ]
                         ++ ownerAddressRows model
@@ -277,7 +277,6 @@ view model =
                                 [ Grid.col []
                                     [ inputNumber
                                         OwnerOwnershipUpdated
-                                        "Enter Percent Ownership"
                                         model.percentOwnership
                                         model.disabled
                                         "createOwnerPercent"

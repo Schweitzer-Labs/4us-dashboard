@@ -1,5 +1,6 @@
 module State exposing (view, withAbbrKeys, withStateKeys)
 
+import AppInput
 import Bootstrap.Form as Form
 import Bootstrap.Form.Select as Select
 import Dict
@@ -84,7 +85,14 @@ view msg currentValue isDisabled id =
     Form.group []
         [ Form.label [] [ text "State" ]
         , Select.select
-            [ Select.id "State", Select.onChange msg, Select.disabled isDisabled, Select.attrs [ attribute "data-cy" (id ++ "state") ] ]
+            [ Select.id "State"
+            , Select.onChange msg
+            , Select.disabled isDisabled
+            , Select.attrs
+                [ attribute "data-cy" (id ++ "state")
+                , class <| AppInput.inputStyle isDisabled
+                ]
+            ]
           <|
             [ Select.item [ value "" ] [ text "-- State --" ] ]
                 ++ List.map

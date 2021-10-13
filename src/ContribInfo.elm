@@ -279,14 +279,7 @@ checkRow { checkNumber, disabled } =
     [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
         [ Grid.col
             []
-            [ Input.text
-                [ Input.id "check-number"
-                , Input.onInput <| toMsg checkNumber
-                , Input.value <| toData checkNumber
-                , Input.placeholder "Enter check number"
-                , Input.disabled disabled
-                ]
-            ]
+            [ inputText (toMsg checkNumber) (toData checkNumber) False "createDisbCheck" "Check Number" ]
         ]
     ]
 
@@ -306,7 +299,7 @@ inKindRow { inKindType, inKindDesc, disabled } =
                     []
                   <|
                     InKindType.radioList msg (toData inKindType) disabled
-                        ++ [ inputText (toMsg inKindDesc) "Enter Description" (toData inKindDesc) disabled "createContribDescription" "Description" ]
+                        ++ [ inputText (toMsg inKindDesc) (toData inKindDesc) disabled "createContribDescription" "Description" ]
                 ]
            ]
 
@@ -337,8 +330,8 @@ creditRow { cardNumber, expirationMonth, expirationYear, cvv, disabled } =
             [ Input.text
                 [ Input.id "card-number"
                 , Input.onInput <| toMsg cardNumber
+                , Input.placeholder "Card Number"
                 , Input.value <| toData cardNumber
-                , Input.placeholder "Card number"
                 , Input.disabled disabled
                 ]
             ]
@@ -407,7 +400,7 @@ employmentRows c =
 orgRows : Config msg -> List (Html msg)
 orgRows c =
     [ Grid.row
-        [ Row.attrs [ Spacing.mt3 ] ]
+        [ Row.attrs [ Spacing.mt1 ] ]
         [ Grid.col
             []
             [ EntityType.orgView (toMsg c.maybeEntityType) (toData c.maybeEntityType) c.disabled ]
@@ -432,12 +425,11 @@ orgRows c =
                 []
            )
         ++ [ Grid.row
-                [ Row.attrs [ Spacing.mt3 ] ]
+                []
                 [ Grid.col
                     []
                     [ inputText
                         (toMsg c.entityName)
-                        "Enter Organization Name"
                         (toData c.entityName)
                         c.disabled
                         "contribOwnerName"
@@ -466,19 +458,19 @@ piiRows c =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputEmail (toMsg c.emailAddress) "Enter Email Address" (toData c.emailAddress) c.disabled "createContribEmail" "Email Address" ]
+            [ inputEmail (toMsg c.emailAddress) (toData c.emailAddress) c.disabled "createContribEmail" "Email Address" ]
         , Grid.col
             []
-            [ inputText (toMsg c.phoneNumber) "Enter Phone Number" (toData c.phoneNumber) c.disabled "createContribPhoneNumber" "Phone Number" ]
+            [ inputText (toMsg c.phoneNumber) (toData c.phoneNumber) c.disabled "createContribPhoneNumber" "Phone Number" ]
         ]
     , Grid.row
-        [ Row.attrs [ Spacing.mt3 ] ]
+        [ Row.attrs [ Spacing.mt1 ] ]
         [ Grid.col
             []
-            [ inputText (toMsg c.firstName) "Enter First Name" (toData c.firstName) c.disabled "createContribFirstName" "First Name" ]
+            [ inputText (toMsg c.firstName) (toData c.firstName) c.disabled "createContribFirstName" "First Name" ]
         , Grid.col
             []
-            [ inputText (toMsg c.lastName) "Enter Last Name" (toData c.lastName) c.disabled "createContribLastName" "Last Name" ]
+            [ inputText (toMsg c.lastName) (toData c.lastName) c.disabled "createContribLastName" "Last Name" ]
         ]
     ]
         ++ addressRows c
@@ -532,10 +524,10 @@ employerOccupationRow { occupation, employer, disabled } =
         [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
-            [ inputText (toMsg employer) "Enter Employer Name" (toData employer) disabled "createContribEmployerName" "Employer Name" ]
+            [ inputText (toMsg employer) (toData employer) disabled "createContribEmployerName" "Employer Name" ]
         , Grid.col
             []
-            [ inputText (toMsg occupation) "Enter Occupation" (toData occupation) disabled "createContribOccupation" "Occupation" ]
+            [ inputText (toMsg occupation) (toData occupation) disabled "createContribOccupation" "Occupation" ]
         ]
 
 

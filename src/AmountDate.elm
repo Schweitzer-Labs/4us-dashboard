@@ -32,7 +32,6 @@ row ( amount, amountMsg ) ( paymentDate, paymentDateMsg ) disabled =
             []
             [ inputText
                 amountMsg
-                "Enter Amount"
                 amount
                 disabled
                 "paymentAmount"
@@ -40,6 +39,6 @@ row ( amount, amountMsg ) ( paymentDate, paymentDateMsg ) disabled =
             ]
         , Grid.col
             []
-            [ inputDate paymentDateMsg "MM/DD/YYYY" paymentDate disabled "paymentDate" "Payment Date"
+            [ inputDate paymentDateMsg paymentDate disabled "paymentDate" "Payment Date"
             ]
         ]

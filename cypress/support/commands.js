@@ -60,11 +60,22 @@ Cypress.Commands.add('generateAmendDisbDemo', () => {
     })
 })
 
+Cypress.Commands.add('contribSubmit', ()=> {
+    cy.get('button').contains('Submit').click()
+    cy.wait(1800)
+})
+
+Cypress.Commands.add('disbSubmit', ()=> {
+    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-footer > .container-fluid > .row > :nth-child(2) > .btn')
+        .click()
+})
+
+
 // Generic Form Commands
 
 Cypress.Commands.add('fillCheck',()=>{
     cy.get('[data-cy=payMethod-check]').click()
-    cy.get('#check-number').type('123')
+    cy.get('[data-cy=createDisbCheck]').type('123')
 })
 
 Cypress.Commands.add('fillCCForm',()=>{
@@ -222,12 +233,3 @@ Cypress.Commands.add('fillDisbForm', ()=>{
 
 })
 
-Cypress.Commands.add('contribSubmit', ()=> {
-    cy.get('button').contains('Submit').click()
-    cy.wait(1600)
-})
-
-Cypress.Commands.add('disbSubmit', ()=> {
-    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-footer > .container-fluid > .row > :nth-child(2) > .btn')
-        .click()
-})
