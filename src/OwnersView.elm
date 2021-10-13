@@ -110,6 +110,7 @@ update msg model =
                             , state = ""
                             , postalCode = ""
                             , errors = []
+                            , isFormEnabled = False
                           }
                         , Cmd.none
                         )
