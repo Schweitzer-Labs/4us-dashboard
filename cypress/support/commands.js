@@ -75,7 +75,7 @@ Cypress.Commands.add('disbSubmit', ()=> {
 
 Cypress.Commands.add('fillCheck',()=>{
     cy.get('[data-cy=payMethod-check]').click()
-    cy.get('#check-number').type('123')
+    cy.get('[data-cy=createDisbCheck]').type('123')
 })
 
 Cypress.Commands.add('fillCCForm',()=>{
