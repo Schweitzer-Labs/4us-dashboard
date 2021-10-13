@@ -42,7 +42,6 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
         [ Grid.col [ Col.lg6 ]
             [ inputText
                 address1Msg
-                "Enter Street Address"
                 addressLine1
                 disabled
                 (id ++ "addressLine1")
@@ -51,7 +50,6 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
         , Grid.col [ Col.lg6 ]
             [ inputText
                 address2Msg
-                "Enter Secondary Address"
                 addressLine2
                 disabled
                 (id ++ "addressLine2")
@@ -62,7 +60,6 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
         [ Grid.col [ Col.lg6 ]
             [ inputText
                 cityMsg
-                "Enter City"
                 city
                 disabled
                 (id ++ "city")
@@ -73,7 +70,6 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
         , Grid.col [ Col.lg3 ]
             [ inputText
                 postalCodeMsg
-                "Enter Postal Code"
                 postalCode
                 disabled
                 (id ++ "postalCode")

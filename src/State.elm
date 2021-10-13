@@ -86,7 +86,7 @@ view msg currentValue isDisabled id =
         , Select.select
             [ Select.id "State", Select.onChange msg, Select.disabled isDisabled, Select.attrs [ attribute "data-cy" (id ++ "state") ] ]
           <|
-            [ Select.item [ value "" ] [ text "-- State --" ] ]
+            [ Select.item [ value "" ] [ text "" ] ]
                 ++ List.map
                     (\( abbr, whole ) ->
                         Select.item [ value abbr, selected (currentValue == abbr || toUpper currentValue == abbr) ] [ text whole ]

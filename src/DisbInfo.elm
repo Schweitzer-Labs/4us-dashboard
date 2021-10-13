@@ -76,7 +76,6 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
                     , Input.text
                         [ Input.id "recipient-name"
                         , Input.onInput (toMsg entityName)
-                        , Input.placeholder "Enter recipient name"
                         , Input.value (toData entityName)
                         , Input.disabled disabled
                         , Input.attrs [ attribute "data-cy" "recipientName" ]
@@ -110,7 +109,7 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
                         ++ (if toData pm == Just PaymentMethod.Check then
                                 [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
                                     [ Grid.col []
-                                        [ inputText (toMsg checkNumber) "Enter Check Number" (toData checkNumber) False "createDisbCheck" "Check Number" ]
+                                        [ inputText (toMsg checkNumber) (toData checkNumber) False "createDisbCheck" "Check Number" ]
                                     ]
                                 ]
 
