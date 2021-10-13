@@ -400,7 +400,7 @@ employmentRows c =
 orgRows : Config msg -> List (Html msg)
 orgRows c =
     [ Grid.row
-        [ Row.attrs [ Spacing.mt1 ] ]
+        [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
             [ EntityType.orgView (toMsg c.maybeEntityType) (toData c.maybeEntityType) c.disabled ]
