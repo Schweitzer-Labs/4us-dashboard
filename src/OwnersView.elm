@@ -252,18 +252,6 @@ view model =
                     [ Grid.col [] [ Copy.llcDialogue model.disabled ]
                     ]
                ]
-            --++ (case model.disabled of
-            --        True ->
-            --            []
-            --
-            --        False ->
-            --            case List.length model.owners > 0 of
-            --                True ->
-            --                    []
-            --
-            --                False ->
-            --                    addOwnerRow
-            --   )
             ++ [ capTable model ]
             ++ (if model.isFormEnabled then
                     [ Grid.row
