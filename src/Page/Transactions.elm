@@ -287,7 +287,6 @@ createDisbursementModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , id = "create-disb"
         }
 
 
@@ -312,7 +311,6 @@ createContributionModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , id = "create-contrib"
         }
 
 
@@ -341,7 +339,6 @@ disbRuleUnverifiedModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , id = "reconcile-disb"
         }
 
 
@@ -366,7 +363,6 @@ disbRuleVerifiedModal model =
         , alertMsg = Just DeleteAlertMsg
         , alertVisibility = Just model.alertVisibility
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , id = "amend-disb"
         }
 
 
@@ -395,7 +391,6 @@ contribRuleUnverifiedModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , id = "reconcile-contrib"
         }
 
 
@@ -420,7 +415,6 @@ contribRuleVerifiedModal model =
         , alertMsg = Just DeleteAlertMsg
         , alertVisibility = Just model.alertVisibility
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , id = "amend-contrib"
         }
 
 
@@ -819,7 +813,7 @@ update msg model =
                                 -- @Todo make this state impossible
                                 , disbRuleUnverifiedModal = DisbRuleUnverified.init model.config [] model.disbRuleUnverifiedModal.bankTxn
                               }
-                            , getTransactions model Nothing
+                            , Cmd.batch [ getTransactions model Nothing, Task.attempt (\_ -> NoOp) scrollToTop ]
                             )
 
                         ResValidationFailure errList ->
@@ -902,7 +896,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( { model | disbRuleVerifiedModal = DisbRuleVerified.fromError model.disbRuleVerifiedModal error }, scrollToError "amend-disb" )
+                    ( { model | disbRuleVerifiedModal = DisbRuleVerified.fromError model.disbRuleVerifiedModal error }, Cmd.none )
 
                 Ok val ->
                     ( { model
@@ -1038,7 +1032,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( { model | contribRuleVerifiedModal = ContribRuleVerified.fromError model.contribRuleVerifiedModal error }, scrollToError "amend-contrib" )
+                    ( { model | contribRuleVerifiedModal = ContribRuleVerified.fromError model.contribRuleVerifiedModal error }, Cmd.none )
 
                 Ok val ->
                     ( { model
@@ -1152,7 +1146,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( { model | createContributionModal = CreateContribution.fromError model.createContributionModal error }, scrollToError "create-contrib" )
+                    ( { model | createContributionModal = CreateContribution.fromError model.createContributionModal error }, Cmd.none )
 
                 Ok val ->
                     ( { model
@@ -1324,7 +1318,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( { model | createDisbursementModal = CreateDisbursement.fromError model.createDisbursementModal error }, scrollToError "create-disb" )
+                    ( { model | createDisbursementModal = CreateDisbursement.fromError model.createDisbursementModal error }, Cmd.none )
 
                 Ok val ->
                     ( { model
@@ -1475,11 +1469,12 @@ amendContrib model =
 -- Dom interactions
 
 
-scrollToError : String -> Cmd Msg
-scrollToError id =
-    Dom.getViewportOf id
-        |> Task.andThen (\_ -> Dom.setViewportOf id 0 0)
-        |> Task.attempt (\_ -> NoOp)
+scrollToTop : Task x ()
+scrollToTop =
+    Dom.setViewport 0 0
+        -- It's not worth showing the user anything special if scrolling fails.
+        -- If anything, we'd log this to an error recording service.
+        |> Task.onError (\_ -> Task.succeed ())
 
 
 

@@ -1,7 +1,6 @@
 port module CreateContribution exposing (Model, Msg(..), fromError, init, setError, subscriptions, toEncodeModel, update, validationMapper, view)
 
 import Api.CreateContrib as CreateContrib
-import Browser.Dom as Dom
 import ContribInfo exposing (ContribValidatorModel)
 import EmploymentStatus
 import EntityType
@@ -13,7 +12,6 @@ import OrgOrInd
 import Owners
 import OwnersView
 import PaymentMethod
-import Task
 
 
 
