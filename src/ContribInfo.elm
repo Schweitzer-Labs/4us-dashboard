@@ -14,7 +14,7 @@ import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
 import Errors exposing (fromEmailAddress, fromInKindType, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode)
 import Html exposing (Html, div, h5, h6, span, text)
-import Html.Attributes exposing (class, for)
+import Html.Attributes as Attr exposing (attribute, class, for)
 import Html.Events exposing (onClick)
 import InKindType exposing (Model(..))
 import MonthSelector
@@ -74,7 +74,7 @@ view c =
             Just >> maybeMsg
     in
     Grid.containerFluid
-        []
+        [ Attr.id "platform-modal" ]
     <|
         []
             ++ donorHeadingRow c.toggleEdit c.disabled c.isEditable

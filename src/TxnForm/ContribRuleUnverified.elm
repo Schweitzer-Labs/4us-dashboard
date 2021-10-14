@@ -14,6 +14,7 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
+import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
 import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
@@ -37,6 +38,7 @@ import Owners
 import OwnersView
 import PaymentMethod
 import SubmitButton exposing (submitButton)
+import Task
 import Time exposing (utc)
 import TimeZone exposing (america__new_york)
 import Timestamp exposing (dateStringToMillis, formDate)
@@ -438,7 +440,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( fromError model error, Cmd.none )
+                    ( fromError model error, scrollToError "reconcile-contrib" )
 
                 Ok val ->
                     ( { model | createContribButtonIsDisabled = True, createContribIsSubmitting = True }
@@ -783,3 +785,14 @@ dateWithFormat model =
 
     else
         model.paymentDate
+
+
+
+-- Dom interactions
+
+
+scrollToError : String -> Cmd Msg
+scrollToError id =
+    Dom.getViewportOf id
+        |> Task.andThen (\_ -> Dom.setViewportOf id 0 800)
+        |> Task.attempt (\_ -> NoOp)
