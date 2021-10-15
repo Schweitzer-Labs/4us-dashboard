@@ -36,7 +36,7 @@ import Direction
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
 import Html exposing (Html, div, h6, input, span, text)
-import Html.Attributes exposing (attribute, class, type_)
+import Html.Attributes as Attr exposing (attribute, class, type_)
 import Html.Events exposing (onClick)
 import Http
 import LabelWithData exposing (labelWithContent, labelWithData)

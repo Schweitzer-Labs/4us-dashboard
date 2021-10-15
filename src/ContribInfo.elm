@@ -74,7 +74,7 @@ view c =
             Just >> maybeMsg
     in
     Grid.containerFluid
-        [ Attr.id "platform-modal" ]
+        []
     <|
         []
             ++ donorHeadingRow c.toggleEdit c.disabled c.isEditable

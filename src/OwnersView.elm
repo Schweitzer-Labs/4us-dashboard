@@ -4,18 +4,18 @@ import Address
 import AppInput exposing (inputNumber, inputText)
 import Asset
 import Bootstrap.Button as Button
-import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Table as Table exposing (Cell, TBody, THead)
 import Bootstrap.Utilities.Spacing as Spacing
+import Browser.Dom as Dom
 import Copy
-import DataTable exposing (DataRow)
 import Html exposing (Html, div, span, text)
-import Html.Attributes exposing (attribute, class)
+import Html.Attributes as Attr exposing (attribute, class)
 import Html.Events exposing (onClick)
 import Owners as Owner exposing (Owner, Owners)
+import Task
 import Validate exposing (validate)
 
 
@@ -38,6 +38,7 @@ type alias Model =
     , currentOwner : Owner
     , errors : List String
     , formType : Maybe FormType
+    , modalID : Maybe String
     }
 
 
@@ -84,7 +85,7 @@ update msg model =
             in
             case validate Owner.validator newOwner of
                 Err messages ->
-                    ( { model | errors = messages }, Cmd.none )
+                    ( { model | errors = messages }, scrollToError (Maybe.withDefault "" model.modalID) )
 
                 _ ->
                     let
@@ -96,7 +97,7 @@ update msg model =
                             remainder =
                                 String.fromFloat <| Owner.ownershipToFloat newOwner - (totalPercentage - 100)
                         in
-                        ( { model | errors = [ "Ownership percentage total must add up to 100%. You have " ++ remainder ++ "% left to attribute." ] }, Cmd.none )
+                        ( { model | errors = [ "Ownership percentage total must add up to 100%. You have " ++ remainder ++ "% left to attribute." ] }, scrollToError (Maybe.withDefault "" model.modalID) )
 
                     else
                         ( { model
@@ -188,8 +189,8 @@ update msg model =
             ( { state | isFormEnabled = not model.isFormEnabled, formType = form }, Cmd.none )
 
 
-init : Owners -> Model
-init owners =
+init : Owners -> Maybe String -> Model
+init owners id =
     { firstName = ""
     , lastName = ""
     , addressLine1 = ""
@@ -213,6 +214,7 @@ init owners =
     , isFormEnabled = False
     , errors = []
     , formType = Nothing
+    , modalID = id
     }
 
 
@@ -245,7 +247,7 @@ toMaybeOwners model =
 
 view : Model -> Html Msg
 view model =
-    div [ Spacing.mt3, Spacing.mb4, class "border rounded", Spacing.p2, Spacing.pl4, Spacing.pr4 ] <|
+    div [ Spacing.mt3, Spacing.mb4, class "border rounded", Spacing.p2, Spacing.pl4, Spacing.pr4, Attr.id "owners-view" ] <|
         []
             ++ errorMessages model.errors
             ++ [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mb3 ] ]
@@ -335,7 +337,7 @@ errorMessages errors =
                 [ Grid.col
                     []
                   <|
-                    List.map (\error -> div [ class "text-danger list-unstyled mt-2" ] [ text error ]) errors
+                    List.map (\error -> div [ class "text-danger list-unstyled mt-2", Attr.id "errors" ] [ text error ]) errors
                 ]
             ]
         ]
@@ -501,3 +503,33 @@ addOwnerRow =
         [ Grid.col [] [ addOwnerButton ]
         ]
     ]
+
+
+
+-- Dom interactions
+
+
+scrollToError : String -> Cmd Msg
+scrollToError id =
+    Dom.getViewportOf id
+        |> Task.andThen
+            (\_ ->
+                Dom.setViewportOf id 0 (idToViewHeight id)
+            )
+        |> Task.attempt (\_ -> NoOp)
+
+
+idToViewHeight : String -> Float
+idToViewHeight id =
+    case id of
+        "create-contrib" ->
+            0
+
+        "amend-contrib" ->
+            400
+
+        "reconcile-contrib" ->
+            800
+
+        _ ->
+            0
