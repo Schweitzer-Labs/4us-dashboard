@@ -69,13 +69,18 @@ fromInKindType payMethod inKindType desc =
             []
 
 
-fromOrgType : Maybe OrgOrInd.Model -> Maybe EntityType.Model -> Errors
-fromOrgType orgType entity =
+fromOrgType : Maybe OrgOrInd.Model -> Maybe EntityType.Model -> String -> Errors
+fromOrgType orgType entity entityName =
     case orgType of
         Just OrgOrInd.Org ->
             case entity of
                 Just a ->
-                    []
+                    case String.isEmpty entityName of
+                        True ->
+                            [ "Entity Name is missing" ]
+
+                        False ->
+                            []
 
                 Nothing ->
                     [ "Org Classification is missing" ]

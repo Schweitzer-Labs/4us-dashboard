@@ -238,8 +238,8 @@ inKindTypeOnModelToErrors { paymentMethod, inKindType, inKindDesc } =
 
 
 orgTypeOnModelToErrors : ContribValidatorModel -> List String
-orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType } =
-    fromOrgType maybeOrgOrInd maybeEntityType
+orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType, entityName } =
+    fromOrgType maybeOrgOrInd maybeEntityType entityName
 
 
 ownersOnModelToErrors : ContribValidatorModel -> List String
