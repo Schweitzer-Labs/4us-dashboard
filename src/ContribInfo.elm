@@ -171,8 +171,9 @@ contribInfoValidator =
         , postalCodeValidator
         , inKindTypeValidator
         , orgTypeValidator
-        , emailValidator
-        , phoneValidator
+
+        --, emailValidator
+        --, phoneValidator
         , ownersValidator
         ]
 
