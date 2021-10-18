@@ -1,16 +1,34 @@
 module ViewportHeight exposing (..)
 
+import FormID exposing (Model(..))
 
-create : Float
-create =
+
+bottom : Float
+bottom =
     0
 
 
-reconcile : Float
-reconcile =
+middle : Float
+middle =
     400
 
 
-amend : Float
-amend =
+top : Float
+top =
     800
+
+
+idToViewHeight : String -> Float
+idToViewHeight id =
+    case FormID.fromString id of
+        Just CreateContrib ->
+            bottom
+
+        Just ReconcileContrib ->
+            middle
+
+        Just AmendContrib ->
+            top
+
+        _ ->
+            bottom

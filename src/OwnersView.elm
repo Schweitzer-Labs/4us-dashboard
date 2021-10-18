@@ -516,22 +516,6 @@ scrollToError id =
     Dom.getViewportOf id
         |> Task.andThen
             (\_ ->
-                Dom.setViewportOf id 0 (idToViewHeight id)
+                Dom.setViewportOf id 0 (ViewportHeight.idToViewHeight id)
             )
         |> Task.attempt (\_ -> NoOp)
-
-
-idToViewHeight : String -> Float
-idToViewHeight id =
-    case FormID.fromString id of
-        Just CreateContrib ->
-            ViewportHeight.create
-
-        Just ReconcileContrib ->
-            ViewportHeight.reconcile
-
-        Just AmendContrib ->
-            ViewportHeight.amend
-
-        _ ->
-            ViewportHeight.create
