@@ -13,7 +13,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import Html exposing (Html, div, span, text)
-import Html.Attributes exposing (attribute, class, for)
+import Html.Attributes as Attr exposing (attribute, class, for)
 import Html.Events exposing (onClick)
 import PaymentMethod
 import PurposeCode

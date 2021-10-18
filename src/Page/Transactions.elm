@@ -33,6 +33,7 @@ import DeleteInfo
 import File.Download as Download
 import FileDisclosure
 import FileFormat exposing (FileFormat)
+import FormID exposing (Model(..))
 import Html exposing (..)
 import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (on, onClick)
@@ -287,6 +288,7 @@ createDisbursementModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
+        , id = FormID.toString CreateDisb
         }
 
 
@@ -311,6 +313,7 @@ createContributionModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
+        , id = FormID.toString CreateContrib
         }
 
 
@@ -339,6 +342,7 @@ disbRuleUnverifiedModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
+        , id = FormID.toString ReconcileDisb
         }
 
 
@@ -363,6 +367,7 @@ disbRuleVerifiedModal model =
         , alertMsg = Just DeleteAlertMsg
         , alertVisibility = Just model.alertVisibility
         , isDeleteConfirmed = model.isDeletionConfirmed
+        , id = FormID.toString AmendDisb
         }
 
 
@@ -391,6 +396,7 @@ contribRuleUnverifiedModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
+        , id = FormID.toString ReconcileContrib
         }
 
 
@@ -415,6 +421,7 @@ contribRuleVerifiedModal model =
         , alertMsg = Just DeleteAlertMsg
         , alertVisibility = Just model.alertVisibility
         , isDeleteConfirmed = model.isDeletionConfirmed
+        , id = FormID.toString AmendContrib
         }
 
 
@@ -813,7 +820,7 @@ update msg model =
                                 -- @Todo make this state impossible
                                 , disbRuleUnverifiedModal = DisbRuleUnverified.init model.config [] model.disbRuleUnverifiedModal.bankTxn
                               }
-                            , Cmd.batch [ getTransactions model Nothing, Task.attempt (\_ -> NoOp) scrollToTop ]
+                            , getTransactions model Nothing
                             )
 
                         ResValidationFailure errList ->
@@ -824,7 +831,7 @@ update msg model =
                                             List.head errList
                                 , disbRuleUnverifiedSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString ReconcileDisb
                             )
 
                 Err err ->
@@ -834,7 +841,7 @@ update msg model =
                                 Api.decodeError err
                         , disbRuleUnverifiedSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString ReconcileDisb
                     )
 
         DisbRuleVerifiedGotMutResp res ->
@@ -861,7 +868,7 @@ update msg model =
                                             List.head errList
                                 , disbRuleVerifiedSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString AmendDisb
                             )
 
                 Err err ->
@@ -871,7 +878,7 @@ update msg model =
                                 Api.decodeError err
                         , disbRuleVerifiedSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString AmendDisb
                     )
 
         -- Disb Rule Verified Modal State
@@ -896,7 +903,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( { model | disbRuleVerifiedModal = DisbRuleVerified.fromError model.disbRuleVerifiedModal error }, Cmd.none )
+                    ( { model | disbRuleVerifiedModal = DisbRuleVerified.fromError model.disbRuleVerifiedModal error }, scrollToError <| FormID.toString AmendDisb )
 
                 Ok val ->
                     ( { model
@@ -960,7 +967,7 @@ update msg model =
                                             List.head errList
                                 , contribRuleUnverifiedSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString ReconcileContrib
                             )
 
                 Err err ->
@@ -970,7 +977,7 @@ update msg model =
                                 Api.decodeError err
                         , contribRuleUnverifiedSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString ReconcileContrib
                     )
 
         ContribRuleVerifiedGotMutResp res ->
@@ -997,7 +1004,7 @@ update msg model =
                                             List.head errList
                                 , contribRuleVerifiedSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString AmendContrib
                             )
 
                 Err err ->
@@ -1007,7 +1014,7 @@ update msg model =
                                 Api.decodeError err
                         , contribRuleVerifiedSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString AmendContrib
                     )
 
         -- Contrib Rule Verified Modal State
@@ -1032,7 +1039,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( { model | contribRuleVerifiedModal = ContribRuleVerified.fromError model.contribRuleVerifiedModal error }, Cmd.none )
+                    ( { model | contribRuleVerifiedModal = ContribRuleVerified.fromError model.contribRuleVerifiedModal error }, scrollToError <| FormID.toString AmendContrib )
 
                 Ok val ->
                     ( { model
@@ -1146,7 +1153,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( { model | createContributionModal = CreateContribution.fromError model.createContributionModal error }, Cmd.none )
+                    ( { model | createContributionModal = CreateContribution.fromError model.createContributionModal error }, scrollToError <| FormID.toString CreateContrib )
 
                 Ok val ->
                     ( { model
@@ -1200,7 +1207,7 @@ update msg model =
                                             List.head errList
                                 , createContributionSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString CreateContrib
                             )
 
                 Err err ->
@@ -1210,7 +1217,7 @@ update msg model =
                                 Api.decodeError err
                         , createContributionSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString CreateContrib
                     )
 
         GotCreateDisbursementResponse res ->
@@ -1234,7 +1241,7 @@ update msg model =
                                             List.head errList
                                 , createDisbursementSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString CreateDisb
                             )
 
                 Err err ->
@@ -1244,7 +1251,7 @@ update msg model =
                                 Api.decodeError err
                         , createContributionSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString CreateDisb
                     )
 
         ToggleActionsDropdown state ->
@@ -1318,7 +1325,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( { model | createDisbursementModal = CreateDisbursement.fromError model.createDisbursementModal error }, Cmd.none )
+                    ( { model | createDisbursementModal = CreateDisbursement.fromError model.createDisbursementModal error }, scrollToError <| FormID.toString CreateDisb )
 
                 Ok val ->
                     ( { model
@@ -1469,12 +1476,11 @@ amendContrib model =
 -- Dom interactions
 
 
-scrollToTop : Task x ()
-scrollToTop =
-    Dom.setViewport 0 0
-        -- It's not worth showing the user anything special if scrolling fails.
-        -- If anything, we'd log this to an error recording service.
-        |> Task.onError (\_ -> Task.succeed ())
+scrollToError : String -> Cmd Msg
+scrollToError id =
+    Dom.getViewportOf id
+        |> Task.andThen (\_ -> Dom.setViewportOf id 0 0)
+        |> Task.attempt (\_ -> NoOp)
 
 
 

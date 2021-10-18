@@ -23,6 +23,7 @@ import Copy
 import EmploymentStatus
 import EntityType
 import ExpandableBankData
+import FormID exposing (Model(..))
 import Html exposing (Html, p, span, text)
 import Html.Attributes exposing (class)
 import InKindType
@@ -128,7 +129,7 @@ init txn =
     , cvv = ""
     , owners = txn.owners
     , ownerName = ""
-    , ownersViewModel = OwnersView.init <| Maybe.withDefault [] txn.owners
+    , ownersViewModel = OwnersView.init (Maybe.withDefault [] txn.owners) (Just <| FormID.toString AmendContrib)
     , inKindType = txn.inKindType
     , inKindDesc = Maybe.withDefault "" txn.inKindDescription
     , paymentMethod = Just txn.paymentMethod

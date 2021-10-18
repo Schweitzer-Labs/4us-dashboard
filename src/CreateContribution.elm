@@ -1,9 +1,11 @@
 port module CreateContribution exposing (Model, Msg(..), fromError, init, setError, subscriptions, toEncodeModel, update, validationMapper, view)
 
 import Api.CreateContrib as CreateContrib
+import Browser.Dom as Dom
 import ContribInfo exposing (ContribValidatorModel)
 import EmploymentStatus
 import EntityType
+import FormID exposing (Model(..))
 import Html exposing (Html)
 import InKindType
 import Json.Decode as Decode exposing (bool, decodeValue)
@@ -12,6 +14,7 @@ import OrgOrInd
 import Owners
 import OwnersView
 import PaymentMethod
+import Task
 
 
 
@@ -98,7 +101,7 @@ init committeeId =
     , expirationMonth = ""
     , expirationYear = ""
     , cvv = ""
-    , ownersViewModel = OwnersView.init []
+    , ownersViewModel = OwnersView.init [] (Just <| FormID.toString CreateContrib)
     , inKindType = Nothing
     , inKindDesc = ""
     , paymentMethod = Nothing

@@ -15,7 +15,7 @@ const donor = {
     addressLine2: 'Apartment 5',
     city : faker.address.city(),
     state: faker.address.state(),
-    postalCode: faker.address.zipCode(),
+    postalCode: faker.address.zipCode().substring(0, 5),
     company: 'Toyota',
     job: 'Marketing',
     purposeCode: 'LITER',

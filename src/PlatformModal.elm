@@ -10,7 +10,7 @@ import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
 import DeleteInfo
 import Html exposing (Html, h2, span, text)
-import Html.Attributes exposing (class)
+import Html.Attributes as Attr exposing (class)
 import Html.Events exposing (onClick)
 import SubmitButton exposing (submitButton)
 
@@ -34,6 +34,7 @@ type alias MakeModalConfig msg subMsg subModel =
     , alertMsg : Maybe (Alert.Visibility -> msg)
     , alertVisibility : Maybe Alert.Visibility
     , isDeleteConfirmed : DeleteInfo.Model
+    , id : String
     }
 
 
@@ -46,7 +47,7 @@ view config =
         |> Modal.hideOnBackdropClick True
         |> Modal.h3 [] [ text config.title ]
         |> Modal.body
-            []
+            [ Attr.id config.id ]
             (if config.successViewActive then
                 [ successMessage config.successViewMessage ]
 
