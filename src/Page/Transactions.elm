@@ -33,6 +33,7 @@ import DeleteInfo
 import File.Download as Download
 import FileDisclosure
 import FileFormat exposing (FileFormat)
+import FormID exposing (Model(..))
 import Html exposing (..)
 import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (on, onClick)
@@ -287,7 +288,7 @@ createDisbursementModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , id = "create-disb"
+        , id = FormID.toString CreateDisb
         }
 
 
@@ -312,7 +313,7 @@ createContributionModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , id = "create-contrib"
+        , id = FormID.toString CreateContrib
         }
 
 
@@ -341,7 +342,7 @@ disbRuleUnverifiedModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , id = "reconcile-disb"
+        , id = FormID.toString ReconcileDisb
         }
 
 
@@ -366,7 +367,7 @@ disbRuleVerifiedModal model =
         , alertMsg = Just DeleteAlertMsg
         , alertVisibility = Just model.alertVisibility
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , id = "amend-disb"
+        , id = FormID.toString AmendDisb
         }
 
 
@@ -395,7 +396,7 @@ contribRuleUnverifiedModal model =
         , alertMsg = Nothing
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , id = "reconcile-contrib"
+        , id = FormID.toString ReconcileContrib
         }
 
 
@@ -420,7 +421,7 @@ contribRuleVerifiedModal model =
         , alertMsg = Just DeleteAlertMsg
         , alertVisibility = Just model.alertVisibility
         , isDeleteConfirmed = model.isDeletionConfirmed
-        , id = "amend-contrib"
+        , id = FormID.toString AmendContrib
         }
 
 

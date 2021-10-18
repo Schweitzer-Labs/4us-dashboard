@@ -11,12 +11,14 @@ import Bootstrap.Table as Table exposing (Cell, TBody, THead)
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Copy
+import FormID exposing (Model(..))
 import Html exposing (Html, div, span, text)
 import Html.Attributes as Attr exposing (attribute, class)
 import Html.Events exposing (onClick)
 import Owners as Owner exposing (Owner, Owners)
 import Task
 import Validate exposing (validate)
+import ViewportHeight
 
 
 
@@ -521,15 +523,15 @@ scrollToError id =
 
 idToViewHeight : String -> Float
 idToViewHeight id =
-    case id of
-        "create-contrib" ->
-            0
+    case FormID.fromString id of
+        Just CreateContrib ->
+            ViewportHeight.create
 
-        "amend-contrib" ->
-            400
+        Just ReconcileContrib ->
+            ViewportHeight.reconcile
 
-        "reconcile-contrib" ->
-            800
+        Just AmendContrib ->
+            ViewportHeight.amend
 
         _ ->
-            0
+            ViewportHeight.create
