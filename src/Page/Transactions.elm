@@ -831,7 +831,7 @@ update msg model =
                                             List.head errList
                                 , disbRuleUnverifiedSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString ReconcileDisb
                             )
 
                 Err err ->
@@ -841,7 +841,7 @@ update msg model =
                                 Api.decodeError err
                         , disbRuleUnverifiedSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString ReconcileDisb
                     )
 
         DisbRuleVerifiedGotMutResp res ->
@@ -868,7 +868,7 @@ update msg model =
                                             List.head errList
                                 , disbRuleVerifiedSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString AmendDisb
                             )
 
                 Err err ->
@@ -878,7 +878,7 @@ update msg model =
                                 Api.decodeError err
                         , disbRuleVerifiedSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString AmendDisb
                     )
 
         -- Disb Rule Verified Modal State
@@ -967,7 +967,7 @@ update msg model =
                                             List.head errList
                                 , contribRuleUnverifiedSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString ReconcileContrib
                             )
 
                 Err err ->
@@ -977,7 +977,7 @@ update msg model =
                                 Api.decodeError err
                         , contribRuleUnverifiedSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString ReconcileContrib
                     )
 
         ContribRuleVerifiedGotMutResp res ->
@@ -1004,7 +1004,7 @@ update msg model =
                                             List.head errList
                                 , contribRuleVerifiedSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString AmendContrib
                             )
 
                 Err err ->
@@ -1014,7 +1014,7 @@ update msg model =
                                 Api.decodeError err
                         , contribRuleVerifiedSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString AmendContrib
                     )
 
         -- Contrib Rule Verified Modal State
@@ -1207,7 +1207,7 @@ update msg model =
                                             List.head errList
                                 , createContributionSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString CreateContrib
                             )
 
                 Err err ->
@@ -1217,7 +1217,7 @@ update msg model =
                                 Api.decodeError err
                         , createContributionSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString CreateContrib
                     )
 
         GotCreateDisbursementResponse res ->
@@ -1241,7 +1241,7 @@ update msg model =
                                             List.head errList
                                 , createDisbursementSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString CreateDisb
                             )
 
                 Err err ->
@@ -1251,7 +1251,7 @@ update msg model =
                                 Api.decodeError err
                         , createContributionSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString CreateDisb
                     )
 
         ToggleActionsDropdown state ->

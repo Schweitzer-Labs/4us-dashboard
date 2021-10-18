@@ -476,7 +476,7 @@ update msg model =
                                 , createDisbButtonIsDisabled = False
                                 , createDisbIsSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString ReconcileDisb
                             )
 
                 Err err ->
@@ -485,7 +485,7 @@ update msg model =
                         , createDisbButtonIsDisabled = False
                         , createDisbIsSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString ReconcileDisb
                     )
 
         GetTxnsGotResp res ->

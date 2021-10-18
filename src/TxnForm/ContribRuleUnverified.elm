@@ -480,7 +480,7 @@ update msg model =
                                 , createContribButtonIsDisabled = False
                                 , createContribIsSubmitting = False
                               }
-                            , Cmd.none
+                            , scrollToError <| FormID.toString FormID.ReconcileContrib
                             )
 
                 Err err ->
@@ -489,7 +489,7 @@ update msg model =
                         , createContribButtonIsDisabled = False
                         , createContribIsSubmitting = False
                       }
-                    , Cmd.none
+                    , scrollToError <| FormID.toString FormID.ReconcileContrib
                     )
 
 
