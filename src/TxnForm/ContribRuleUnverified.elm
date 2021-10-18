@@ -26,6 +26,7 @@ import Direction
 import EmploymentStatus
 import EntityType
 import Errors exposing (fromOwners, fromPostalCode)
+import FormID exposing (Model(..))
 import Html exposing (Html, div, h6, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -177,7 +178,7 @@ clearForm model =
         , cvv = ""
         , owners = Nothing
         , ownerName = ""
-        , ownersViewModel = OwnersView.init (Maybe.withDefault [] model.owners) (Just "reconcile-contrib")
+        , ownersViewModel = OwnersView.init (Maybe.withDefault [] model.owners) (Just <| FormID.toString ReconcileContrib)
         , paymentMethod = Nothing
         , createContribIsVisible = False
         , createContribButtonIsDisabled = False
@@ -440,7 +441,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( fromError model error, scrollToError "reconcile-contrib" )
+                    ( fromError model error, scrollToError <| FormID.toString FormID.ReconcileContrib )
 
                 Ok val ->
                     ( { model | createContribButtonIsDisabled = True, createContribIsSubmitting = True }

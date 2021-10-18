@@ -5,6 +5,7 @@ import Browser.Dom as Dom
 import ContribInfo exposing (ContribValidatorModel)
 import EmploymentStatus
 import EntityType
+import FormID exposing (Model(..))
 import Html exposing (Html)
 import InKindType
 import Json.Decode as Decode exposing (bool, decodeValue)
@@ -100,7 +101,7 @@ init committeeId =
     , expirationMonth = ""
     , expirationYear = ""
     , cvv = ""
-    , ownersViewModel = OwnersView.init [] (Just "create-contrib")
+    , ownersViewModel = OwnersView.init [] (Just <| FormID.toString CreateContrib)
     , inKindType = Nothing
     , inKindDesc = ""
     , paymentMethod = Nothing

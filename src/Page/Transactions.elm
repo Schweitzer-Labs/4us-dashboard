@@ -903,7 +903,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( { model | disbRuleVerifiedModal = DisbRuleVerified.fromError model.disbRuleVerifiedModal error }, scrollToError "amend-disb" )
+                    ( { model | disbRuleVerifiedModal = DisbRuleVerified.fromError model.disbRuleVerifiedModal error }, scrollToError <| FormID.toString AmendDisb )
 
                 Ok val ->
                     ( { model
@@ -1039,7 +1039,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( { model | contribRuleVerifiedModal = ContribRuleVerified.fromError model.contribRuleVerifiedModal error }, scrollToError "amend-contrib" )
+                    ( { model | contribRuleVerifiedModal = ContribRuleVerified.fromError model.contribRuleVerifiedModal error }, scrollToError <| FormID.toString AmendContrib )
 
                 Ok val ->
                     ( { model
@@ -1153,7 +1153,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( { model | createContributionModal = CreateContribution.fromError model.createContributionModal error }, scrollToError "create-contrib" )
+                    ( { model | createContributionModal = CreateContribution.fromError model.createContributionModal error }, scrollToError <| FormID.toString CreateContrib )
 
                 Ok val ->
                     ( { model
@@ -1325,7 +1325,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( { model | createDisbursementModal = CreateDisbursement.fromError model.createDisbursementModal error }, scrollToError "create-disb" )
+                    ( { model | createDisbursementModal = CreateDisbursement.fromError model.createDisbursementModal error }, scrollToError <| FormID.toString CreateDisb )
 
                 Ok val ->
                     ( { model

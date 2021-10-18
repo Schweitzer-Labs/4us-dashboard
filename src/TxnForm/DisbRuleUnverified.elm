@@ -35,6 +35,7 @@ import DataTable exposing (DataRow)
 import Direction
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
+import FormID exposing (Model(..))
 import Html exposing (Html, div, h6, input, span, text)
 import Html.Attributes as Attr exposing (attribute, class, type_)
 import Html.Events exposing (onClick)
@@ -433,7 +434,7 @@ update msg model =
                         error =
                             Maybe.withDefault "Form error" <| List.head errors
                     in
-                    ( fromError model error, scrollToError "reconcile-disb" )
+                    ( fromError model error, scrollToError <| FormID.toString ReconcileDisb )
 
                 Ok val ->
                     ( { model | createDisbButtonIsDisabled = True, createDisbIsSubmitting = True }
