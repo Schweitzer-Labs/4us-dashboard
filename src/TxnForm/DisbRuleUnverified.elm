@@ -481,7 +481,7 @@ update msg model =
 
                 Err err ->
                     ( { model
-                        | maybeError = Just <| Api.decodeError err
+                        | maybeError = List.head <| Api.decodeError err
                         , createDisbButtonIsDisabled = False
                         , createDisbIsSubmitting = False
                       }

@@ -320,7 +320,7 @@ update msg model =
 
                 Err err ->
                     ( { model
-                        | errors = [ Api.decodeError err ]
+                        | errors = Api.decodeError err
                         , isSubmitting = False
                         , loadingProgress = 0
                       }
@@ -374,7 +374,7 @@ update msg model =
 
                 Err err ->
                     ( { model
-                        | errors = [ Api.decodeError err ]
+                        | errors = Api.decodeError err
                         , isSubmitting = False
                         , loadingProgress = 0
                         , seedMoneyInLoading = False
@@ -412,7 +412,7 @@ update msg model =
 
                 Err err ->
                     ( { model
-                        | errors = [ Api.decodeError err ]
+                        | errors = Api.decodeError err
                         , reconcileOneLoading = False
                       }
                     , Cmd.none

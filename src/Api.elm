@@ -6,7 +6,7 @@ module Api exposing
 
 import Api.Endpoint as Endpoint exposing (Endpoint)
 import Http exposing (Body, Expect)
-import Json.Decode exposing (Decoder, Value, decodeString, field, string)
+import Json.Decode as Decode exposing (Decoder, Value, decodeString, field, string, value)
 
 
 
@@ -35,13 +35,22 @@ post url token body decoder =
         }
 
 
-decodeError : Http.Error -> String
+graphQLErrorDecoder =
+    Decode.field "errors" <|
+        Decode.list <|
+            Decode.field "message" string
+
+
+decodeError : Http.Error -> List String
 decodeError error =
     case error of
         Http.BadStatus response ->
-            response.body
-                |> decodeString (field "errorMessage" string)
-                |> Result.withDefault "Server error"
+            case decodeString graphQLErrorDecoder response.body of
+                Ok value ->
+                    value
 
-        err ->
-            "Server error"
+                Err err ->
+                    [ "Server error" ]
+
+        _ ->
+            [ "Server Error" ]
