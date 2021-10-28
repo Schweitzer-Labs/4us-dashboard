@@ -267,11 +267,12 @@ labelRow str =
 
 
 amountDateRow : Config msg -> List (Html msg)
-amountDateRow { amount, paymentDate, disabled } =
+amountDateRow { amount, paymentDate, disabled, paymentMethod } =
     AmountDate.view
         { amount = ( toData amount, toMsg amount )
         , paymentDate = ( toData paymentDate, toMsg paymentDate )
         , disabled = disabled
+        , label = "Date Received from Donor"
         }
 
 
