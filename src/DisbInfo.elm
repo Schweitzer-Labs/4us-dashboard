@@ -103,7 +103,7 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
            ]
         ++ (case ( amount, paymentDate, paymentMethod ) of
                 ( Just a, Just p, Just pm ) ->
-                    AmountDate.view { amount = a, paymentDate = p, disabled = disabled }
+                    AmountDate.view { amount = a, paymentDate = p, disabled = disabled, label = "Payment Date" }
                         ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] (PaymentMethod.dropdown (toData pm) (toMsg pm) True) ]
                            ]
                         ++ (if toData pm == Just PaymentMethod.Check then
@@ -118,7 +118,7 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
                            )
 
                 ( Just a, Just p, _ ) ->
-                    AmountDate.view { amount = a, paymentDate = p, disabled = disabled }
+                    AmountDate.view { amount = a, paymentDate = p, disabled = disabled, label = "Payment Date" }
 
                 _ ->
                     []
