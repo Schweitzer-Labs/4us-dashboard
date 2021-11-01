@@ -768,10 +768,14 @@ update msg model =
                     ( { model
                         | contribRuleVerifiedModal =
                             ContribRuleVerified.fromError model.contribRuleVerifiedModal <|
-                                Api.decodeError err
+                                Maybe.withDefault "Server Error" <|
+                                    List.head <|
+                                        Api.decodeError err
                         , disbRuleVerifiedModal =
                             DisbRuleVerified.fromError model.disbRuleVerifiedModal <|
-                                Api.decodeError err
+                                Maybe.withDefault "Server Error" <|
+                                    List.head <|
+                                        Api.decodeError err
                       }
                     , Cmd.none
                     )
@@ -838,7 +842,9 @@ update msg model =
                     ( { model
                         | disbRuleUnverifiedModal =
                             DisbRuleUnverified.fromError model.disbRuleUnverifiedModal <|
-                                Api.decodeError err
+                                Maybe.withDefault "Server Error" <|
+                                    List.head <|
+                                        Api.decodeError err
                         , disbRuleUnverifiedSubmitting = False
                       }
                     , scrollToError <| FormID.toString ReconcileDisb
@@ -875,7 +881,9 @@ update msg model =
                     ( { model
                         | disbRuleVerifiedModal =
                             DisbRuleVerified.fromError model.disbRuleVerifiedModal <|
-                                Api.decodeError err
+                                Maybe.withDefault "Server Error" <|
+                                    List.head <|
+                                        Api.decodeError err
                         , disbRuleVerifiedSubmitting = False
                       }
                     , scrollToError <| FormID.toString AmendDisb
@@ -974,7 +982,9 @@ update msg model =
                     ( { model
                         | contribRuleUnverifiedModal =
                             ContribRuleUnverified.fromError model.contribRuleUnverifiedModal <|
-                                Api.decodeError err
+                                Maybe.withDefault "Server Error" <|
+                                    List.head <|
+                                        Api.decodeError err
                         , contribRuleUnverifiedSubmitting = False
                       }
                     , scrollToError <| FormID.toString ReconcileContrib
@@ -1011,7 +1021,9 @@ update msg model =
                     ( { model
                         | contribRuleVerifiedModal =
                             ContribRuleVerified.fromError model.contribRuleVerifiedModal <|
-                                Api.decodeError err
+                                Maybe.withDefault "Server Error" <|
+                                    List.head <|
+                                        Api.decodeError err
                         , contribRuleVerifiedSubmitting = False
                       }
                     , scrollToError <| FormID.toString AmendContrib
@@ -1214,7 +1226,9 @@ update msg model =
                     ( { model
                         | createContributionModal =
                             CreateContribution.fromError model.createContributionModal <|
-                                Api.decodeError err
+                                Maybe.withDefault "Server Error" <|
+                                    List.head <|
+                                        Api.decodeError err
                         , createContributionSubmitting = False
                       }
                     , scrollToError <| FormID.toString CreateContrib
@@ -1248,7 +1262,9 @@ update msg model =
                     ( { model
                         | createDisbursementModal =
                             CreateDisbursement.fromError model.createDisbursementModal <|
-                                Api.decodeError err
+                                Maybe.withDefault "Server Error" <|
+                                    List.head <|
+                                        Api.decodeError err
                         , createContributionSubmitting = False
                       }
                     , scrollToError <| FormID.toString CreateDisb
