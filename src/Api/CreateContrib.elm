@@ -32,6 +32,7 @@ query =
       $entityType: EntityType!
       $employmentStatus: EmploymentStatus
       $emailAddress: String
+      $phoneNumber: String
       $paymentDate: Float!
       $cardNumber: String
       $cardExpirationMonth: Float
@@ -61,6 +62,7 @@ query =
         entityType: $entityType
         employmentStatus: $employmentStatus
         emailAddress: $emailAddress
+        phoneNumber: $phoneNumber
         paymentDate: $paymentDate
         cardNumber: $cardNumber
         cardExpirationMonth: $cardExpirationMonth
