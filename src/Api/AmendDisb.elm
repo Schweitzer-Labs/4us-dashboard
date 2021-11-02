@@ -68,7 +68,7 @@ encode model =
                     ++ optionalFieldString "state" model.state
                     ++ optionalFieldString "postalCode" model.postalCode
                     ++ optionalFieldNotZero "paymentDate" (dateStringToMillis model.paymentDate)
-                    ++ optionalFieldString "checkNumber" model.checkNumber
+                    ++ optionalFieldString "checkNumber" model.postalCode
                     ++ (optionalFieldString "purposeCode" <| PurposeCode.fromMaybeToString model.purposeCode)
                     ++ [ ( "isExistingLiability", Encode.bool <| Maybe.withDefault False model.isExistingLiability ) ]
                     ++ [ ( "isPartialPayment", Encode.bool <| Maybe.withDefault False model.isPartialPayment ) ]

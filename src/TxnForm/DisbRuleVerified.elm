@@ -10,12 +10,9 @@ module TxnForm.DisbRuleVerified exposing
     , view
     )
 
-import AppInput exposing (inputText)
 import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Row as Row
 import Bootstrap.Popover as Popover
-import Bootstrap.Utilities.Spacing as Spacing
 import Copy
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
@@ -81,7 +78,7 @@ init txn =
     , amount = ""
     , paymentDate = ""
     , paymentMethod = Just txn.paymentMethod
-    , checkNumber = Maybe.withDefault "" txn.checkNumber
+    , checkNumber = ""
     , showBankData = False
     , loading = False
     , formDisabled = True
@@ -121,17 +118,6 @@ loadedView model =
             ++ PaymentInfo.view model.txn
             ++ disbFormRow model
             ++ bankData
-            ++ (case model.paymentMethod of
-                    Just PaymentMethod.Check ->
-                        [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
-                            [ Grid.col []
-                                [ inputText CheckNumberUpdated model.checkNumber model.formDisabled "createDisbCheck" "Check Number" ]
-                            ]
-                        ]
-
-                    _ ->
-                        []
-               )
         )
 
 
