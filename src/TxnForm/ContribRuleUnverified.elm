@@ -25,7 +25,7 @@ import DataTable exposing (DataRow)
 import Direction
 import EmploymentStatus
 import EntityType
-import Errors exposing (fromOwners, fromPostalCode)
+import Errors exposing (fromInKindType, fromOrgType, fromOwners, fromPostalCode)
 import FormID exposing (Model(..))
 import Html exposing (Html, div, h6, span, text)
 import Html.Attributes exposing (class)
@@ -691,6 +691,9 @@ validator =
         , postalCodeValidator
         , amountValidator
         , fromErrors dateMaxToErrors
+        , inKindTypeValidator
+        , orgTypeValidator
+        , ownersValidator
         ]
 
 
@@ -740,6 +743,26 @@ reconcileTxnEncoder model =
     , bankTxn = model.bankTxn
     , committeeId = model.committeeId
     }
+
+
+inKindTypeValidator : Validator String Model
+inKindTypeValidator =
+    fromErrors inKindTypeOnModelToErrors
+
+
+inKindTypeOnModelToErrors : Model -> List String
+inKindTypeOnModelToErrors { paymentMethod, inKindType, inKindDesc } =
+    fromInKindType paymentMethod inKindType inKindDesc
+
+
+orgTypeValidator : Validator String Model
+orgTypeValidator =
+    fromErrors orgTypeOnModelToErrors
+
+
+orgTypeOnModelToErrors : Model -> List String
+orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType, entityName } =
+    fromOrgType maybeOrgOrInd maybeEntityType entityName
 
 
 createContribEncoder : Model -> CreateContrib.EncodeModel
