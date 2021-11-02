@@ -25,7 +25,7 @@ import DataTable exposing (DataRow)
 import Direction
 import EmploymentStatus
 import EntityType
-import Errors exposing (fromInKindType, fromOrgType, fromOwners, fromPostalCode)
+import Errors exposing (fromOrgType, fromOwners, fromPaymentInfo, fromPostalCode)
 import FormID exposing (Model(..))
 import Html exposing (Html, div, h6, span, text)
 import Html.Attributes exposing (class)
@@ -691,7 +691,7 @@ validator =
         , postalCodeValidator
         , amountValidator
         , fromErrors dateMaxToErrors
-        , inKindTypeValidator
+        , paymentInfoValidator
         , orgTypeValidator
         , ownersValidator
         ]
@@ -745,14 +745,14 @@ reconcileTxnEncoder model =
     }
 
 
-inKindTypeValidator : Validator String Model
-inKindTypeValidator =
-    fromErrors inKindTypeOnModelToErrors
+paymentInfoValidator : Validator String Model
+paymentInfoValidator =
+    fromErrors paymentInfoOnModelToErrors
 
 
-inKindTypeOnModelToErrors : Model -> List String
-inKindTypeOnModelToErrors { paymentMethod, inKindType, inKindDesc } =
-    fromInKindType paymentMethod inKindType inKindDesc
+paymentInfoOnModelToErrors : Model -> List String
+paymentInfoOnModelToErrors { paymentMethod, inKindType, inKindDesc, checkNumber } =
+    fromPaymentInfo paymentMethod inKindType inKindDesc checkNumber
 
 
 orgTypeValidator : Validator String Model
