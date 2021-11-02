@@ -687,6 +687,7 @@ validator =
         , ifBlank .state "State is missing."
         , ifBlank .postalCode "Postal Code is missing."
         , ifBlank .paymentDate "Date is missing."
+        , ifNothing .paymentMethod "Processing Info is missing"
         , postalCodeValidator
         , amountValidator
         , fromErrors dateMaxToErrors
