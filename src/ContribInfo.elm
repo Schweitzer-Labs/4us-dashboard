@@ -12,7 +12,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromEmailAddress, fromInKindType, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode)
+import Errors exposing (fromEmailAddress, fromOrgType, fromOwners, fromPaymentInfo, fromPhoneNumber, fromPostalCode)
 import Html exposing (Html, div, h5, h6, span, text)
 import Html.Attributes as Attr exposing (attribute, class, for)
 import Html.Events exposing (onClick)
@@ -169,7 +169,7 @@ contribInfoValidator =
         , ifBlank .postalCode "Postal Code is missing."
         , ifBlank .addressLine1 "Address is missing"
         , postalCodeValidator
-        , inKindTypeValidator
+        , paymentInfoValidator
         , orgTypeValidator
 
         --, emailValidator
@@ -192,9 +192,9 @@ postalCodeValidator =
     fromErrors postalCodeOnModelToErrors
 
 
-inKindTypeValidator : Validator String ContribValidatorModel
-inKindTypeValidator =
-    fromErrors inKindTypeOnModelToErrors
+paymentInfoValidator : Validator String ContribValidatorModel
+paymentInfoValidator =
+    fromErrors paymentInfoOnModelToErrors
 
 
 orgTypeValidator : Validator String ContribValidatorModel
@@ -232,9 +232,9 @@ phoneNumberOnModelToErrors { phoneNumber, isPhoneNumValid } =
     fromPhoneNumber phoneNumber isPhoneNumValid
 
 
-inKindTypeOnModelToErrors : ContribValidatorModel -> List String
-inKindTypeOnModelToErrors { paymentMethod, inKindType, inKindDesc } =
-    fromInKindType paymentMethod inKindType inKindDesc
+paymentInfoOnModelToErrors : ContribValidatorModel -> List String
+paymentInfoOnModelToErrors { paymentMethod, inKindType, inKindDesc, checkNumber } =
+    fromPaymentInfo paymentMethod inKindType inKindDesc checkNumber
 
 
 orgTypeOnModelToErrors : ContribValidatorModel -> List String
