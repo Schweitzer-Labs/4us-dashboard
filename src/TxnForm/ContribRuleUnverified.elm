@@ -25,7 +25,7 @@ import DataTable exposing (DataRow)
 import Direction
 import EmploymentStatus
 import EntityType
-import Errors exposing (fromOwners, fromPostalCode)
+import Errors exposing (fromOrgType, fromOwners, fromPaymentInfo, fromPostalCode)
 import FormID exposing (Model(..))
 import Html exposing (Html, div, h6, span, text)
 import Html.Attributes exposing (class)
@@ -687,9 +687,13 @@ validator =
         , ifBlank .state "State is missing."
         , ifBlank .postalCode "Postal Code is missing."
         , ifBlank .paymentDate "Date is missing."
+        , ifNothing .paymentMethod "Processing Info is missing"
         , postalCodeValidator
         , amountValidator
         , fromErrors dateMaxToErrors
+        , paymentInfoValidator
+        , orgTypeValidator
+        , ownersValidator
         ]
 
 
@@ -739,6 +743,26 @@ reconcileTxnEncoder model =
     , bankTxn = model.bankTxn
     , committeeId = model.committeeId
     }
+
+
+paymentInfoValidator : Validator String Model
+paymentInfoValidator =
+    fromErrors paymentInfoOnModelToErrors
+
+
+paymentInfoOnModelToErrors : Model -> List String
+paymentInfoOnModelToErrors { paymentMethod, inKindType, inKindDesc, checkNumber } =
+    fromPaymentInfo paymentMethod inKindType inKindDesc checkNumber
+
+
+orgTypeValidator : Validator String Model
+orgTypeValidator =
+    fromErrors orgTypeOnModelToErrors
+
+
+orgTypeOnModelToErrors : Model -> List String
+orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType, entityName } =
+    fromOrgType maybeOrgOrInd maybeEntityType entityName
 
 
 createContribEncoder : Model -> CreateContrib.EncodeModel

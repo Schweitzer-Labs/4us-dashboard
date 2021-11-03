@@ -534,6 +534,7 @@ validator =
         , ifNothing .isSubcontracted "Subcontracted Information is missing"
         , ifNothing .isPartialPayment "Partial Payment Information is missing"
         , ifNothing .isExistingLiability "Existing Liability Information is missing"
+        , ifNothing .paymentMethod "Processing Info is missing"
         , postalCodeValidator
         , amountValidator
         , isInKindValidator
