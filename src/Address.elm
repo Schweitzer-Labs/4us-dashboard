@@ -1,6 +1,7 @@
 module Address exposing (Config, view)
 
 import AppInput exposing (inputText)
+import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
@@ -38,42 +39,44 @@ rows :
     -> String
     -> List (Html msg)
 rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg ) ( state, stateMsg ) ( postalCode, postalCodeMsg ) disabled id =
-    [ Grid.row [ Row.centerLg, Row.attrs [ Spacing.mt2 ] ]
-        [ Grid.col [ Col.lg6 ]
-            [ inputText
-                address1Msg
-                addressLine1
-                disabled
-                (id ++ "addressLine1")
-                "Street Address"
+    [ Form.form []
+        [ Form.row [ Row.centerLg, Row.attrs [ Spacing.mt2, attribute "id" (id ++ "addressRow") ] ]
+            [ Form.col [ Col.lg6 ]
+                [ inputText
+                    address1Msg
+                    addressLine1
+                    disabled
+                    (id ++ "addressLine1")
+                    "Street Address"
+                ]
+            , Form.col [ Col.lg6 ]
+                [ inputText
+                    address2Msg
+                    addressLine2
+                    disabled
+                    (id ++ "addressLine2")
+                    "Secondary Address"
+                ]
             ]
-        , Grid.col [ Col.lg6 ]
-            [ inputText
-                address2Msg
-                addressLine2
-                disabled
-                (id ++ "addressLine2")
-                "Secondary Address"
-            ]
-        ]
-    , Grid.row [ Row.centerLg, Row.attrs [ Spacing.mt2 ] ]
-        [ Grid.col [ Col.lg6 ]
-            [ inputText
-                cityMsg
-                city
-                disabled
-                (id ++ "city")
-                "City"
-            ]
-        , Grid.col [ Col.lg3 ]
-            [ State.view stateMsg state disabled id ]
-        , Grid.col [ Col.lg3 ]
-            [ inputText
-                postalCodeMsg
-                postalCode
-                disabled
-                (id ++ "postalCode")
-                "Postal Code"
+        , Form.row [ Row.centerLg, Row.attrs [ Spacing.mt2 ] ]
+            [ Form.col [ Col.lg6 ]
+                [ inputText
+                    cityMsg
+                    city
+                    disabled
+                    (id ++ "city")
+                    "City"
+                ]
+            , Form.col [ Col.lg3 ]
+                [ State.view stateMsg state disabled id ]
+            , Form.col [ Col.lg3 ]
+                [ inputText
+                    postalCodeMsg
+                    postalCode
+                    disabled
+                    (id ++ "postalCode")
+                    "Postal Code"
+                ]
             ]
         ]
     ]
