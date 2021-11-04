@@ -3,7 +3,9 @@ module CreateDisbursement exposing
     , Msg(..)
     , fromError
     , init
+    , requiredFieldValidators
     , toEncodeModel
+    , toSubmitDisabled
     , update
     , validator
     , view
@@ -170,20 +172,30 @@ update msg model =
 
 validator : Validator String Model
 validator =
-    Validate.firstError
-        [ ifBlank .entityName "Entity name is missing."
-        , ifBlank .addressLine1 "Address 1 is missing."
-        , ifBlank .city "City is missing."
-        , ifBlank .state "State is missing."
-        , ifBlank .postalCode "Postal Code is missing."
-        , ifBlank .paymentDate "Payment Date is missing"
-        , ifNothing .isSubcontracted "Subcontracted Information is missing"
-        , ifNothing .isPartialPayment "Partial Payment Information is missing"
-        , ifNothing .isExistingLiability "Existing Liability Information is missing"
-        , postalCodeValidator
-        , amountValidator
-        , isInKindValidator
-        ]
+    Validate.firstError <|
+        requiredFieldValidators
+            ++ [ postalCodeValidator
+               , amountValidator
+               , isInKindValidator
+               ]
+
+
+requiredFieldValidators =
+    [ ifBlank .entityName "Entity name is missing."
+    , ifBlank .addressLine1 "Address 1 is missing."
+    , ifBlank .city "City is missing."
+    , ifBlank .state "State is missing."
+    , ifBlank .postalCode "Postal Code is missing."
+    , ifBlank .paymentDate "Payment Date is missing"
+    , ifNothing .isSubcontracted "Subcontracted Information is missing"
+    , ifNothing .isPartialPayment "Partial Payment Information is missing"
+    , ifNothing .isExistingLiability "Existing Liability Information is missing"
+    ]
+
+
+toSubmitDisabled =
+    Validate.any
+        requiredFieldValidators
 
 
 amountValidator : Validator String Model

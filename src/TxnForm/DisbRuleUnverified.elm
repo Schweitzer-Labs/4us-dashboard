@@ -31,6 +31,7 @@ import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import Copy
+import CreateDisbursement exposing (requiredFieldValidators)
 import DataTable exposing (DataRow)
 import Direction
 import DisbInfo
@@ -525,19 +526,6 @@ validator =
                , isInKindValidator
                , fromErrors dateMaxToErrors
                ]
-
-
-requiredFieldValidators =
-    [ ifBlank .entityName "Entity name is missing."
-    , ifBlank .addressLine1 "Address 1 is missing."
-    , ifBlank .city "City is missing."
-    , ifBlank .state "State is missing."
-    , ifBlank .postalCode "Postal Code is missing."
-    , ifBlank .paymentDate "Payment Date is missing"
-    , ifNothing .isSubcontracted "Subcontracted Information is missing"
-    , ifNothing .isPartialPayment "Partial Payment Information is missing"
-    , ifNothing .isExistingLiability "Existing Liability Information is missing"
-    ]
 
 
 amountValidator : Validator String Model
