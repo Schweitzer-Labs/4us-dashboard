@@ -76,7 +76,6 @@ type alias Model =
     , checkNumber : String
     , createDisbIsVisible : Bool
     , disabled : Bool
-    , createDisbButtonIsDisabled : Bool
     , createDisbIsSubmitting : Bool
     , reconcileButtonIsDisabled : Bool
     , maybeError : Maybe String
@@ -108,7 +107,6 @@ init config txns bankTxn =
     , paymentMethod = Just bankTxn.paymentMethod
     , checkNumber = ""
     , createDisbIsVisible = False
-    , createDisbButtonIsDisabled = True
     , createDisbIsSubmitting = False
     , disabled = True
     , reconcileButtonIsDisabled = True
@@ -137,7 +135,6 @@ clearForm model =
         , paymentDate = formDate model.timezone model.bankTxn.paymentDate
         , checkNumber = ""
         , createDisbIsVisible = False
-        , createDisbButtonIsDisabled = True
         , createDisbIsSubmitting = False
         , disabled = True
         , reconcileButtonIsDisabled = True
@@ -268,7 +265,7 @@ disbFormRow model =
             , maybeError = model.maybeError
             , txnID = Just model.bankTxn.id
             }
-            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" CreateDisbSubmitted model.createDisbIsSubmitting model.createDisbButtonIsDisabled ]
+            ++ [ buttonRow CreateDisbToggled "Create" "Cancel" CreateDisbSubmitted model.createDisbIsSubmitting <| not (Validate.any requiredFieldValidators model) ]
 
     else
         []
@@ -416,7 +413,7 @@ update msg model =
             ( { model | isExistingLiability = bool }, Cmd.none )
 
         IsInKindUpdated bool ->
-            ( { model | isInKind = bool, createDisbButtonIsDisabled = False }, Cmd.none )
+            ( { model | isInKind = bool }, Cmd.none )
 
         CreateDisbToggled ->
             ( let
@@ -437,7 +434,7 @@ update msg model =
                     ( fromError model error, scrollToError <| FormID.toString ReconcileDisb )
 
                 Ok val ->
-                    ( { model | createDisbButtonIsDisabled = True, createDisbIsSubmitting = True }
+                    ( { model | createDisbIsSubmitting = True }
                     , createDisb model
                     )
 
@@ -463,7 +460,6 @@ update msg model =
                             in
                             ( { resetFormModel
                                 | createDisbIsVisible = False
-                                , createDisbButtonIsDisabled = False
                                 , createDisbIsSubmitting = False
                                 , lastCreatedTxnId = id
                               }
@@ -473,7 +469,6 @@ update msg model =
                         ResValidationFailure errList ->
                             ( { model
                                 | maybeError = List.head errList
-                                , createDisbButtonIsDisabled = False
                                 , createDisbIsSubmitting = False
                               }
                             , scrollToError <| FormID.toString ReconcileDisb
@@ -482,7 +477,6 @@ update msg model =
                 Err err ->
                     ( { model
                         | maybeError = List.head <| Api.decodeError err
-                        , createDisbButtonIsDisabled = False
                         , createDisbIsSubmitting = False
                       }
                     , scrollToError <| FormID.toString ReconcileDisb
@@ -524,21 +518,26 @@ fromError model error =
 
 validator : Validator String Model
 validator =
-    Validate.all
-        [ ifBlank .entityName "Entity name is missing."
-        , ifBlank .addressLine1 "Address 1 is missing."
-        , ifBlank .city "City is missing."
-        , ifBlank .state "State is missing."
-        , ifBlank .postalCode "Postal Code is missing."
-        , ifBlank .paymentDate "Payment Date is missing"
-        , ifNothing .isSubcontracted "Subcontracted Information is missing"
-        , ifNothing .isPartialPayment "Partial Payment Information is missing"
-        , ifNothing .isExistingLiability "Existing Liability Information is missing"
-        , postalCodeValidator
-        , amountValidator
-        , isInKindValidator
-        , fromErrors dateMaxToErrors
-        ]
+    Validate.all <|
+        requiredFieldValidators
+            ++ [ postalCodeValidator
+               , amountValidator
+               , isInKindValidator
+               , fromErrors dateMaxToErrors
+               ]
+
+
+requiredFieldValidators =
+    [ ifBlank .entityName "Entity name is missing."
+    , ifBlank .addressLine1 "Address 1 is missing."
+    , ifBlank .city "City is missing."
+    , ifBlank .state "State is missing."
+    , ifBlank .postalCode "Postal Code is missing."
+    , ifBlank .paymentDate "Payment Date is missing"
+    , ifNothing .isSubcontracted "Subcontracted Information is missing"
+    , ifNothing .isPartialPayment "Partial Payment Information is missing"
+    , ifNothing .isExistingLiability "Existing Liability Information is missing"
+    ]
 
 
 amountValidator : Validator String Model
