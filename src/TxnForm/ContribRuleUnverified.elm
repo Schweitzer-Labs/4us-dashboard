@@ -19,13 +19,13 @@ import Browser.Navigation exposing (load)
 import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
-import ContribInfo
+import ContribInfo exposing (requiredFieldValidators)
 import Copy
 import DataTable exposing (DataRow)
 import Direction
 import EmploymentStatus
 import EntityType
-import Errors exposing (fromOwners, fromPostalCode)
+import Errors exposing (fromOrgType, fromOwners, fromPaymentInfo, fromPostalCode)
 import FormID exposing (Model(..))
 import Html exposing (Html, div, h6, span, text)
 import Html.Attributes exposing (class)
@@ -93,7 +93,6 @@ type alias Model =
     , lastCreatedTxnId : String
     , timezone : Time.Zone
     , createContribIsVisible : Bool
-    , createContribButtonIsDisabled : Bool
     , createContribIsSubmitting : Bool
     , reconcileButtonIsDisabled : Bool
     }
@@ -140,7 +139,6 @@ init config txns bankTxn =
     , inKindDesc = ""
     , paymentMethod = Nothing
     , createContribIsVisible = False
-    , createContribButtonIsDisabled = False
     , createContribIsSubmitting = False
     , reconcileButtonIsDisabled = True
     , maybeError = Nothing
@@ -181,7 +179,6 @@ clearForm model =
         , ownersViewModel = OwnersView.init (Maybe.withDefault [] model.owners) (Just <| FormID.toString ReconcileContrib)
         , paymentMethod = Nothing
         , createContribIsVisible = False
-        , createContribButtonIsDisabled = False
         , createContribIsSubmitting = False
         , maybeError = Nothing
     }
@@ -250,7 +247,7 @@ contribFormRow model =
             , processPayment = False
             }
         ]
-            ++ [ buttonRow CreateContribToggled "Create" "Cancel" CreateContribSubmitted model.createContribIsSubmitting model.createContribButtonIsDisabled ]
+            ++ [ buttonRow CreateContribToggled "Create" "Cancel" CreateContribSubmitted model.createContribIsSubmitting (not <| Validate.any requiredFieldValidators model) ]
 
     else
         []
@@ -444,7 +441,7 @@ update msg model =
                     ( fromError model error, scrollToError <| FormID.toString FormID.ReconcileContrib )
 
                 Ok val ->
-                    ( { model | createContribButtonIsDisabled = True, createContribIsSubmitting = True }
+                    ( { model | createContribIsSubmitting = True }
                     , createContrib model
                     )
 
@@ -477,7 +474,6 @@ update msg model =
                         ResValidationFailure errList ->
                             ( { model
                                 | maybeError = List.head errList
-                                , createContribButtonIsDisabled = False
                                 , createContribIsSubmitting = False
                               }
                             , scrollToError <| FormID.toString FormID.ReconcileContrib
@@ -486,7 +482,6 @@ update msg model =
                 Err err ->
                     ( { model
                         | maybeError = List.head (Api.decodeError err)
-                        , createContribButtonIsDisabled = False
                         , createContribIsSubmitting = False
                       }
                     , scrollToError <| FormID.toString FormID.ReconcileContrib
@@ -681,16 +676,15 @@ exitButton hideMsg displayText =
 
 validator : Validator String Model
 validator =
-    Validate.all
-        [ ifBlank .addressLine1 "Address 1 is missing."
-        , ifBlank .city "City is missing."
-        , ifBlank .state "State is missing."
-        , ifBlank .postalCode "Postal Code is missing."
-        , ifBlank .paymentDate "Date is missing."
-        , postalCodeValidator
-        , amountValidator
-        , fromErrors dateMaxToErrors
-        ]
+    Validate.all <|
+        requiredFieldValidators
+            ++ [ postalCodeValidator
+               , amountValidator
+               , fromErrors dateMaxToErrors
+               , paymentInfoValidator
+               , orgTypeValidator
+               , ownersValidator
+               ]
 
 
 amountValidator : Validator String Model
@@ -739,6 +733,26 @@ reconcileTxnEncoder model =
     , bankTxn = model.bankTxn
     , committeeId = model.committeeId
     }
+
+
+paymentInfoValidator : Validator String Model
+paymentInfoValidator =
+    fromErrors paymentInfoOnModelToErrors
+
+
+paymentInfoOnModelToErrors : Model -> List String
+paymentInfoOnModelToErrors { paymentMethod, inKindType, inKindDesc, checkNumber } =
+    fromPaymentInfo paymentMethod inKindType inKindDesc checkNumber
+
+
+orgTypeValidator : Validator String Model
+orgTypeValidator =
+    fromErrors orgTypeOnModelToErrors
+
+
+orgTypeOnModelToErrors : Model -> List String
+orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType, entityName } =
+    fromOrgType maybeOrgOrInd maybeEntityType entityName
 
 
 createContribEncoder : Model -> CreateContrib.EncodeModel
