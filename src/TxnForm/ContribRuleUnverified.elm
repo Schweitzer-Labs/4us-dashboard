@@ -19,7 +19,7 @@ import Browser.Navigation exposing (load)
 import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
-import ContribInfo exposing (requiredFieldValidators)
+import ContribInfo
 import Copy
 import DataTable exposing (DataRow)
 import Direction
@@ -685,6 +685,21 @@ validator =
                , orgTypeValidator
                , ownersValidator
                ]
+
+
+requiredFieldValidators : List (Validator String Model)
+requiredFieldValidators =
+    [ paymentInfoValidator
+    , ifBlank .amount "Payment Amount is missing"
+    , ifBlank .paymentDate "Payment Date is missing"
+    , ifNothing .paymentMethod "Processing Info is missing"
+    , ifBlank .firstName "First Name is missing"
+    , ifBlank .lastName "Last name is missing"
+    , ifBlank .city "City is missing"
+    , ifBlank .state "State is missing"
+    , ifBlank .postalCode "Postal Code is missing."
+    , ifBlank .addressLine1 "Address is missing"
+    ]
 
 
 amountValidator : Validator String Model

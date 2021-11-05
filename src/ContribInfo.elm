@@ -167,8 +167,10 @@ contribInfoValidator =
                ]
 
 
+requiredFieldValidators : List (Validator String ContribValidatorModel)
 requiredFieldValidators =
-    [ ifBlank .amount "Payment Amount is missing"
+    [ paymentInfoValidator
+    , ifBlank .amount "Payment Amount is missing"
     , ifBlank .paymentDate "Payment Date is missing"
     , ifNothing .paymentMethod "Processing Info is missing"
     , ifBlank .firstName "First Name is missing"
