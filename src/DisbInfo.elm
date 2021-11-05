@@ -60,7 +60,7 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
                 [ Grid.col
                     []
                     [ Form.label [ for "recipient-name" ]
-                        [ text "* Recipient Info"
+                        [ text "*Recipient Info"
                         , if isEditable then
                             span [ class "hover-underline hover-pointer", Spacing.ml2, onClick toggleEdit ]
                                 [ if disabled == True then
@@ -103,13 +103,13 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
            ]
         ++ (case ( amount, paymentDate, paymentMethod ) of
                 ( Just a, Just p, Just pm ) ->
-                    AmountDate.view { amount = a, paymentDate = p, disabled = disabled, label = "* Payment Date" }
+                    AmountDate.view { amount = a, paymentDate = p, disabled = disabled, label = "*Payment Date" }
                         ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] (PaymentMethod.dropdown (toData pm) (toMsg pm) True) ]
                            ]
                         ++ (if toData pm == Just PaymentMethod.Check then
                                 [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
                                     [ Grid.col []
-                                        [ inputText (toMsg checkNumber) (toData checkNumber) False "createDisbCheck" "* Check Number" ]
+                                        [ inputText (toMsg checkNumber) (toData checkNumber) False "createDisbCheck" "*Check Number" ]
                                     ]
                                 ]
 
@@ -118,7 +118,7 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
                            )
 
                 ( Just a, Just p, _ ) ->
-                    AmountDate.view { amount = a, paymentDate = p, disabled = disabled, label = "* Payment Date" }
+                    AmountDate.view { amount = a, paymentDate = p, disabled = disabled, label = "*Payment Date" }
 
                 _ ->
                     []

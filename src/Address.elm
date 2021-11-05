@@ -47,7 +47,7 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
                     addressLine1
                     disabled
                     (id ++ "addressLine1")
-                    "* Street Address"
+                    "*Street Address"
                 ]
             , Form.col [ Col.lg6 ]
                 [ inputText
@@ -65,7 +65,7 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
                     city
                     disabled
                     (id ++ "city")
-                    "* City"
+                    "*City"
                 ]
             , Form.col [ Col.lg3 ]
                 [ State.view stateMsg state disabled id ]
@@ -75,7 +75,7 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
                     postalCode
                     disabled
                     (id ++ "postalCode")
-                    "* Postal Code"
+                    "*Postal Code"
                 ]
             ]
         ]

@@ -125,7 +125,7 @@ loadedView model =
                     Just PaymentMethod.Check ->
                         [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
                             [ Grid.col []
-                                [ inputText CheckNumberUpdated model.checkNumber model.formDisabled "createDisbCheck" "* Check Number" ]
+                                [ inputText CheckNumberUpdated model.checkNumber model.formDisabled "createDisbCheck" "*Check Number" ]
                             ]
                         ]
 
