@@ -25,7 +25,7 @@ import DataTable exposing (DataRow)
 import Direction
 import EmploymentStatus
 import EntityType
-import Errors exposing (fromOrgType, fromOwners, fromPaymentInfo, fromPostalCode)
+import Errors exposing (fromContribPaymentInfo, fromOrgType, fromOwners, fromPostalCode)
 import FormID exposing (Model(..))
 import Html exposing (Html, div, h6, span, text)
 import Html.Attributes exposing (class)
@@ -757,7 +757,7 @@ paymentInfoValidator =
 
 paymentInfoOnModelToErrors : Model -> List String
 paymentInfoOnModelToErrors { paymentMethod, inKindType, inKindDesc, checkNumber } =
-    fromPaymentInfo paymentMethod inKindType inKindDesc checkNumber
+    fromContribPaymentInfo paymentMethod inKindType inKindDesc checkNumber
 
 
 orgTypeValidator : Validator String Model
