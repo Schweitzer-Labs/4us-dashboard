@@ -31,10 +31,11 @@ import Cents exposing (toDollarData)
 import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import Copy
+import CreateDisbursement exposing (requiredFieldValidators)
 import DataTable exposing (DataRow)
 import Direction
 import DisbInfo
-import Errors exposing (fromDisbPaymentInfo, fromInKind, fromPostalCode)
+import Errors exposing (fromInKind, fromPostalCode)
 import FormID exposing (Model(..))
 import Html exposing (Html, div, h6, input, span, text)
 import Html.Attributes as Attr exposing (attribute, class, type_)
@@ -527,21 +528,6 @@ validator =
                ]
 
 
-requiredFieldValidators =
-    [ paymentInfoValidator
-    , ifBlank .entityName "Entity name is missing."
-    , ifBlank .addressLine1 "Address 1 is missing."
-    , ifBlank .city "City is missing."
-    , ifBlank .state "State is missing."
-    , ifBlank .postalCode "Postal Code is missing."
-    , ifBlank .paymentDate "Payment Date is missing"
-    , ifNothing .paymentMethod "Processing Info is missing"
-    , ifNothing .isSubcontracted "Subcontracted Information is missing"
-    , ifNothing .isPartialPayment "Partial Payment Information is missing"
-    , ifNothing .isExistingLiability "Existing Liability Information is missing"
-    ]
-
-
 amountValidator : Validator String Model
 amountValidator =
     Validate.all
@@ -580,16 +566,6 @@ isInKindValidator =
 isInKindOnModelToErrors : Model -> List String
 isInKindOnModelToErrors model =
     fromInKind model.isInKind
-
-
-paymentInfoValidator : Validator String Model
-paymentInfoValidator =
-    fromErrors paymentInfoOnModelToErrors
-
-
-paymentInfoOnModelToErrors : Model -> List String
-paymentInfoOnModelToErrors { paymentMethod, checkNumber } =
-    fromDisbPaymentInfo paymentMethod checkNumber
 
 
 totalSelectedMatch : Model -> Bool

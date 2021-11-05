@@ -1,4 +1,4 @@
-module Errors exposing (fromContribPaymentInfo, fromDisbPaymentInfo, fromEmailAddress, fromInKind, fromMaxAmount, fromMaxDate, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode, view)
+module Errors exposing (fromEmailAddress, fromInKind, fromMaxAmount, fromMaxDate, fromOrgType, fromOwners, fromPaymentInfo, fromPhoneNumber, fromPostalCode, view)
 
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
@@ -49,8 +49,8 @@ fromPostalCode postalCode =
         []
 
 
-fromContribPaymentInfo : Maybe PaymentMethod.Model -> Maybe InKindType.Model -> String -> String -> Errors
-fromContribPaymentInfo payMethod inKindType desc checkNumber =
+fromPaymentInfo : Maybe PaymentMethod.Model -> Maybe InKindType.Model -> String -> String -> Errors
+fromPaymentInfo payMethod inKindType desc checkNumber =
     case payMethod of
         Just PaymentMethod.InKind ->
             case inKindType of
@@ -65,21 +65,6 @@ fromContribPaymentInfo payMethod inKindType desc checkNumber =
                 Nothing ->
                     [ "In-Kind Info is missing" ]
 
-        Just PaymentMethod.Check ->
-            case String.isEmpty checkNumber of
-                True ->
-                    [ "Check Number is missing" ]
-
-                False ->
-                    []
-
-        _ ->
-            []
-
-
-fromDisbPaymentInfo : Maybe PaymentMethod.Model -> String -> Errors
-fromDisbPaymentInfo payMethod checkNumber =
-    case payMethod of
         Just PaymentMethod.Check ->
             case String.isEmpty checkNumber of
                 True ->

@@ -14,7 +14,7 @@ module CreateDisbursement exposing
 import Api.CreateDisb as CreateDisb
 import Bootstrap.Grid as Grid exposing (Column)
 import DisbInfo
-import Errors exposing (fromDisbPaymentInfo, fromInKind, fromPostalCode)
+import Errors exposing (fromInKind, fromPostalCode)
 import Html exposing (Html)
 import PaymentMethod
 import PurposeCode exposing (PurposeCode)
@@ -181,8 +181,7 @@ validator =
 
 
 requiredFieldValidators =
-    [ paymentInfoValidator
-    , ifBlank .entityName "Entity name is missing."
+    [ ifBlank .entityName "Entity name is missing."
     , ifBlank .addressLine1 "Address 1 is missing."
     , ifBlank .city "City is missing."
     , ifBlank .state "State is missing."
@@ -228,16 +227,6 @@ isInKindValidator =
 isInKindOnModelToErrors : Model -> List String
 isInKindOnModelToErrors model =
     fromInKind model.isInKind
-
-
-paymentInfoValidator : Validator String Model
-paymentInfoValidator =
-    fromErrors paymentInfoOnModelToErrors
-
-
-paymentInfoOnModelToErrors : Model -> List String
-paymentInfoOnModelToErrors { paymentMethod, checkNumber } =
-    fromDisbPaymentInfo paymentMethod checkNumber
 
 
 toEncodeModel : Model -> CreateDisb.EncodeModel
