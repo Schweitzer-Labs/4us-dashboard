@@ -1,4 +1,4 @@
-module ContribInfo exposing (Config, ContribValidatorModel, validateModel, view)
+module ContribInfo exposing (Config, ContribValidatorModel, requiredFieldValidators, toSubmitDisabled, validateModel, view)
 
 import Address
 import AmountDate
@@ -158,24 +158,33 @@ type alias ContribValidatorModel =
 
 contribInfoValidator : Validator String ContribValidatorModel
 contribInfoValidator =
-    Validate.firstError
-        [ ifBlank .amount "Payment Amount is missing"
-        , ifBlank .paymentDate "Payment Date is missing"
-        , ifNothing .paymentMethod "Processing Info is missing"
-        , ifBlank .firstName "First Name is missing"
-        , ifBlank .lastName "Last name is missing"
-        , ifBlank .city "City is missing"
-        , ifBlank .state "State is missing"
-        , ifBlank .postalCode "Postal Code is missing."
-        , ifBlank .addressLine1 "Address is missing"
-        , postalCodeValidator
-        , paymentInfoValidator
-        , orgTypeValidator
+    Validate.firstError <|
+        requiredFieldValidators
+            ++ [ postalCodeValidator
+               , paymentInfoValidator
+               , orgTypeValidator
+               , ownersValidator
+               ]
 
-        --, emailValidator
-        --, phoneValidator
-        , ownersValidator
-        ]
+
+requiredFieldValidators : List (Validator String ContribValidatorModel)
+requiredFieldValidators =
+    [ paymentInfoValidator
+    , ifBlank .amount "Payment Amount is missing"
+    , ifBlank .paymentDate "Payment Date is missing"
+    , ifNothing .paymentMethod "Processing Info is missing"
+    , ifBlank .firstName "First Name is missing"
+    , ifBlank .lastName "Last name is missing"
+    , ifBlank .city "City is missing"
+    , ifBlank .state "State is missing"
+    , ifBlank .postalCode "Postal Code is missing."
+    , ifBlank .addressLine1 "Address is missing"
+    ]
+
+
+toSubmitDisabled =
+    Validate.any
+        requiredFieldValidators
 
 
 validateModel : (a -> ContribValidatorModel) -> a -> Result (List String) (Valid ContribValidatorModel)

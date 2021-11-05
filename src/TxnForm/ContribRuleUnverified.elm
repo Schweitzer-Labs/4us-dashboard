@@ -93,7 +93,6 @@ type alias Model =
     , lastCreatedTxnId : String
     , timezone : Time.Zone
     , createContribIsVisible : Bool
-    , createContribButtonIsDisabled : Bool
     , createContribIsSubmitting : Bool
     , reconcileButtonIsDisabled : Bool
     }
@@ -140,7 +139,6 @@ init config txns bankTxn =
     , inKindDesc = ""
     , paymentMethod = Nothing
     , createContribIsVisible = False
-    , createContribButtonIsDisabled = False
     , createContribIsSubmitting = False
     , reconcileButtonIsDisabled = True
     , maybeError = Nothing
@@ -181,7 +179,6 @@ clearForm model =
         , ownersViewModel = OwnersView.init (Maybe.withDefault [] model.owners) (Just <| FormID.toString ReconcileContrib)
         , paymentMethod = Nothing
         , createContribIsVisible = False
-        , createContribButtonIsDisabled = False
         , createContribIsSubmitting = False
         , maybeError = Nothing
     }
@@ -250,7 +247,7 @@ contribFormRow model =
             , processPayment = False
             }
         ]
-            ++ [ buttonRow CreateContribToggled "Create" "Cancel" CreateContribSubmitted model.createContribIsSubmitting model.createContribButtonIsDisabled ]
+            ++ [ buttonRow CreateContribToggled "Create" "Cancel" CreateContribSubmitted model.createContribIsSubmitting (not <| Validate.any requiredFieldValidators model) ]
 
     else
         []
@@ -444,7 +441,7 @@ update msg model =
                     ( fromError model error, scrollToError <| FormID.toString FormID.ReconcileContrib )
 
                 Ok val ->
-                    ( { model | createContribButtonIsDisabled = True, createContribIsSubmitting = True }
+                    ( { model | createContribIsSubmitting = True }
                     , createContrib model
                     )
 
@@ -477,7 +474,6 @@ update msg model =
                         ResValidationFailure errList ->
                             ( { model
                                 | maybeError = List.head errList
-                                , createContribButtonIsDisabled = False
                                 , createContribIsSubmitting = False
                               }
                             , scrollToError <| FormID.toString FormID.ReconcileContrib
@@ -486,7 +482,6 @@ update msg model =
                 Err err ->
                     ( { model
                         | maybeError = List.head (Api.decodeError err)
-                        , createContribButtonIsDisabled = False
                         , createContribIsSubmitting = False
                       }
                     , scrollToError <| FormID.toString FormID.ReconcileContrib
@@ -681,20 +676,30 @@ exitButton hideMsg displayText =
 
 validator : Validator String Model
 validator =
-    Validate.all
-        [ ifBlank .addressLine1 "Address 1 is missing."
-        , ifBlank .city "City is missing."
-        , ifBlank .state "State is missing."
-        , ifBlank .postalCode "Postal Code is missing."
-        , ifBlank .paymentDate "Date is missing."
-        , ifNothing .paymentMethod "Processing Info is missing"
-        , postalCodeValidator
-        , amountValidator
-        , fromErrors dateMaxToErrors
-        , paymentInfoValidator
-        , orgTypeValidator
-        , ownersValidator
-        ]
+    Validate.all <|
+        requiredFieldValidators
+            ++ [ postalCodeValidator
+               , amountValidator
+               , fromErrors dateMaxToErrors
+               , paymentInfoValidator
+               , orgTypeValidator
+               , ownersValidator
+               ]
+
+
+requiredFieldValidators : List (Validator String Model)
+requiredFieldValidators =
+    [ paymentInfoValidator
+    , ifBlank .amount "Payment Amount is missing"
+    , ifBlank .paymentDate "Payment Date is missing"
+    , ifNothing .paymentMethod "Processing Info is missing"
+    , ifBlank .firstName "First Name is missing"
+    , ifBlank .lastName "Last name is missing"
+    , ifBlank .city "City is missing"
+    , ifBlank .state "State is missing"
+    , ifBlank .postalCode "Postal Code is missing."
+    , ifBlank .addressLine1 "Address is missing"
+    ]
 
 
 amountValidator : Validator String Model
