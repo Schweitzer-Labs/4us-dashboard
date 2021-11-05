@@ -12,7 +12,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromEmailAddress, fromOrgType, fromOwners, fromPaymentInfo, fromPhoneNumber, fromPostalCode)
+import Errors exposing (fromContribPaymentInfo, fromEmailAddress, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode)
 import Html exposing (Html, div, h5, h6, span, text)
 import Html.Attributes as Attr exposing (attribute, class, for)
 import Html.Events exposing (onClick)
@@ -243,7 +243,7 @@ phoneNumberOnModelToErrors { phoneNumber, isPhoneNumValid } =
 
 paymentInfoOnModelToErrors : ContribValidatorModel -> List String
 paymentInfoOnModelToErrors { paymentMethod, inKindType, inKindDesc, checkNumber } =
-    fromPaymentInfo paymentMethod inKindType inKindDesc checkNumber
+    fromContribPaymentInfo paymentMethod inKindType inKindDesc checkNumber
 
 
 orgTypeOnModelToErrors : ContribValidatorModel -> List String
