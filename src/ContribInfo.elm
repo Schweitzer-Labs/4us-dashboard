@@ -272,7 +272,7 @@ amountDateRow { amount, paymentDate, disabled, paymentMethod } =
         { amount = ( toData amount, toMsg amount )
         , paymentDate = ( toData paymentDate, toMsg paymentDate )
         , disabled = disabled
-        , label = "Date Received from Donor"
+        , label = "* Date Received from Donor"
         }
 
 
@@ -281,7 +281,7 @@ checkRow { checkNumber, disabled } =
     [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
         [ Grid.col
             []
-            [ inputText (toMsg checkNumber) (toData checkNumber) disabled "createDisbCheck" "Check Number" ]
+            [ inputText (toMsg checkNumber) (toData checkNumber) disabled "createDisbCheck" "* Check Number" ]
         ]
     ]
 
@@ -301,7 +301,7 @@ inKindRow { inKindType, inKindDesc, disabled } =
                     []
                   <|
                     InKindType.radioList msg (toData inKindType) disabled
-                        ++ [ inputText (toMsg inKindDesc) (toData inKindDesc) disabled "createContribDescription" "Description" ]
+                        ++ [ inputText (toMsg inKindDesc) (toData inKindDesc) disabled "createContribDescription" "* Description" ]
                 ]
            ]
 
@@ -435,7 +435,7 @@ orgRows c =
                         (toData c.entityName)
                         c.disabled
                         "contribOwnerName"
-                        "Organization Name"
+                        "* Organization Name"
                     ]
                 ]
            ]
@@ -469,10 +469,10 @@ piiRows c =
         [ Row.attrs [ Spacing.mt1 ] ]
         [ Grid.col
             []
-            [ inputText (toMsg c.firstName) (toData c.firstName) c.disabled "createContribFirstName" "First Name" ]
+            [ inputText (toMsg c.firstName) (toData c.firstName) c.disabled "createContribFirstName" "* First Name" ]
         , Grid.col
             []
-            [ inputText (toMsg c.lastName) (toData c.lastName) c.disabled "createContribLastName" "Last Name" ]
+            [ inputText (toMsg c.lastName) (toData c.lastName) c.disabled "createContribLastName" "* Last Name" ]
         ]
     ]
         ++ addressRows c
