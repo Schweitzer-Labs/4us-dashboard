@@ -16,7 +16,7 @@ import Html exposing (Html, div, span, text)
 import Html.Attributes as Attr exposing (attribute, class, for)
 import Html.Events exposing (onClick)
 import PaymentMethod
-import PurposeCode
+import PurposeCode exposing (PurposeCode)
 import YesOrNo exposing (yesOrNo)
 
 
