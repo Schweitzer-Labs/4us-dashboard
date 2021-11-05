@@ -37,7 +37,7 @@ row ( amount, amountMsg ) ( paymentDate, paymentDateMsg ) disabled label =
                 amount
                 disabled
                 "paymentAmount"
-                "Payment Amount"
+                "*Payment Amount"
             ]
         , Grid.col
             []

@@ -83,7 +83,7 @@ withStateKeys =
 view : (String -> msg) -> String -> Bool -> String -> Html msg
 view msg currentValue isDisabled id =
     Form.group []
-        [ Form.label [] [ text "State" ]
+        [ Form.label [] [ text "*State" ]
         , Select.select
             [ Select.id "State"
             , Select.onChange msg
