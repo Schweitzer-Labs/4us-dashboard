@@ -153,6 +153,10 @@ type alias ContribValidatorModel =
     , inKindType : Maybe InKindType.Model
     , inKindDesc : String
     , owners : Owner.Owners
+    , cardNumber : String
+    , expirationMonth : String
+    , expirationYear : String
+    , cvv : String
     }
 
 
@@ -169,8 +173,7 @@ contribInfoValidator =
 
 requiredFieldValidators : List (Validator String ContribValidatorModel)
 requiredFieldValidators =
-    [ paymentInfoValidator
-    , ifBlank .amount "Payment Amount is missing"
+    [ ifBlank .amount "Payment Amount is missing"
     , ifBlank .paymentDate "Payment Date is missing"
     , ifNothing .paymentMethod "Processing Info is missing"
     , ifBlank .firstName "First Name is missing"
@@ -242,8 +245,17 @@ phoneNumberOnModelToErrors { phoneNumber, isPhoneNumValid } =
 
 
 paymentInfoOnModelToErrors : ContribValidatorModel -> List String
-paymentInfoOnModelToErrors { paymentMethod, inKindType, inKindDesc, checkNumber } =
-    fromContribPaymentInfo paymentMethod inKindType inKindDesc checkNumber
+paymentInfoOnModelToErrors model =
+    fromContribPaymentInfo
+        { paymentMethod = model.paymentMethod
+        , inKindType = model.inKindType
+        , inKindDescription = model.inKindDesc
+        , checkNumber = model.checkNumber
+        , cardNumber = model.cardNumber
+        , expirationMonth = model.expirationMonth
+        , expirationYear = model.expirationYear
+        , cvv = model.cvv
+        }
 
 
 orgTypeOnModelToErrors : ContribValidatorModel -> List String

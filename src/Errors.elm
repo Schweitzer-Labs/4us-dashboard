@@ -9,6 +9,7 @@ import InKindType
 import List exposing (singleton)
 import OrgOrInd
 import Owners as Owner
+import Payment.CreditCard.Validation as CardValidation
 import PaymentMethod
 import Time
 import Timestamp
@@ -49,13 +50,29 @@ fromPostalCode postalCode =
         []
 
 
-fromContribPaymentInfo : Maybe PaymentMethod.Model -> Maybe InKindType.Model -> String -> String -> Errors
-fromContribPaymentInfo payMethod inKindType desc checkNumber =
-    case payMethod of
+
+--cardNumber, expirationMonth, expirationYear, cvv
+
+
+type alias ContribPaymentInfoConfig =
+    { paymentMethod : Maybe PaymentMethod.Model
+    , inKindType : Maybe InKindType.Model
+    , inKindDescription : String
+    , checkNumber : String
+    , cardNumber : String
+    , expirationMonth : String
+    , expirationYear : String
+    , cvv : String
+    }
+
+
+fromContribPaymentInfo : ContribPaymentInfoConfig -> Errors
+fromContribPaymentInfo config =
+    case config.paymentMethod of
         Just PaymentMethod.InKind ->
-            case inKindType of
+            case config.inKindType of
                 Just a ->
-                    case desc of
+                    case config.inKindDescription of
                         "" ->
                             [ "In-Kind Description is missing" ]
 
@@ -66,12 +83,31 @@ fromContribPaymentInfo payMethod inKindType desc checkNumber =
                     [ "In-Kind Info is missing" ]
 
         Just PaymentMethod.Check ->
-            case String.isEmpty checkNumber of
+            case String.isEmpty config.checkNumber of
                 True ->
                     [ "Check Number is missing" ]
 
                 False ->
                     []
+
+        Just PaymentMethod.Credit ->
+            if String.isEmpty config.cardNumber then
+                [ "Card Number is missing" ]
+
+            else if String.isEmpty config.expirationMonth then
+                [ "Expiration Month is missing" ]
+
+            else if String.isEmpty config.expirationYear then
+                [ "Expiration Year is missing" ]
+
+            else if String.isEmpty config.cvv then
+                [ "CCV is missing" ]
+
+            else if not <| CardValidation.isValid config.cardNumber then
+                [ "Invalid Credit Card" ]
+
+            else
+                []
 
         _ ->
             []
@@ -181,6 +217,12 @@ fromOwners owners maybeEntity =
 
     else
         []
+
+
+
+--cardNumber, expirationMonth, expirationYear, cvv
+--fromCreditCard: String -> String -> String -> String -> List String
+--fromCreditCard cardNumber expirationMonth expirationYear cvv =
 
 
 view : Errors -> List (Html msg)

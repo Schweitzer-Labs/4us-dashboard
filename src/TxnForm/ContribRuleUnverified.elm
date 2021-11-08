@@ -756,8 +756,17 @@ paymentInfoValidator =
 
 
 paymentInfoOnModelToErrors : Model -> List String
-paymentInfoOnModelToErrors { paymentMethod, inKindType, inKindDesc, checkNumber } =
-    fromContribPaymentInfo paymentMethod inKindType inKindDesc checkNumber
+paymentInfoOnModelToErrors model =
+    fromContribPaymentInfo
+        { paymentMethod = model.paymentMethod
+        , inKindType = model.inKindType
+        , inKindDescription = model.inKindDesc
+        , checkNumber = model.checkNumber
+        , cardNumber = model.cardNumber
+        , expirationMonth = model.expirationMonth
+        , expirationYear = model.expirationYear
+        , cvv = model.cvv
+        }
 
 
 orgTypeValidator : Validator String Model

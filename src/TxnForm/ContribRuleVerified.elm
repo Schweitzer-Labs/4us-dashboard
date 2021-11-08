@@ -449,6 +449,10 @@ validationMapper model =
     , inKindDesc = model.inKindDesc
     , inKindType = model.inKindType
     , owners = model.ownersViewModel.owners
+    , cardNumber = model.cardNumber
+    , expirationMonth = model.expirationMonth
+    , expirationYear = model.expirationYear
+    , cvv = model.cvv
     }
 
 
