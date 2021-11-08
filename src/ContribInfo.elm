@@ -12,7 +12,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromContribPaymentInfo, fromEmailAddress, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode)
+import Errors exposing (fromContribPaymentInfo, fromCreditCardInfo, fromEmailAddress, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode)
 import Html exposing (Html, div, h5, h6, span, text)
 import Html.Attributes as Attr exposing (attribute, class, for)
 import Html.Events exposing (onClick)
@@ -165,9 +165,9 @@ contribInfoValidator =
     Validate.firstError <|
         requiredFieldValidators
             ++ [ postalCodeValidator
-               , paymentInfoValidator
                , orgTypeValidator
                , ownersValidator
+               , creditCardNumberValidator
                ]
 
 
@@ -182,6 +182,7 @@ requiredFieldValidators =
     , ifBlank .state "State is missing"
     , ifBlank .postalCode "Postal Code is missing."
     , ifBlank .addressLine1 "Address is missing"
+    , paymentInfoValidator
     ]
 
 
@@ -229,6 +230,11 @@ phoneValidator =
     fromErrors phoneNumberOnModelToErrors
 
 
+creditCardNumberValidator : Validator String ContribValidatorModel
+creditCardNumberValidator =
+    fromErrors creditCardNumberOnModelToErrors
+
+
 postalCodeOnModelToErrors : ContribValidatorModel -> List String
 postalCodeOnModelToErrors model =
     fromPostalCode model.postalCode
@@ -256,6 +262,11 @@ paymentInfoOnModelToErrors model =
         , expirationYear = model.expirationYear
         , cvv = model.cvv
         }
+
+
+creditCardNumberOnModelToErrors : ContribValidatorModel -> List String
+creditCardNumberOnModelToErrors { paymentMethod, cardNumber } =
+    fromCreditCardInfo paymentMethod cardNumber
 
 
 orgTypeOnModelToErrors : ContribValidatorModel -> List String

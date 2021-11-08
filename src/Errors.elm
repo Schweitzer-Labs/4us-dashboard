@@ -1,4 +1,4 @@
-module Errors exposing (fromContribPaymentInfo, fromDisbPaymentInfo, fromEmailAddress, fromInKind, fromMaxAmount, fromMaxDate, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode, view)
+module Errors exposing (fromContribPaymentInfo, fromCreditCardInfo, fromDisbPaymentInfo, fromEmailAddress, fromInKind, fromMaxAmount, fromMaxDate, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode, view)
 
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
@@ -72,11 +72,11 @@ fromContribPaymentInfo config =
         Just PaymentMethod.InKind ->
             case config.inKindType of
                 Just a ->
-                    case config.inKindDescription of
-                        "" ->
+                    case String.isEmpty config.inKindDescription of
+                        True ->
                             [ "In-Kind Description is missing" ]
 
-                        _ ->
+                        False ->
                             []
 
                 Nothing ->
@@ -103,7 +103,18 @@ fromContribPaymentInfo config =
             else if String.isEmpty config.cvv then
                 [ "CCV is missing" ]
 
-            else if not <| CardValidation.isValid config.cardNumber then
+            else
+                []
+
+        _ ->
+            []
+
+
+fromCreditCardInfo : Maybe PaymentMethod.Model -> String -> Errors
+fromCreditCardInfo paymentMethod cardNumber =
+    case paymentMethod of
+        Just PaymentMethod.Credit ->
+            if not <| CardValidation.isValid cardNumber then
                 [ "Invalid Credit Card" ]
 
             else
@@ -217,12 +228,6 @@ fromOwners owners maybeEntity =
 
     else
         []
-
-
-
---cardNumber, expirationMonth, expirationYear, cvv
---fromCreditCard: String -> String -> String -> String -> List String
---fromCreditCard cardNumber expirationMonth expirationYear cvv =
 
 
 view : Errors -> List (Html msg)
