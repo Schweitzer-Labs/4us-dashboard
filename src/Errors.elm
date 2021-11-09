@@ -1,4 +1,4 @@
-module Errors exposing (fromContribPaymentInfo, fromDisbPaymentInfo, fromEmailAddress, fromInKind, fromMaxAmount, fromMaxDate, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode, view)
+module Errors exposing (fromContribPaymentInfo, fromDisbPaymentInfo, fromEmailAddress, fromFamilyStatus, fromInKind, fromMaxAmount, fromMaxDate, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode, view)
 
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
@@ -107,6 +107,21 @@ fromOrgType orgType entity entityName =
 
                 Nothing ->
                     [ "Org Classification is missing" ]
+
+        _ ->
+            []
+
+
+fromFamilyStatus : Maybe OrgOrInd.Model -> Maybe EntityType.Model -> Errors
+fromFamilyStatus orgOrInd entityType =
+    case orgOrInd of
+        Just OrgOrInd.Ind ->
+            case entityType of
+                Nothing ->
+                    [ "Family Status is missing" ]
+
+                _ ->
+                    []
 
         _ ->
             []

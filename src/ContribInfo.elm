@@ -12,7 +12,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromContribPaymentInfo, fromEmailAddress, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode)
+import Errors exposing (fromContribPaymentInfo, fromEmailAddress, fromFamilyStatus, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode)
 import Html exposing (Html, div, h5, h6, span, text)
 import Html.Attributes as Attr exposing (attribute, class, for)
 import Html.Events exposing (onClick)
@@ -164,12 +164,14 @@ contribInfoValidator =
                , paymentInfoValidator
                , orgTypeValidator
                , ownersValidator
+               , familyStatusValidator
                ]
 
 
 requiredFieldValidators : List (Validator String ContribValidatorModel)
 requiredFieldValidators =
     [ paymentInfoValidator
+    , familyStatusValidator
     , ifBlank .amount "Payment Amount is missing"
     , ifBlank .paymentDate "Payment Date is missing"
     , ifNothing .paymentMethod "Processing Info is missing"
@@ -211,6 +213,11 @@ orgTypeValidator =
     fromErrors orgTypeOnModelToErrors
 
 
+familyStatusValidator : Validator String ContribValidatorModel
+familyStatusValidator =
+    fromErrors familyStatusOnModelToErrors
+
+
 emailValidator : Validator String ContribValidatorModel
 emailValidator =
     fromErrors emailAddressOnModelToErrors
@@ -249,6 +256,11 @@ paymentInfoOnModelToErrors { paymentMethod, inKindType, inKindDesc, checkNumber 
 orgTypeOnModelToErrors : ContribValidatorModel -> List String
 orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType, entityName } =
     fromOrgType maybeOrgOrInd maybeEntityType entityName
+
+
+familyStatusOnModelToErrors : ContribValidatorModel -> List String
+familyStatusOnModelToErrors { maybeOrgOrInd, maybeEntityType, entityName } =
+    fromFamilyStatus maybeOrgOrInd maybeEntityType
 
 
 ownersOnModelToErrors : ContribValidatorModel -> List String
