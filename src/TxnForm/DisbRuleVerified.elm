@@ -16,11 +16,13 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
+import Cents
 import Copy
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
 import ExpandableBankData
 import Html exposing (Html)
+import Html.Attributes exposing (class)
 import Loading
 import PaymentInfo
 import PaymentMethod
@@ -78,7 +80,7 @@ init txn =
     , isPartialPayment = txn.isPartialPayment
     , isExistingLiability = txn.isExistingLiability
     , isInKind = Nothing
-    , amount = ""
+    , amount = Cents.stringToDollar <| String.fromInt txn.amount
     , paymentDate = ""
     , paymentMethod = Just txn.paymentMethod
     , checkNumber = Maybe.withDefault "" txn.checkNumber
@@ -132,6 +134,7 @@ loadedView model =
                     _ ->
                         []
                )
+            ++ amountRow model
         )
 
 
@@ -159,6 +162,20 @@ disbFormRow model =
         , maybeError = model.maybeError
         , txnID = Just model.txn.id
         }
+
+
+amountRow : Model -> List (Html Msg)
+amountRow { amount, formDisabled, txn } =
+    if txn.bankVerified then
+        []
+
+    else
+        [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
+            [ Grid.col
+                []
+                [ inputText AmountUpdated amount formDisabled "disbRuleVerifiedAmount" "*Amount" ]
+            ]
+        ]
 
 
 type Msg

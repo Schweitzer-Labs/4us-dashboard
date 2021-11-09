@@ -469,10 +469,14 @@ dateWithFormat model =
 
 
 amountRow : Model -> List (Html Msg)
-amountRow { amount, disabled } =
-    [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
-        [ Grid.col
-            []
-            [ inputText AmountUpdated amount disabled "contribRuleVerifiedAmount" "*Amount" ]
+amountRow { amount, disabled, txn } =
+    if txn.bankVerified then
+        []
+
+    else
+        [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
+            [ Grid.col
+                []
+                [ inputText AmountUpdated amount disabled "contribRuleVerifiedAmount" "*Amount" ]
+            ]
         ]
-    ]
