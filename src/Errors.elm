@@ -1,4 +1,4 @@
-module Errors exposing (fromContribPaymentInfo, fromCreditCardInfo, fromDisbPaymentInfo, fromEmailAddress, fromInKind, fromMaxAmount, fromMaxDate, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode, view)
+module Errors exposing (fromAmendContribPaymentInfo, fromContribPaymentInfo, fromCreditCardInfo, fromDisbPaymentInfo, fromEmailAddress, fromInKind, fromMaxAmount, fromMaxDate, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode, view)
 
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
@@ -127,6 +127,21 @@ fromCreditCardInfo paymentMethod cardNumber =
 fromDisbPaymentInfo : Maybe PaymentMethod.Model -> String -> Errors
 fromDisbPaymentInfo payMethod checkNumber =
     case payMethod of
+        Just PaymentMethod.Check ->
+            case String.isEmpty checkNumber of
+                True ->
+                    [ "Check Number is missing" ]
+
+                False ->
+                    []
+
+        _ ->
+            []
+
+
+fromAmendContribPaymentInfo : Maybe PaymentMethod.Model -> String -> Errors
+fromAmendContribPaymentInfo paymentMethod checkNumber =
+    case paymentMethod of
         Just PaymentMethod.Check ->
             case String.isEmpty checkNumber of
                 True ->
