@@ -12,6 +12,7 @@ module TxnForm.ContribRuleVerified exposing
     )
 
 import Api.AmendContrib as AmendContrib
+import AppInput exposing (inputText)
 import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
@@ -170,6 +171,7 @@ loadedView model =
             ++ PaymentInfo.view model.txn
             ++ [ contribFormRow model ]
             ++ bankData
+            ++ amountRow model
         )
 
 
@@ -413,7 +415,7 @@ amendTxnEncoder model =
     , entityName = model.entityName
     , maybeOrgOrInd = model.maybeOrgOrInd
     , maybeEntityType = model.maybeEntityType
-    , amount = model.txn.amount
+    , amount = Maybe.withDefault 0 <| String.toInt model.amount
     , owners = model.owners
     , ownerName = model.ownerName
     , committeeId = model.committeeId
@@ -464,3 +466,13 @@ dateWithFormat model =
 
     else
         model.paymentDate
+
+
+amountRow : Model -> List (Html Msg)
+amountRow { amount, disabled } =
+    [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
+        [ Grid.col
+            []
+            [ inputText AmountUpdated amount disabled "contribRuleVerifiedAmount" "*Amount" ]
+        ]
+    ]

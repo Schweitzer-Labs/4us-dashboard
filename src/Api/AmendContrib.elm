@@ -120,7 +120,7 @@ encode mapper val =
             Encode.object <|
                 [ ( "committeeId", Encode.string model.txn.committeeId )
                 , ( "transactionId", Encode.string model.txn.id )
-                , ( "amount", Encode.int model.txn.amount )
+                , ( "amount", Encode.int model.amount )
                 , ( "paymentMethod", Encode.string (PaymentMethod.toDataString model.txn.paymentMethod) )
                 , ( "firstName", Encode.string model.firstName )
                 , ( "lastName", Encode.string model.lastName )
