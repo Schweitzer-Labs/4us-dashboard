@@ -114,7 +114,10 @@ fromCreditCardInfo : Maybe PaymentMethod.Model -> String -> Errors
 fromCreditCardInfo paymentMethod cardNumber =
     case paymentMethod of
         Just PaymentMethod.Credit ->
-            if not <| CardValidation.isValid cardNumber then
+            if String.length cardNumber < 13 then
+                [ "Credit Card number is too short" ]
+
+            else if not <| CardValidation.isValid cardNumber then
                 [ "Invalid Credit Card" ]
 
             else
