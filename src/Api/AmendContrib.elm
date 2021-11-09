@@ -1,6 +1,7 @@
 module Api.AmendContrib exposing (EncodeModel, decoder, encode, query, send, successDecoder)
 
 import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldNotZero, optionalFieldOwners, optionalFieldString, optionalFieldStringInt)
+import Cents
 import Config exposing (Config)
 import EmploymentStatus
 import EntityType exposing (fromMaybeToStringWithDefaultInd)
@@ -101,7 +102,7 @@ type alias EncodeModel =
     , entityName : String
     , maybeOrgOrInd : Maybe OrgOrInd.Model
     , maybeEntityType : Maybe EntityType.Model
-    , amount : Int
+    , amount : String
     , owners : Maybe Owners.Owners
     , ownerName : String
     , committeeId : String
@@ -120,7 +121,7 @@ encode mapper val =
             Encode.object <|
                 [ ( "committeeId", Encode.string model.txn.committeeId )
                 , ( "transactionId", Encode.string model.txn.id )
-                , ( "amount", Encode.int model.amount )
+                , ( "amount", Encode.int <| Cents.fromDollars model.amount )
                 , ( "paymentMethod", Encode.string (PaymentMethod.toDataString model.txn.paymentMethod) )
                 , ( "firstName", Encode.string model.firstName )
                 , ( "lastName", Encode.string model.lastName )
