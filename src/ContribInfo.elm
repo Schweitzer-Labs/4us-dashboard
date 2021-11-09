@@ -259,7 +259,7 @@ orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType, entityName } =
 
 
 familyStatusOnModelToErrors : ContribValidatorModel -> List String
-familyStatusOnModelToErrors { maybeOrgOrInd, maybeEntityType, entityName } =
+familyStatusOnModelToErrors { maybeOrgOrInd, maybeEntityType } =
     fromFamilyStatus maybeOrgOrInd maybeEntityType
 
 
