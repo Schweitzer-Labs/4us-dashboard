@@ -370,10 +370,10 @@ creditRow { cardNumber, expirationMonth, expirationYear, cvv, disabled } =
                 ]
             ]
         , Grid.col []
-            [ MonthSelector.view <| toMsg expirationMonth
+            [ MonthSelector.view (toMsg expirationMonth) (toData expirationMonth)
             ]
         , Grid.col []
-            [ YearSelector.view <| toMsg expirationYear
+            [ YearSelector.view (toMsg expirationYear) (toData expirationYear)
             ]
         , Grid.col []
             [ Input.text
