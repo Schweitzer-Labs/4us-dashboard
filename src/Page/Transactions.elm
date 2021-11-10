@@ -1047,7 +1047,7 @@ update msg model =
             )
 
         ContribRuleVerifiedSubmit ->
-            case ContribInfo.validateModel ContribRuleVerified.validationMapper model.contribRuleVerifiedModal of
+            case ContribRuleVerified.validateModel ContribRuleVerified.validationMapper model.contribRuleVerifiedModal of
                 Err errors ->
                     let
                         error =
