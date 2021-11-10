@@ -1,4 +1,4 @@
-module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, update, view)
+module Page.Transactions exposing (DisclosureContext, Model, Msg, init, subscriptions, toSession, update, view)
 
 import Aggregations as Aggregations
 import Api exposing (Token)
@@ -77,7 +77,7 @@ type alias Model =
     , generateDisclosureModalDownloadDropdownState : Dropdown.State
     , getTransactionCanceled : Bool
     , generateDisclosureModalPreviewDropdownState : Dropdown.State
-    , generateDisclosureModalContext : DiscDropdownContext
+    , generateDisclosureModalContext : DisclosureContext
     , generateDisclosureModalPreview : Maybe String
     , actionsDropdown : Dropdown.State
     , filtersDropdown : Dropdown.State
@@ -85,6 +85,7 @@ type alias Model =
     , filterNeedsReview : Bool
     , disclosureSubmitting : Bool
     , disclosureSubmitted : Bool
+    , disclosurePreviewGenerating : Bool
     , createDisbursementModalVisibility : Modal.Visibility
     , createDisbursementModal : CreateDisbursement.Model
     , createDisbursementSubmitting : Bool
@@ -153,6 +154,7 @@ init config session aggs committee committeeId =
             , filterNeedsReview = False
             , disclosureSubmitting = False
             , disclosureSubmitted = False
+            , disclosurePreviewGenerating = False
             , createDisbursementModalVisibility = Modal.hidden
             , createDisbursementModal = CreateDisbursement.init committeeId
             , createDisbursementSubmitting = False
@@ -524,13 +526,6 @@ generateDisclosureModal model =
             []
             [ FileDisclosure.view
                 model.aggregations
-                ( ToggleGenerateDisclosureModalDownloadDropdown
-                , model.generateDisclosureModalDownloadDropdownState
-                )
-                ( ToggleGenerateDisclosureModalPreviewDropdown
-                , model.generateDisclosureModalPreviewDropdownState
-                )
-                GenerateReport
                 FilterNeedsReview
                 model.disclosureSubmitted
                 model.generateDisclosureModalPreview
@@ -539,26 +534,33 @@ generateDisclosureModal model =
         |> Modal.footer []
             [ Grid.containerFluid
                 []
-                [ buttonRow "File" FileDisclosure model.disclosureSubmitting False True ]
+                [ buttonRow model.disclosureSubmitting model.generateDisclosureModalPreview model.disclosurePreviewGenerating ]
             ]
         |> Modal.view model.generateDisclosureModalVisibility
 
 
-buttonRow : String -> Msg -> Bool -> Bool -> Bool -> Html Msg
-buttonRow displayText msg submitting enableExit disabled =
+buttonRow : Bool -> Maybe String -> Bool -> Html Msg
+buttonRow submitting preview isGeneratingPreview =
     Grid.row
         [ Row.betweenXs ]
         [ Grid.col
             [ Col.lg3, Col.attrs [ class "text-left" ] ]
-            (if enableExit then
-                [ exitButton ]
-
-             else
-                []
-            )
+            [ exitButton ]
         , Grid.col
-            [ Col.lg3 ]
-            [ submitButton displayText msg submitting disabled ]
+            [ Col.lg6 ]
+            [ Grid.row []
+                (case preview of
+                    Just a ->
+                        []
+
+                    Nothing ->
+                        [ Grid.col []
+                            [ submitButton "Preview" (GenerateReport FileFormat.CSV True) isGeneratingPreview False ]
+                        , Grid.col []
+                            [ submitButton "Download" (GenerateReport FileFormat.CSV False) submitting False ]
+                        ]
+                )
+            ]
         ]
 
 
@@ -567,7 +569,7 @@ exitButton =
     Button.button
         [ Button.outlinePrimary
         , Button.block
-        , Button.attrs [ onClick HideCreateContributionModal ]
+        , Button.attrs [ onClick HideGenerateDisclosureModal ]
         ]
         [ text "Exit" ]
 
@@ -1074,7 +1076,22 @@ update msg model =
         GenerateReport format includeHeaders ->
             case format of
                 FileFormat.CSV ->
-                    ( model, getReport model includeHeaders )
+                    let
+                        modalContext =
+                            if includeHeaders then
+                                Preview
+
+                            else
+                                Download
+
+                        isPreviewGenerating =
+                            if modalContext == Preview then
+                                True
+
+                            else
+                                False
+                    in
+                    ( { model | generateDisclosureModalContext = modalContext, disclosurePreviewGenerating = isPreviewGenerating }, getReport model includeHeaders )
 
                 FileFormat.PDF ->
                     ( model, Download.string "2021-periodic-report-july.pdf" "text/pdf" "2021-periodic-report-july" )
@@ -1084,7 +1101,7 @@ update msg model =
                 Download ->
                     case res of
                         Ok body ->
-                            ( model, Download.string "report.csv" "text/csv" <| GetReport.toCsvData body )
+                            ( { model | disclosurePreviewGenerating = False }, Download.string "report.csv" "text/csv" <| GetReport.toCsvData body )
 
                         Err _ ->
                             ( model, load <| loginUrl model.config model.committeeId )
@@ -1092,7 +1109,7 @@ update msg model =
                 Preview ->
                     case res of
                         Ok body ->
-                            ( { model | generateDisclosureModalPreview = Just (GetReport.toCsvData body) }, Cmd.none )
+                            ( { model | generateDisclosureModalPreview = Just (GetReport.toCsvData body), disclosurePreviewGenerating = False }, Cmd.none )
 
                         Err _ ->
                             ( model, load <| loginUrl model.config model.committeeId )
@@ -1188,6 +1205,7 @@ update msg model =
             ( { model
                 | generateDisclosureModalVisibility = Modal.hidden
                 , generateDisclosureModalPreview = Nothing
+                , generateDisclosureModalContext = Closed
               }
             , Cmd.none
             )
@@ -1511,7 +1529,6 @@ subscriptions model =
         , Dropdown.subscriptions model.actionsDropdown ToggleActionsDropdown
         , Dropdown.subscriptions model.filtersDropdown ToggleFiltersDropdown
         , Dropdown.subscriptions model.generateDisclosureModalDownloadDropdownState ToggleGenerateDisclosureModalDownloadDropdown
-        , Dropdown.subscriptions model.generateDisclosureModalPreviewDropdownState ToggleGenerateDisclosureModalPreviewDropdown
         , Modal.subscriptions model.createDisbursementModalVisibility CreateDisbursementModalAnimate
         , Modal.subscriptions model.disbRuleUnverifiedModalVisibility DisbRuleUnverifiedModalAnimate
         , Modal.subscriptions model.disbRuleVerifiedModalVisibility DisbRuleVerifiedModalAnimate
@@ -1549,7 +1566,7 @@ applyNeedsReviewFilter model txns =
         txns
 
 
-type DiscDropdownContext
+type DisclosureContext
     = Download
     | Preview
     | Closed
