@@ -1,6 +1,7 @@
 module TxnForm.DisbRuleVerified exposing
     ( Model
     , Msg(..)
+    , amendTxnEncoder
     , fromError
     , init
     , loadingInit
@@ -10,6 +11,7 @@ module TxnForm.DisbRuleVerified exposing
     , view
     )
 
+import Api.AmendDisb as AmendDisb
 import AppInput exposing (inputText)
 import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
@@ -314,3 +316,24 @@ isInKindOnModelToErrors model =
 toTxn : Model -> Transaction.Model
 toTxn model =
     model.txn
+
+
+amendTxnEncoder : Model -> AmendDisb.EncodeModel
+amendTxnEncoder model =
+    { txn = model.txn
+    , entityName = model.entityName
+    , addressLine1 = model.addressLine1
+    , addressLine2 = model.addressLine2
+    , city = model.city
+    , state = model.state
+    , postalCode = model.postalCode
+    , purposeCode = model.purposeCode
+    , isSubcontracted = model.isSubcontracted
+    , isPartialPayment = model.isPartialPayment
+    , isExistingLiability = model.isExistingLiability
+    , isInKind = model.isInKind
+    , amount = String.replace "$" "" model.amount
+    , paymentDate = model.paymentDate
+    , paymentMethod = model.paymentMethod
+    , checkNumber = model.checkNumber
+    }

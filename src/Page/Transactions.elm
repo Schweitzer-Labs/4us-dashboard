@@ -1480,7 +1480,7 @@ getReport model includeHeaders =
 
 amendDisb : Model -> Cmd Msg
 amendDisb model =
-    AmendDisb.send DisbRuleVerifiedGotMutResp model.config <| AmendDisb.encode model.disbRuleVerifiedModal
+    AmendDisb.send DisbRuleVerifiedGotMutResp model.config <| AmendDisb.encode DisbRuleVerified.amendTxnEncoder model.disbRuleVerifiedModal
 
 
 amendContrib : Model -> Cmd Msg
