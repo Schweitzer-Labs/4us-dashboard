@@ -103,7 +103,7 @@ type alias EncodeModel =
     , maybeOrgOrInd : Maybe OrgOrInd.Model
     , maybeEntityType : Maybe EntityType.Model
     , amount : String
-    , owners : Maybe Owners.Owners
+    , owners : Owners.Owners
     , ownerName : String
     , committeeId : String
     , inKindDesc : String
@@ -135,7 +135,7 @@ encode mapper val =
                     ++ optionalFieldNotZero "paymentDate" (dateStringToMillis model.paymentDate)
                     ++ optionalFieldString "checkNumber" model.checkNumber
                     ++ optionalFieldString "entityName" model.entityName
-                    ++ optionalFieldOwners "owners" (Maybe.withDefault [] model.owners)
+                    ++ optionalFieldOwners "owners" model.owners
                     ++ optionalFieldString "employer" model.employer
                     ++ optionalFieldString "occupation" model.occupation
                     ++ optionalFieldString "addressLine2" model.addressLine2
