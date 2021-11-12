@@ -12,7 +12,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromContribPaymentInfo, fromEmailAddress, fromFamilyStatus, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode)
+import Errors exposing (fromContribPaymentInfo, fromCreditCardInfo, fromEmailAddress, fromFamilyStatus, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode)
 import Html exposing (Html, div, h5, h6, span, text)
 import Html.Attributes as Attr exposing (attribute, class, for)
 import Html.Events exposing (onClick)
@@ -153,6 +153,10 @@ type alias ContribValidatorModel =
     , inKindType : Maybe InKindType.Model
     , inKindDesc : String
     , owners : Owner.Owners
+    , cardNumber : String
+    , expirationMonth : String
+    , expirationYear : String
+    , cvv : String
     }
 
 
@@ -161,10 +165,10 @@ contribInfoValidator =
     Validate.firstError <|
         requiredFieldValidators
             ++ [ postalCodeValidator
-               , paymentInfoValidator
                , orgTypeValidator
                , ownersValidator
                , familyStatusValidator
+               , creditCardNumberValidator
                ]
 
 
@@ -181,6 +185,7 @@ requiredFieldValidators =
     , ifBlank .state "State is missing"
     , ifBlank .postalCode "Postal Code is missing."
     , ifBlank .addressLine1 "Address is missing"
+    , paymentInfoValidator
     ]
 
 
@@ -233,6 +238,11 @@ phoneValidator =
     fromErrors phoneNumberOnModelToErrors
 
 
+creditCardNumberValidator : Validator String ContribValidatorModel
+creditCardNumberValidator =
+    fromErrors creditCardNumberOnModelToErrors
+
+
 postalCodeOnModelToErrors : ContribValidatorModel -> List String
 postalCodeOnModelToErrors model =
     fromPostalCode model.postalCode
@@ -249,8 +259,22 @@ phoneNumberOnModelToErrors { phoneNumber, isPhoneNumValid } =
 
 
 paymentInfoOnModelToErrors : ContribValidatorModel -> List String
-paymentInfoOnModelToErrors { paymentMethod, inKindType, inKindDesc, checkNumber } =
-    fromContribPaymentInfo paymentMethod inKindType inKindDesc checkNumber
+paymentInfoOnModelToErrors model =
+    fromContribPaymentInfo
+        { paymentMethod = model.paymentMethod
+        , inKindType = model.inKindType
+        , inKindDescription = model.inKindDesc
+        , checkNumber = model.checkNumber
+        , cardNumber = model.cardNumber
+        , expirationMonth = model.expirationMonth
+        , expirationYear = model.expirationYear
+        , cvv = model.cvv
+        }
+
+
+creditCardNumberOnModelToErrors : ContribValidatorModel -> List String
+creditCardNumberOnModelToErrors { paymentMethod, cardNumber } =
+    fromCreditCardInfo paymentMethod cardNumber
 
 
 orgTypeOnModelToErrors : ContribValidatorModel -> List String
@@ -359,10 +383,10 @@ creditRow { cardNumber, expirationMonth, expirationYear, cvv, disabled } =
                 ]
             ]
         , Grid.col []
-            [ MonthSelector.view <| toMsg expirationMonth
+            [ MonthSelector.view (toMsg expirationMonth) (toData expirationMonth)
             ]
         , Grid.col []
-            [ YearSelector.view <| toMsg expirationYear
+            [ YearSelector.view (toMsg expirationYear) (toData expirationYear)
             ]
         , Grid.col []
             [ Input.text

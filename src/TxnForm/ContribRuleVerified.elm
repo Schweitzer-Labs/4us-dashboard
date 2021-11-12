@@ -7,6 +7,7 @@ module TxnForm.ContribRuleVerified exposing
     , loadingInit
     , toTxn
     , update
+    , validateModel
     , validationMapper
     , view
     )
@@ -18,10 +19,11 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
-import ContribInfo exposing (ContribValidatorModel)
+import ContribInfo
 import Copy
 import EmploymentStatus
 import EntityType
+import Errors exposing (fromAmendContribPaymentInfo, fromOrgType, fromOwners, fromPostalCode)
 import ExpandableBankData
 import FormID exposing (Model(..))
 import Html exposing (Html, p, span, text)
@@ -36,6 +38,7 @@ import PaymentMethod
 import Time exposing (utc)
 import Timestamp exposing (formDate)
 import Transaction
+import Validate exposing (Valid, Validator, fromErrors, ifBlank, ifNothing, validate)
 
 
 type alias Model =
@@ -72,7 +75,7 @@ type alias Model =
     , expirationYear : String
     , cvv : String
     , amount : String
-    , owners : Maybe Owners.Owners
+    , owners : Owners.Owners
     , ownerName : String
     , ownersViewModel : OwnersView.Model
     , inKindType : Maybe InKindType.Model
@@ -127,7 +130,7 @@ init txn =
     , expirationMonth = ""
     , expirationYear = ""
     , cvv = ""
-    , owners = txn.owners
+    , owners = Maybe.withDefault [] txn.owners
     , ownerName = ""
     , ownersViewModel = OwnersView.init (Maybe.withDefault [] txn.owners) (Just <| FormID.toString AmendContrib)
     , inKindType = txn.inKindType
@@ -295,7 +298,7 @@ update msg model =
                 ( subModel, subCmd ) =
                     OwnersView.update subMsg model.ownersViewModel
             in
-            ( { model | ownersViewModel = subModel, owners = Just subModel.owners }, Cmd.map OwnersViewUpdated subCmd )
+            ( { model | ownersViewModel = subModel, owners = subModel.owners }, Cmd.map OwnersViewUpdated subCmd )
 
         PhoneNumberUpdated str ->
             ( { model | phoneNumber = str }, Cmd.none )
@@ -422,7 +425,21 @@ amendTxnEncoder model =
     }
 
 
-validationMapper : Model -> ContribValidatorModel
+toTxn : Model -> Transaction.Model
+toTxn model =
+    model.txn
+
+
+dateWithFormat : Model -> String
+dateWithFormat model =
+    if model.paymentDate == "" then
+        formDate utc model.txn.paymentDate
+
+    else
+        model.paymentDate
+
+
+validationMapper : Model -> AmendContribValidatorModel
 validationMapper model =
     { checkNumber = model.checkNumber
     , amount = model.amount
@@ -452,15 +469,104 @@ validationMapper model =
     }
 
 
-toTxn : Model -> Transaction.Model
-toTxn model =
-    model.txn
+type alias AmendContribValidatorModel =
+    { checkNumber : String
+    , amount : String
+    , paymentDate : String
+    , paymentMethod : Maybe PaymentMethod.Model
+    , emailAddress : String
+    , isEmailAddressValid : Bool
+    , phoneNumber : String
+    , isPhoneNumValid : Bool
+    , firstName : String
+    , middleName : String
+    , lastName : String
+    , addressLine1 : String
+    , addressLine2 : String
+    , city : String
+    , state : String
+    , postalCode : String
+    , employmentStatus : Maybe EmploymentStatus.Model
+    , employer : String
+    , occupation : String
+    , entityName : String
+    , maybeOrgOrInd : Maybe OrgOrInd.Model
+    , maybeEntityType : Maybe EntityType.Model
+    , inKindType : Maybe InKindType.Model
+    , inKindDesc : String
+    , owners : Owners.Owners
+    }
 
 
-dateWithFormat : Model -> String
-dateWithFormat model =
-    if model.paymentDate == "" then
-        formDate utc model.txn.paymentDate
+validateModel : (a -> AmendContribValidatorModel) -> a -> Result (List String) (Valid AmendContribValidatorModel)
+validateModel mapper val =
+    let
+        model =
+            mapper val
+    in
+    validate contribInfoValidator model
 
-    else
-        model.paymentDate
+
+contribInfoValidator : Validator String AmendContribValidatorModel
+contribInfoValidator =
+    Validate.firstError <|
+        requiredFieldValidators
+            ++ [ postalCodeValidator
+               , orgTypeValidator
+               , ownersValidator
+               , paymentInfoValidator
+               ]
+
+
+requiredFieldValidators : List (Validator String AmendContribValidatorModel)
+requiredFieldValidators =
+    [ ifBlank .amount "Payment Amount is missing"
+    , ifBlank .paymentDate "Payment Date is missing"
+    , ifNothing .paymentMethod "Processing Info is missing"
+    , ifBlank .firstName "First Name is missing"
+    , ifBlank .lastName "Last name is missing"
+    , ifBlank .city "City is missing"
+    , ifBlank .state "State is missing"
+    , ifBlank .postalCode "Postal Code is missing."
+    , ifBlank .addressLine1 "Address is missing"
+    ]
+
+
+postalCodeValidator : Validator String AmendContribValidatorModel
+postalCodeValidator =
+    fromErrors postalCodeOnModelToErrors
+
+
+orgTypeValidator : Validator String AmendContribValidatorModel
+orgTypeValidator =
+    fromErrors orgTypeOnModelToErrors
+
+
+ownersValidator : Validator String AmendContribValidatorModel
+ownersValidator =
+    fromErrors ownersOnModelToErrors
+
+
+paymentInfoValidator : Validator String AmendContribValidatorModel
+paymentInfoValidator =
+    fromErrors paymentInfoOnModelToErrors
+
+
+postalCodeOnModelToErrors : AmendContribValidatorModel -> List String
+postalCodeOnModelToErrors model =
+    fromPostalCode model.postalCode
+
+
+orgTypeOnModelToErrors : AmendContribValidatorModel -> List String
+orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType, entityName } =
+    fromOrgType maybeOrgOrInd maybeEntityType entityName
+
+
+ownersOnModelToErrors : AmendContribValidatorModel -> List String
+ownersOnModelToErrors { owners, maybeEntityType } =
+    fromOwners owners maybeEntityType
+
+
+paymentInfoOnModelToErrors : AmendContribValidatorModel -> List String
+paymentInfoOnModelToErrors { paymentMethod, checkNumber } =
+    fromAmendContribPaymentInfo paymentMethod checkNumber
