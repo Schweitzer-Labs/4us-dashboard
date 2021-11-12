@@ -25,7 +25,7 @@ import DataTable exposing (DataRow)
 import Direction
 import EmploymentStatus
 import EntityType
-import Errors exposing (fromContribPaymentInfo, fromOrgType, fromOwners, fromPostalCode)
+import Errors exposing (fromContribPaymentInfo, fromFamilyStatus, fromOrgType, fromOwners, fromPostalCode)
 import FormID exposing (Model(..))
 import Html exposing (Html, div, h6, span, text)
 import Html.Attributes exposing (class)
@@ -684,12 +684,14 @@ validator =
                , paymentInfoValidator
                , orgTypeValidator
                , ownersValidator
+               , familyStatusValidator
                ]
 
 
 requiredFieldValidators : List (Validator String Model)
 requiredFieldValidators =
     [ paymentInfoValidator
+    , familyStatusValidator
     , ifBlank .amount "Payment Amount is missing"
     , ifBlank .paymentDate "Payment Date is missing"
     , ifNothing .paymentMethod "Processing Info is missing"
@@ -708,6 +710,11 @@ amountValidator =
         [ ifBlank .amount "Amount is missing."
         , fromErrors amountMaxToErrors
         ]
+
+
+familyStatusValidator : Validator String Model
+familyStatusValidator =
+    fromErrors familyStatusOnModelToErrors
 
 
 postalCodeValidator : Validator String Model
@@ -767,6 +774,11 @@ paymentInfoOnModelToErrors model =
         , expirationYear = model.expirationYear
         , cvv = model.cvv
         }
+
+
+familyStatusOnModelToErrors : Model -> List String
+familyStatusOnModelToErrors { maybeOrgOrInd, maybeEntityType } =
+    fromFamilyStatus maybeOrgOrInd maybeEntityType
 
 
 orgTypeValidator : Validator String Model

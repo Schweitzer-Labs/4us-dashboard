@@ -12,7 +12,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import DataMsg exposing (toData, toMsg)
 import EmploymentStatus exposing (Model(..), employmentRadioList)
 import EntityType
-import Errors exposing (fromContribPaymentInfo, fromCreditCardInfo, fromEmailAddress, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode)
+import Errors exposing (fromContribPaymentInfo, fromCreditCardInfo, fromEmailAddress, fromFamilyStatus, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode)
 import Html exposing (Html, div, h5, h6, span, text)
 import Html.Attributes as Attr exposing (attribute, class, for)
 import Html.Events exposing (onClick)
@@ -167,13 +167,16 @@ contribInfoValidator =
             ++ [ postalCodeValidator
                , orgTypeValidator
                , ownersValidator
+               , familyStatusValidator
                , creditCardNumberValidator
                ]
 
 
 requiredFieldValidators : List (Validator String ContribValidatorModel)
 requiredFieldValidators =
-    [ ifBlank .amount "Payment Amount is missing"
+    [ paymentInfoValidator
+    , familyStatusValidator
+    , ifBlank .amount "Payment Amount is missing"
     , ifBlank .paymentDate "Payment Date is missing"
     , ifNothing .paymentMethod "Processing Info is missing"
     , ifBlank .firstName "First Name is missing"
@@ -213,6 +216,11 @@ paymentInfoValidator =
 orgTypeValidator : Validator String ContribValidatorModel
 orgTypeValidator =
     fromErrors orgTypeOnModelToErrors
+
+
+familyStatusValidator : Validator String ContribValidatorModel
+familyStatusValidator =
+    fromErrors familyStatusOnModelToErrors
 
 
 emailValidator : Validator String ContribValidatorModel
@@ -272,6 +280,11 @@ creditCardNumberOnModelToErrors { paymentMethod, cardNumber } =
 orgTypeOnModelToErrors : ContribValidatorModel -> List String
 orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType, entityName } =
     fromOrgType maybeOrgOrInd maybeEntityType entityName
+
+
+familyStatusOnModelToErrors : ContribValidatorModel -> List String
+familyStatusOnModelToErrors { maybeOrgOrInd, maybeEntityType } =
+    fromFamilyStatus maybeOrgOrInd maybeEntityType
 
 
 ownersOnModelToErrors : ContribValidatorModel -> List String
