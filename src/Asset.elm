@@ -1,5 +1,6 @@
 module Asset exposing
     ( Image
+    , actBlueLogo
     , adirondackTrustCompanyLogo
     , amalgamatedLogo
     , angleDownGlyph
@@ -132,6 +133,11 @@ binoculars =
 stripeLogo : Image
 stripeLogo =
     image "stripe-logo.png"
+
+
+actBlueLogo : Image
+actBlueLogo =
+    image "actblue-logo.png"
 
 
 documents : Image
