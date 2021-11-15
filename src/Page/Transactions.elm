@@ -41,6 +41,7 @@ import Http
 import List exposing (concat, head, length, reverse)
 import Loading
 import Pagination
+import PaymentSource
 import PlatformModal
 import Session exposing (Session)
 import SubmitButton exposing (submitButton)
@@ -210,6 +211,9 @@ toDeleteMsg model mapper subModel =
         txn =
             mapper subModel
 
+        notActBlue =
+            txn.source /= PaymentSource.ActBlue
+
         isUnreconciled =
             not txn.bankVerified
 
@@ -219,7 +223,7 @@ toDeleteMsg model mapper subModel =
         notBlank =
             String.length txn.id > 0
     in
-    case isUnreconciled && isUnprocessed && notBlank of
+    case isUnreconciled && isUnprocessed && notBlank && notActBlue of
         True ->
             case model.isDeletionConfirmed of
                 DeleteInfo.Confirmed ->
@@ -229,7 +233,7 @@ toDeleteMsg model mapper subModel =
                     Just ToggleDeletePrompt
 
                 DeleteInfo.Uninitialized ->
-                    case isUnreconciled && isUnprocessed && notBlank of
+                    case isUnreconciled && isUnprocessed && notBlank && notActBlue of
                         True ->
                             Just ToggleDeletePrompt
 
