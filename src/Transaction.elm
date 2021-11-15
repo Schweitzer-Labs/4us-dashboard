@@ -8,6 +8,7 @@ import Json.Decode as Decode exposing (Decoder, bool, int, string)
 import Json.Decode.Pipeline exposing (optional, required)
 import Owners
 import PaymentMethod
+import PaymentSource
 import PurposeCode exposing (PurposeCode)
 import TransactionType exposing (TransactionType)
 
@@ -21,6 +22,7 @@ type alias Model =
     , bankVerified : Bool
     , ruleVerified : Bool
     , initiatedTimestamp : Int
+    , source : PaymentSource.Model
     , paymentDate : Int
     , bankVerifiedTimestamp : Maybe Int
     , ruleVerifiedTimestamp : Maybe Int
@@ -74,6 +76,7 @@ init =
     , bankVerified = False
     , ruleVerified = False
     , initiatedTimestamp = 0
+    , source = PaymentSource.Other
     , paymentDate = 0
     , bankVerifiedTimestamp = Nothing
     , ruleVerifiedTimestamp = Nothing
@@ -168,6 +171,7 @@ decoder =
         |> required "bankVerified" bool
         |> required "ruleVerified" bool
         |> required "initiatedTimestamp" int
+        |> required "source" PaymentSource.decoder
         |> required "paymentDate" int
         |> maybeInt "bankVerifiedTimestamp"
         |> maybeInt "ruleVerifiedTimestamp"

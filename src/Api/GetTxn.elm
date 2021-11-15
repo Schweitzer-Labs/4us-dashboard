@@ -21,6 +21,7 @@ query =
             bankVerified
             ruleVerified
             initiatedTimestamp
+            source
             paymentDate
             purposeCode
             refCode

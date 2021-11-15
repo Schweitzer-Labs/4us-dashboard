@@ -27,6 +27,7 @@ import Html.Attributes exposing (class)
 import Json.Decode as Decode
 import List exposing (sortBy)
 import PaymentMethod
+import PaymentSource
 import PurposeCode
 import Time exposing (utc)
 import TimeZone exposing (america__new_york)
@@ -50,7 +51,7 @@ labels =
     , "Entity Type"
     , "Amount"
     , "ID Verified"
-    , "Payment Method"
+    , "Payment Source"
     , "Ref Code"
     , "Bank Status"
     ]
@@ -194,11 +195,28 @@ transactionRowMap committee ( _, maybeMsg, transaction ) =
       , ( "Context", entityType )
       , ( "Amount", amount )
       , ( "Verified", verifiedContent <| transaction.ruleVerified )
-      , ( "Payment Method", text <| getPaymentMethod transaction )
+      , ( "Payment Source", toPaymentMethodOrProcessor transaction )
       , ( "Ref Code", text <| Maybe.withDefault "N/A" transaction.refCode )
       , ( "Status", getStatus transaction )
       ]
     )
+
+
+toPaymentMethodOrProcessor : Transaction.Model -> Html msg
+toPaymentMethodOrProcessor txn =
+    let
+        source =
+            txn.source
+    in
+    case source of
+        PaymentSource.ActBlue ->
+            img [ Asset.src Asset.actBlueLogo, class "stripe-logo" ] []
+
+        PaymentSource.Stripe ->
+            img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
+
+        _ ->
+            text <| getPaymentMethod txn
 
 
 getStatus : Transaction.Model -> Html msg
