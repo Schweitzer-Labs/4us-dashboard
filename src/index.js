@@ -46,7 +46,6 @@ const getCommitteeIdFromUrlQueryString = (url) => {
 
 function runApp() {
   const isDaylightSavings = getDST()
-  console.log(getDST())
   let token;
   let committeeId;
   const host = window.location
