@@ -92,7 +92,7 @@ labelWithMaybeTimeData label data =
         Just a ->
             div []
                 [ dataLabel label
-                , dataText <| Timestamp.format utc a
+                , dataText <| Timestamp.format (america__new_york ()) a
                 ]
 
         Nothing ->
@@ -106,5 +106,5 @@ labelWithTimeData : String -> Int -> Html msg
 labelWithTimeData label data =
     div []
         [ dataLabel label
-        , dataText <| Timestamp.format utc data
+        , dataText <| Timestamp.format (america__new_york ()) data
         ]
