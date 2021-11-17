@@ -35,7 +35,7 @@ import Owners
 import OwnersView
 import PaymentInfo
 import PaymentMethod
-import Time exposing (utc)
+import TimeZone exposing (america__new_york)
 import Timestamp exposing (formDate)
 import Transaction
 import Validate exposing (Valid, Validator, fromErrors, ifBlank, ifNothing, validate)
@@ -107,7 +107,7 @@ init txn =
     , errors = []
     , amount = Cents.stringToDollar <| String.fromInt txn.amount
     , checkNumber = Maybe.withDefault "" txn.checkNumber
-    , paymentDate = Timestamp.formDate utc txn.paymentDate
+    , paymentDate = Timestamp.formDate (america__new_york ()) txn.paymentDate
     , emailAddress = Maybe.withDefault "" txn.emailAddress
     , isEmailAddressValid = True
     , phoneNumber = Maybe.withDefault "" txn.phoneNumber
@@ -433,7 +433,7 @@ toTxn model =
 dateWithFormat : Model -> String
 dateWithFormat model =
     if model.paymentDate == "" then
-        formDate utc model.txn.paymentDate
+        formDate (america__new_york ()) model.txn.paymentDate
 
     else
         model.paymentDate
