@@ -2,6 +2,7 @@ import './main.css';
 import { Elm } from './Main.elm';
 import {verifyEmail} from "./js/email-validator";
 import {verifyPhone} from "./js/phone";
+import {getDST} from "./js/daylightSavings"
 
 const storageKey = 'token'
 
@@ -44,6 +45,8 @@ const getCommitteeIdFromUrlQueryString = (url) => {
 }
 
 function runApp() {
+  const isDaylightSavings = getDST()
+  console.log(getDST())
   let token;
   let committeeId;
   const host = window.location
@@ -64,7 +67,8 @@ function runApp() {
           cognitoClientId,
           redirectUri,
           donorUrl,
-          apiEndpoint
+          apiEndpoint,
+          isDaylightSavings
         }
       });
     app.ports.sendEmail.subscribe((email)=> {
