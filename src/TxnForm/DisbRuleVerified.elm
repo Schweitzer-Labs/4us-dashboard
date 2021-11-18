@@ -1,6 +1,7 @@
 module TxnForm.DisbRuleVerified exposing
     ( Model
     , Msg(..)
+    , amendTxnEncoder
     , fromError
     , init
     , loadingInit
@@ -10,17 +11,21 @@ module TxnForm.DisbRuleVerified exposing
     , view
     )
 
+import Api.AmendDisb as AmendDisb
 import AppInput exposing (inputText)
 import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
+import Cents
 import Copy
 import DisbInfo
 import Errors exposing (fromInKind, fromPostalCode)
 import ExpandableBankData
 import Html exposing (Html)
+import Html.Attributes exposing (class)
 import Loading
 import PaymentInfo
 import PaymentMethod
@@ -78,7 +83,7 @@ init txn =
     , isPartialPayment = txn.isPartialPayment
     , isExistingLiability = txn.isExistingLiability
     , isInKind = Nothing
-    , amount = ""
+    , amount = Cents.stringToDollar <| String.fromInt txn.amount
     , paymentDate = ""
     , paymentMethod = Just txn.paymentMethod
     , checkNumber = Maybe.withDefault "" txn.checkNumber
@@ -132,6 +137,7 @@ loadedView model =
                     _ ->
                         []
                )
+            ++ amountRow model
         )
 
 
@@ -159,6 +165,20 @@ disbFormRow model =
         , maybeError = model.maybeError
         , txnID = Just model.txn.id
         }
+
+
+amountRow : Model -> List (Html Msg)
+amountRow { amount, formDisabled, txn } =
+    if txn.bankVerified then
+        []
+
+    else
+        [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mr2, class "fade-in" ] ]
+            [ Grid.col
+                [ Col.lg6 ]
+                [ inputText AmountUpdated amount formDisabled "disbRuleVerifiedAmount" "*Amount" ]
+            ]
+        ]
 
 
 type Msg
@@ -297,3 +317,24 @@ isInKindOnModelToErrors model =
 toTxn : Model -> Transaction.Model
 toTxn model =
     model.txn
+
+
+amendTxnEncoder : Model -> AmendDisb.EncodeModel
+amendTxnEncoder model =
+    { txn = model.txn
+    , entityName = model.entityName
+    , addressLine1 = model.addressLine1
+    , addressLine2 = model.addressLine2
+    , city = model.city
+    , state = model.state
+    , postalCode = model.postalCode
+    , purposeCode = model.purposeCode
+    , isSubcontracted = model.isSubcontracted
+    , isPartialPayment = model.isPartialPayment
+    , isExistingLiability = model.isExistingLiability
+    , isInKind = model.isInKind
+    , amount = String.replace "$" "" model.amount
+    , paymentDate = model.paymentDate
+    , paymentMethod = model.paymentMethod
+    , checkNumber = model.checkNumber
+    }

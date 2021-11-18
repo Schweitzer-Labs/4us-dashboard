@@ -13,8 +13,10 @@ module TxnForm.ContribRuleVerified exposing
     )
 
 import Api.AmendContrib as AmendContrib
+import AppInput exposing (inputText)
 import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
@@ -172,6 +174,7 @@ loadedView model =
         ([]
             ++ PaymentInfo.view model.txn
             ++ [ contribFormRow model ]
+            ++ amountRow model
             ++ bankData
         )
 
@@ -416,7 +419,7 @@ amendTxnEncoder model =
     , entityName = model.entityName
     , maybeOrgOrInd = model.maybeOrgOrInd
     , maybeEntityType = model.maybeEntityType
-    , amount = model.txn.amount
+    , amount = String.replace "$" "" model.amount
     , owners = model.owners
     , ownerName = model.ownerName
     , committeeId = model.committeeId
@@ -505,6 +508,20 @@ validateModel mapper val =
             mapper val
     in
     validate contribInfoValidator model
+
+
+amountRow : Model -> List (Html Msg)
+amountRow { amount, disabled, txn } =
+    if txn.bankVerified then
+        []
+
+    else
+        [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.ml1, Spacing.mr2, class "fade-in" ] ]
+            [ Grid.col
+                [ Col.lg6 ]
+                [ inputText AmountUpdated amount disabled "contribRuleVerifiedAmount" "*Amount" ]
+            ]
+        ]
 
 
 contribInfoValidator : Validator String AmendContribValidatorModel
