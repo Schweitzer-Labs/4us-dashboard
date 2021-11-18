@@ -122,7 +122,7 @@ getEntityType transaction =
     let
         missingText =
             if transaction.direction == Direction.Out then
-                text "N/A"
+                text <| PurposeCode.toText transaction.purposeCode
 
             else
                 missingContent
