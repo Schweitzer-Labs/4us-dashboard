@@ -1,4 +1,4 @@
-module PurposeCode exposing (PurposeCode(..), fromMaybeToString, fromString, purposeCodeText, select, toString, toText)
+module PurposeCode exposing (PurposeCode(..), fromMaybeToString, fromString, purposeCodeText, select, toString)
 
 import AppInput
 import Bootstrap.Form as Form
@@ -165,23 +165,3 @@ select maybePurposeCode updateMsg disabled =
                     )
                     purposeCodeText
         ]
-
-
-toText : Maybe PurposeCode -> String
-toText purposeCode =
-    case purposeCode of
-        Just val ->
-            let
-                purpose =
-                    List.head <|
-                        List.filter (\( p, _, _ ) -> p == val) purposeCodeText
-            in
-            case purpose of
-                Just ( _, _, str ) ->
-                    str
-
-                _ ->
-                    "N/A"
-
-        _ ->
-            "N/A"
