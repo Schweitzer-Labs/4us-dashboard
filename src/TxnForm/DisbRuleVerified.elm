@@ -15,6 +15,7 @@ import Api.AmendDisb as AmendDisb
 import AppInput exposing (inputText)
 import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
@@ -172,9 +173,9 @@ amountRow { amount, formDisabled, txn } =
         []
 
     else
-        [ Grid.row [ Row.attrs [ Spacing.mt3, class "fade-in" ] ]
+        [ Grid.row [ Row.attrs [ Spacing.mt3, Spacing.mr2, class "fade-in" ] ]
             [ Grid.col
-                []
+                [ Col.lg6 ]
                 [ inputText AmountUpdated amount formDisabled "disbRuleVerifiedAmount" "*Amount" ]
             ]
         ]
