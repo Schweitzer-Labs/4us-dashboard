@@ -30,12 +30,12 @@ decoder =
                     "donate_form" ->
                         Decode.succeed DonateForm
 
+                    "DONATE_FORM" ->
+                        Decode.succeed DonateForm
+
                     "finicity" ->
                         Decode.succeed Finicity
 
-                    "Other" ->
+                    _ ->
                         Decode.succeed Other
-
-                    badValue ->
-                        Decode.fail <| "Unknown Source:" ++ badValue
             )
