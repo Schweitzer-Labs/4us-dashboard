@@ -692,7 +692,6 @@ requiredFieldValidators =
     [ familyStatusValidator
     , ifBlank .amount "Payment Amount is missing"
     , ifBlank .paymentDate "Payment Date is missing"
-    , ifBlank .paymentDate "Payment Date is missing"
     , ifNothing .paymentMethod "Processing Info is missing"
     , ifBlank .firstName "First Name is missing"
     , ifBlank .lastName "Last name is missing"
