@@ -681,7 +681,6 @@ validator =
             ++ [ postalCodeValidator
                , amountValidator
                , fromErrors dateMaxToErrors
-               , paymentInfoValidator
                , orgTypeValidator
                , ownersValidator
                , familyStatusValidator
@@ -690,8 +689,7 @@ validator =
 
 requiredFieldValidators : List (Validator String Model)
 requiredFieldValidators =
-    [ paymentInfoValidator
-    , familyStatusValidator
+    [ familyStatusValidator
     , ifBlank .amount "Payment Amount is missing"
     , ifBlank .paymentDate "Payment Date is missing"
     , ifNothing .paymentMethod "Processing Info is missing"
@@ -755,25 +753,6 @@ reconcileTxnEncoder model =
     , bankTxn = model.bankTxn
     , committeeId = model.committeeId
     }
-
-
-paymentInfoValidator : Validator String Model
-paymentInfoValidator =
-    fromErrors paymentInfoOnModelToErrors
-
-
-paymentInfoOnModelToErrors : Model -> List String
-paymentInfoOnModelToErrors model =
-    fromContribPaymentInfo
-        { paymentMethod = model.paymentMethod
-        , inKindType = model.inKindType
-        , inKindDescription = model.inKindDesc
-        , checkNumber = model.checkNumber
-        , cardNumber = model.cardNumber
-        , expirationMonth = model.expirationMonth
-        , expirationYear = model.expirationYear
-        , cvv = model.cvv
-        }
 
 
 familyStatusOnModelToErrors : Model -> List String
