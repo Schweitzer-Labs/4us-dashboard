@@ -9,6 +9,7 @@ import Json.Decode.Pipeline exposing (optional, required)
 import Owners
 import PaymentMethod
 import PaymentSource
+import ProcessorFeeData
 import PurposeCode exposing (PurposeCode)
 import TransactionType exposing (TransactionType)
 
@@ -47,6 +48,9 @@ type alias Model =
     , attestsToBeingAnAdultCitizen : Maybe Bool
     , stripePaymentIntentId : Maybe String
     , cardNumberLastFourDigits : Maybe String
+    , externalTransactionId : Maybe String
+    , externalTransactionPayoutId : Maybe String
+    , processorFeeData : Maybe ProcessorFeeData.Model
     , checkNumber : Maybe String
     , entityName : Maybe String
     , owners : Maybe Owners.Owners
@@ -102,6 +106,9 @@ init =
     , attestsToBeingAnAdultCitizen = Nothing
     , stripePaymentIntentId = Nothing
     , cardNumberLastFourDigits = Nothing
+    , externalTransactionId = Nothing
+    , externalTransactionPayoutId = Nothing
+    , processorFeeData = Nothing
     , checkNumber = Nothing
     , entityName = Nothing
     , owners = Nothing
@@ -144,6 +151,10 @@ maybePaymentMethod name =
 
 maybeInKindType name =
     optional name (Decode.map InKindType.fromDataString string) Nothing
+
+
+maybeProcessorFeeData name =
+    optional name (Decode.map Just ProcessorFeeData.decoder) Nothing
 
 
 maybeEntityType name =
@@ -198,6 +209,9 @@ decoder =
         |> maybeBool "attestsToBeingAnAdultCitizen"
         |> maybeString "stripePaymentIntentId"
         |> maybeString "cardNumberLastFourDigits"
+        |> maybeString "externalTransactionId"
+        |> maybeString "externalTransactionPayoutId"
+        |> maybeProcessorFeeData "processorFeeData"
         |> maybeString "checkNumber"
         |> maybeString "entityName"
         |> maybeOwners "owners"
