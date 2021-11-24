@@ -537,7 +537,7 @@ labelWithBankVerificationIcon label matchesStatus =
 
 
 labels =
-    [ "Selected", "Date", "Entity Name", "Amount", "Entity Type" ]
+    [ "Selected", "Date", "Entity", "Amount", "Fee", "Source" ]
 
 
 reconcileItemsTable : List Transaction.Model -> List Transaction.Model -> Html Msg
@@ -588,9 +588,10 @@ transactionRowMap ( maybeSelected, maybeMsg, txn ) =
             ""
         )
       , ( "Date", text <| Timestamp.format (america__new_york ()) txn.paymentDate )
-      , ( "Entity Name", name )
+      , ( "Entity", name )
       , ( "Amount", amount )
-      , ( "Entity Type", Transactions.getContext txn )
+      , ( "Fee", Transactions.getFee txn )
+      , ( "Source", Transactions.toPaymentMethodOrProcessor txn )
       ]
     )
 

@@ -4,10 +4,12 @@ module Transactions exposing
     , getAmount
     , getContext
     , getEntityName
+    , getFee
     , getStatus
     , labels
     , missingContent
     , statusContent
+    , toPaymentMethodOrProcessor
     , transactionRowMap
     , uppercaseText
     , verifiedContent
@@ -167,6 +169,20 @@ getAmount transaction =
 
         _ ->
             span [ class "text-green" ] [ text <| Cents.toDollar transaction.amount ]
+
+
+getFee : Transaction.Model -> Html msg
+getFee transaction =
+    case transaction.processorFeeData of
+        Nothing ->
+            span [] [ text <| "N/A" ]
+
+        Just feeData ->
+            let
+                fee =
+                    feeData.amount
+            in
+            span [ class "text-danger" ] [ text <| "(" ++ Cents.toDollar fee ++ ")" ]
 
 
 uppercaseText : String -> Html msg
