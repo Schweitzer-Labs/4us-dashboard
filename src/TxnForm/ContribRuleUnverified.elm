@@ -13,6 +13,7 @@ import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
+import Bootstrap.Table as Table exposing (Cell, Row)
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
@@ -540,12 +541,6 @@ labels =
     [ "Selected", "Date", "Entity", "Amount", "Fee", "Source" ]
 
 
-reconcileItemsTable : List Transaction.Model -> List Transaction.Model -> Html Msg
-reconcileItemsTable relatedTxns selectedTxns =
-    DataTable.view "Awaiting Transactions." labels transactionRowMap <|
-        List.map (\d -> ( Just selectedTxns, Nothing, d )) relatedTxns
-
-
 addContribButtonOrHeading : Model -> Html Msg
 addContribButtonOrHeading model =
     if model.createContribIsVisible then
@@ -561,39 +556,6 @@ addContribButton =
         [ Asset.plusCircleGlyph [ class "text-slate-blue font-size-22" ]
         , span [ Spacing.ml1, class "align-middle" ] [ text "Add Contribution" ]
         ]
-
-
-transactionRowMap : ( Maybe (List Transaction.Model), Maybe msg, Transaction.Model ) -> ( Maybe Msg, DataRow Msg )
-transactionRowMap ( maybeSelected, maybeMsg, txn ) =
-    let
-        name =
-            Maybe.withDefault Transactions.missingContent (Maybe.map Transactions.uppercaseText <| Transactions.getEntityName txn)
-
-        amount =
-            Transactions.getAmount txn
-
-        selected =
-            Maybe.withDefault [] maybeSelected
-
-        isChecked =
-            isSelected txn selected
-    in
-    ( Nothing
-    , [ ( "Selected"
-        , Checkbox.checkbox
-            [ Checkbox.id txn.id
-            , Checkbox.checked isChecked
-            , Checkbox.onCheck <| RelatedTransactionClicked txn
-            ]
-            ""
-        )
-      , ( "Date", text <| Timestamp.format (america__new_york ()) txn.paymentDate )
-      , ( "Entity", name )
-      , ( "Amount", amount )
-      , ( "Fee", Transactions.getFee txn )
-      , ( "Source", Transactions.toPaymentMethodOrProcessor txn )
-      ]
-    )
 
 
 isSelected : Transaction.Model -> List Transaction.Model -> Bool
@@ -837,6 +799,66 @@ dateWithFormat model =
 
     else
         model.paymentDate
+
+
+reconcileItemsTable : List Transaction.Model -> List Transaction.Model -> Html Msg
+reconcileItemsTable relatedTxns selectedTxns =
+    Table.table
+        { options =
+            [ Table.attr <| class "main-table"
+            , Table.striped
+            , Table.hover
+            ]
+        , thead =
+            Table.thead
+                []
+                [ DataTable.labelRow labels ]
+        , tbody =
+            Table.tbody []
+                (List.map (\txn -> tableRow txn (Just selectedTxns)) relatedTxns)
+        }
+
+
+tableRow : Transaction.Model -> Maybe (List Transaction.Model) -> Row Msg
+tableRow txn maybeSelected =
+    let
+        name =
+            Maybe.withDefault Transactions.missingContent (Maybe.map Transactions.uppercaseText <| Transactions.getEntityName txn)
+
+        amount =
+            Transactions.getAmount txn
+
+        selected =
+            Maybe.withDefault [] maybeSelected
+
+        isChecked =
+            isSelected txn selected
+
+        tableCellStyle =
+            Table.cellAttr <| Spacing.p3
+
+        tableRowStyle =
+            if isChecked then
+                "bg-info"
+
+            else
+                ""
+    in
+    Table.tr [ Table.rowAttr <| class tableRowStyle ]
+        [ Table.td [ tableCellStyle ]
+            [ Checkbox.checkbox
+                [ Checkbox.id txn.id
+                , Checkbox.checked isChecked
+                , Checkbox.onCheck <| RelatedTransactionClicked txn
+                ]
+                ""
+            ]
+        , Table.td [ tableCellStyle ] [ text <| Timestamp.format (america__new_york ()) txn.paymentDate ]
+        , Table.td [ tableCellStyle ] [ name ]
+        , Table.td [ tableCellStyle ] [ amount ]
+        , Table.td [ tableCellStyle ] [ Transactions.getFee txn ]
+        , Table.td [ tableCellStyle ] [ Transactions.toPaymentMethodOrProcessor txn ]
+        ]
 
 
 
