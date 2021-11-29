@@ -839,7 +839,7 @@ tableRow txn maybeSelected =
 
         tableRowStyle =
             if isChecked then
-                "bg-info"
+                "bg-light-primary"
 
             else
                 ""
