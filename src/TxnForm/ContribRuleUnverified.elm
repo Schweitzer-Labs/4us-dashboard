@@ -105,15 +105,47 @@ type alias Model =
     , createContribIsVisible : Bool
     , createContribIsSubmitting : Bool
     , reconcileButtonIsDisabled : Bool
+    , paySets : List Transaction.Model
     }
+
+
+toPayOutIds : List Transaction.Model -> List String
+toPayOutIds txns =
+    List.map (\txn -> Maybe.withDefault "" txn.externalTransactionId) txns
+
+
+toNoDupesPaySet : List Transaction.Model -> List Transaction.Model
+toNoDupesPaySet txns =
+    List.foldl noDupeTxns [] txns
+
+
+noDupeTxns : Transaction.Model -> List Transaction.Model -> List Transaction.Model
+noDupeTxns txn txns =
+    case List.head txns of
+        Just a ->
+            if txn.externalTransactionPayoutId == a.externalTransactionPayoutId then
+                txns
+
+            else
+                txn :: txns
+
+        Nothing ->
+            [ txn ]
 
 
 init : Config -> List Transaction.Model -> Transaction.Model -> Model
 init config txns bankTxn =
+    let
+        relatedTransactions =
+            getRelatedContrib bankTxn txns
+
+        nonDupPaySet =
+            toNoDupesPaySet relatedTransactions
+    in
     { bankTxn = bankTxn
     , committeeId = bankTxn.committeeId
     , selectedTxns = []
-    , relatedTxns = getRelatedContrib bankTxn txns
+    , relatedTxns = relatedTransactions
     , submitting = False
     , loading = False
     , disabled = False
@@ -155,6 +187,7 @@ init config txns bankTxn =
     , config = config
     , timezone = america__new_york ()
     , lastCreatedTxnId = ""
+    , paySets = nonDupPaySet
     }
 
 
@@ -208,7 +241,7 @@ view model =
             , addContribButtonOrHeading model
             ]
                 ++ contribFormRow model
-                ++ [ reconcileItemsTable model.relatedTxns model.selectedTxns ]
+                ++ [ reconcileItemsTable model.paySets model.relatedTxns model.selectedTxns ]
         ]
 
 
@@ -468,7 +501,6 @@ update msg model =
                         model.selectedTxns ++ paySet
 
                     else
-                        -- @Todo Fix undo logic
                         List.filter
                             (\txn -> txn.externalTransactionPayoutId /= clickedTxn.externalTransactionPayoutId)
                             model.selectedTxns
@@ -819,9 +851,12 @@ dateWithFormat model =
         model.paymentDate
 
 
-reconcileItemsTable : List Transaction.Model -> List Transaction.Model -> Html Msg
-reconcileItemsTable relatedTxns selectedTxns =
+reconcileItemsTable : List Transaction.Model -> List Transaction.Model -> List Transaction.Model -> Html Msg
+reconcileItemsTable paySets relatedTxns selectedTxns =
     let
+        paySetIDs =
+            toPayOutIds paySets
+
         table =
             Table.table
                 { options =
@@ -836,7 +871,7 @@ reconcileItemsTable relatedTxns selectedTxns =
                         [ DataTable.labelRow labels ]
                 , tbody =
                     Table.tbody []
-                        (List.map (\txn -> tableRow txn (Just selectedTxns)) relatedTxns)
+                        (List.map (\txn -> tableRow paySetIDs txn (Just selectedTxns)) relatedTxns)
                 }
     in
     if List.length relatedTxns > 0 then
@@ -846,8 +881,37 @@ reconcileItemsTable relatedTxns selectedTxns =
         div [] [ table, emptyText "Awaiting Transactions..." ]
 
 
-tableRow : Transaction.Model -> Maybe (List Transaction.Model) -> Row Msg
-tableRow txn maybeSelected =
+checkBox : List String -> Transaction.Model -> Bool -> Html Msg
+checkBox paySets txn isChecked =
+    case txn.externalTransactionId of
+        Just val ->
+            let
+                externalPayoutId =
+                    Maybe.withDefault "" txn.externalTransactionId
+            in
+            case List.member externalPayoutId paySets of
+                True ->
+                    Checkbox.checkbox
+                        [ Checkbox.id txn.id
+                        , Checkbox.checked isChecked
+                        , Checkbox.onCheck <| RelatedTransactionClicked txn
+                        ]
+                        ""
+
+                False ->
+                    text ""
+
+        Nothing ->
+            Checkbox.checkbox
+                [ Checkbox.id txn.id
+                , Checkbox.checked isChecked
+                , Checkbox.onCheck <| RelatedTransactionClicked txn
+                ]
+                ""
+
+
+tableRow : List String -> Transaction.Model -> Maybe (List Transaction.Model) -> Row Msg
+tableRow paySetIds txn maybeSelected =
     let
         name =
             Maybe.withDefault Transactions.missingContent (Maybe.map Transactions.uppercaseText <| Transactions.getEntityName txn)
@@ -873,13 +937,7 @@ tableRow txn maybeSelected =
     in
     Table.tr [ Table.rowAttr <| class tableRowStyle ]
         [ Table.td [ tableCellStyle ]
-            [ Checkbox.checkbox
-                [ Checkbox.id txn.id
-                , Checkbox.checked isChecked
-                , Checkbox.onCheck <| RelatedTransactionClicked txn
-                ]
-                ""
-            ]
+            [ checkBox paySetIds txn isChecked ]
         , Table.td [ tableCellStyle ] [ text <| Timestamp.format (america__new_york ()) txn.paymentDate ]
         , Table.td [ tableCellStyle ] [ name ]
         , Table.td [ tableCellStyle ] [ amount ]
