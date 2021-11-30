@@ -470,12 +470,7 @@ update msg model =
                     else
                         -- @Todo Fix undo logic
                         List.filter
-                            (\txn ->
-                                txn.id
-                                    /= clickedTxn.id
-                                    || txn.externalTransactionPayoutId
-                                    /= clickedTxn.externalTransactionPayoutId
-                            )
+                            (\txn -> txn.externalTransactionPayoutId /= clickedTxn.externalTransactionPayoutId)
                             model.selectedTxns
             in
             ( { model | selectedTxns = selected, createContribIsVisible = False }, Cmd.none )
