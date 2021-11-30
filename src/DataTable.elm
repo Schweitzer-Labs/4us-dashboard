@@ -1,4 +1,4 @@
-module DataTable exposing (DataRow, labelRow, view)
+module DataTable exposing (DataRow, emptyText, labelRow, view)
 
 import Bootstrap.Table as Table exposing (Cell)
 import Bootstrap.Utilities.Spacing as Spacing

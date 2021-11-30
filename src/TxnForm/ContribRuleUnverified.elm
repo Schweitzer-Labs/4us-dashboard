@@ -22,7 +22,7 @@ import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import ContribInfo
 import Copy
-import DataTable exposing (DataRow)
+import DataTable exposing (DataRow, emptyText)
 import Direction
 import EmploymentStatus
 import EntityType
@@ -803,20 +803,28 @@ dateWithFormat model =
 
 reconcileItemsTable : List Transaction.Model -> List Transaction.Model -> Html Msg
 reconcileItemsTable relatedTxns selectedTxns =
-    Table.table
-        { options =
-            [ Table.attr <| class "main-table"
-            , Table.striped
-            , Table.hover
-            ]
-        , thead =
-            Table.thead
-                []
-                [ DataTable.labelRow labels ]
-        , tbody =
-            Table.tbody []
-                (List.map (\txn -> tableRow txn (Just selectedTxns)) relatedTxns)
-        }
+    let
+        table =
+            Table.table
+                { options =
+                    [ Table.attr <| class "main-table"
+                    , Table.striped
+                    , Table.hover
+                    ]
+                , thead =
+                    Table.thead
+                        []
+                        [ DataTable.labelRow labels ]
+                , tbody =
+                    Table.tbody []
+                        (List.map (\txn -> tableRow txn (Just selectedTxns)) relatedTxns)
+                }
+    in
+    if List.length relatedTxns > 0 then
+        table
+
+    else
+        div [] [ table, emptyText "Awaiting Transactions..." ]
 
 
 tableRow : Transaction.Model -> Maybe (List Transaction.Model) -> Row Msg
