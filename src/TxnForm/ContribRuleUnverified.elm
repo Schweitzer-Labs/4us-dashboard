@@ -1,4 +1,13 @@
-module TxnForm.ContribRuleUnverified exposing (Model, Msg(..), fromError, init, reconcileTxnEncoder, toSubmitDisabled, update, view)
+module TxnForm.ContribRuleUnverified exposing
+    ( Model
+    , Msg(..)
+    , fromError
+    , init
+    , reconcileTxnEncoder
+    , toSubmitDisabled
+    , update
+    , view
+    )
 
 import Api
 import Api.CreateContrib as CreateContrib
@@ -450,10 +459,24 @@ update msg model =
             let
                 selected =
                     if isChecked then
-                        model.selectedTxns ++ [ clickedTxn ]
+                        let
+                            paySet =
+                                List.filter
+                                    (\txn -> txn.externalTransactionPayoutId == clickedTxn.externalTransactionPayoutId)
+                                    model.relatedTxns
+                        in
+                        model.selectedTxns ++ [ clickedTxn ] ++ paySet
 
                     else
-                        List.filter (\txn -> txn.id /= clickedTxn.id) model.selectedTxns
+                        -- @Todo Fix undo logic
+                        List.filter
+                            (\txn ->
+                                txn.id
+                                    /= clickedTxn.id
+                                    || txn.externalTransactionPayoutId
+                                    /= clickedTxn.externalTransactionPayoutId
+                            )
+                            model.selectedTxns
             in
             ( { model | selectedTxns = selected, createContribIsVisible = False }, Cmd.none )
 
@@ -807,7 +830,8 @@ reconcileItemsTable relatedTxns selectedTxns =
         table =
             Table.table
                 { options =
-                    [ Table.attr <| class "main-table"
+                    [ Table.attr <|
+                        class "main-table"
                     , Table.striped
                     , Table.hover
                     ]
