@@ -465,7 +465,7 @@ update msg model =
                                     (\txn -> txn.externalTransactionPayoutId == clickedTxn.externalTransactionPayoutId)
                                     model.relatedTxns
                         in
-                        model.selectedTxns ++ [ clickedTxn ] ++ paySet
+                        model.selectedTxns ++ paySet
 
                     else
                         -- @Todo Fix undo logic
