@@ -542,35 +542,11 @@ matchesIcon val =
         Asset.timesGlyph [ class "text-danger font-size-large" ]
 
 
-txnToFee : Transaction.Model -> Int
-txnToFee txn =
-    case txn.processorFeeData of
-        Just val ->
-            val.amount
-
-        Nothing ->
-            0
-
-
-txnAmountWithFees : Transaction.Model -> Transaction.Model
-txnAmountWithFees txn =
-    case txn.processorFeeData of
-        Just val ->
-            let
-                fee =
-                    val.amount
-            in
-            { txn | amount = txn.amount - fee }
-
-        Nothing ->
-            txn
-
-
 reconcileInfoRow : Transaction.Model -> List Transaction.Model -> Html msg
 reconcileInfoRow bankTxn selectedTxns =
     let
         txnFees =
-            List.map txnToFee selectedTxns
+            List.map Transaction.txnToFee selectedTxns
 
         totalFees =
             List.foldr (\fee acc -> acc + fee) 0 txnFees
@@ -655,7 +631,7 @@ totalSelectedMatch : Model -> Bool
 totalSelectedMatch model =
     let
         txns =
-            List.map txnAmountWithFees model.selectedTxns
+            List.map Transaction.txnAmountWithFees model.selectedTxns
     in
     if List.foldr (\txn acc -> acc + txn.amount) 0 txns == model.bankTxn.amount then
         False
@@ -810,7 +786,7 @@ reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel
 reconcileTxnEncoder model =
     let
         txns =
-            List.map txnAmountWithFees model.selectedTxns
+            List.map Transaction.txnAmountWithFees model.selectedTxns
     in
     { selectedTxns = txns
     , bankTxn = model.bankTxn

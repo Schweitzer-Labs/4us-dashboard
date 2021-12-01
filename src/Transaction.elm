@@ -1,4 +1,4 @@
-module Transaction exposing (Model, decoder, init, toNoDupesPaySet, toPayOutIds)
+module Transaction exposing (Model, decoder, init, toNoDupesPaySet, toPayOutIds, txnAmountWithFees, txnToFee)
 
 import Direction exposing (Direction)
 import EmploymentStatus
@@ -253,3 +253,27 @@ noDupeTxns txn txns =
 
         Nothing ->
             [ txn ]
+
+
+txnToFee : Model -> Int
+txnToFee txn =
+    case txn.processorFeeData of
+        Just val ->
+            val.amount
+
+        Nothing ->
+            0
+
+
+txnAmountWithFees : Model -> Model
+txnAmountWithFees txn =
+    case txn.processorFeeData of
+        Just val ->
+            let
+                fee =
+                    val.amount
+            in
+            { txn | amount = txn.amount - fee }
+
+        Nothing ->
+            txn
