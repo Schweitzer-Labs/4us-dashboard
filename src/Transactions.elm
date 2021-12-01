@@ -46,13 +46,13 @@ decoder =
 
 labels : List String
 labels =
-    [ "Date / Time"
-    , "Entity Name"
-    , "Entity Type"
-    , "Amount"
-    , "ID Verified"
-    , "Payment Source"
-    , "Ref Code"
+    [ "Date"
+    , "Name"
+    , "Type"
+    , "Amount($)"
+    , "Verified"
+    , "Source"
+    , "Ref"
     , "Bank Status"
     ]
 
