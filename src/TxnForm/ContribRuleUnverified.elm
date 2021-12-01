@@ -566,11 +566,41 @@ matchesIcon val =
         Asset.timesGlyph [ class "text-danger font-size-large" ]
 
 
+txnToFee : Transaction.Model -> Int
+txnToFee txn =
+    case txn.processorFeeData of
+        Just val ->
+            val.amount
+
+        Nothing ->
+            0
+
+
+txnAmountWithFees : Transaction.Model -> Transaction.Model
+txnAmountWithFees txn =
+    case txn.processorFeeData of
+        Just val ->
+            let
+                fee =
+                    val.amount
+            in
+            { txn | amount = txn.amount - fee }
+
+        Nothing ->
+            txn
+
+
 reconcileInfoRow : Transaction.Model -> List Transaction.Model -> Html msg
 reconcileInfoRow bankTxn selectedTxns =
     let
+        txnFees =
+            List.map txnToFee selectedTxns
+
+        totalFees =
+            List.foldr (\fee acc -> acc + fee) 0 txnFees
+
         selectedTotal =
-            List.foldr (\txn acc -> acc + txn.amount) 0 selectedTxns
+            List.foldr (\txn acc -> acc + txn.amount) 0 selectedTxns - totalFees
 
         matches =
             selectedTotal == bankTxn.amount
@@ -647,7 +677,11 @@ getTxnById txns id =
 
 totalSelectedMatch : Model -> Bool
 totalSelectedMatch model =
-    if List.foldr (\txn acc -> acc + txn.amount) 0 model.selectedTxns == model.bankTxn.amount then
+    let
+        txns =
+            List.map txnAmountWithFees model.selectedTxns
+    in
+    if List.foldr (\txn acc -> acc + txn.amount) 0 txns == model.bankTxn.amount then
         False
 
     else
@@ -762,14 +796,6 @@ ownersOnModelToErrors { ownersViewModel, maybeEntityType } =
     fromOwners ownersViewModel.owners maybeEntityType
 
 
-reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel
-reconcileTxnEncoder model =
-    { selectedTxns = model.selectedTxns
-    , bankTxn = model.bankTxn
-    , committeeId = model.committeeId
-    }
-
-
 paymentInfoValidator : Validator String Model
 paymentInfoValidator =
     fromErrors paymentInfoOnModelToErrors
@@ -802,6 +828,18 @@ orgTypeValidator =
 orgTypeOnModelToErrors : Model -> List String
 orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType, entityName } =
     fromOrgType maybeOrgOrInd maybeEntityType entityName
+
+
+reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel
+reconcileTxnEncoder model =
+    let
+        txns =
+            List.map txnAmountWithFees model.selectedTxns
+    in
+    { selectedTxns = txns
+    , bankTxn = model.bankTxn
+    , committeeId = model.committeeId
+    }
 
 
 createContribEncoder : Model -> CreateContrib.EncodeModel
