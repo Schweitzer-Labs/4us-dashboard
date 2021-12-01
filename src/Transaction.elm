@@ -1,4 +1,4 @@
-module Transaction exposing (Model, decoder, init)
+module Transaction exposing (Model, decoder, init, toNoDupesPaySet, toPayOutIds)
 
 import Direction exposing (Direction)
 import EmploymentStatus
@@ -229,3 +229,27 @@ decoder =
         |> maybePaymentMethod "finicityPaymentMethod"
         |> maybeInt "donorVerificationScore"
         |> maybeString "businessIdVerificationScore"
+
+
+toPayOutIds : List Model -> List String
+toPayOutIds txns =
+    List.map (\txn -> Maybe.withDefault "" txn.externalTransactionId) txns
+
+
+toNoDupesPaySet : List Model -> List Model
+toNoDupesPaySet txns =
+    List.foldl noDupeTxns [] txns
+
+
+noDupeTxns : Model -> List Model -> List Model
+noDupeTxns txn txns =
+    case List.head txns of
+        Just a ->
+            if txn.externalTransactionPayoutId == a.externalTransactionPayoutId then
+                txns
+
+            else
+                txn :: txns
+
+        Nothing ->
+            [ txn ]

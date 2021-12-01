@@ -109,30 +109,6 @@ type alias Model =
     }
 
 
-toPayOutIds : List Transaction.Model -> List String
-toPayOutIds txns =
-    List.map (\txn -> Maybe.withDefault "" txn.externalTransactionId) txns
-
-
-toNoDupesPaySet : List Transaction.Model -> List Transaction.Model
-toNoDupesPaySet txns =
-    List.foldl noDupeTxns [] txns
-
-
-noDupeTxns : Transaction.Model -> List Transaction.Model -> List Transaction.Model
-noDupeTxns txn txns =
-    case List.head txns of
-        Just a ->
-            if txn.externalTransactionPayoutId == a.externalTransactionPayoutId then
-                txns
-
-            else
-                txn :: txns
-
-        Nothing ->
-            [ txn ]
-
-
 init : Config -> List Transaction.Model -> Transaction.Model -> Model
 init config txns bankTxn =
     let
@@ -140,7 +116,7 @@ init config txns bankTxn =
             getRelatedContrib bankTxn txns
 
         nonDupPaySet =
-            toNoDupesPaySet relatedTransactions
+            Transaction.toNoDupesPaySet relatedTransactions
     in
     { bankTxn = bankTxn
     , committeeId = bankTxn.committeeId
@@ -893,7 +869,7 @@ reconcileItemsTable : List Transaction.Model -> List Transaction.Model -> List T
 reconcileItemsTable paySets relatedTxns selectedTxns =
     let
         paySetIDs =
-            toPayOutIds paySets
+            Transaction.toPayOutIds paySets
 
         table =
             Table.table
