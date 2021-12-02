@@ -7,11 +7,14 @@ import Api.GetTxns as GetTxns
 import Api.GraphQL exposing (MutationResponse(..))
 import Api.ReconcileDemoTxn as ReconcileDemoTxs
 import Api.SeedDemoBankRecords as SeedDemoBankRecords
+import Api.SeedExtContribs as SeedExtContribs
+import Asset
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
+import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Navigation exposing (load)
 import Cognito exposing (loginUrl)
@@ -19,7 +22,8 @@ import Committee
 import Config exposing (Config)
 import Errors
 import Html exposing (..)
-import Html.Attributes as SvgA exposing (attribute, class, for, href, target)
+import Html.Attributes as SvgA exposing (attribute, class, for, href, style, target)
+import Html.Events exposing (onClick)
 import Http
 import LabelWithData exposing (dataText)
 import Session exposing (Session)
@@ -46,9 +50,12 @@ type alias Model =
     , eventLogs : List String
     , demoView : DemoView
     , transactionType : Maybe String
+    , externalSource : Maybe String
     , seedMoneyInLoading : Bool
     , seedMoneyOutLoading : Bool
     , reconcileOneLoading : Bool
+    , seedActBlueLoading : Bool
+    , seedWinRedLoading : Bool
     }
 
 
@@ -69,9 +76,12 @@ init config session aggs committee committeeId =
             , eventLogs = []
             , demoView = GenerateCommittee
             , transactionType = Nothing
+            , externalSource = Nothing
             , seedMoneyInLoading = False
             , seedMoneyOutLoading = False
             , reconcileOneLoading = False
+            , seedActBlueLoading = False
+            , seedWinRedLoading = False
             }
     in
     ( initModel
@@ -106,6 +116,37 @@ type DemoView
 type TxnType
     = Contribution
     | Disbursement
+
+
+type ExternalSource
+    = ActBlue
+    | WinRed
+
+
+externalSourceToString : ExternalSource -> String
+externalSourceToString externalSource =
+    case externalSource of
+        ActBlue ->
+            "ActBlue"
+
+        WinRed ->
+            "WinRed"
+
+
+externalSourceLoading : Model -> ExternalSource -> Model
+externalSourceLoading model source =
+    case source of
+        ActBlue ->
+            { model
+                | seedActBlueLoading = True
+                , seedWinRedLoading = False
+            }
+
+        WinRed ->
+            { model
+                | seedActBlueLoading = False
+                , seedWinRedLoading = True
+            }
 
 
 txnTypeToString : TxnType -> String
@@ -168,6 +209,8 @@ manageDemoView model =
                     ++ [ SubmitButton.block [ attribute "data-cy" "seedMoneyIn" ] "Seed Money In" (SeedBankRecordClicked Contribution) model.seedMoneyInLoading False ]
                     ++ [ SubmitButton.block [ attribute "data-cy" "seedMoneyOut", Spacing.mt3 ] "Seed Money Out" (SeedBankRecordClicked Disbursement) model.seedMoneyOutLoading False ]
                     ++ [ SubmitButton.block [ attribute "data-cy" "reconcileOne", Spacing.mt3 ] "Reconcile One" ReconcileDemoTxnClicked model.reconcileOneLoading False ]
+                    ++ [ SubmitButton.block [ attribute "data-cy" "seedActBlue", Spacing.mt3 ] "Seed ActBlue Contributions " (SeedExtContribsClicked ActBlue) model.seedActBlueLoading False ]
+                    ++ [ SubmitButton.block [ attribute "data-cy" "seedWinRed", Spacing.mt3 ] "Seed WinRed Contributions " (SeedExtContribsClicked WinRed) model.seedWinRedLoading False ]
                     ++ [ resetButton ResetView ]
                     ++ demoLabel "Event Log"
                     ++ [ eventList model ]
@@ -254,6 +297,8 @@ type Msg
     | ReconcileDemoTxnGotResp (Result Http.Error MutationResponse)
     | ReconcileDemoTxnClicked
     | ResetView
+    | SeedExtContribsClicked ExternalSource
+    | SeedExtContribsGotResp (Result Http.Error MutationResponse)
     | NoOp
 
 
@@ -383,6 +428,55 @@ update msg model =
                     , Cmd.none
                     )
 
+        SeedExtContribsClicked source ->
+            let
+                extSource =
+                    Just <| externalSourceToString source
+
+                state =
+                    externalSourceLoading model source
+            in
+            ( state
+            , seedExtContribs model extSource
+            )
+
+        SeedExtContribsGotResp res ->
+            case res of
+                Ok seedExtContribRes ->
+                    case seedExtContribRes of
+                        Success id ->
+                            ( { model
+                                | errors = []
+                                , eventLogs = model.eventLogs ++ [ "ActBlue Contributions Seeded" ]
+                                , seedActBlueLoading = False
+                                , seedWinRedLoading = False
+                              }
+                            , Cmd.none
+                            )
+
+                        ResValidationFailure errList ->
+                            ( { model
+                                | errors =
+                                    List.singleton <|
+                                        Maybe.withDefault "Unexpected API response" <|
+                                            List.head errList
+                                , seedActBlueLoading = False
+                                , seedWinRedLoading = False
+                              }
+                            , Cmd.none
+                            )
+
+                Err err ->
+                    ( { model
+                        | errors = Api.decodeError err
+                        , isSubmitting = False
+                        , loadingProgress = 0
+                        , seedActBlueLoading = False
+                        , seedWinRedLoading = False
+                      }
+                    , Cmd.none
+                    )
+
         ReconcileDemoTxnClicked ->
             ( { model | reconcileOneLoading = True }, reconcileDemoTxn model )
 
@@ -479,8 +573,21 @@ seedDemoBankRecord model txnType =
     SeedDemoBankRecords.send SeedDemoBankRecordGotResp model.config <| SeedDemoBankRecords.encode toSeedDemoBankRecord state
 
 
+toSeedExtContribs : Model -> SeedExtContribs.EncodeModel
+toSeedExtContribs model =
+    { password = model.password
+    , committeeId = Maybe.withDefault "" model.maybeDemoCommitteeId
+    , externalSource = Maybe.withDefault "" model.externalSource
+    }
 
--- Reconcile Bank Record
+
+seedExtContribs : Model -> Maybe String -> Cmd Msg
+seedExtContribs model source =
+    let
+        state =
+            { model | externalSource = source }
+    in
+    SeedExtContribs.send SeedExtContribsGotResp model.config <| SeedExtContribs.encode toSeedExtContribs state
 
 
 toReconcileDemoTxn : Model -> ReconcileDemoTxs.EncodeModel
