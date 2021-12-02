@@ -215,6 +215,9 @@ toPaymentMethodOrProcessor txn =
         PaymentSource.Stripe ->
             img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
 
+        PaymentSource.WinRed ->
+            img [ Asset.src Asset.winRedLogo, class "stripe-logo" ] []
+
         _ ->
             text <| getPaymentMethod txn
 
