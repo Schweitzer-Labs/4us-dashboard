@@ -1302,22 +1302,22 @@ update msg model =
             )
 
         FilterByContributions ->
-            ( { model | filterTransactionType = Just TransactionType.Contribution, filterNeedsReview = False, heading = "Contributions" }
+            ( { model | filterTransactionType = Just TransactionType.Contribution, filterNeedsReview = False, heading = "Contributions", moreDisabled = True }
             , getTransactions model (Just TransactionType.Contribution)
             )
 
         FilterByDisbursements ->
-            ( { model | filterTransactionType = Just TransactionType.Disbursement, filterNeedsReview = False, heading = "Disbursements" }
+            ( { model | filterTransactionType = Just TransactionType.Disbursement, filterNeedsReview = False, heading = "Disbursements", moreDisabled = True }
             , getTransactions model (Just TransactionType.Disbursement)
             )
 
         FilterNeedsReview ->
-            ( { model | filterNeedsReview = True, heading = "Needs Review (" ++ String.fromInt model.aggregations.needsReviewCount ++ ")", generateDisclosureModalVisibility = Modal.hidden }
+            ( { model | filterNeedsReview = True, heading = "Needs Review (" ++ String.fromInt model.aggregations.needsReviewCount ++ ")", generateDisclosureModalVisibility = Modal.hidden, moreDisabled = True }
             , getTransactions model Nothing
             )
 
         FilterAll ->
-            ( { model | filterTransactionType = Nothing, filterNeedsReview = False, heading = "All Transactions" }
+            ( { model | filterTransactionType = Nothing, filterNeedsReview = False, heading = "All Transactions", moreDisabled = True }
             , getTransactions model Nothing
             )
 

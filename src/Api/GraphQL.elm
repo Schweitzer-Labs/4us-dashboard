@@ -1,8 +1,10 @@
 module Api.GraphQL exposing
     ( MutationResponse(..)
+    , MutationResponseOnAll(..)
     , encodeQuery
     , graphQLErrorDecoder
     , mutationValidationFailureDecoder
+    , mutationValidationFailureDecoderAll
     , optionalFieldNotZero
     , optionalFieldOwners
     , optionalFieldString
@@ -41,9 +43,19 @@ type MutationResponse
     | ResValidationFailure (List String)
 
 
+type MutationResponseOnAll
+    = SuccessAll (List String)
+    | ResValidationFailureAll (List String)
+
+
 mutationValidationFailureDecoder : Decode.Decoder MutationResponse
 mutationValidationFailureDecoder =
     Decode.map ResValidationFailure graphQLErrorDecoder
+
+
+mutationValidationFailureDecoderAll : Decode.Decoder MutationResponseOnAll
+mutationValidationFailureDecoderAll =
+    Decode.map ResValidationFailureAll graphQLErrorDecoder
 
 
 send :

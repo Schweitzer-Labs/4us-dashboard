@@ -1,4 +1,4 @@
-module Transaction exposing (Model, decoder, init)
+module Transaction exposing (Model, decoder, init, toNoDupesPaySet, toPayOutIds, txnToFee)
 
 import Direction exposing (Direction)
 import EmploymentStatus
@@ -9,6 +9,7 @@ import Json.Decode.Pipeline exposing (optional, required)
 import Owners
 import PaymentMethod
 import PaymentSource
+import ProcessorFeeData
 import PurposeCode exposing (PurposeCode)
 import TransactionType exposing (TransactionType)
 
@@ -47,6 +48,9 @@ type alias Model =
     , attestsToBeingAnAdultCitizen : Maybe Bool
     , stripePaymentIntentId : Maybe String
     , cardNumberLastFourDigits : Maybe String
+    , externalTransactionId : Maybe String
+    , externalTransactionPayoutId : Maybe String
+    , processorFeeData : Maybe ProcessorFeeData.Model
     , checkNumber : Maybe String
     , entityName : Maybe String
     , owners : Maybe Owners.Owners
@@ -63,6 +67,7 @@ type alias Model =
     , inKindType : Maybe InKindType.Model
     , finicityPaymentMethod : Maybe PaymentMethod.Model
     , donorVerificationScore : Maybe Int
+    , businessIdVerificationScore : Maybe String
     }
 
 
@@ -101,6 +106,9 @@ init =
     , attestsToBeingAnAdultCitizen = Nothing
     , stripePaymentIntentId = Nothing
     , cardNumberLastFourDigits = Nothing
+    , externalTransactionId = Nothing
+    , externalTransactionPayoutId = Nothing
+    , processorFeeData = Nothing
     , checkNumber = Nothing
     , entityName = Nothing
     , owners = Nothing
@@ -117,6 +125,7 @@ init =
     , inKindType = Nothing
     , finicityPaymentMethod = Nothing
     , donorVerificationScore = Nothing
+    , businessIdVerificationScore = Nothing
     }
 
 
@@ -142,6 +151,10 @@ maybePaymentMethod name =
 
 maybeInKindType name =
     optional name (Decode.map InKindType.fromDataString string) Nothing
+
+
+maybeProcessorFeeData name =
+    optional name (Decode.map Just ProcessorFeeData.decoder) Nothing
 
 
 maybeEntityType name =
@@ -196,6 +209,9 @@ decoder =
         |> maybeBool "attestsToBeingAnAdultCitizen"
         |> maybeString "stripePaymentIntentId"
         |> maybeString "cardNumberLastFourDigits"
+        |> maybeString "externalTransactionId"
+        |> maybeString "externalTransactionPayoutId"
+        |> maybeProcessorFeeData "processorFeeData"
         |> maybeString "checkNumber"
         |> maybeString "entityName"
         |> maybeOwners "owners"
@@ -212,3 +228,38 @@ decoder =
         |> maybeInKindType "inKindType"
         |> maybePaymentMethod "finicityPaymentMethod"
         |> maybeInt "donorVerificationScore"
+        |> maybeString "businessIdVerificationScore"
+
+
+toPayOutIds : List Model -> List String
+toPayOutIds txns =
+    List.map (\txn -> Maybe.withDefault "" txn.externalTransactionId) txns
+
+
+toNoDupesPaySet : List Model -> List Model
+toNoDupesPaySet txns =
+    List.foldl noDupeTxns [] txns
+
+
+noDupeTxns : Model -> List Model -> List Model
+noDupeTxns txn txns =
+    case List.head txns of
+        Just a ->
+            if txn.externalTransactionPayoutId == a.externalTransactionPayoutId then
+                txns
+
+            else
+                txn :: txns
+
+        Nothing ->
+            [ txn ]
+
+
+txnToFee : Model -> Int
+txnToFee txn =
+    case txn.processorFeeData of
+        Just val ->
+            val.amount
+
+        Nothing ->
+            0

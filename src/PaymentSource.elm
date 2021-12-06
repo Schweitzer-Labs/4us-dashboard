@@ -5,6 +5,7 @@ import Json.Decode as Decode exposing (Decoder)
 
 type Model
     = ActBlue
+    | WinRed
     | Stripe
     | Dashboard
     | DonateForm
@@ -21,6 +22,9 @@ decoder =
                     "ActBlue" ->
                         Decode.succeed ActBlue
 
+                    "WinRed" ->
+                        Decode.succeed WinRed
+
                     "Stripe" ->
                         Decode.succeed Stripe
 
@@ -30,12 +34,12 @@ decoder =
                     "donate_form" ->
                         Decode.succeed DonateForm
 
+                    "DONATE_FORM" ->
+                        Decode.succeed DonateForm
+
                     "finicity" ->
                         Decode.succeed Finicity
 
-                    "Other" ->
+                    _ ->
                         Decode.succeed Other
-
-                    badValue ->
-                        Decode.fail <| "Unknown Source:" ++ badValue
             )

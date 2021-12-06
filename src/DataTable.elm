@@ -1,4 +1,4 @@
-module DataTable exposing (DataRow, view)
+module DataTable exposing (DataRow, emptyText, labelRow, view)
 
 import Bootstrap.Table as Table exposing (Cell)
 import Bootstrap.Utilities.Spacing as Spacing
@@ -78,7 +78,11 @@ dataRow ( maybeMsg, data ) =
         actionAttr =
             case maybeMsg of
                 Just action ->
-                    [ Table.rowAttr <| onClick action, Table.rowAttr <| class "hover-pointer" ]
+                    [ Table.rowAttr <|
+                        onClick action
+                    , Table.rowAttr <|
+                        class "hover-pointer"
+                    ]
 
                 Nothing ->
                     []
@@ -87,7 +91,9 @@ dataRow ( maybeMsg, data ) =
         List.map
             (\( _, content ) ->
                 Table.td
-                    [ Table.cellAttr <| Spacing.p3 ]
+                    [ Table.cellAttr <|
+                        Spacing.p3
+                    ]
                     [ content ]
             )
             data

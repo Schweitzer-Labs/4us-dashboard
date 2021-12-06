@@ -4,10 +4,12 @@ module Transactions exposing
     , getAmount
     , getContext
     , getEntityName
+    , getFee
     , getStatus
     , labels
     , missingContent
     , statusContent
+    , toPaymentMethodOrProcessor
     , transactionRowMap
     , uppercaseText
     , verifiedContent
@@ -46,13 +48,13 @@ decoder =
 
 labels : List String
 labels =
-    [ "Date / Time"
-    , "Entity Name"
-    , "Entity Type"
+    [ "Date"
+    , "Name"
+    , "Type"
     , "Amount"
-    , "ID Verified"
-    , "Payment Source"
-    , "Ref Code"
+    , "Verified"
+    , "Source"
+    , "Ref"
     , "Bank Status"
     ]
 
@@ -122,7 +124,7 @@ getEntityType transaction =
     let
         missingText =
             if transaction.direction == Direction.Out then
-                text "N/A"
+                text <| PurposeCode.toText transaction.purposeCode
 
             else
                 missingContent
@@ -167,6 +169,20 @@ getAmount transaction =
 
         _ ->
             span [ class "text-green" ] [ text <| Cents.toDollar transaction.amount ]
+
+
+getFee : Transaction.Model -> Html msg
+getFee transaction =
+    case transaction.processorFeeData of
+        Nothing ->
+            span [] [ text <| "N/A" ]
+
+        Just feeData ->
+            let
+                fee =
+                    feeData.amount
+            in
+            span [ class "text-danger" ] [ text <| "(" ++ Cents.toDollar fee ++ ")" ]
 
 
 uppercaseText : String -> Html msg
@@ -215,6 +231,9 @@ toPaymentMethodOrProcessor txn =
         PaymentSource.Stripe ->
             img [ Asset.src Asset.stripeLogo, class "stripe-logo" ] []
 
+        PaymentSource.WinRed ->
+            img [ Asset.src Asset.winRedLogo, class "stripe-logo" ] []
+
         _ ->
             text <| getPaymentMethod txn
 
@@ -230,7 +249,7 @@ statusContent val =
         Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
 
     else
-        Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
+        Asset.circleCheckGlyph [ class "text-warning data-icon-size" ]
 
 
 verifiedContent : Bool -> Html msg
@@ -239,4 +258,4 @@ verifiedContent val =
         Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
 
     else
-        Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
+        Asset.circleCheckGlyph [ class "text-warning data-icon-size" ]

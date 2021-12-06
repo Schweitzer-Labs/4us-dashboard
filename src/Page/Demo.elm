@@ -4,9 +4,10 @@ import Aggregations
 import Api
 import Api.GenDemoCommittee as GenDemoCommittee
 import Api.GetTxns as GetTxns
-import Api.GraphQL exposing (MutationResponse(..))
+import Api.GraphQL exposing (MutationResponse(..), MutationResponseOnAll(..))
 import Api.ReconcileDemoTxn as ReconcileDemoTxs
 import Api.SeedDemoBankRecords as SeedDemoBankRecords
+import Api.SeedExtContribs as SeedExtContribs
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
@@ -46,9 +47,14 @@ type alias Model =
     , eventLogs : List String
     , demoView : DemoView
     , transactionType : Maybe String
+    , externalSource : Maybe String
     , seedMoneyInLoading : Bool
     , seedMoneyOutLoading : Bool
     , reconcileOneLoading : Bool
+    , seedActBlueLoading : Bool
+    , seedWinRedLoading : Bool
+    , seedPayoutLoading : Bool
+    , amount : Maybe String
     }
 
 
@@ -69,14 +75,24 @@ init config session aggs committee committeeId =
             , eventLogs = []
             , demoView = GenerateCommittee
             , transactionType = Nothing
+            , externalSource = Nothing
             , seedMoneyInLoading = False
             , seedMoneyOutLoading = False
             , reconcileOneLoading = False
+            , seedActBlueLoading = False
+            , seedWinRedLoading = False
+            , seedPayoutLoading = False
+            , amount = Nothing
             }
     in
     ( initModel
     , getTransactions initModel Nothing
     )
+
+
+defaultExtTxnAmount : String
+defaultExtTxnAmount =
+    "28814"
 
 
 
@@ -106,6 +122,37 @@ type DemoView
 type TxnType
     = Contribution
     | Disbursement
+
+
+type ExternalSource
+    = ActBlue
+    | WinRed
+
+
+externalSourceToString : ExternalSource -> String
+externalSourceToString externalSource =
+    case externalSource of
+        ActBlue ->
+            "ActBlue"
+
+        WinRed ->
+            "WinRed"
+
+
+externalSourceLoading : Model -> ExternalSource -> Model
+externalSourceLoading model source =
+    case source of
+        ActBlue ->
+            { model
+                | seedActBlueLoading = True
+                , seedWinRedLoading = False
+            }
+
+        WinRed ->
+            { model
+                | seedActBlueLoading = False
+                , seedWinRedLoading = True
+            }
 
 
 txnTypeToString : TxnType -> String
@@ -164,10 +211,14 @@ manageDemoView model =
             [ Grid.col
                 [ Col.xs3 ]
               <|
-                demoLabel "Actions"
+                demoLabel "General Actions"
                     ++ [ SubmitButton.block [ attribute "data-cy" "seedMoneyIn" ] "Seed Money In" (SeedBankRecordClicked Contribution) model.seedMoneyInLoading False ]
                     ++ [ SubmitButton.block [ attribute "data-cy" "seedMoneyOut", Spacing.mt3 ] "Seed Money Out" (SeedBankRecordClicked Disbursement) model.seedMoneyOutLoading False ]
                     ++ [ SubmitButton.block [ attribute "data-cy" "reconcileOne", Spacing.mt3 ] "Reconcile One" ReconcileDemoTxnClicked model.reconcileOneLoading False ]
+                    ++ demoLabel "External Contributions"
+                    ++ [ SubmitButton.block [ attribute "data-cy" "seedActBlue", Spacing.mt3 ] "Seed ActBlue" (SeedExtContribsClicked ActBlue) model.seedActBlueLoading False ]
+                    ++ [ SubmitButton.block [ attribute "data-cy" "seedWinRed", Spacing.mt3 ] "Seed WinRed" (SeedExtContribsClicked WinRed) model.seedWinRedLoading False ]
+                    ++ [ SubmitButton.block [ attribute "data-cy" "seedPayout", Spacing.mt3 ] "Seed Payout" (SeedExtPayoutClicked Contribution) model.seedPayoutLoading False ]
                     ++ [ resetButton ResetView ]
                     ++ demoLabel "Event Log"
                     ++ [ eventList model ]
@@ -254,6 +305,9 @@ type Msg
     | ReconcileDemoTxnGotResp (Result Http.Error MutationResponse)
     | ReconcileDemoTxnClicked
     | ResetView
+    | SeedExtContribsClicked ExternalSource
+    | SeedExtContribsGotResp (Result Http.Error MutationResponseOnAll)
+    | SeedExtPayoutClicked TxnType
     | NoOp
 
 
@@ -339,7 +393,11 @@ update msg model =
             ( { loadingModel
                 | transactionType = Just <| txnTypeToString txnType
               }
-            , seedDemoBankRecord model (Just <| txnTypeToString txnType)
+            , seedDemoBankRecord
+                { model = model
+                , txnType = Just <| txnTypeToString txnType
+                , amount = Nothing
+                }
             )
 
         SeedDemoBankRecordGotResp res ->
@@ -350,12 +408,21 @@ update msg model =
                             let
                                 txn =
                                     Maybe.withDefault "" model.transactionType
+
+                                eventLogMessage =
+                                    case model.seedPayoutLoading of
+                                        True ->
+                                            model.eventLogs ++ [ "External Payout Record Seeded" ]
+
+                                        False ->
+                                            model.eventLogs ++ [ txn ++ " Bank Record" ++ " Seeded" ]
                             in
                             ( { model
                                 | errors = []
-                                , eventLogs = model.eventLogs ++ [ txn ++ " Bank Record" ++ " Seeded" ]
+                                , eventLogs = eventLogMessage
                                 , seedMoneyInLoading = False
                                 , seedMoneyOutLoading = False
+                                , seedPayoutLoading = False
                               }
                             , Cmd.none
                             )
@@ -368,6 +435,7 @@ update msg model =
                                             List.head errList
                                 , seedMoneyInLoading = False
                                 , seedMoneyOutLoading = False
+                                , seedPayoutLoading = False
                               }
                             , Cmd.none
                             )
@@ -379,6 +447,55 @@ update msg model =
                         , loadingProgress = 0
                         , seedMoneyInLoading = False
                         , seedMoneyOutLoading = False
+                      }
+                    , Cmd.none
+                    )
+
+        SeedExtContribsClicked source ->
+            let
+                extSource =
+                    Just <| externalSourceToString source
+
+                state =
+                    externalSourceLoading model source
+            in
+            ( state
+            , seedExtContribs model extSource
+            )
+
+        SeedExtContribsGotResp res ->
+            case res of
+                Ok seedExtContribRes ->
+                    case seedExtContribRes of
+                        SuccessAll idList ->
+                            ( { model
+                                | errors = []
+                                , eventLogs = model.eventLogs ++ [ "ActBlue Contributions Seeded" ]
+                                , seedActBlueLoading = False
+                                , seedWinRedLoading = False
+                              }
+                            , Cmd.none
+                            )
+
+                        ResValidationFailureAll errList ->
+                            ( { model
+                                | errors =
+                                    List.singleton <|
+                                        Maybe.withDefault "Unexpected API response" <|
+                                            List.head errList
+                                , seedActBlueLoading = False
+                                , seedWinRedLoading = False
+                              }
+                            , Cmd.none
+                            )
+
+                Err err ->
+                    ( { model
+                        | errors = Api.decodeError err
+                        , isSubmitting = False
+                        , loadingProgress = 0
+                        , seedActBlueLoading = False
+                        , seedWinRedLoading = False
                       }
                     , Cmd.none
                     )
@@ -417,6 +534,18 @@ update msg model =
                       }
                     , Cmd.none
                     )
+
+        SeedExtPayoutClicked txnType ->
+            ( { model
+                | transactionType = Just <| txnTypeToString txnType
+                , seedPayoutLoading = True
+              }
+            , seedDemoBankRecord
+                { model = model
+                , txnType = Just <| txnTypeToString txnType
+                , amount = Just defaultExtTxnAmount
+                }
+            )
 
         ResetView ->
             ( { model
@@ -467,20 +596,47 @@ toSeedDemoBankRecord model =
     { password = model.password
     , committeeId = Maybe.withDefault "" model.maybeDemoCommitteeId
     , transactionType = Maybe.withDefault "" model.transactionType
+    , amount = Maybe.withDefault "" model.amount
     }
 
 
-seedDemoBankRecord : Model -> Maybe String -> Cmd Msg
-seedDemoBankRecord model txnType =
+type alias SeedDemoBankRecordConfig =
+    { model : Model
+    , txnType : Maybe String
+    , amount : Maybe String
+    }
+
+
+seedDemoBankRecord : SeedDemoBankRecordConfig -> Cmd Msg
+seedDemoBankRecord config =
     let
+        model =
+            config.model
+
         state =
-            { model | transactionType = txnType }
+            { model
+                | transactionType = config.txnType
+                , amount = config.amount
+            }
     in
     SeedDemoBankRecords.send SeedDemoBankRecordGotResp model.config <| SeedDemoBankRecords.encode toSeedDemoBankRecord state
 
 
+toSeedExtContribs : Model -> SeedExtContribs.EncodeModel
+toSeedExtContribs model =
+    { password = model.password
+    , committeeId = Maybe.withDefault "" model.maybeDemoCommitteeId
+    , externalSource = Maybe.withDefault "" model.externalSource
+    }
 
--- Reconcile Bank Record
+
+seedExtContribs : Model -> Maybe String -> Cmd Msg
+seedExtContribs model source =
+    let
+        state =
+            { model | externalSource = source }
+    in
+    SeedExtContribs.send SeedExtContribsGotResp model.config <| SeedExtContribs.encode toSeedExtContribs state
 
 
 toReconcileDemoTxn : Model -> ReconcileDemoTxs.EncodeModel

@@ -32,7 +32,7 @@ view aggregates =
         []
         [ Grid.row [] <|
             List.map agg
-                [ ( "Balance", Cents.toDollar aggregates.balance )
+                [ ( "Cash on hand", Cents.toDollar aggregates.balance )
                 , ( "Pending in", Cents.toDollar aggregates.totalContributionsInProcessing )
                 , ( "Pending out", Cents.toDollar aggregates.totalDisbursementsInProcessing )
                 , ( "Total raised", Cents.toDollar aggregates.totalRaised )

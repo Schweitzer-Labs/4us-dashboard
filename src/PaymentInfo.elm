@@ -6,6 +6,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
+import Direction
 import Html exposing (Html, div, h4, h6, span, text)
 import Html.Attributes exposing (class)
 import LabelWithData exposing (dataLabel, labelWithContent, labelWithData, labelWithTimeData)
@@ -29,7 +30,7 @@ statusContent val =
         Asset.circleCheckGlyph [ class "text-green font-size-large" ]
 
     else
-        Asset.minusCircleGlyph [ class "text-warning font-size-large" ]
+        Asset.circleCheckGlyph [ class "text-warning font-size-large" ]
 
 
 verified : String -> Bool -> Html msg
@@ -45,16 +46,12 @@ dataView txn =
             , Grid.col [] [ Grid.row [] [ Grid.col [] [ labelWithTimeData "Date Initiated" <| txn.paymentDate ] ] ]
             , Grid.col [] [ labelWithData "Payment Type" <| PaymentMethod.toDisplayString txn.paymentMethod ]
             ]
-        , Grid.row [ Row.attrs [ Spacing.mt4 ] ]
-            [ Grid.col [] [ verified "Rule Verified" txn.ruleVerified ]
-            , Grid.col [] [ verified "Bank Verified" txn.bankVerified ]
-            , Grid.col [] [ labelWithScore txn.donorVerificationScore "Verification Score" ]
-            ]
+        , verificationRow txn
         ]
 
 
-scoreToString : Maybe Int -> String
-scoreToString score =
+donorScoreToString : Maybe Int -> String
+donorScoreToString score =
     case score of
         Nothing ->
             "N/A"
@@ -63,11 +60,29 @@ scoreToString score =
             String.fromInt a
 
 
-labelWithScore : Maybe Int -> String -> Html msg
-labelWithScore score label =
+labelWithDonorScore : Maybe Int -> String -> Html msg
+labelWithDonorScore score label =
     div []
         [ dataLabel label
-        , scoreText <| scoreToString score
+        , scoreText <| donorScoreToString score
+        ]
+
+
+businessScoreToString : Maybe String -> String
+businessScoreToString score =
+    case score of
+        Nothing ->
+            "N/A"
+
+        Just a ->
+            a
+
+
+labelWithBusinessScore : Maybe String -> String -> Html msg
+labelWithBusinessScore score label =
+    div []
+        [ dataLabel label
+        , scoreText <| businessScoreToString score
         ]
 
 
@@ -82,6 +97,27 @@ scoreText score =
                 "text-danger font-size-large"
     in
     div [ class style ] [ text score ]
+
+
+verificationRow : Transaction.Model -> Html msg
+verificationRow txn =
+    let
+        label =
+            "Verification Score"
+
+        labelWithScore =
+            case txn.direction of
+                Direction.In ->
+                    labelWithDonorScore txn.donorVerificationScore label
+
+                Direction.Out ->
+                    labelWithBusinessScore txn.businessIdVerificationScore label
+    in
+    Grid.row [ Row.attrs [ Spacing.mt4 ] ]
+        [ Grid.col [] [ verified "Rule Verified" txn.ruleVerified ]
+        , Grid.col [] [ verified "Bank Verified" txn.bankVerified ]
+        , Grid.col [] [ labelWithScore ]
+        ]
 
 
 

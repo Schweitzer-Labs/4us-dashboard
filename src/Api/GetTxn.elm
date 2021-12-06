@@ -69,6 +69,7 @@ query =
             inKindType
             finicityPaymentMethod
             donorVerificationScore
+            businessIdVerificationScore
           }
         }
     """
