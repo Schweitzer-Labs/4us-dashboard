@@ -216,9 +216,9 @@ manageDemoView model =
                     ++ [ SubmitButton.block [ attribute "data-cy" "seedMoneyOut", Spacing.mt3 ] "Seed Money Out" (SeedBankRecordClicked Disbursement) model.seedMoneyOutLoading False ]
                     ++ [ SubmitButton.block [ attribute "data-cy" "reconcileOne", Spacing.mt3 ] "Reconcile One" ReconcileDemoTxnClicked model.reconcileOneLoading False ]
                     ++ demoLabel "External Contributions"
-                    ++ [ SubmitButton.block [ attribute "data-cy" "seedActBlue", Spacing.mt3 ] "Seed ActBlue Contributions " (SeedExtContribsClicked ActBlue) model.seedActBlueLoading False ]
-                    ++ [ SubmitButton.block [ attribute "data-cy" "seedWinRed", Spacing.mt3 ] "Seed WinRed Contributions " (SeedExtContribsClicked WinRed) model.seedWinRedLoading False ]
-                    ++ [ SubmitButton.block [ attribute "data-cy" "seedPayout", Spacing.mt3 ] "Seed Payout " (SeedExtPayoutClicked Contribution) model.seedPayoutLoading False ]
+                    ++ [ SubmitButton.block [ attribute "data-cy" "seedActBlue", Spacing.mt3 ] "Seed ActBlue" (SeedExtContribsClicked ActBlue) model.seedActBlueLoading False ]
+                    ++ [ SubmitButton.block [ attribute "data-cy" "seedWinRed", Spacing.mt3 ] "Seed WinRed" (SeedExtContribsClicked WinRed) model.seedWinRedLoading False ]
+                    ++ [ SubmitButton.block [ attribute "data-cy" "seedPayout", Spacing.mt3 ] "Seed Payout" (SeedExtPayoutClicked Contribution) model.seedPayoutLoading False ]
                     ++ [ resetButton ResetView ]
                     ++ demoLabel "Event Log"
                     ++ [ eventList model ]
