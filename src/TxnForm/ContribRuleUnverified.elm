@@ -1,4 +1,13 @@
-module TxnForm.ContribRuleUnverified exposing (Model, Msg(..), fromError, init, reconcileTxnEncoder, toSubmitDisabled, update, view)
+module TxnForm.ContribRuleUnverified exposing
+    ( Model
+    , Msg(..)
+    , fromError
+    , init
+    , reconcileTxnEncoder
+    , toSubmitDisabled
+    , update
+    , view
+    )
 
 import Api
 import Api.CreateContrib as CreateContrib
@@ -13,6 +22,7 @@ import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
+import Bootstrap.Table as Table exposing (Cell, Row)
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
@@ -21,7 +31,7 @@ import Cognito exposing (loginUrl)
 import Config exposing (Config)
 import ContribInfo
 import Copy
-import DataTable exposing (DataRow)
+import DataTable exposing (DataRow, emptyText)
 import Direction
 import EmploymentStatus
 import EntityType
@@ -95,15 +105,23 @@ type alias Model =
     , createContribIsVisible : Bool
     , createContribIsSubmitting : Bool
     , reconcileButtonIsDisabled : Bool
+    , paySets : List Transaction.Model
     }
 
 
 init : Config -> List Transaction.Model -> Transaction.Model -> Model
 init config txns bankTxn =
+    let
+        relatedTransactions =
+            getRelatedContrib bankTxn txns
+
+        nonDupPaySet =
+            Transaction.toNoDupesPaySet relatedTransactions
+    in
     { bankTxn = bankTxn
     , committeeId = bankTxn.committeeId
     , selectedTxns = []
-    , relatedTxns = getRelatedContrib bankTxn txns
+    , relatedTxns = relatedTransactions
     , submitting = False
     , loading = False
     , disabled = False
@@ -145,6 +163,7 @@ init config txns bankTxn =
     , config = config
     , timezone = america__new_york ()
     , lastCreatedTxnId = ""
+    , paySets = nonDupPaySet
     }
 
 
@@ -198,7 +217,12 @@ view model =
             , addContribButtonOrHeading model
             ]
                 ++ contribFormRow model
-                ++ [ reconcileItemsTable model.relatedTxns model.selectedTxns ]
+                ++ [ reconcileItemsTable
+                        { paySets = model.paySets
+                        , relatedTxns = model.relatedTxns
+                        , selectedTxns = model.selectedTxns
+                        }
+                   ]
         ]
 
 
@@ -449,10 +473,18 @@ update msg model =
             let
                 selected =
                     if isChecked then
-                        model.selectedTxns ++ [ clickedTxn ]
+                        let
+                            paySet =
+                                List.filter
+                                    (\txn -> txn.externalTransactionPayoutId == clickedTxn.externalTransactionPayoutId)
+                                    model.relatedTxns
+                        in
+                        model.selectedTxns ++ paySet
 
                     else
-                        List.filter (\txn -> txn.id /= clickedTxn.id) model.selectedTxns
+                        List.filter
+                            (\txn -> txn.externalTransactionPayoutId /= clickedTxn.externalTransactionPayoutId)
+                            model.selectedTxns
             in
             ( { model | selectedTxns = selected, createContribIsVisible = False }, Cmd.none )
 
@@ -518,8 +550,14 @@ matchesIcon val =
 reconcileInfoRow : Transaction.Model -> List Transaction.Model -> Html msg
 reconcileInfoRow bankTxn selectedTxns =
     let
+        txnFees =
+            List.map Transaction.txnToFee selectedTxns
+
+        totalFees =
+            List.foldr (\fee acc -> acc + fee) 0 txnFees
+
         selectedTotal =
-            List.foldr (\txn acc -> acc + txn.amount) 0 selectedTxns
+            List.foldr (\txn acc -> acc + txn.amount) 0 selectedTxns - totalFees
 
         matches =
             selectedTotal == bankTxn.amount
@@ -537,13 +575,7 @@ labelWithBankVerificationIcon label matchesStatus =
 
 
 labels =
-    [ "Selected", "Date", "Entity Name", "Amount", "Entity Type" ]
-
-
-reconcileItemsTable : List Transaction.Model -> List Transaction.Model -> Html Msg
-reconcileItemsTable relatedTxns selectedTxns =
-    DataTable.view "Awaiting Transactions." labels transactionRowMap <|
-        List.map (\d -> ( Just selectedTxns, Nothing, d )) relatedTxns
+    [ "Selected", "Date", "Entity", "Amount", "Fee", "Source" ]
 
 
 addContribButtonOrHeading : Model -> Html Msg
@@ -561,38 +593,6 @@ addContribButton =
         [ Asset.plusCircleGlyph [ class "text-slate-blue font-size-22" ]
         , span [ Spacing.ml1, class "align-middle" ] [ text "Add Contribution" ]
         ]
-
-
-transactionRowMap : ( Maybe (List Transaction.Model), Maybe msg, Transaction.Model ) -> ( Maybe Msg, DataRow Msg )
-transactionRowMap ( maybeSelected, maybeMsg, txn ) =
-    let
-        name =
-            Maybe.withDefault Transactions.missingContent (Maybe.map Transactions.uppercaseText <| Transactions.getEntityName txn)
-
-        amount =
-            Transactions.getAmount txn
-
-        selected =
-            Maybe.withDefault [] maybeSelected
-
-        isChecked =
-            isSelected txn selected
-    in
-    ( Nothing
-    , [ ( "Selected"
-        , Checkbox.checkbox
-            [ Checkbox.id txn.id
-            , Checkbox.checked isChecked
-            , Checkbox.onCheck <| RelatedTransactionClicked txn
-            ]
-            ""
-        )
-      , ( "Date", text <| Timestamp.format (america__new_york ()) txn.paymentDate )
-      , ( "Entity Name", name )
-      , ( "Amount", amount )
-      , ( "Entity Type", Transactions.getContext txn )
-      ]
-    )
 
 
 isSelected : Transaction.Model -> List Transaction.Model -> Bool
@@ -634,7 +634,14 @@ getTxnById txns id =
 
 totalSelectedMatch : Model -> Bool
 totalSelectedMatch model =
-    if List.foldr (\txn acc -> acc + txn.amount) 0 model.selectedTxns == model.bankTxn.amount then
+    let
+        fees =
+            List.map Transaction.txnToFee model.selectedTxns
+
+        totalFees =
+            List.foldr (+) 0 fees
+    in
+    if List.foldr (\txn acc -> acc + txn.amount) 0 model.selectedTxns - totalFees == model.bankTxn.amount then
         False
 
     else
@@ -749,14 +756,6 @@ ownersOnModelToErrors { ownersViewModel, maybeEntityType } =
     fromOwners ownersViewModel.owners maybeEntityType
 
 
-reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel
-reconcileTxnEncoder model =
-    { selectedTxns = model.selectedTxns
-    , bankTxn = model.bankTxn
-    , committeeId = model.committeeId
-    }
-
-
 paymentInfoValidator : Validator String Model
 paymentInfoValidator =
     fromErrors paymentInfoOnModelToErrors
@@ -789,6 +788,14 @@ orgTypeValidator =
 orgTypeOnModelToErrors : Model -> List String
 orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType, entityName } =
     fromOrgType maybeOrgOrInd maybeEntityType entityName
+
+
+reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel
+reconcileTxnEncoder model =
+    { selectedTxns = model.selectedTxns
+    , bankTxn = model.bankTxn
+    , committeeId = model.committeeId
+    }
 
 
 createContribEncoder : Model -> CreateContrib.EncodeModel
@@ -836,6 +843,127 @@ dateWithFormat model =
 
     else
         model.paymentDate
+
+
+type alias ReconcileItemsTableConfig =
+    { paySets : List Transaction.Model
+    , relatedTxns : List Transaction.Model
+    , selectedTxns : List Transaction.Model
+    }
+
+
+reconcileItemsTable : ReconcileItemsTableConfig -> Html Msg
+reconcileItemsTable config =
+    let
+        paySetIDs =
+            Transaction.toPayOutIds config.paySets
+
+        table =
+            Table.table
+                { options =
+                    [ Table.attr <|
+                        class "main-table"
+                    , Table.striped
+                    , Table.hover
+                    ]
+                , thead =
+                    Table.thead
+                        []
+                        [ DataTable.labelRow labels ]
+                , tbody =
+                    Table.tbody []
+                        (List.map
+                            (\val ->
+                                tableRow
+                                    { payoutSetIds = paySetIDs
+                                    , txn = val
+                                    , maybeSelectedTxns = Just config.selectedTxns
+                                    }
+                            )
+                            config.relatedTxns
+                        )
+                }
+    in
+    if List.length config.relatedTxns > 0 then
+        table
+
+    else
+        div [] [ table, emptyText "Awaiting Transactions..." ]
+
+
+checkBox : List String -> Transaction.Model -> Bool -> Html Msg
+checkBox paySets txn isChecked =
+    case txn.externalTransactionId of
+        Just val ->
+            let
+                externalPayoutId =
+                    Maybe.withDefault "" txn.externalTransactionId
+            in
+            case List.member externalPayoutId paySets of
+                True ->
+                    Checkbox.checkbox
+                        [ Checkbox.id txn.id
+                        , Checkbox.checked isChecked
+                        , Checkbox.onCheck <| RelatedTransactionClicked txn
+                        ]
+                        ""
+
+                False ->
+                    text ""
+
+        Nothing ->
+            Checkbox.checkbox
+                [ Checkbox.id txn.id
+                , Checkbox.checked isChecked
+                , Checkbox.onCheck <| RelatedTransactionClicked txn
+                ]
+                ""
+
+
+type alias TableRowConfig =
+    { payoutSetIds : List String
+    , txn : Transaction.Model
+    , maybeSelectedTxns : Maybe (List Transaction.Model)
+    }
+
+
+tableRow : TableRowConfig -> Row Msg
+tableRow config =
+    let
+        txn =
+            config.txn
+
+        name =
+            Maybe.withDefault Transactions.missingContent (Maybe.map Transactions.uppercaseText <| Transactions.getEntityName txn)
+
+        amount =
+            Transactions.getAmount txn
+
+        selected =
+            Maybe.withDefault [] config.maybeSelectedTxns
+
+        isChecked =
+            isSelected txn selected
+
+        tableCellStyle =
+            Table.cellAttr <| Spacing.p3
+
+        tableRowStyle =
+            if isChecked then
+                "bg-light-primary"
+
+            else
+                ""
+    in
+    Table.tr [ Table.rowAttr <| class tableRowStyle ]
+        [ Table.td [ tableCellStyle ]
+            [ checkBox config.payoutSetIds txn isChecked ]
+        , Table.td [ tableCellStyle ] [ text <| Timestamp.format (america__new_york ()) txn.paymentDate ]
+        , Table.td [ tableCellStyle ] [ name ]
+        , Table.td [ tableCellStyle ] [ amount ]
+        , Table.td [ tableCellStyle ] [ Transactions.getFee txn ]
+        , Table.td [ tableCellStyle ] [ Transactions.toPaymentMethodOrProcessor txn ]
+        ]
 
 
 
