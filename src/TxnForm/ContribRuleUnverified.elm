@@ -217,7 +217,12 @@ view model =
             , addContribButtonOrHeading model
             ]
                 ++ contribFormRow model
-                ++ [ reconcileItemsTable model.paySets model.relatedTxns model.selectedTxns ]
+                ++ [ reconcileItemsTable
+                        { paySets = model.paySets
+                        , relatedTxns = model.relatedTxns
+                        , selectedTxns = model.selectedTxns
+                        }
+                   ]
         ]
 
 
@@ -840,11 +845,18 @@ dateWithFormat model =
         model.paymentDate
 
 
-reconcileItemsTable : List Transaction.Model -> List Transaction.Model -> List Transaction.Model -> Html Msg
-reconcileItemsTable paySets relatedTxns selectedTxns =
+type alias ReconcileItemsTableConfig =
+    { paySets : List Transaction.Model
+    , relatedTxns : List Transaction.Model
+    , selectedTxns : List Transaction.Model
+    }
+
+
+reconcileItemsTable : ReconcileItemsTableConfig -> Html Msg
+reconcileItemsTable config =
     let
         paySetIDs =
-            Transaction.toPayOutIds paySets
+            Transaction.toPayOutIds config.paySets
 
         table =
             Table.table
@@ -860,10 +872,19 @@ reconcileItemsTable paySets relatedTxns selectedTxns =
                         [ DataTable.labelRow labels ]
                 , tbody =
                     Table.tbody []
-                        (List.map (\txn -> tableRow paySetIDs txn (Just selectedTxns)) relatedTxns)
+                        (List.map
+                            (\val ->
+                                tableRow
+                                    { payoutSetIds = paySetIDs
+                                    , txn = val
+                                    , maybeSelectedTxns = Just config.selectedTxns
+                                    }
+                            )
+                            config.relatedTxns
+                        )
                 }
     in
-    if List.length relatedTxns > 0 then
+    if List.length config.relatedTxns > 0 then
         table
 
     else
@@ -899,9 +920,19 @@ checkBox paySets txn isChecked =
                 ""
 
 
-tableRow : List String -> Transaction.Model -> Maybe (List Transaction.Model) -> Row Msg
-tableRow paySetIds txn maybeSelected =
+type alias TableRowConfig =
+    { payoutSetIds : List String
+    , txn : Transaction.Model
+    , maybeSelectedTxns : Maybe (List Transaction.Model)
+    }
+
+
+tableRow : TableRowConfig -> Row Msg
+tableRow config =
     let
+        txn =
+            config.txn
+
         name =
             Maybe.withDefault Transactions.missingContent (Maybe.map Transactions.uppercaseText <| Transactions.getEntityName txn)
 
@@ -909,7 +940,7 @@ tableRow paySetIds txn maybeSelected =
             Transactions.getAmount txn
 
         selected =
-            Maybe.withDefault [] maybeSelected
+            Maybe.withDefault [] config.maybeSelectedTxns
 
         isChecked =
             isSelected txn selected
@@ -926,7 +957,7 @@ tableRow paySetIds txn maybeSelected =
     in
     Table.tr [ Table.rowAttr <| class tableRowStyle ]
         [ Table.td [ tableCellStyle ]
-            [ checkBox paySetIds txn isChecked ]
+            [ checkBox config.payoutSetIds txn isChecked ]
         , Table.td [ tableCellStyle ] [ text <| Timestamp.format (america__new_york ()) txn.paymentDate ]
         , Table.td [ tableCellStyle ] [ name ]
         , Table.td [ tableCellStyle ] [ amount ]
