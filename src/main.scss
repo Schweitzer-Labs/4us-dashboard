@@ -21,6 +21,8 @@ $slate-blue: #4f53d1;
 $ruby: #ff0a03;
 
 $primary: $slate-blue;
+$light-primary: #D2E7FE !important;
+
 
 $my-warning: #FF5555;
 
@@ -52,6 +54,9 @@ $gold: #C3924A;
   background: $ruby;
 }
 
+.bg-light-primary {
+  background-color: $light-primary
+}
 
 $font-family-base: 'gilroy-light', sans-serif;
 

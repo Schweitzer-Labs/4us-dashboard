@@ -4,10 +4,12 @@ module Transactions exposing
     , getAmount
     , getContext
     , getEntityName
+    , getFee
     , getStatus
     , labels
     , missingContent
     , statusContent
+    , toPaymentMethodOrProcessor
     , transactionRowMap
     , uppercaseText
     , verifiedContent
@@ -46,13 +48,13 @@ decoder =
 
 labels : List String
 labels =
-    [ "Date / Time"
-    , "Entity Name"
-    , "Entity Type"
+    [ "Date"
+    , "Name"
+    , "Type"
     , "Amount"
-    , "ID Verified"
-    , "Payment Source"
-    , "Ref Code"
+    , "Verified"
+    , "Source"
+    , "Ref"
     , "Bank Status"
     ]
 
@@ -169,6 +171,20 @@ getAmount transaction =
             span [ class "text-green" ] [ text <| Cents.toDollar transaction.amount ]
 
 
+getFee : Transaction.Model -> Html msg
+getFee transaction =
+    case transaction.processorFeeData of
+        Nothing ->
+            span [] [ text <| "N/A" ]
+
+        Just feeData ->
+            let
+                fee =
+                    feeData.amount
+            in
+            span [ class "text-danger" ] [ text <| "(" ++ Cents.toDollar fee ++ ")" ]
+
+
 uppercaseText : String -> Html msg
 uppercaseText str =
     span [ class "text-capitalize" ] [ text str ]
@@ -233,7 +249,7 @@ statusContent val =
         Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
 
     else
-        Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
+        Asset.circleCheckGlyph [ class "text-warning data-icon-size" ]
 
 
 verifiedContent : Bool -> Html msg
@@ -242,4 +258,4 @@ verifiedContent val =
         Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
 
     else
-        Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
+        Asset.circleCheckGlyph [ class "text-warning data-icon-size" ]
