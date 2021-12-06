@@ -30,7 +30,7 @@ statusContent val =
         Asset.circleCheckGlyph [ class "text-green font-size-large" ]
 
     else
-        Asset.minusCircleGlyph [ class "text-warning font-size-large" ]
+        Asset.circleCheckGlyph [ class "text-warning font-size-large" ]
 
 
 verified : String -> Bool -> Html msg

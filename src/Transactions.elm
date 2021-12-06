@@ -48,13 +48,13 @@ decoder =
 
 labels : List String
 labels =
-    [ "Date / Time"
-    , "Entity Name"
-    , "Entity Type"
+    [ "Date"
+    , "Name"
+    , "Type"
     , "Amount"
-    , "ID Verified"
-    , "Payment Source"
-    , "Ref Code"
+    , "Verified"
+    , "Source"
+    , "Ref"
     , "Bank Status"
     ]
 
@@ -246,7 +246,7 @@ statusContent val =
         Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
 
     else
-        Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
+        Asset.circleCheckGlyph [ class "text-warning data-icon-size" ]
 
 
 verifiedContent : Bool -> Html msg
@@ -255,4 +255,4 @@ verifiedContent val =
         Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
 
     else
-        Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
+        Asset.circleCheckGlyph [ class "text-warning data-icon-size" ]
