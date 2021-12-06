@@ -1,9 +1,9 @@
 module Api.SeedExtContribs exposing (..)
 
-import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder)
+import Api.GraphQL as GraphQL exposing (MutationResponseOnAll(..), encodeQuery, mutationValidationFailureDecoderAll)
 import Config exposing (Config)
 import Http
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
 
@@ -51,20 +51,26 @@ encode mapper val =
     encodeQuery query variables
 
 
-successDecoder : Decode.Decoder MutationResponse
+type alias ID =
+    { id : String
+    }
+
+
+successDecoder : Decode.Decoder MutationResponseOnAll
 successDecoder =
-    Decode.map Success <|
+    Decode.map SuccessAll <|
         Decode.field "data" <|
             Decode.field "seedDemoExternalContributions" <|
-                Decode.field "id" <|
-                    Decode.string
+                Decode.list <|
+                    Decode.field "id" <|
+                        Decode.string
 
 
-decoder : Decode.Decoder MutationResponse
+decoder : Decode.Decoder MutationResponseOnAll
 decoder =
-    Decode.oneOf [ successDecoder, mutationValidationFailureDecoder ]
+    Decode.oneOf [ successDecoder, mutationValidationFailureDecoderAll ]
 
 
-send : (Result Http.Error MutationResponse -> msg) -> Config -> Http.Body -> Cmd msg
+send : (Result Http.Error MutationResponseOnAll -> msg) -> Config -> Http.Body -> Cmd msg
 send msg config =
     GraphQL.send decoder msg config

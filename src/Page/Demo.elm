@@ -4,7 +4,7 @@ import Aggregations
 import Api
 import Api.GenDemoCommittee as GenDemoCommittee
 import Api.GetTxns as GetTxns
-import Api.GraphQL exposing (MutationResponse(..))
+import Api.GraphQL exposing (MutationResponse(..), MutationResponseOnAll(..))
 import Api.ReconcileDemoTxn as ReconcileDemoTxs
 import Api.SeedDemoBankRecords as SeedDemoBankRecords
 import Api.SeedExtContribs as SeedExtContribs
@@ -298,7 +298,7 @@ type Msg
     | ReconcileDemoTxnClicked
     | ResetView
     | SeedExtContribsClicked ExternalSource
-    | SeedExtContribsGotResp (Result Http.Error MutationResponse)
+    | SeedExtContribsGotResp (Result Http.Error MutationResponseOnAll)
     | NoOp
 
 
@@ -444,7 +444,7 @@ update msg model =
             case res of
                 Ok seedExtContribRes ->
                     case seedExtContribRes of
-                        Success id ->
+                        SuccessAll idList ->
                             ( { model
                                 | errors = []
                                 , eventLogs = model.eventLogs ++ [ "ActBlue Contributions Seeded" ]
@@ -454,7 +454,7 @@ update msg model =
                             , Cmd.none
                             )
 
-                        ResValidationFailure errList ->
+                        ResValidationFailureAll errList ->
                             ( { model
                                 | errors =
                                     List.singleton <|
