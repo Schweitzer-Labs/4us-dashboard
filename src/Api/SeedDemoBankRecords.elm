@@ -1,6 +1,6 @@
 module Api.SeedDemoBankRecords exposing (..)
 
-import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder)
+import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldStringInt)
 import Config exposing (Config)
 import Http
 import Json.Decode as Decode
@@ -14,12 +14,14 @@ mutation(
   $password: String!
   $committeeId: String!
   $transactionType: TransactionType!
+  $amount: Float
 ) {
   seedDemoBankRecords(
     seedDemoBankRecordsInput: {
       password: $password,
       committeeId: $committeeId,
-      transactionType: $transactionType
+      transactionType: $transactionType,
+      amount: $amount
     }
   ) {
     id
@@ -32,6 +34,7 @@ type alias EncodeModel =
     { password : String
     , committeeId : String
     , transactionType : String
+    , amount : String
     }
 
 
@@ -47,6 +50,7 @@ encode mapper val =
                 , ( "committeeId", Encode.string model.committeeId )
                 , ( "transactionType", Encode.string model.transactionType )
                 ]
+                    ++ optionalFieldStringInt "amount" model.amount
     in
     encodeQuery query variables
 

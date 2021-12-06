@@ -56,6 +56,7 @@ type alias Model =
     , reconcileOneLoading : Bool
     , seedActBlueLoading : Bool
     , seedWinRedLoading : Bool
+    , amount : Maybe String
     }
 
 
@@ -82,6 +83,7 @@ init config session aggs committee committeeId =
             , reconcileOneLoading = False
             , seedActBlueLoading = False
             , seedWinRedLoading = False
+            , amount = Nothing
             }
     in
     ( initModel
@@ -212,7 +214,7 @@ manageDemoView model =
                     ++ demoLabel "External Contributions"
                     ++ [ SubmitButton.block [ attribute "data-cy" "seedActBlue", Spacing.mt3 ] "Seed ActBlue Contributions " (SeedExtContribsClicked ActBlue) model.seedActBlueLoading False ]
                     ++ [ SubmitButton.block [ attribute "data-cy" "seedWinRed", Spacing.mt3 ] "Seed WinRed Contributions " (SeedExtContribsClicked WinRed) model.seedWinRedLoading False ]
-                    ++ [ SubmitButton.block [ attribute "data-cy" "seedWinRed", Spacing.mt3 ] "Seed Payout " (SeedExtContribsClicked WinRed) model.seedWinRedLoading False ]
+                    ++ [ SubmitButton.block [ attribute "data-cy" "seedPayout", Spacing.mt3 ] "Seed Payout " (SeedExtContribsClicked WinRed) model.seedWinRedLoading False ]
                     ++ [ resetButton ResetView ]
                     ++ demoLabel "Event Log"
                     ++ [ eventList model ]
@@ -386,7 +388,11 @@ update msg model =
             ( { loadingModel
                 | transactionType = Just <| txnTypeToString txnType
               }
-            , seedDemoBankRecord model (Just <| txnTypeToString txnType)
+            , seedDemoBankRecord
+                { model = model
+                , txnType = Just <| txnTypeToString txnType
+                , amount = Nothing
+                }
             )
 
         SeedDemoBankRecordGotResp res ->
@@ -563,14 +569,28 @@ toSeedDemoBankRecord model =
     { password = model.password
     , committeeId = Maybe.withDefault "" model.maybeDemoCommitteeId
     , transactionType = Maybe.withDefault "" model.transactionType
+    , amount = Maybe.withDefault "" model.amount
     }
 
 
-seedDemoBankRecord : Model -> Maybe String -> Cmd Msg
-seedDemoBankRecord model txnType =
+type alias SeedDemoBankRecordConfig =
+    { model : Model
+    , txnType : Maybe String
+    , amount : Maybe String
+    }
+
+
+seedDemoBankRecord : SeedDemoBankRecordConfig -> Cmd Msg
+seedDemoBankRecord config =
     let
+        model =
+            config.model
+
         state =
-            { model | transactionType = txnType }
+            { model
+                | transactionType = config.txnType
+                , amount = config.amount
+            }
     in
     SeedDemoBankRecords.send SeedDemoBankRecordGotResp model.config <| SeedDemoBankRecords.encode toSeedDemoBankRecord state
 
