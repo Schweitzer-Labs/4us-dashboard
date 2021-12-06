@@ -8,13 +8,11 @@ import Api.GraphQL exposing (MutationResponse(..), MutationResponseOnAll(..))
 import Api.ReconcileDemoTxn as ReconcileDemoTxs
 import Api.SeedDemoBankRecords as SeedDemoBankRecords
 import Api.SeedExtContribs as SeedExtContribs
-import Asset
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
-import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Navigation exposing (load)
 import Cognito exposing (loginUrl)
@@ -22,8 +20,7 @@ import Committee
 import Config exposing (Config)
 import Errors
 import Html exposing (..)
-import Html.Attributes as SvgA exposing (attribute, class, for, href, style, target)
-import Html.Events exposing (onClick)
+import Html.Attributes as SvgA exposing (attribute, class, for, href, target)
 import Http
 import LabelWithData exposing (dataText)
 import Session exposing (Session)
@@ -56,6 +53,7 @@ type alias Model =
     , reconcileOneLoading : Bool
     , seedActBlueLoading : Bool
     , seedWinRedLoading : Bool
+    , seedPayoutLoading : Bool
     , amount : Maybe String
     }
 
@@ -83,12 +81,18 @@ init config session aggs committee committeeId =
             , reconcileOneLoading = False
             , seedActBlueLoading = False
             , seedWinRedLoading = False
+            , seedPayoutLoading = False
             , amount = Nothing
             }
     in
     ( initModel
     , getTransactions initModel Nothing
     )
+
+
+defaultExtTxnAmount : String
+defaultExtTxnAmount =
+    "28814"
 
 
 
@@ -214,7 +218,7 @@ manageDemoView model =
                     ++ demoLabel "External Contributions"
                     ++ [ SubmitButton.block [ attribute "data-cy" "seedActBlue", Spacing.mt3 ] "Seed ActBlue Contributions " (SeedExtContribsClicked ActBlue) model.seedActBlueLoading False ]
                     ++ [ SubmitButton.block [ attribute "data-cy" "seedWinRed", Spacing.mt3 ] "Seed WinRed Contributions " (SeedExtContribsClicked WinRed) model.seedWinRedLoading False ]
-                    ++ [ SubmitButton.block [ attribute "data-cy" "seedPayout", Spacing.mt3 ] "Seed Payout " (SeedExtContribsClicked WinRed) model.seedWinRedLoading False ]
+                    ++ [ SubmitButton.block [ attribute "data-cy" "seedPayout", Spacing.mt3 ] "Seed Payout " (SeedExtPayoutClicked Contribution) model.seedPayoutLoading False ]
                     ++ [ resetButton ResetView ]
                     ++ demoLabel "Event Log"
                     ++ [ eventList model ]
@@ -303,6 +307,7 @@ type Msg
     | ResetView
     | SeedExtContribsClicked ExternalSource
     | SeedExtContribsGotResp (Result Http.Error MutationResponseOnAll)
+    | SeedExtPayoutClicked TxnType
     | NoOp
 
 
@@ -403,12 +408,21 @@ update msg model =
                             let
                                 txn =
                                     Maybe.withDefault "" model.transactionType
+
+                                eventLogMessage =
+                                    case model.seedPayoutLoading of
+                                        True ->
+                                            model.eventLogs ++ [ "External Payout Record Seeded" ]
+
+                                        False ->
+                                            model.eventLogs ++ [ txn ++ " Bank Record" ++ " Seeded" ]
                             in
                             ( { model
                                 | errors = []
-                                , eventLogs = model.eventLogs ++ [ txn ++ " Bank Record" ++ " Seeded" ]
+                                , eventLogs = eventLogMessage
                                 , seedMoneyInLoading = False
                                 , seedMoneyOutLoading = False
+                                , seedPayoutLoading = False
                               }
                             , Cmd.none
                             )
@@ -421,6 +435,7 @@ update msg model =
                                             List.head errList
                                 , seedMoneyInLoading = False
                                 , seedMoneyOutLoading = False
+                                , seedPayoutLoading = False
                               }
                             , Cmd.none
                             )
@@ -519,6 +534,18 @@ update msg model =
                       }
                     , Cmd.none
                     )
+
+        SeedExtPayoutClicked txnType ->
+            ( { model
+                | transactionType = Just <| txnTypeToString txnType
+                , seedPayoutLoading = True
+              }
+            , seedDemoBankRecord
+                { model = model
+                , txnType = Just <| txnTypeToString txnType
+                , amount = Just defaultExtTxnAmount
+                }
+            )
 
         ResetView ->
             ( { model
