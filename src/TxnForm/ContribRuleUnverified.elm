@@ -630,10 +630,13 @@ getTxnById txns id =
 totalSelectedMatch : Model -> Bool
 totalSelectedMatch model =
     let
-        txns =
-            List.map Transaction.txnAmountWithFees model.selectedTxns
+        fees =
+            List.map Transaction.txnToFee model.selectedTxns
+
+        totalFees =
+            List.foldr (+) 0 fees
     in
-    if List.foldr (\txn acc -> acc + txn.amount) 0 txns == model.bankTxn.amount then
+    if List.foldr (\txn acc -> acc + txn.amount) 0 model.selectedTxns - totalFees == model.bankTxn.amount then
         False
 
     else
@@ -784,11 +787,7 @@ orgTypeOnModelToErrors { maybeOrgOrInd, maybeEntityType, entityName } =
 
 reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel
 reconcileTxnEncoder model =
-    let
-        txns =
-            List.map Transaction.txnAmountWithFees model.selectedTxns
-    in
-    { selectedTxns = txns
+    { selectedTxns = model.selectedTxns
     , bankTxn = model.bankTxn
     , committeeId = model.committeeId
     }
