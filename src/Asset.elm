@@ -48,6 +48,7 @@ module Asset exposing
     , universityGlyph
     , usLogo
     , userGlyph
+    , winRedLogo
     , wiseLogo
     )
 
@@ -138,6 +139,11 @@ stripeLogo =
 actBlueLogo : Image
 actBlueLogo =
     image "actblue-logo.png"
+
+
+winRedLogo : Image
+winRedLogo =
+    image "winred.png"
 
 
 documents : Image

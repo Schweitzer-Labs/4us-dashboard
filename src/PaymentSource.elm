@@ -5,6 +5,7 @@ import Json.Decode as Decode exposing (Decoder)
 
 type Model
     = ActBlue
+    | WinRed
     | Stripe
     | Dashboard
     | DonateForm
@@ -20,6 +21,9 @@ decoder =
                 case str of
                     "ActBlue" ->
                         Decode.succeed ActBlue
+
+                    "WinRed" ->
+                        Decode.succeed WinRed
 
                     "Stripe" ->
                         Decode.succeed Stripe
