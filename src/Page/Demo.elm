@@ -205,12 +205,14 @@ manageDemoView model =
             [ Grid.col
                 [ Col.xs3 ]
               <|
-                demoLabel "Actions"
+                demoLabel "General Actions"
                     ++ [ SubmitButton.block [ attribute "data-cy" "seedMoneyIn" ] "Seed Money In" (SeedBankRecordClicked Contribution) model.seedMoneyInLoading False ]
                     ++ [ SubmitButton.block [ attribute "data-cy" "seedMoneyOut", Spacing.mt3 ] "Seed Money Out" (SeedBankRecordClicked Disbursement) model.seedMoneyOutLoading False ]
                     ++ [ SubmitButton.block [ attribute "data-cy" "reconcileOne", Spacing.mt3 ] "Reconcile One" ReconcileDemoTxnClicked model.reconcileOneLoading False ]
+                    ++ demoLabel "External Contributions"
                     ++ [ SubmitButton.block [ attribute "data-cy" "seedActBlue", Spacing.mt3 ] "Seed ActBlue Contributions " (SeedExtContribsClicked ActBlue) model.seedActBlueLoading False ]
                     ++ [ SubmitButton.block [ attribute "data-cy" "seedWinRed", Spacing.mt3 ] "Seed WinRed Contributions " (SeedExtContribsClicked WinRed) model.seedWinRedLoading False ]
+                    ++ [ SubmitButton.block [ attribute "data-cy" "seedWinRed", Spacing.mt3 ] "Seed Payout " (SeedExtContribsClicked WinRed) model.seedWinRedLoading False ]
                     ++ [ resetButton ResetView ]
                     ++ demoLabel "Event Log"
                     ++ [ eventList model ]
