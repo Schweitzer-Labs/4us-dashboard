@@ -49,7 +49,7 @@ labels =
     [ "Date"
     , "Name"
     , "Type"
-    , "Amount($)"
+    , "Amount"
     , "Verified"
     , "Source"
     , "Ref"
@@ -230,7 +230,7 @@ statusContent val =
         Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
 
     else
-        Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
+        Asset.circleCheckGlyph [ class "text-warning data-icon-size" ]
 
 
 verifiedContent : Bool -> Html msg
@@ -239,4 +239,4 @@ verifiedContent val =
         Asset.circleCheckGlyph [ class "text-green data-icon-size" ]
 
     else
-        Asset.minusCircleGlyph [ class "text-warning data-icon-size" ]
+        Asset.circleCheckGlyph [ class "text-warning data-icon-size" ]
