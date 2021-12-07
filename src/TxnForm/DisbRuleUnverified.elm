@@ -41,6 +41,7 @@ import Html.Attributes as Attr exposing (attribute, class, type_)
 import Html.Events exposing (onClick)
 import Http
 import LabelWithData exposing (labelWithContent, labelWithData)
+import Loading
 import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 import SubmitButton exposing (submitButton)
@@ -82,39 +83,45 @@ type alias Model =
     , config : Config
     , lastCreatedTxnId : String
     , timezone : Time.Zone
+    , loading : Bool
     }
 
 
-init : Config -> List Transaction.Model -> Transaction.Model -> Model
-init config txns bankTxn =
-    { bankTxn = bankTxn
-    , committeeId = bankTxn.committeeId
-    , selectedTxns = []
-    , relatedTxns = getRelatedDisb bankTxn txns
-    , entityName = ""
-    , addressLine1 = ""
-    , addressLine2 = ""
-    , city = ""
-    , state = ""
-    , postalCode = ""
-    , purposeCode = Nothing
-    , isSubcontracted = Nothing
-    , isPartialPayment = Nothing
-    , isExistingLiability = Nothing
-    , isInKind = Nothing
-    , amount = toDollarData bankTxn.amount
-    , paymentDate = formDate (america__new_york ()) bankTxn.paymentDate
-    , paymentMethod = Just bankTxn.paymentMethod
-    , checkNumber = ""
-    , createDisbIsVisible = False
-    , createDisbIsSubmitting = False
-    , disabled = True
-    , reconcileButtonIsDisabled = True
-    , maybeError = Nothing
-    , config = config
-    , lastCreatedTxnId = ""
-    , timezone = america__new_york ()
-    }
+init : Config -> Transaction.Model -> ( Model, Cmd Msg )
+init config bankTxn =
+    let
+        model =
+            { bankTxn = bankTxn
+            , committeeId = bankTxn.committeeId
+            , selectedTxns = []
+            , relatedTxns = []
+            , entityName = ""
+            , addressLine1 = ""
+            , addressLine2 = ""
+            , city = ""
+            , state = ""
+            , postalCode = ""
+            , purposeCode = Nothing
+            , isSubcontracted = Nothing
+            , isPartialPayment = Nothing
+            , isExistingLiability = Nothing
+            , isInKind = Nothing
+            , amount = toDollarData bankTxn.amount
+            , paymentDate = formDate (america__new_york ()) bankTxn.paymentDate
+            , paymentMethod = Just bankTxn.paymentMethod
+            , checkNumber = ""
+            , createDisbIsVisible = False
+            , createDisbIsSubmitting = False
+            , disabled = True
+            , reconcileButtonIsDisabled = True
+            , maybeError = Nothing
+            , config = config
+            , lastCreatedTxnId = ""
+            , timezone = america__new_york ()
+            , loading = True
+            }
+    in
+    ( model, getTxns model )
 
 
 clearForm : Model -> Model
@@ -150,6 +157,15 @@ getRelatedDisb txn txns =
 
 view : Model -> Html Msg
 view model =
+    if model.loading then
+        Loading.view
+
+    else
+        loadedView model
+
+
+loadedView : Model -> Html Msg
+loadedView model =
     div
         []
         [ dialogueBox
@@ -495,6 +511,7 @@ update msg model =
                     ( { model
                         | relatedTxns = getRelatedDisb model.bankTxn <| GetTxns.toTxns body
                         , selectedTxns = model.selectedTxns ++ resTxnOrEmpty
+                        , loading = False
                       }
                     , Cmd.none
                     )

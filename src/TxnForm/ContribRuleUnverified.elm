@@ -44,6 +44,7 @@ import Http
 import InKindType
 import LabelWithData exposing (labelWithContent, labelWithData)
 import List exposing (sortBy)
+import Loading
 import OrgOrInd
 import Owners
 import OwnersView
@@ -109,62 +110,59 @@ type alias Model =
     }
 
 
-init : Config -> List Transaction.Model -> Transaction.Model -> Model
-init config txns bankTxn =
+init : Config -> Transaction.Model -> ( Model, Cmd Msg )
+init config bankTxn =
     let
-        relatedTransactions =
-            getRelatedContrib bankTxn txns
-
-        nonDupPaySet =
-            Transaction.toNoDupesPaySet relatedTransactions
+        model =
+            { bankTxn = bankTxn
+            , committeeId = bankTxn.committeeId
+            , selectedTxns = []
+            , relatedTxns = []
+            , submitting = False
+            , loading = True
+            , disabled = False
+            , error = ""
+            , errors = []
+            , amount = toDollarData bankTxn.amount
+            , checkNumber = ""
+            , paymentDate = formDate (america__new_york ()) bankTxn.paymentDate
+            , emailAddress = ""
+            , phoneNumber = ""
+            , firstName = ""
+            , middleName = ""
+            , lastName = ""
+            , addressLine1 = ""
+            , addressLine2 = ""
+            , city = ""
+            , state = ""
+            , postalCode = ""
+            , employmentStatus = Nothing
+            , employer = ""
+            , occupation = ""
+            , entityName = ""
+            , maybeEntityType = Nothing
+            , maybeOrgOrInd = Nothing
+            , cardNumber = ""
+            , expirationMonth = ""
+            , expirationYear = ""
+            , cvv = ""
+            , owners = bankTxn.owners
+            , ownerName = ""
+            , ownersViewModel = OwnersView.init (Maybe.withDefault [] bankTxn.owners) Nothing
+            , inKindType = Nothing
+            , inKindDesc = ""
+            , paymentMethod = Nothing
+            , createContribIsVisible = False
+            , createContribIsSubmitting = False
+            , reconcileButtonIsDisabled = True
+            , maybeError = Nothing
+            , config = config
+            , timezone = america__new_york ()
+            , lastCreatedTxnId = ""
+            , paySets = []
+            }
     in
-    { bankTxn = bankTxn
-    , committeeId = bankTxn.committeeId
-    , selectedTxns = []
-    , relatedTxns = relatedTransactions
-    , submitting = False
-    , loading = False
-    , disabled = False
-    , error = ""
-    , errors = []
-    , amount = toDollarData bankTxn.amount
-    , checkNumber = ""
-    , paymentDate = formDate (america__new_york ()) bankTxn.paymentDate
-    , emailAddress = ""
-    , phoneNumber = ""
-    , firstName = ""
-    , middleName = ""
-    , lastName = ""
-    , addressLine1 = ""
-    , addressLine2 = ""
-    , city = ""
-    , state = ""
-    , postalCode = ""
-    , employmentStatus = Nothing
-    , employer = ""
-    , occupation = ""
-    , entityName = ""
-    , maybeEntityType = Nothing
-    , maybeOrgOrInd = Nothing
-    , cardNumber = ""
-    , expirationMonth = ""
-    , expirationYear = ""
-    , cvv = ""
-    , owners = bankTxn.owners
-    , ownerName = ""
-    , ownersViewModel = OwnersView.init (Maybe.withDefault [] bankTxn.owners) Nothing
-    , inKindType = Nothing
-    , inKindDesc = ""
-    , paymentMethod = Nothing
-    , createContribIsVisible = False
-    , createContribIsSubmitting = False
-    , reconcileButtonIsDisabled = True
-    , maybeError = Nothing
-    , config = config
-    , timezone = america__new_york ()
-    , lastCreatedTxnId = ""
-    , paySets = nonDupPaySet
-    }
+    ( model, getTxns model )
 
 
 clearForm : Model -> Model
@@ -205,6 +203,15 @@ clearForm model =
 
 view : Model -> Html Msg
 view model =
+    if model.loading then
+        Loading.view
+
+    else
+        loadedView model
+
+
+loadedView : Model -> Html Msg
+loadedView model =
     div
         []
         [ dialogueBox
@@ -433,12 +440,19 @@ update msg model =
                         relatedTxns =
                             getRelatedContrib model.bankTxn <| GetTxns.toTxns body
 
+                        payoutIds =
+                            Transaction.toNoDupesPaySet relatedTxns
+
                         resTxnOrEmpty =
-                            Maybe.withDefault [] <| Maybe.map List.singleton <| getTxnById relatedTxns model.lastCreatedTxnId
+                            Maybe.withDefault [] <|
+                                Maybe.map List.singleton <|
+                                    getTxnById relatedTxns model.lastCreatedTxnId
                     in
                     ( { model
                         | relatedTxns = getRelatedContrib model.bankTxn <| GetTxns.toTxns body
                         , selectedTxns = model.selectedTxns ++ resTxnOrEmpty
+                        , paySets = payoutIds
+                        , loading = False
                       }
                     , Cmd.none
                     )

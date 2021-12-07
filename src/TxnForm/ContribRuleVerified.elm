@@ -146,15 +146,10 @@ init txn =
 view : Model -> Html Msg
 view model =
     if model.loading then
-        loadingView
+        Loading.view
 
     else
         loadedView model
-
-
-loadingView : Html msg
-loadingView =
-    Loading.view
 
 
 loadedView : Model -> Html Msg
