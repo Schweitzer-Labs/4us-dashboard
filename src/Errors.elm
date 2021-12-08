@@ -1,4 +1,4 @@
-module Errors exposing (fromAmendContribPaymentInfo, fromContribPaymentInfo, fromCreditCardInfo, fromDisbPaymentInfo, fromEmailAddress, fromFamilyStatus, fromInKind, fromMaxAmount, fromMaxDate, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode, view)
+module Errors exposing (fromAmendContribPaymentInfo, fromContribPaymentInfo, fromCreditCardInfo, fromDisbPaymentInfo, fromEmailAddress, fromFamilyStatus, fromInKind, fromMaxAmount, fromMaxDate, fromOrgType, fromOwners, fromPhoneNumber, fromPostalCode, fromPurposeCodeOther, view)
 
 import Bootstrap.Utilities.Spacing as Spacing
 import Cents
@@ -11,6 +11,7 @@ import OrgOrInd
 import Owners as Owner
 import Payment.CreditCard.Validation as CardValidation
 import PaymentMethod
+import PurposeCode exposing (PurposeCode(..))
 import Time
 import Timestamp
 
@@ -261,6 +262,24 @@ fromOwners owners maybeEntity =
 
     else
         []
+
+
+fromPurposeCodeOther : Maybe PurposeCode -> String -> List String
+fromPurposeCodeOther code explanation =
+    case code of
+        Just OTHER ->
+            case String.isEmpty explanation of
+                True ->
+                    [ "Explanation is missing" ]
+
+                False ->
+                    []
+
+        Nothing ->
+            []
+
+        _ ->
+            []
 
 
 view : Errors -> List (Html msg)

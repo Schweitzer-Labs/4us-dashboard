@@ -34,7 +34,7 @@ import Copy
 import DataTable exposing (DataRow)
 import Direction
 import DisbInfo
-import Errors exposing (fromDisbPaymentInfo, fromInKind, fromPostalCode)
+import Errors exposing (fromDisbPaymentInfo, fromInKind, fromPostalCode, fromPurposeCodeOther)
 import FormID exposing (Model(..))
 import Html exposing (Html, div, h6, input, span, text)
 import Html.Attributes as Attr exposing (attribute, class, type_)
@@ -554,6 +554,7 @@ validator =
 
 requiredFieldValidators =
     [ paymentInfoValidator
+    , purposeCodeOtherValidator
     , ifBlank .entityName "Entity name is missing."
     , ifBlank .addressLine1 "Address 1 is missing."
     , ifBlank .city "City is missing."
@@ -615,6 +616,16 @@ paymentInfoValidator =
 paymentInfoOnModelToErrors : Model -> List String
 paymentInfoOnModelToErrors { paymentMethod, checkNumber } =
     fromDisbPaymentInfo paymentMethod checkNumber
+
+
+purposeCodeOtherValidator : Validator String Model
+purposeCodeOtherValidator =
+    fromErrors purposeCodeOtherOnModelToErrors
+
+
+purposeCodeOtherOnModelToErrors : Model -> List String
+purposeCodeOtherOnModelToErrors { purposeCode, explanation } =
+    fromPurposeCodeOther purposeCode explanation
 
 
 totalSelectedMatch : Model -> Bool

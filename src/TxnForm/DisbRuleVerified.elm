@@ -18,7 +18,7 @@ import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
 import Copy
 import DisbInfo
-import Errors exposing (fromInKind, fromPostalCode)
+import Errors exposing (fromInKind, fromPostalCode, fromPurposeCodeOther)
 import ExpandableBankData
 import Html exposing (Html)
 import Loading
@@ -273,6 +273,7 @@ validator =
         , ifNothing .isExistingLiability "Existing Liability Information is missing"
         , postalCodeValidator
         , isInKindValidator
+        , purposeCodeOtherValidator
         ]
 
 
@@ -299,6 +300,16 @@ isInKindValidator =
 isInKindOnModelToErrors : Model -> List String
 isInKindOnModelToErrors model =
     fromInKind model.isInKind
+
+
+purposeCodeOtherValidator : Validator String Model
+purposeCodeOtherValidator =
+    fromErrors purposeCodeOtherOnModelToErrors
+
+
+purposeCodeOtherOnModelToErrors : Model -> List String
+purposeCodeOtherOnModelToErrors { purposeCode, explanation } =
+    fromPurposeCodeOther purposeCode explanation
 
 
 toTxn : Model -> Transaction.Model
