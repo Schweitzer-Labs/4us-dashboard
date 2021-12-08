@@ -40,6 +40,7 @@ type alias Model =
     , checkNumber : String
     , maybeError : Maybe String
     , isSubmitDisabled : Bool
+    , explanation : String
     }
 
 
@@ -63,6 +64,7 @@ init committeeId =
     , checkNumber = ""
     , maybeError = Nothing
     , isSubmitDisabled = True
+    , explanation = ""
     }
 
 
@@ -85,6 +87,7 @@ view model =
             , isExistingLiability = ( model.isExistingLiability, IsExistingLiabilityUpdated )
             , isInKind = ( model.isInKind, IsInKindUpdated )
             , amount = Just ( model.amount, AmountUpdated )
+            , explanation = ( model.explanation, ExplanationUpdated )
             , paymentDate = Just ( model.paymentDate, PaymentDateUpdated )
             , paymentMethod = Just ( model.paymentMethod, PaymentMethodUpdated )
             , disabled = False
@@ -112,6 +115,7 @@ type Msg
     | PaymentDateUpdated String
     | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CheckNumberUpdated String
+    | ExplanationUpdated String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -168,6 +172,9 @@ update msg model =
               }
             , Cmd.none
             )
+
+        ExplanationUpdated str ->
+            ( { model | explanation = str }, Cmd.none )
 
 
 validator : Validator String Model
@@ -258,4 +265,5 @@ toEncodeModel model =
     , paymentDate = model.paymentDate
     , paymentMethod = model.paymentMethod
     , checkNumber = model.checkNumber
+    , explanation = model.explanation
     }

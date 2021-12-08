@@ -68,6 +68,7 @@ type alias Model =
     , finicityPaymentMethod : Maybe PaymentMethod.Model
     , donorVerificationScore : Maybe Int
     , businessIdVerificationScore : Maybe String
+    , explanation : Maybe String
     }
 
 
@@ -126,6 +127,7 @@ init =
     , finicityPaymentMethod = Nothing
     , donorVerificationScore = Nothing
     , businessIdVerificationScore = Nothing
+    , explanation = Nothing
     }
 
 
@@ -229,6 +231,7 @@ decoder =
         |> maybePaymentMethod "finicityPaymentMethod"
         |> maybeInt "donorVerificationScore"
         |> maybeString "businessIdVerificationScore"
+        |> maybeString "explanation"
 
 
 toPayOutIds : List Model -> List String

@@ -75,6 +75,7 @@ type alias Model =
     , paymentDate : String
     , paymentMethod : Maybe PaymentMethod.Model
     , checkNumber : String
+    , explanation : String
     , createDisbIsVisible : Bool
     , disabled : Bool
     , createDisbIsSubmitting : Bool
@@ -110,6 +111,7 @@ init config bankTxn =
             , paymentDate = formDate (america__new_york ()) bankTxn.paymentDate
             , paymentMethod = Just bankTxn.paymentMethod
             , checkNumber = ""
+            , explanation = ""
             , createDisbIsVisible = False
             , createDisbIsSubmitting = False
             , disabled = True
@@ -141,6 +143,7 @@ clearForm model =
         , amount = toDollarData model.bankTxn.amount
         , paymentDate = formDate model.timezone model.bankTxn.paymentDate
         , checkNumber = ""
+        , explanation = ""
         , createDisbIsVisible = False
         , createDisbIsSubmitting = False
         , disabled = True
@@ -280,6 +283,7 @@ disbFormRow model =
             , toggleEdit = NoOp
             , maybeError = model.maybeError
             , txnID = Just model.bankTxn.id
+            , explanation = ( model.explanation, ExplanationUpdated )
             }
             ++ [ buttonRow CreateDisbToggled "Create" "Cancel" CreateDisbSubmitted model.createDisbIsSubmitting <| not (Validate.any requiredFieldValidators model) ]
 
@@ -362,6 +366,7 @@ type Msg
     | PaymentDateUpdated String
     | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CheckNumberUpdated String
+    | ExplanationUpdated String
     | CreateDisbToggled
     | CreateDisbSubmitted
     | RelatedTransactionClicked Transaction.Model Bool
@@ -522,6 +527,9 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+        ExplanationUpdated str ->
+            ( { model | explanation = str }, Cmd.none )
+
 
 isSelected : Transaction.Model -> List Transaction.Model -> Bool
 isSelected txn selected =
@@ -641,6 +649,7 @@ toEncodeModel model =
     , paymentDate = model.paymentDate
     , paymentMethod = model.paymentMethod
     , checkNumber = model.checkNumber
+    , explanation = model.explanation
     }
 
 

@@ -25,6 +25,7 @@ query =
       $paymentDate: Float
       $checkNumber: String
       $purposeCode: PurposeCode
+      $explanation: String
       $isExistingLiability: Boolean
       $isPartialPayment: Boolean
       $isSubContracted: Boolean
@@ -42,6 +43,7 @@ query =
           paymentDate: $paymentDate
           checkNumber: $checkNumber
           purposeCode: $purposeCode
+          explanation: $explanation
           isExistingLiability: $isExistingLiability
           isPartialPayment: $isPartialPayment
           isSubcontracted: $isSubContracted
@@ -70,6 +72,7 @@ encode model =
                     ++ optionalFieldNotZero "paymentDate" (dateStringToMillis model.paymentDate)
                     ++ optionalFieldString "checkNumber" model.checkNumber
                     ++ (optionalFieldString "purposeCode" <| PurposeCode.fromMaybeToString model.purposeCode)
+                    ++ optionalFieldString "explanation" model.explanation
                     ++ [ ( "isExistingLiability", Encode.bool <| Maybe.withDefault False model.isExistingLiability ) ]
                     ++ [ ( "isPartialPayment", Encode.bool <| Maybe.withDefault False model.isPartialPayment ) ]
                     ++ [ ( "isSubContracted", Encode.bool <| Maybe.withDefault False model.isSubcontracted ) ]

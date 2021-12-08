@@ -70,6 +70,7 @@ query =
             finicityPaymentMethod
             donorVerificationScore
             businessIdVerificationScore
+            explanation
           }
         }
     """
