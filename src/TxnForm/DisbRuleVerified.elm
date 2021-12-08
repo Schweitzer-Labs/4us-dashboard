@@ -52,7 +52,6 @@ type alias Model =
     , maybeError : Maybe String
     , formDisabled : Bool
     , popoverState : Popover.State
-    , explanation : String
     }
 
 
@@ -89,7 +88,6 @@ init txn =
     , isSubmitDisabled = True
     , maybeError = Nothing
     , popoverState = Popover.initialState
-    , explanation = Maybe.withDefault "" txn.explanation
     }
 
 
@@ -160,7 +158,6 @@ disbFormRow model =
         , toggleEdit = EditFormToggled
         , maybeError = model.maybeError
         , txnID = Just model.txn.id
-        , explanation = ( model.explanation, ExplanationUpdated )
         }
 
 
@@ -182,7 +179,6 @@ type Msg
     | PaymentDateUpdated String
     | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CheckNumberUpdated String
-    | ExplanationUpdated String
     | EditFormToggled
     | BankDataToggled
 
@@ -234,9 +230,6 @@ update msg model =
 
         IsInKindUpdated bool ->
             ( { model | isInKind = bool }, Cmd.none )
-
-        ExplanationUpdated str ->
-            ( { model | explanation = str }, Cmd.none )
 
         BankDataToggled ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )

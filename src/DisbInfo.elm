@@ -16,7 +16,7 @@ import Html exposing (Html, div, span, text)
 import Html.Attributes as Attr exposing (attribute, class, for)
 import Html.Events exposing (onClick)
 import PaymentMethod
-import PurposeCode exposing (PurposeCode(..))
+import PurposeCode exposing (PurposeCode)
 import YesOrNo exposing (yesOrNo)
 
 
@@ -36,7 +36,6 @@ type alias Config msg =
     , amount : Maybe (DataMsg.MsgString msg)
     , paymentDate : Maybe (DataMsg.MsgString msg)
     , paymentMethod : Maybe (DataMsg.MsgMaybePaymentMethod msg)
-    , explanation : DataMsg.MsgString msg
     , disabled : Bool
     , isEditable : Bool
     , toggleEdit : msg
@@ -46,7 +45,7 @@ type alias Config msg =
 
 
 view : Config msg -> List (Html msg)
-view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, explanation, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable, toggleEdit, maybeError, txnID } =
+view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable, toggleEdit, maybeError, txnID } =
     let
         errorContent =
             case maybeError of
@@ -95,7 +94,6 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
             }
         ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ PurposeCode.select (toData purposeCode) (toMsg purposeCode) disabled ] ]
            ]
-        ++ explanationRow (toData purposeCode) explanation disabled
         ++ [ Grid.row []
                 [ yesOrNo "Is expenditure subcontracted?" isSubcontracted txnID disabled
                 , yesOrNo "Is expenditure a partial payment?" isPartialPayment txnID disabled
@@ -125,20 +123,3 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
                 _ ->
                     []
            )
-
-
-explanationRow : Maybe PurposeCode -> DataMsg.MsgString msg -> Bool -> List (Html msg)
-explanationRow code explanation disabled =
-    case code of
-        Just OTHER ->
-            [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
-                [ Grid.col []
-                    [ inputText (toMsg explanation) (toData explanation) disabled "createDisbExpl" "*Explanation" ]
-                ]
-            ]
-
-        Nothing ->
-            []
-
-        _ ->
-            []
