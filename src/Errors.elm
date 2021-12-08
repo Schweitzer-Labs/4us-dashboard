@@ -275,9 +275,6 @@ fromPurposeCodeOther code explanation =
                 False ->
                     []
 
-        Nothing ->
-            []
-
         _ ->
             []
 

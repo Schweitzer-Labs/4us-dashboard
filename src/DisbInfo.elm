@@ -137,8 +137,5 @@ explanationRow code explanation disabled =
                 ]
             ]
 
-        Nothing ->
-            []
-
         _ ->
             []
