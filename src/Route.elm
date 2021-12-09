@@ -4,7 +4,8 @@ import Browser.Navigation as Nav
 import Html exposing (Attribute)
 import Html.Attributes as Attr
 import Url exposing (Url)
-import Url.Parser as Parser exposing ((</>), Parser, oneOf, s, string)
+import Url.Parser as Parser exposing ((</>), (<?>), Parser, oneOf, s, string)
+import Url.Parser.Query as Query
 
 
 
@@ -12,7 +13,7 @@ import Url.Parser as Parser exposing ((</>), Parser, oneOf, s, string)
 
 
 type Route
-    = Home
+    = Home (Maybe String) (Maybe String)
     | LinkBuilder String
     | Transactions String
     | Demo String
@@ -21,7 +22,8 @@ type Route
 parser : Parser (Route -> a) a
 parser =
     oneOf
-        [ Parser.map Transactions (s "committee" </> string)
+        [ Parser.map Home (Parser.top <?> Query.string "id_token" <?> Query.string "state")
+        , Parser.map Transactions (s "committee" </> string)
         , Parser.map LinkBuilder (s "committee" </> string </> s "link-builder")
         , Parser.map Demo (s "committee" </> string </> s "demo")
         ]
@@ -58,9 +60,6 @@ routeToString page =
 routeToPieces : Route -> List String
 routeToPieces page =
     case page of
-        Home ->
-            []
-
         Transactions id ->
             [ "committee", id ]
 
@@ -69,3 +68,6 @@ routeToPieces page =
 
         Demo id ->
             [ "committee", id, "demo" ]
+
+        _ ->
+            []

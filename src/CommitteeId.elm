@@ -7,6 +7,7 @@ import Url.Parser.Query as Query
 
 parse : Url.Url -> String
 parse url =
-    Maybe.withDefault "" <|
-        Maybe.withDefault (Just "") <|
-            Parser.parse (Parser.query (Query.string "committeeId")) url
+    url
+        |> Parser.parse (Parser.query (Query.string "committeeId"))
+        |> Maybe.withDefault (Just "")
+        |> Maybe.withDefault ""

@@ -27,7 +27,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
 import Cents exposing (toDollarData)
-import Cognito exposing (loginUrl)
+import Cognito
 import Config exposing (Config)
 import ContribInfo
 import Copy
@@ -458,7 +458,12 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| loginUrl model.config model.committeeId )
+                    ( model
+                    , model.config
+                        |> Cognito.fromConfig
+                        |> Cognito.toLoginUrl (Just model.committeeId)
+                        |> load
+                    )
 
         CreateContribToggled ->
             ( let

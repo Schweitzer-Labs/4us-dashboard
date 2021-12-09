@@ -15,7 +15,7 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Navigation exposing (load)
-import Cognito exposing (loginUrl)
+import Cognito
 import Committee
 import Config exposing (Config)
 import Errors
@@ -340,7 +340,12 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| loginUrl model.config model.committeeId )
+                    ( model
+                    , model.config
+                        |> Cognito.fromConfig
+                        |> Cognito.toLoginUrl (Just model.committeeId)
+                        |> load
+                    )
 
         GenDemoCommitteeClicked ->
             ( { model | isSubmitting = True, errors = [] }, genDemoCommittee model )

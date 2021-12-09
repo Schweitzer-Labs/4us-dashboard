@@ -22,7 +22,7 @@ import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
-import Cognito exposing (loginUrl)
+import Cognito
 import Committee
 import Config exposing (Config)
 import ContribInfo
@@ -1095,7 +1095,12 @@ update msg model =
                             ( model, Download.string "report.csv" "text/csv" <| GetReport.toCsvData body )
 
                         Err _ ->
-                            ( model, load <| loginUrl model.config model.committeeId )
+                            ( model
+                            , model.config
+                                |> Cognito.fromConfig
+                                |> Cognito.toLoginUrl (Just model.committeeId)
+                                |> load
+                            )
 
                 Preview ->
                     case res of
@@ -1103,7 +1108,12 @@ update msg model =
                             ( { model | generateDisclosureModalPreview = Just (GetReport.toCsvData body) }, Cmd.none )
 
                         Err _ ->
-                            ( model, load <| loginUrl model.config model.committeeId )
+                            ( model
+                            , model.config
+                                |> Cognito.fromConfig
+                                |> Cognito.toLoginUrl (Just model.committeeId)
+                                |> load
+                            )
 
                 Closed ->
                     ( model, Cmd.none )
@@ -1148,7 +1158,12 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| loginUrl model.config model.committeeId )
+                    ( model
+                    , model.config
+                        |> Cognito.fromConfig
+                        |> Cognito.toLoginUrl (Just model.committeeId)
+                        |> load
+                    )
 
         --( model, Cmd.none )
         ShowCreateContributionModal ->
@@ -1404,7 +1419,12 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| loginUrl model.config model.committeeId )
+                    ( model
+                    , model.config
+                        |> Cognito.fromConfig
+                        |> Cognito.toLoginUrl (Just model.committeeId)
+                        |> load
+                    )
 
         ToggleDeletePrompt ->
             ( { model | alertVisibility = Alert.shown, isDeletionConfirmed = DeleteInfo.Confirmed }, Cmd.none )

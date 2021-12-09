@@ -16,7 +16,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
-import Cognito exposing (loginUrl)
+import Cognito
 import Committee
 import Config exposing (Config)
 import Html exposing (..)
@@ -190,7 +190,12 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| loginUrl model.config model.committeeId )
+                    ( model
+                    , model.config
+                        |> Cognito.fromConfig
+                        |> Cognito.toLoginUrl (Just model.committeeId)
+                        |> load
+                    )
 
 
 createUrl : String -> String -> String -> String -> String
