@@ -35,6 +35,7 @@ type alias MakeModalConfig msg subMsg subModel =
     , alertVisibility : Maybe Alert.Visibility
     , isDeleteConfirmed : DeleteInfo.Model
     , id : String
+    , cyId : String
     }
 
 
@@ -75,6 +76,7 @@ view config =
                         , submitMsg = config.submitMsg
                         , isDeleting = config.isDeleting
                         , isDeleteConfirmed = config.isDeleteConfirmed
+                        , cyId = config.cyId
                         }
                 ]
             ]
@@ -92,6 +94,7 @@ type alias ButtonRowConfig hideMsg submitMsg =
     , disabled : Bool
     , isDeleting : Bool
     , isDeleteConfirmed : DeleteInfo.Model
+    , cyId : String
     }
 
 
@@ -104,7 +107,7 @@ buttonRow config =
           <|
             case ( config.enableExit, config.maybeDeleteMsg ) of
                 ( True, Just deleteMsg ) ->
-                    [ SubmitButton.delete deleteMsg config.isDeleting config.isDeleteConfirmed ]
+                    [ SubmitButton.delete config.cyId deleteMsg config.isDeleting config.isDeleteConfirmed ]
 
                 ( True, Nothing ) ->
                     [ exitButton config.hideMsg ]
@@ -117,7 +120,7 @@ buttonRow config =
                 []
 
              else
-                [ submitButton config.submitText config.submitMsg config.submitting config.disabled ]
+                [ submitButton config.cyId config.submitText config.submitMsg config.submitting config.disabled ]
             )
         ]
 

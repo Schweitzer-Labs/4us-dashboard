@@ -306,7 +306,7 @@ buttonRow hideMsg displayText exitText msg submitting disabled =
             [ exitButton hideMsg exitText ]
         , Grid.col
             [ Col.lg4 ]
-            [ submitButton displayText msg submitting disabled ]
+            [ submitButton "disbRuleUnverified" displayText msg submitting disabled ]
         ]
 
 

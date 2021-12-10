@@ -106,12 +106,12 @@ Cypress.Commands.add('generateAmendDisbDemo', () => {
 })
 
 Cypress.Commands.add('contribSubmit', ()=> {
-    cy.get('button').contains('Submit').click()
-    cy.wait(1800)
+    cy.get('[data-cy=createContribsubmitButton]').click()
+    cy.wait(5000)
 })
 
 Cypress.Commands.add('disbSubmit', ()=> {
-    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-footer > .container-fluid > .row > :nth-child(2) > .btn')
+    cy.get('[data-cy=createDisbsubmitButton]')
         .click()
 })
 
@@ -149,8 +149,12 @@ Cypress.Commands.add ('initContrib',()=>{
     cy.get('#actions-dropdown').click()
     cy.get('button').contains('Create Contribution').click()
 
-    cy.get(':nth-child(2) > :nth-child(1) > .form-group > [data-cy=paymentAmount]').type(donor.amount)
-    cy.get(':nth-child(2) > :nth-child(2) > .form-group > [data-cy=paymentDate]').type(donor.paymentDate)
+    cy.get('[data-cy=paymentAmountcreateContrib]').first().type(faker.datatype.number({
+        min: 10,
+        max: 100,
+    }))
+    cy.get('[data-cy=paymentDatecreateContrib]').first()
+        .type('2021-09-17')
 })
 
 Cypress.Commands.add('selectOrg', ()=>{

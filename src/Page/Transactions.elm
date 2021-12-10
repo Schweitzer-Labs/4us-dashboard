@@ -293,6 +293,7 @@ createDisbursementModal model =
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
         , id = FormID.toString CreateDisb
+        , cyId = "createDisb"
         }
 
 
@@ -318,6 +319,7 @@ createContributionModal model =
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
         , id = FormID.toString CreateContrib
+        , cyId = "createContrib"
         }
 
 
@@ -347,6 +349,7 @@ disbRuleUnverifiedModal model =
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
         , id = FormID.toString ReconcileDisb
+        , cyId = "disbRuleUnverified"
         }
 
 
@@ -372,6 +375,7 @@ disbRuleVerifiedModal model =
         , alertVisibility = Just model.alertVisibility
         , isDeleteConfirmed = model.isDeletionConfirmed
         , id = FormID.toString AmendDisb
+        , cyId = "disbRuleVerified"
         }
 
 
@@ -401,6 +405,7 @@ contribRuleUnverifiedModal model =
         , alertVisibility = Nothing
         , isDeleteConfirmed = model.isDeletionConfirmed
         , id = FormID.toString ReconcileContrib
+        , cyId = "contribRuleUnverified"
         }
 
 
@@ -426,6 +431,7 @@ contribRuleVerifiedModal model =
         , alertVisibility = Just model.alertVisibility
         , isDeleteConfirmed = model.isDeletionConfirmed
         , id = FormID.toString AmendContrib
+        , cyId = "contribRuleVerified"
         }
 
 
@@ -562,7 +568,7 @@ buttonRow displayText msg submitting enableExit disabled =
             )
         , Grid.col
             [ Col.lg3 ]
-            [ submitButton displayText msg submitting disabled ]
+            [ submitButton "fileDisclosure" displayText msg submitting disabled ]
         ]
 
 
