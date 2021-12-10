@@ -1,10 +1,11 @@
-module Api.SeedExtContribs exposing (..)
+module Api.SeedExtContribs exposing (EncodeModel, ID, decoder, encode, query, send, successDecoder)
 
 import Api.GraphQL as GraphQL exposing (MutationResponseOnAll(..), encodeQuery, mutationValidationFailureDecoderAll)
-import Config exposing (Config)
+import Config
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
+import Session
 
 
 query : String
@@ -71,6 +72,6 @@ decoder =
     Decode.oneOf [ successDecoder, mutationValidationFailureDecoderAll ]
 
 
-send : (Result Http.Error MutationResponseOnAll -> msg) -> Config -> Http.Body -> Cmd msg
+send : (Result Http.Error MutationResponseOnAll -> msg) -> Config.Model -> Session.Model -> Http.Body -> Cmd msg
 send msg config =
     GraphQL.send decoder msg config

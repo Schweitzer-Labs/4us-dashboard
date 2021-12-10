@@ -1,11 +1,12 @@
 module Api.AmendDisb exposing (encode, send)
 
 import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldNotZero, optionalFieldString, optionalFieldStringInt)
-import Config exposing (Config)
+import Config
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode exposing (Value)
 import PurposeCode
+import Session
 import Timestamp exposing (dateStringToMillis)
 import TxnForm.DisbRuleVerified as DisbRuleVerified
 
@@ -91,6 +92,6 @@ successDecoder =
                     Decode.string
 
 
-send : (Result Http.Error MutationResponse -> msg) -> Config -> Http.Body -> Cmd msg
-send msg config =
-    GraphQL.send decoder msg config
+send : (Result Http.Error MutationResponse -> msg) -> Config.Model -> Session.Model -> Http.Body -> Cmd msg
+send =
+    GraphQL.send decoder

@@ -1,4 +1,13 @@
-module Page.LinkBuilder exposing (Model, Msg, init, subscriptions, toSession, update, view)
+module Page.LinkBuilder exposing
+    ( Model
+    , Msg
+    , init
+    , subscriptions
+    , toConfig
+    , toSession
+    , update
+    , view
+    )
 
 {-| The homepage. You can get here via either the / or /#/ routes.
 -}
@@ -18,12 +27,12 @@ import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
 import Cognito
 import Committee
-import Config exposing (Config)
+import Config
 import Html exposing (..)
 import Html.Attributes as SvgA exposing (class, for, href, src, style, target)
 import Http
 import QRCode
-import Session exposing (Session)
+import Session
 import Task exposing (Task)
 import TransactionType exposing (TransactionType)
 import Url.Builder
@@ -34,18 +43,18 @@ import Url.Builder
 
 
 type alias Model =
-    { session : Session
+    { session : Session.Model
     , refCode : String
     , amount : String
     , url : String
     , committeeId : String
     , aggregations : Aggregations.Model
     , committee : Committee.Model
-    , config : Config
+    , config : Config.Model
     }
 
 
-init : Config -> Session -> Aggregations.Model -> Committee.Model -> String -> ( Model, Cmd Msg )
+init : Config.Model -> Session.Model -> Aggregations.Model -> Committee.Model -> String -> ( Model, Cmd Msg )
 init config session aggs committee committeeId =
     let
         initModel =
@@ -161,8 +170,7 @@ qrCodeView message =
 
 
 type Msg
-    = GotSession Session
-    | RefCodeUpdated String
+    = RefCodeUpdated String
     | AmountUpdated String
     | GotTransactionsData (Result Http.Error GetTxns.Model)
 
@@ -170,9 +178,6 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotSession session ->
-            ( { model | session = session }, Cmd.none )
-
         RefCodeUpdated str ->
             ( { model | refCode = str }, Cmd.none )
 
@@ -218,21 +223,14 @@ createUrl donorUrl committeeId refCode amount =
     Url.Builder.crossOrigin donorUrl [ "committee", committeeId ] <| refCodeVal ++ amountVal
 
 
-scrollToTop : Task x ()
-scrollToTop =
-    Dom.setViewport 0 0
-        -- It's not worth showing the user anything special if scrolling fails.
-        -- If anything, we'd log this to an error recording service.
-        |> Task.onError (\_ -> Task.succeed ())
-
-
 
 -- HTTP
 
 
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg
 getTransactions model maybeTxnType =
-    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
+    GetTxns.send GotTransactionsData model.config model.session <|
+        GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
 
 
 
@@ -248,6 +246,11 @@ subscriptions model =
 -- EXPORT
 
 
-toSession : Model -> Session
+toSession : Model -> Session.Model
 toSession model =
     model.session
+
+
+toConfig : Model -> Config.Model
+toConfig model =
+    model.config

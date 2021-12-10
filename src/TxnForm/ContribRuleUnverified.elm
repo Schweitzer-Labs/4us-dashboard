@@ -28,7 +28,7 @@ import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
 import Cents exposing (toDollarData)
 import Cognito
-import Config exposing (Config)
+import Config
 import ContribInfo
 import Copy
 import DataTable exposing (DataRow, emptyText)
@@ -49,6 +49,7 @@ import OrgOrInd
 import Owners
 import OwnersView
 import PaymentMethod
+import Session
 import SubmitButton exposing (submitButton)
 import Task
 import Time exposing (utc)
@@ -61,7 +62,8 @@ import Validate exposing (Validator, fromErrors, ifBlank, ifNothing, validate)
 
 
 type alias Model =
-    { bankTxn : Transaction.Model
+    { session : Session.Model
+    , bankTxn : Transaction.Model
     , committeeId : String
     , selectedTxns : List Transaction.Model
     , relatedTxns : List Transaction.Model
@@ -100,7 +102,7 @@ type alias Model =
     , inKindDesc : String
     , inKindType : Maybe InKindType.Model
     , maybeError : Maybe String
-    , config : Config
+    , config : Config.Model
     , lastCreatedTxnId : String
     , timezone : Time.Zone
     , createContribIsVisible : Bool
@@ -110,8 +112,8 @@ type alias Model =
     }
 
 
-init : Config -> Transaction.Model -> ( Model, Cmd Msg )
-init config bankTxn =
+init : Config.Model -> Session.Model -> Transaction.Model -> ( Model, Cmd Msg )
+init config session bankTxn =
     let
         model =
             { bankTxn = bankTxn
@@ -160,6 +162,7 @@ init config bankTxn =
             , timezone = america__new_york ()
             , lastCreatedTxnId = ""
             , paySets = []
+            , session = session
             }
     in
     ( model, getTxns model )
@@ -543,13 +546,9 @@ update msg model =
 --- HELPERS
 
 
-withNone model =
-    ( model, Cmd.none )
-
-
 getTxns : Model -> Cmd Msg
 getTxns model =
-    GetTxns.send GetTxnsGotResp model.config <| GetTxns.encode model.committeeId (Just TransactionType.Contribution) Nothing Nothing
+    GetTxns.send GetTxnsGotResp model.config model.session <| GetTxns.encode model.committeeId (Just TransactionType.Contribution) Nothing Nothing
 
 
 fromError : Model -> String -> Model
@@ -852,7 +851,7 @@ createContribEncoder model =
 
 createContrib : Model -> Cmd Msg
 createContrib model =
-    CreateContrib.send CreateContribMutResp model.config <| CreateContrib.encode createContribEncoder model
+    CreateContrib.send CreateContribMutResp model.config model.session <| CreateContrib.encode createContribEncoder model
 
 
 dateWithFormat : Model -> String

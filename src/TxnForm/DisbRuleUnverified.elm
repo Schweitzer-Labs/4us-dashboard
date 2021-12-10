@@ -29,7 +29,7 @@ import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
 import Cents exposing (toDollarData)
 import Cognito
-import Config exposing (Config)
+import Config
 import Copy
 import DataTable exposing (DataRow)
 import Direction
@@ -43,6 +43,7 @@ import Http
 import LabelWithData exposing (labelWithContent, labelWithData)
 import PaymentMethod
 import PurposeCode exposing (PurposeCode)
+import Session
 import SubmitButton exposing (submitButton)
 import Task
 import Time exposing (utc)
@@ -79,15 +80,17 @@ type alias Model =
     , createDisbIsSubmitting : Bool
     , reconcileButtonIsDisabled : Bool
     , maybeError : Maybe String
-    , config : Config
+    , config : Config.Model
+    , session : Session.Model
     , lastCreatedTxnId : String
     , timezone : Time.Zone
     }
 
 
-init : Config -> List Transaction.Model -> Transaction.Model -> Model
-init config txns bankTxn =
-    { bankTxn = bankTxn
+init : Config.Model -> Session.Model -> List Transaction.Model -> Transaction.Model -> Model
+init config session txns bankTxn =
+    { session = session
+    , bankTxn = bankTxn
     , committeeId = bankTxn.committeeId
     , selectedTxns = []
     , relatedTxns = getRelatedDisb bankTxn txns
@@ -634,12 +637,12 @@ toEncodeModel model =
 
 createDisb : Model -> Cmd Msg
 createDisb model =
-    CreateDisb.send CreateDisbGotResp model.config <| CreateDisb.encode toEncodeModel model
+    CreateDisb.send CreateDisbGotResp model.config model.session <| CreateDisb.encode toEncodeModel model
 
 
 getTxns : Model -> Cmd Msg
 getTxns model =
-    GetTxns.send GetTxnsGotResp model.config <| GetTxns.encode model.committeeId (Just TransactionType.Disbursement) Nothing Nothing
+    GetTxns.send GetTxnsGotResp model.config model.session <| GetTxns.encode model.committeeId (Just TransactionType.Disbursement) Nothing Nothing
 
 
 reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel

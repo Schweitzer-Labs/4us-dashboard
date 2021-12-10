@@ -3,14 +3,15 @@ module Page.Home exposing
     , Msg(..)
     , init
     , subscriptions
+    , toConfig
     , toSession
     , update
     , view
     )
 
-import Config exposing (Config)
+import Config
 import Html exposing (..)
-import Session exposing (Session)
+import Session
 
 
 
@@ -18,12 +19,12 @@ import Session exposing (Session)
 
 
 type alias Model =
-    { session : Session
-    , config : Config
+    { session : Session.Model
+    , config : Config.Model
     }
 
 
-init : Config -> Session -> ( Model, Cmd Msg )
+init : Config.Model -> Session.Model -> ( Model, Cmd Msg )
 init config session =
     let
         model =
@@ -73,6 +74,11 @@ subscriptions model =
 -- EXPORT
 
 
-toSession : Model -> Session
+toSession : Model -> Session.Model
 toSession model =
     model.session
+
+
+toConfig : Model -> Config.Model
+toConfig model =
+    model.config

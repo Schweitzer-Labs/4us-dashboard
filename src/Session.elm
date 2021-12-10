@@ -1,4 +1,4 @@
-module Session exposing (Session(..), build, setToken, toNavKey, toToken)
+module Session exposing (Model(..), build, setToken, toNavKey, toToken)
 
 import Browser.Navigation as Nav
 
@@ -7,7 +7,7 @@ import Browser.Navigation as Nav
 -- TYPES
 
 
-type Session
+type Model
     = LoggedIn Nav.Key String
     | LoggedOut Nav.Key
 
@@ -16,7 +16,7 @@ type Session
 -- INFO
 
 
-toToken : Session -> Maybe String
+toToken : Model -> Maybe String
 toToken session =
     case session of
         LoggedIn key token ->
@@ -26,7 +26,7 @@ toToken session =
             Nothing
 
 
-toNavKey : Session -> Nav.Key
+toNavKey : Model -> Nav.Key
 toNavKey session =
     case session of
         LoggedIn key _ ->
@@ -40,7 +40,7 @@ toNavKey session =
 -- CHANGES
 
 
-build : Nav.Key -> Maybe String -> Session
+build : Nav.Key -> Maybe String -> Model
 build key maybeToken =
     case maybeToken of
         Just token ->
@@ -50,6 +50,6 @@ build key maybeToken =
             LoggedOut key
 
 
-setToken : String -> Session -> Session
+setToken : String -> Model -> Model
 setToken token session =
     LoggedIn (toNavKey session) token

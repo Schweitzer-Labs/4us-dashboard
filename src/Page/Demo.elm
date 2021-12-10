@@ -1,4 +1,15 @@
-module Page.Demo exposing (Model, Msg(..), formRow, getTransactions, init, subscriptions, toSession, update, view)
+module Page.Demo exposing
+    ( Model
+    , Msg(..)
+    , formRow
+    , getTransactions
+    , init
+    , subscriptions
+    , toConfig
+    , toSession
+    , update
+    , view
+    )
 
 import Aggregations
 import Api
@@ -17,13 +28,13 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Navigation exposing (load)
 import Cognito
 import Committee
-import Config exposing (Config)
+import Config
 import Errors
 import Html exposing (..)
 import Html.Attributes as SvgA exposing (attribute, class, for, href, target)
 import Http
 import LabelWithData exposing (dataText)
-import Session exposing (Session)
+import Session
 import SubmitButton
 import Time
 import TransactionType exposing (TransactionType)
@@ -34,12 +45,12 @@ import TransactionType exposing (TransactionType)
 
 
 type alias Model =
-    { session : Session
-    , committeeId : String
+    { committeeId : String
     , aggregations : Aggregations.Model
     , committee : Committee.Model
     , isSubmitting : Bool
-    , config : Config
+    , config : Config.Model
+    , session : Session.Model
     , password : String
     , maybeDemoCommitteeId : Maybe String
     , errors : List String
@@ -58,7 +69,7 @@ type alias Model =
     }
 
 
-init : Config -> Session -> Aggregations.Model -> Committee.Model -> String -> ( Model, Cmd Msg )
+init : Config.Model -> Session.Model -> Aggregations.Model -> Committee.Model -> String -> ( Model, Cmd Msg )
 init config session aggs committee committeeId =
     let
         initModel =
@@ -250,7 +261,7 @@ eventList model =
         |> ul []
 
 
-idToCommitteeUrl : Config -> String -> String
+idToCommitteeUrl : Config.Model -> String -> String
 idToCommitteeUrl config id =
     config.redirectUri ++ "/committee/" ++ id
 
@@ -294,7 +305,7 @@ urlRow model =
 
 
 type Msg
-    = GotSession Session
+    = GotSession Session.Model
     | PasswordUpdated String
     | GenDemoCommitteeGotResp (Result Http.Error MutationResponse)
     | GotTransactionsData (Result Http.Error GetTxns.Model)
@@ -575,7 +586,7 @@ update msg model =
 
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg
 getTransactions model maybeTxnType =
-    GetTxns.send GotTransactionsData model.config <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
+    GetTxns.send GotTransactionsData model.config model.session <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
 
 
 
@@ -584,7 +595,7 @@ getTransactions model maybeTxnType =
 
 genDemoCommittee : Model -> Cmd Msg
 genDemoCommittee model =
-    GenDemoCommittee.send GenDemoCommitteeGotResp model.config <| GenDemoCommittee.encode toGenDemoCommittee model
+    GenDemoCommittee.send GenDemoCommitteeGotResp model.config model.session <| GenDemoCommittee.encode toGenDemoCommittee model
 
 
 toGenDemoCommittee : Model -> GenDemoCommittee.EncodeModel
@@ -624,7 +635,7 @@ seedDemoBankRecord config =
                 , amount = config.amount
             }
     in
-    SeedDemoBankRecords.send SeedDemoBankRecordGotResp model.config <| SeedDemoBankRecords.encode toSeedDemoBankRecord state
+    SeedDemoBankRecords.send SeedDemoBankRecordGotResp model.config model.session <| SeedDemoBankRecords.encode toSeedDemoBankRecord state
 
 
 toSeedExtContribs : Model -> SeedExtContribs.EncodeModel
@@ -641,7 +652,7 @@ seedExtContribs model source =
         state =
             { model | externalSource = source }
     in
-    SeedExtContribs.send SeedExtContribsGotResp model.config <| SeedExtContribs.encode toSeedExtContribs state
+    SeedExtContribs.send SeedExtContribsGotResp model.config model.session <| SeedExtContribs.encode toSeedExtContribs state
 
 
 toReconcileDemoTxn : Model -> ReconcileDemoTxs.EncodeModel
@@ -653,7 +664,7 @@ toReconcileDemoTxn model =
 
 reconcileDemoTxn : Model -> Cmd Msg
 reconcileDemoTxn model =
-    ReconcileDemoTxs.send ReconcileDemoTxnGotResp model.config <| ReconcileDemoTxs.encode toReconcileDemoTxn model
+    ReconcileDemoTxs.send ReconcileDemoTxnGotResp model.config model.session <| ReconcileDemoTxs.encode toReconcileDemoTxn model
 
 
 
@@ -669,6 +680,11 @@ subscriptions model =
 -- EXPORT
 
 
-toSession : Model -> Session
+toSession : Model -> Session.Model
 toSession model =
     model.session
+
+
+toConfig : Model -> Config.Model
+toConfig model =
+    model.config

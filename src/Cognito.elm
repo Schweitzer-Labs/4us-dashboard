@@ -1,7 +1,8 @@
-port module Cognito exposing (fromConfig, fromFlagConfig, goToCommitteeUrl, toLoginUrl, urlToCommitteeId, urlToRedirectQS)
+port module Cognito exposing (fromConfig, fromFlags, goToCommitteeUrl, toLoginUrl, urlToCommitteeId, urlToRedirectQS)
 
 import Browser.Navigation exposing (load)
-import Config exposing (Config, FlagConfig)
+import Config
+import Flags
 import Json.Decode exposing (Value)
 import Json.Encode as Encode
 import Url exposing (Url)
@@ -22,7 +23,7 @@ type alias Args =
     }
 
 
-fromConfig : Config -> Args
+fromConfig : Config.Model -> Args
 fromConfig { cognitoDomain, cognitoClientId, redirectUri } =
     { cognitoDomain = cognitoDomain
     , cognitoClientId = cognitoClientId
@@ -30,8 +31,8 @@ fromConfig { cognitoDomain, cognitoClientId, redirectUri } =
     }
 
 
-fromFlagConfig : FlagConfig -> Args
-fromFlagConfig { cognitoDomain, cognitoClientId, redirectUri } =
+fromFlags : Flags.Model -> Args
+fromFlags { cognitoDomain, cognitoClientId, redirectUri } =
     { cognitoDomain = cognitoDomain
     , cognitoClientId = cognitoClientId
     , redirectUri = redirectUri
@@ -94,12 +95,12 @@ setTokenToStorage token =
     storeCache <| Just json
 
 
-configToCommitteeUrl : Config -> String -> String
+configToCommitteeUrl : Config.Model -> String -> String
 configToCommitteeUrl { redirectUri } committeeId =
     redirectUri ++ "?committeeId=" ++ committeeId
 
 
-goToCommitteeUrl : Config -> String -> Cmd msg
+goToCommitteeUrl : Config.Model -> String -> Cmd msg
 goToCommitteeUrl config str =
     load <| configToCommitteeUrl config str
 

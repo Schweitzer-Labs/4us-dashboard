@@ -2,12 +2,13 @@ module Api.CreateDisb exposing (EncodeModel, encode, send)
 
 import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldString)
 import Cents
-import Config exposing (Config)
+import Config
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
 import PaymentMethod
 import PurposeCode exposing (PurposeCode)
+import Session
 import Timestamp exposing (dateStringToMillis)
 import TransactionType
 
@@ -118,6 +119,6 @@ successDecoder =
                     Decode.string
 
 
-send : (Result Http.Error MutationResponse -> msg) -> Config -> Http.Body -> Cmd msg
+send : (Result Http.Error MutationResponse -> msg) -> Config.Model -> Session.Model -> Http.Body -> Cmd msg
 send =
     GraphQL.send decoder

@@ -9,7 +9,6 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser exposing (Document)
 import Committee
-import Config exposing (Config)
 import Html exposing (Html, a, div, h1, img, text, ul)
 import Html.Attributes as Attr exposing (class, classList)
 import Route exposing (Route)
@@ -39,16 +38,16 @@ isLoading is for determining whether we should show a loading spinner
 in the header. (This comes up during slow page transitions.)
 
 -}
-committeeLayout : Config -> Aggregations.Model -> Committee.Model -> Page -> { title : String, content : Html msg } -> Document msg
-committeeLayout config aggregations committee page { title, content } =
+committeeLayout : Aggregations.Model -> Committee.Model -> Page -> { title : String, content : Html msg } -> Document msg
+committeeLayout aggregations committee page { title, content } =
     { title = title ++ " - Treasury Manager"
     , body =
         committeeSidebar page committee :: mainContainer (header aggregations) content :: []
     }
 
 
-userLayout : Config -> Page -> { title : String, content : Html msg } -> Document msg
-userLayout config page { title, content } =
+userLayout : Page -> { title : String, content : Html msg } -> Document msg
+userLayout page { title, content } =
     { title = title ++ " - Treasury Manager"
     , body =
         userSidebar page :: mainContainer (div [] []) content :: []

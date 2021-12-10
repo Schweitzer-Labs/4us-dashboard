@@ -34,11 +34,8 @@ function runApp() {
   });
 
   app.ports.putTokenInLocalStorage.subscribe((token) => {
-    console.log(token);
-    setTimeout(() => {
-      localStorage.setItem(storageKey, token);
-      app.ports.tokenHasBeenSet.send("ok");
-    }, 3000);
+    localStorage.setItem(storageKey, token);
+    app.ports.tokenHasBeenSet.send("ok");
   });
 }
 

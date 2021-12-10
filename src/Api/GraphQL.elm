@@ -14,11 +14,12 @@ module Api.GraphQL exposing
 
 import Api
 import Api.Endpoint exposing (Endpoint(..))
-import Config exposing (Config)
+import Config
 import Http exposing (Body)
 import Json.Decode as Decode
 import Json.Encode as Encode exposing (Value)
 import Owners
+import Session
 
 
 encodeQuery : String -> Value -> Body
@@ -61,15 +62,22 @@ mutationValidationFailureDecoderAll =
 send :
     Decode.Decoder a
     -> (Result Http.Error a -> msg)
-    -> Config
+    -> Config.Model
+    -> Session.Model
     -> Body
     -> Cmd msg
-send decoder msg config body =
+send decoder msg config session body =
     let
+        apiEndpoint =
+            Config.toApiEndpoint config
+
+        token =
+            Maybe.withDefault "" (Session.toToken session)
+
         request =
             Api.post
-                (Endpoint config.apiEndpoint)
-                (Api.Token config.token)
+                (Endpoint apiEndpoint)
+                (Api.Token token)
                 body
                 decoder
     in
