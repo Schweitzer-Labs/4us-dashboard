@@ -5,7 +5,6 @@ import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Cognito
 import Committee
-import CommitteeId
 import Config
 import Flags
 import Html exposing (Html)
