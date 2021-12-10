@@ -284,6 +284,7 @@ disbFormRow model =
             , maybeError = model.maybeError
             , txnID = Just model.bankTxn.id
             , explanation = ( model.explanation, ExplanationUpdated )
+            , cyId = "disbRuleUnverified"
             }
             ++ [ buttonRow CreateDisbToggled "Create" "Cancel" CreateDisbSubmitted model.createDisbIsSubmitting <| not (Validate.any requiredFieldValidators model) ]
 

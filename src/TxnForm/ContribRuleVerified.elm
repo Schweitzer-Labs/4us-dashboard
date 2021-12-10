@@ -208,6 +208,7 @@ contribFormRow model =
         , maybeError = model.maybeError
         , txnId = Just model.txn.id
         , processPayment = False
+        , cyId = "contribRuleVerified"
         }
 
 

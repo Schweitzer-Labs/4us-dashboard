@@ -42,11 +42,12 @@ type alias Config msg =
     , toggleEdit : msg
     , maybeError : Maybe String
     , txnID : Maybe String
+    , cyId : String
     }
 
 
 view : Config msg -> List (Html msg)
-view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, explanation, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable, toggleEdit, maybeError, txnID } =
+view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalCode, purposeCode, explanation, isSubcontracted, isPartialPayment, isExistingLiability, isInKind, amount, paymentDate, paymentMethod, disabled, isEditable, toggleEdit, maybeError, txnID, cyId } =
     let
         errorContent =
             case maybeError of
@@ -79,7 +80,7 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
                         , Input.onInput (toMsg entityName)
                         , Input.value (toData entityName)
                         , Input.disabled disabled
-                        , Input.attrs [ attribute "data-cy" "recipientName", class <| AppInput.inputStyle disabled ]
+                        , Input.attrs [ attribute "data-cy" (cyId ++ "recipientName"), class <| AppInput.inputStyle disabled ]
                         ]
                     ]
                 ]
@@ -93,20 +94,20 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
             , disabled = disabled
             , id = "createDisb"
             }
-        ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ PurposeCode.select (toData purposeCode) (toMsg purposeCode) disabled ] ]
+        ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ PurposeCode.select cyId (toData purposeCode) (toMsg purposeCode) disabled ] ]
            ]
         ++ explanationRow (toData purposeCode) explanation disabled
         ++ [ Grid.row []
-                [ yesOrNo "Is expenditure subcontracted?" isSubcontracted txnID disabled
-                , yesOrNo "Is expenditure a partial payment?" isPartialPayment txnID disabled
-                , yesOrNo "Is this an existing Liability?" isExistingLiability txnID disabled
-                , yesOrNo "Is this an In-Kind payment?" isInKind txnID disabled
+                [ yesOrNo (cyId ++ "isSubcontracted") "Is expenditure subcontracted?" isSubcontracted txnID disabled
+                , yesOrNo (cyId ++ "isPartialPayment") "Is expenditure a partial payment?" isPartialPayment txnID disabled
+                , yesOrNo (cyId ++ "isExistingLiability") "Is this an existing Liability?" isExistingLiability txnID disabled
+                , yesOrNo (cyId ++ "isInKind") "Is this an In-Kind payment?" isInKind txnID disabled
                 ]
            ]
         ++ (case ( amount, paymentDate, paymentMethod ) of
                 ( Just a, Just p, Just pm ) ->
-                    AmountDate.view { amount = a, paymentDate = p, disabled = disabled, label = "*Payment Date" }
-                        ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] (PaymentMethod.dropdown (toData pm) (toMsg pm) True) ]
+                    AmountDate.view { amount = a, paymentDate = p, disabled = disabled, label = "*Payment Date", cyId = cyId }
+                        ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] (PaymentMethod.dropdown cyId (toData pm) (toMsg pm) True) ]
                            ]
                         ++ (if toData pm == Just PaymentMethod.Check then
                                 [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
@@ -120,7 +121,7 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
                            )
 
                 ( Just a, Just p, _ ) ->
-                    AmountDate.view { amount = a, paymentDate = p, disabled = disabled, label = "*Payment Date" }
+                    AmountDate.view { amount = a, paymentDate = p, disabled = disabled, label = "*Payment Date", cyId = cyId }
 
                 _ ->
                     []

@@ -6,11 +6,11 @@ import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid exposing (Column)
 import DataMsg exposing (toData, toMsg)
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (attribute, class)
 
 
-yesOrNo : String -> DataMsg.MsgMaybeBool msg -> Maybe String -> Bool -> Column msg
-yesOrNo question data txnID disabled =
+yesOrNo : String -> String -> DataMsg.MsgMaybeBool msg -> Maybe String -> Bool -> Column msg
+yesOrNo cyId question data txnID disabled =
     let
         bool =
             toData data
@@ -32,22 +32,22 @@ yesOrNo question data txnID disabled =
                 |> Fieldset.legend [ class "font-size-18" ] [ text question ]
                 |> Fieldset.children
                     (Radio.radioList "radios"
-                        [ Radio.createCustom
+                        [ Radio.createCustomAdvanced
                             [ Radio.id (id ++ question ++ "yes")
                             , Radio.inline
                             , Radio.onClick (msg <| Just True)
                             , Radio.checked <| "Yes" == state
                             , Radio.disabled disabled
                             ]
-                            "Yes"
-                        , Radio.createCustom
+                            (Radio.label [ attribute "data-cy" (cyId ++ "yes") ] [ text "Yes" ])
+                        , Radio.createCustomAdvanced
                             [ Radio.id (id ++ question ++ "no")
                             , Radio.inline
                             , Radio.onClick (msg <| Just False)
                             , Radio.checked <| "No" == state
                             , Radio.disabled disabled
                             ]
-                            "No"
+                            (Radio.label [ attribute "data-cy" (cyId ++ "no") ] [ text "No" ])
                         ]
                     )
                 |> Fieldset.view

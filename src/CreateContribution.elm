@@ -152,6 +152,7 @@ view model =
         , maybeError = model.maybeError
         , txnId = Nothing
         , processPayment = True
+        , cyId = "createContrib"
         }
 
 

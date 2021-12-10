@@ -4,7 +4,7 @@ import AppInput
 import Bootstrap.Form as Form
 import Bootstrap.Form.Select as Select
 import Html exposing (Html, text)
-import Html.Attributes as Attribute exposing (class, for, value)
+import Html.Attributes as Attribute exposing (attribute, class, for, value)
 
 
 type PurposeCode
@@ -134,17 +134,20 @@ fromMaybeToString =
     Maybe.withDefault "---" << Maybe.map toString
 
 
-select : Maybe PurposeCode -> (Maybe PurposeCode -> msg) -> Bool -> Html msg
-select maybePurposeCode updateMsg disabled =
+select : String -> Maybe PurposeCode -> (Maybe PurposeCode -> msg) -> Bool -> Html msg
+select cyId maybePurposeCode updateMsg disabled =
     Form.group
         []
         [ Form.label [ for "purpose" ] [ text "Purpose" ]
         , Select.select
             [ Select.id "purpose"
             , Select.onChange (fromString >> updateMsg)
-            , Select.attrs <| [ Attribute.value <| fromMaybeToString maybePurposeCode ]
+            , Select.attrs <|
+                [ Attribute.value <| fromMaybeToString maybePurposeCode
+                , class <| AppInput.inputStyle disabled
+                , attribute "data-cy" (cyId ++ "purposeCode")
+                ]
             , Select.disabled disabled
-            , Select.attrs [ class <| AppInput.inputStyle disabled ]
             ]
           <|
             (++)

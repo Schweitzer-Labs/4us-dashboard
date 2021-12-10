@@ -178,7 +178,7 @@ Cypress.Commands.add ('initDisb',()=>{
 })
 
 Cypress.Commands.add('fillDisbForm', ()=>{
-    cy.get('.container-fluid > .fade-in > .col > #recipient-name')
+    cy.get('[data-cy=createDisbrecipientName]')
         .type(`${faker.name.firstName()} ${faker.name.lastName()}`)
     cy.get('[data-cy=createDisbaddressLine1]').first().type(faker.address.streetAddress())
     cy.get('[data-cy=createDisbaddressLine2]').first().type('Apartment 5')
@@ -186,50 +186,19 @@ Cypress.Commands.add('fillDisbForm', ()=>{
     cy.get('[data-cy=createDisbstate]').first().select(faker.address.state())
     cy.get('[data-cy=createDisbpostalCode]').first().type(faker.address.zipCode().substring(0, 5))
 
-    cy.get(':nth-child(4) > .col > .form-group > #purpose').select("LITER")
+    cy.get('[data-cy=createDisbpurposeCode]').first().select("LITER")
 
-    cy.get(':nth-child(5) > :nth-child(1) > form > .form-group').click()
-    cy.get(':nth-child(5) > :nth-child(1) > form > .form-group > :nth-child(2) > .custom-control-label').click()
-    cy.get(':nth-child(5) > :nth-child(2) > form > .form-group > :nth-child(2) > .custom-control-label').click()
-    cy.get(':nth-child(5) > :nth-child(3) > form > .form-group > :nth-child(3) > .custom-control-label').click()
-    cy.get(':nth-child(5) > :nth-child(4) > form > .form-group > :nth-child(3) > .custom-control-label').click()
+    cy.get('[data-cy=createDisbisSubcontractedyes]').click()
+    cy.get('[data-cy=createDisbisPartialPaymentno]').click()
+    cy.get('[data-cy=createDisbisExistingLiabilityno]').click()
+    cy.get('[data-cy=createDisbisInKindno]').click()
 
-    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(1) > .form-group > [data-cy=paymentAmount]')
-        .type(faker.datatype.number({
+    cy.get('[data-cy=paymentAmountcreateDisb]').first().type(faker.datatype.number({
             min: 10,
             max: 100,
         }))
-    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(2) > .form-group > [data-cy=paymentDate]')
+    cy.get('[data-cy=paymentDatecreateDisb]').first()
         .type('2021-09-17')
-
+    
 
 })
-
-Cypress.Commands.add('fillDisbForm', ()=>{
-    cy.get('.container-fluid > .fade-in > .col > #recipient-name')
-        .type(`${faker.name.firstName()} ${faker.name.lastName()}`)
-    cy.get('[data-cy=createDisbaddressLine1]').first().type(faker.address.streetAddress())
-    cy.get('[data-cy=createDisbaddressLine2]').first().type('Apartment 5')
-    cy.get('[data-cy=createDisbcity]').first().type(faker.address.city())
-    cy.get('[data-cy=createDisbstate]').first().select(faker.address.state())
-    cy.get('[data-cy=createDisbpostalCode]').first().type(faker.address.zipCode().substring(0, 5))
-
-    cy.get(':nth-child(4) > .col > .form-group > #purpose').select("LITER")
-
-    cy.get(':nth-child(5) > :nth-child(1) > form > .form-group').click()
-    cy.get(':nth-child(5) > :nth-child(1) > form > .form-group > :nth-child(2) > .custom-control-label').click()
-    cy.get(':nth-child(5) > :nth-child(2) > form > .form-group > :nth-child(2) > .custom-control-label').click()
-    cy.get(':nth-child(5) > :nth-child(3) > form > .form-group > :nth-child(3) > .custom-control-label').click()
-    cy.get(':nth-child(5) > :nth-child(4) > form > .form-group > :nth-child(3) > .custom-control-label').click()
-
-    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(1) > .form-group > [data-cy=paymentAmount]')
-        .type(faker.datatype.number({
-            min: 10,
-            max: 100,
-        }))
-    cy.get(':nth-child(6) > .modal > .elm-bootstrap-modal > .modal-content > .modal-body > .container-fluid > .mt-3 > :nth-child(2) > .form-group > [data-cy=paymentDate]')
-        .type('2021-09-17')
-
-
-})
-

@@ -261,15 +261,20 @@ select processPayment msg currentValue disabled txnId =
     ]
 
 
-dropdown : Maybe Model -> (Maybe Model -> msg) -> Bool -> List (Html msg)
-dropdown maybePaymentMethod updateMsg isDisbursement =
+dropdown : String -> Maybe Model -> (Maybe Model -> msg) -> Bool -> List (Html msg)
+dropdown cyId maybePaymentMethod updateMsg isDisbursement =
     [ Form.group
         []
         [ Form.label [ for "paymentMethod" ] [ text "Payment Method" ]
         , Select.select
             [ Select.id "paymentMethod"
             , Select.onChange (fromString >> updateMsg)
-            , Select.attrs <| [ Attribute.value <| fromMaybeToString maybePaymentMethod, class <| AppInput.inputStyle False ]
+            , Select.attrs <|
+                [ Attribute.value <|
+                    fromMaybeToString maybePaymentMethod
+                , class <| AppInput.inputStyle False
+                , attribute "data-cy" (cyId ++ "paymentMethod")
+                ]
             ]
           <|
             (++)
