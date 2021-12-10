@@ -14,7 +14,7 @@ module CreateDisbursement exposing
 import Api.CreateDisb as CreateDisb
 import Bootstrap.Grid as Grid exposing (Column)
 import DisbInfo
-import Errors exposing (fromDisbPaymentInfo, fromInKind, fromPostalCode)
+import Errors exposing (fromDisbPaymentInfo, fromInKind, fromPostalCode, fromPurposeCodeOther)
 import Html exposing (Html)
 import PaymentMethod
 import PurposeCode exposing (PurposeCode)
@@ -40,6 +40,7 @@ type alias Model =
     , checkNumber : String
     , maybeError : Maybe String
     , isSubmitDisabled : Bool
+    , explanation : String
     }
 
 
@@ -63,6 +64,7 @@ init committeeId =
     , checkNumber = ""
     , maybeError = Nothing
     , isSubmitDisabled = True
+    , explanation = ""
     }
 
 
@@ -85,6 +87,7 @@ view model =
             , isExistingLiability = ( model.isExistingLiability, IsExistingLiabilityUpdated )
             , isInKind = ( model.isInKind, IsInKindUpdated )
             , amount = Just ( model.amount, AmountUpdated )
+            , explanation = ( model.explanation, ExplanationUpdated )
             , paymentDate = Just ( model.paymentDate, PaymentDateUpdated )
             , paymentMethod = Just ( model.paymentMethod, PaymentMethodUpdated )
             , disabled = False
@@ -112,6 +115,7 @@ type Msg
     | PaymentDateUpdated String
     | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CheckNumberUpdated String
+    | ExplanationUpdated String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -169,6 +173,9 @@ update msg model =
             , Cmd.none
             )
 
+        ExplanationUpdated str ->
+            ( { model | explanation = str }, Cmd.none )
+
 
 validator : Validator String Model
 validator =
@@ -182,6 +189,7 @@ validator =
 
 requiredFieldValidators =
     [ paymentInfoValidator
+    , purposeCodeOtherValidator
     , ifBlank .entityName "Entity name is missing."
     , ifBlank .addressLine1 "Address 1 is missing."
     , ifBlank .city "City is missing."
@@ -240,6 +248,16 @@ paymentInfoOnModelToErrors { paymentMethod, checkNumber } =
     fromDisbPaymentInfo paymentMethod checkNumber
 
 
+purposeCodeOtherValidator : Validator String Model
+purposeCodeOtherValidator =
+    fromErrors purposeCodeOtherOnModelToErrors
+
+
+purposeCodeOtherOnModelToErrors : Model -> List String
+purposeCodeOtherOnModelToErrors { purposeCode, explanation } =
+    fromPurposeCodeOther purposeCode explanation
+
+
 toEncodeModel : Model -> CreateDisb.EncodeModel
 toEncodeModel model =
     { committeeId = model.committeeId
@@ -258,4 +276,5 @@ toEncodeModel model =
     , paymentDate = model.paymentDate
     , paymentMethod = model.paymentMethod
     , checkNumber = model.checkNumber
+    , explanation = model.explanation
     }

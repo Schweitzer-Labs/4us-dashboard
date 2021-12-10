@@ -169,7 +169,7 @@ init config session aggs committee committeeId =
             , getTransactionCanceled = False
 
             -- Disb rule unverified state
-            , disbRuleUnverifiedModal = DisbRuleUnverified.init config session [] Transaction.init
+            , disbRuleUnverifiedModal = Tuple.first <| DisbRuleUnverified.init config session Transaction.init
             , disbRuleUnverifiedSubmitting = False
             , disbRuleUnverifiedSuccessViewActive = False
             , disbRuleUnverifiedModalVisibility = Modal.hidden
@@ -589,11 +589,18 @@ openTxnFormModalLoading : Model -> Transaction.Model -> ( Model, Cmd Msg )
 openTxnFormModalLoading model txn =
     case TxnForm.fromTxn txn of
         TxnForm.DisbRuleUnverified ->
-            ( { model
-                | disbRuleUnverifiedModalVisibility = Modal.shown
-                , disbRuleUnverifiedModal = DisbRuleUnverified.init model.config model.session model.transactions txn
-              }
-            , Cmd.none
+            let
+                ( subModel, subMsg ) =
+                    DisbRuleUnverified.init model.config model.session txn
+
+                newModel =
+                    { model
+                        | disbRuleUnverifiedModalVisibility = Modal.shown
+                        , disbRuleUnverifiedModal = subModel
+                    }
+            in
+            ( newModel
+            , Cmd.map DisbRuleUnverifiedModalUpdate subMsg
             )
 
         TxnForm.DisbRuleVerified ->
@@ -643,11 +650,18 @@ openTxnFormModalLoaded : Model -> Transaction.Model -> ( Model, Cmd Msg )
 openTxnFormModalLoaded model txn =
     case TxnForm.fromTxn txn of
         TxnForm.DisbRuleUnverified ->
-            ( { model
-                | disbRuleUnverifiedModalVisibility = Modal.shown
-                , disbRuleUnverifiedModal = DisbRuleUnverified.init model.config model.session model.transactions txn
-              }
-            , Cmd.none
+            let
+                ( subModel, subMsg ) =
+                    DisbRuleUnverified.init model.config model.session txn
+
+                newModel =
+                    { model
+                        | disbRuleUnverifiedModalVisibility = Modal.shown
+                        , disbRuleUnverifiedModal = subModel
+                    }
+            in
+            ( newModel
+            , Cmd.map DisbRuleUnverifiedModalUpdate subMsg
             )
 
         TxnForm.DisbRuleVerified ->
@@ -845,7 +859,7 @@ update msg model =
                                 , disbRuleUnverifiedSubmitting = False
 
                                 -- @Todo make this state impossible
-                                , disbRuleUnverifiedModal = DisbRuleUnverified.init model.config model.session [] model.disbRuleUnverifiedModal.bankTxn
+                                , disbRuleUnverifiedModal = Tuple.first <| DisbRuleUnverified.init model.config model.session model.disbRuleUnverifiedModal.bankTxn
                               }
                             , getTransactions model Nothing
                             )

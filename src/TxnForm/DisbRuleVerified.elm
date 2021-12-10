@@ -18,7 +18,7 @@ import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
 import Copy
 import DisbInfo
-import Errors exposing (fromInKind, fromPostalCode)
+import Errors exposing (fromInKind, fromPostalCode, fromPurposeCodeOther)
 import ExpandableBankData
 import Html exposing (Html)
 import Loading
@@ -52,6 +52,7 @@ type alias Model =
     , maybeError : Maybe String
     , formDisabled : Bool
     , popoverState : Popover.State
+    , explanation : String
     }
 
 
@@ -88,6 +89,7 @@ init txn =
     , isSubmitDisabled = True
     , maybeError = Nothing
     , popoverState = Popover.initialState
+    , explanation = Maybe.withDefault "" txn.explanation
     }
 
 
@@ -158,6 +160,7 @@ disbFormRow model =
         , toggleEdit = EditFormToggled
         , maybeError = model.maybeError
         , txnID = Just model.txn.id
+        , explanation = ( model.explanation, ExplanationUpdated )
         }
 
 
@@ -179,6 +182,7 @@ type Msg
     | PaymentDateUpdated String
     | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CheckNumberUpdated String
+    | ExplanationUpdated String
     | EditFormToggled
     | BankDataToggled
 
@@ -231,6 +235,9 @@ update msg model =
         IsInKindUpdated bool ->
             ( { model | isInKind = bool }, Cmd.none )
 
+        ExplanationUpdated str ->
+            ( { model | explanation = str }, Cmd.none )
+
         BankDataToggled ->
             ( { model | showBankData = not model.showBankData }, Cmd.none )
 
@@ -266,6 +273,7 @@ validator =
         , ifNothing .isExistingLiability "Existing Liability Information is missing"
         , postalCodeValidator
         , isInKindValidator
+        , purposeCodeOtherValidator
         ]
 
 
@@ -292,6 +300,16 @@ isInKindValidator =
 isInKindOnModelToErrors : Model -> List String
 isInKindOnModelToErrors model =
     fromInKind model.isInKind
+
+
+purposeCodeOtherValidator : Validator String Model
+purposeCodeOtherValidator =
+    fromErrors purposeCodeOtherOnModelToErrors
+
+
+purposeCodeOtherOnModelToErrors : Model -> List String
+purposeCodeOtherOnModelToErrors { purposeCode, explanation } =
+    fromPurposeCodeOther purposeCode explanation
 
 
 toTxn : Model -> Transaction.Model

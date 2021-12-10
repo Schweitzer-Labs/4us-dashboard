@@ -32,6 +32,7 @@ query =
       $paymentDate: Float!
       $checkNumber: String
       $addressLine2: String
+      $explanation: String
     ) {
       createDisbursement(createDisbursementData: {
         committeeId: $committeeId
@@ -49,6 +50,7 @@ query =
         paymentDate: $paymentDate
         checkNumber: $checkNumber
         addressLine2: $addressLine2
+        explanation: $explanation
       }) {
         id
       }
@@ -73,6 +75,7 @@ type alias EncodeModel =
     , paymentDate : String
     , paymentMethod : Maybe PaymentMethod.Model
     , checkNumber : String
+    , explanation : String
     }
 
 
@@ -101,6 +104,7 @@ encode mapper val =
                 ]
                     ++ optionalFieldString "checkNumber" model.checkNumber
                     ++ optionalFieldString "addressLine2" model.addressLine2
+                    ++ optionalFieldString "explanation" model.explanation
     in
     encodeQuery query variables
 

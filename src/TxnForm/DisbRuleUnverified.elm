@@ -34,13 +34,14 @@ import Copy
 import DataTable exposing (DataRow)
 import Direction
 import DisbInfo
-import Errors exposing (fromDisbPaymentInfo, fromInKind, fromPostalCode)
+import Errors exposing (fromDisbPaymentInfo, fromInKind, fromPostalCode, fromPurposeCodeOther)
 import FormID exposing (Model(..))
 import Html exposing (Html, div, h6, input, span, text)
 import Html.Attributes as Attr exposing (attribute, class, type_)
 import Html.Events exposing (onClick)
 import Http
 import LabelWithData exposing (labelWithContent, labelWithData)
+import Loading
 import PaymentMethod
 import PurposeCode exposing (PurposeCode)
 import Session
@@ -75,6 +76,7 @@ type alias Model =
     , paymentDate : String
     , paymentMethod : Maybe PaymentMethod.Model
     , checkNumber : String
+    , explanation : String
     , createDisbIsVisible : Bool
     , disabled : Bool
     , createDisbIsSubmitting : Bool
@@ -84,40 +86,47 @@ type alias Model =
     , session : Session.Model
     , lastCreatedTxnId : String
     , timezone : Time.Zone
+    , loading : Bool
     }
 
 
-init : Config.Model -> Session.Model -> List Transaction.Model -> Transaction.Model -> Model
-init config session txns bankTxn =
-    { session = session
-    , bankTxn = bankTxn
-    , committeeId = bankTxn.committeeId
-    , selectedTxns = []
-    , relatedTxns = getRelatedDisb bankTxn txns
-    , entityName = ""
-    , addressLine1 = ""
-    , addressLine2 = ""
-    , city = ""
-    , state = ""
-    , postalCode = ""
-    , purposeCode = Nothing
-    , isSubcontracted = Nothing
-    , isPartialPayment = Nothing
-    , isExistingLiability = Nothing
-    , isInKind = Nothing
-    , amount = toDollarData bankTxn.amount
-    , paymentDate = formDate (america__new_york ()) bankTxn.paymentDate
-    , paymentMethod = Just bankTxn.paymentMethod
-    , checkNumber = ""
-    , createDisbIsVisible = False
-    , createDisbIsSubmitting = False
-    , disabled = True
-    , reconcileButtonIsDisabled = True
-    , maybeError = Nothing
-    , config = config
-    , lastCreatedTxnId = ""
-    , timezone = america__new_york ()
-    }
+init : Config.Model -> Session.Model -> Transaction.Model -> ( Model, Cmd Msg )
+init config session bankTxn =
+    let
+        model =
+            { bankTxn = bankTxn
+            , committeeId = bankTxn.committeeId
+            , selectedTxns = []
+            , relatedTxns = []
+            , entityName = ""
+            , addressLine1 = ""
+            , addressLine2 = ""
+            , city = ""
+            , state = ""
+            , postalCode = ""
+            , purposeCode = Nothing
+            , isSubcontracted = Nothing
+            , isPartialPayment = Nothing
+            , isExistingLiability = Nothing
+            , isInKind = Nothing
+            , amount = toDollarData bankTxn.amount
+            , paymentDate = formDate (america__new_york ()) bankTxn.paymentDate
+            , paymentMethod = Just bankTxn.paymentMethod
+            , checkNumber = ""
+            , explanation = ""
+            , createDisbIsVisible = False
+            , createDisbIsSubmitting = False
+            , disabled = True
+            , reconcileButtonIsDisabled = True
+            , maybeError = Nothing
+            , config = config
+            , lastCreatedTxnId = ""
+            , timezone = america__new_york ()
+            , loading = True
+            , session = session
+            }
+    in
+    ( model, getTxns model )
 
 
 clearForm : Model -> Model
@@ -137,6 +146,7 @@ clearForm model =
         , amount = toDollarData model.bankTxn.amount
         , paymentDate = formDate model.timezone model.bankTxn.paymentDate
         , checkNumber = ""
+        , explanation = ""
         , createDisbIsVisible = False
         , createDisbIsSubmitting = False
         , disabled = True
@@ -153,6 +163,15 @@ getRelatedDisb txn txns =
 
 view : Model -> Html Msg
 view model =
+    if model.loading then
+        Loading.view
+
+    else
+        loadedView model
+
+
+loadedView : Model -> Html Msg
+loadedView model =
     div
         []
         [ dialogueBox
@@ -267,6 +286,7 @@ disbFormRow model =
             , toggleEdit = NoOp
             , maybeError = model.maybeError
             , txnID = Just model.bankTxn.id
+            , explanation = ( model.explanation, ExplanationUpdated )
             }
             ++ [ buttonRow CreateDisbToggled "Create" "Cancel" CreateDisbSubmitted model.createDisbIsSubmitting <| not (Validate.any requiredFieldValidators model) ]
 
@@ -349,6 +369,7 @@ type Msg
     | PaymentDateUpdated String
     | PaymentMethodUpdated (Maybe PaymentMethod.Model)
     | CheckNumberUpdated String
+    | ExplanationUpdated String
     | CreateDisbToggled
     | CreateDisbSubmitted
     | RelatedTransactionClicked Transaction.Model Bool
@@ -498,6 +519,7 @@ update msg model =
                     ( { model
                         | relatedTxns = getRelatedDisb model.bankTxn <| GetTxns.toTxns body
                         , selectedTxns = model.selectedTxns ++ resTxnOrEmpty
+                        , loading = False
                       }
                     , Cmd.none
                     )
@@ -512,6 +534,9 @@ update msg model =
 
         NoOp ->
             ( model, Cmd.none )
+
+        ExplanationUpdated str ->
+            ( { model | explanation = str }, Cmd.none )
 
 
 isSelected : Transaction.Model -> List Transaction.Model -> Bool
@@ -537,6 +562,7 @@ validator =
 
 requiredFieldValidators =
     [ paymentInfoValidator
+    , purposeCodeOtherValidator
     , ifBlank .entityName "Entity name is missing."
     , ifBlank .addressLine1 "Address 1 is missing."
     , ifBlank .city "City is missing."
@@ -600,6 +626,16 @@ paymentInfoOnModelToErrors { paymentMethod, checkNumber } =
     fromDisbPaymentInfo paymentMethod checkNumber
 
 
+purposeCodeOtherValidator : Validator String Model
+purposeCodeOtherValidator =
+    fromErrors purposeCodeOtherOnModelToErrors
+
+
+purposeCodeOtherOnModelToErrors : Model -> List String
+purposeCodeOtherOnModelToErrors { purposeCode, explanation } =
+    fromPurposeCodeOther purposeCode explanation
+
+
 totalSelectedMatch : Model -> Bool
 totalSelectedMatch model =
     if List.foldr (\txn acc -> acc + txn.amount) 0 model.selectedTxns == model.bankTxn.amount then
@@ -632,6 +668,7 @@ toEncodeModel model =
     , paymentDate = model.paymentDate
     , paymentMethod = model.paymentMethod
     , checkNumber = model.checkNumber
+    , explanation = model.explanation
     }
 
 
