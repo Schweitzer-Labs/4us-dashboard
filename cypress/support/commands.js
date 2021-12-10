@@ -26,7 +26,7 @@ const appUrl = 'http://localhost:3000/committee/nelson-lopez'
 const demoPassword = 'f4jp1i'
 
 
-const purposeCodes = [
+export const purposeCodes = [
     "CMAIL",
     "CONSL",
     "CONSV",
@@ -34,7 +34,6 @@ const purposeCodes = [
     "FUNDR",
     "LITER",
     "OFFICE",
-    "OTHER",
     "PETIT",
     "INT",
     "REIMB",

@@ -70,7 +70,7 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
                     "*City"
                 ]
             , Form.col [ Col.lg3 ]
-                [ State.view stateMsg state disabled id ]
+                [ State.view stateMsg state disabled id cyId ]
             , Form.col [ Col.lg3 ]
                 [ inputText
                     postalCodeMsg

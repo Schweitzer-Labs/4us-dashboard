@@ -80,16 +80,16 @@ withStateKeys =
     Dict.fromList <| List.map (\( a, b ) -> ( b, a )) statesAndAbbrsList
 
 
-view : (String -> msg) -> String -> Bool -> String -> Html msg
-view msg currentValue isDisabled id =
+view : (String -> msg) -> String -> Bool -> String -> String -> Html msg
+view msg currentValue isDisabled id cyId =
     Form.group []
         [ Form.label [] [ text "*State" ]
         , Select.select
-            [ Select.id "State"
+            [ Select.id id
             , Select.onChange msg
             , Select.disabled isDisabled
             , Select.attrs
-                [ attribute "data-cy" (id ++ "state")
+                [ attribute "data-cy" (cyId ++ "state")
                 , class <| AppInput.inputStyle isDisabled
                 ]
             ]
