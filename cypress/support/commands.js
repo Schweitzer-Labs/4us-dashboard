@@ -26,6 +26,51 @@ const appUrl = 'http://localhost:3000/committee/nelson-lopez'
 const demoPassword = 'f4jp1i'
 
 
+const purposeCodes = [
+    "CMAIL",
+    "CONSL",
+    "CONSV",
+    "CNTRB",
+    "FUNDR",
+    "LITER",
+    "OFFICE",
+    "OTHER",
+    "PETIT",
+    "INT",
+    "REIMB",
+    "POLLS",
+    "POSTA",
+    "PRINT",
+    "PROFL",
+    "RADIO",
+    "RENTO",
+    "TVADS",
+    "VOTER",
+    "WAGES",
+    "BKFEE",
+    "LWNSN",
+    "UTILS",
+    "CCP",
+    "BKKP",
+    "CAR",
+    "CARSVC",
+    "CELL",
+    "EADS",
+    "EMAIL",
+    "GAS",
+    "LODG",
+    "MEALS",
+    "MLGE",
+    "MTG",
+    "PARK",
+    "TOLLS",
+    "XPORT",
+    "BLBD",
+    "WAGE",
+    "NPD",
+    "PIDA",
+    ]
+
 
 Cypress.Commands.add('createDemo', ()=>{
     cy.visit(appUrl)
@@ -178,6 +223,7 @@ Cypress.Commands.add ('initDisb',()=>{
 })
 
 Cypress.Commands.add('fillDisbForm', ()=>{
+
     cy.get('[data-cy=createDisbrecipientName]')
         .type(`${faker.name.firstName()} ${faker.name.lastName()}`)
     cy.get('[data-cy=createDisbaddressLine1]').first().type(faker.address.streetAddress())
@@ -186,7 +232,7 @@ Cypress.Commands.add('fillDisbForm', ()=>{
     cy.get('[data-cy=createDisbstate]').first().select(faker.address.state())
     cy.get('[data-cy=createDisbpostalCode]').first().type(faker.address.zipCode().substring(0, 5))
 
-    cy.get('[data-cy=createDisbpurposeCode]').first().select("LITER")
+    cy.get('[data-cy=createDisbpurposeCode]').first().select(faker.random.arrayElement(purposeCodes))
 
     cy.get('[data-cy=createDisbisSubcontractedyes]').click()
     cy.get('[data-cy=createDisbisPartialPaymentno]').click()
@@ -199,6 +245,6 @@ Cypress.Commands.add('fillDisbForm', ()=>{
         }))
     cy.get('[data-cy=paymentDatecreateDisb]').first()
         .type('2021-09-17')
-    
+
 
 })

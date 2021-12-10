@@ -67,7 +67,7 @@ purposeCodeText =
     , ( CCP, "CCP", "Credit Card Payment" )
     , ( EMAIL, "EMAIL", "Email" )
     , ( FUNDR, "FUNDR", "Fundraising" )
-    , ( GAS, "EMAIL", "Gas" )
+    , ( GAS, "GAS", "Gas" )
     , ( INT, "INT", "Interest Expense" )
     , ( LWNSN, "LWNSN", "Lawn Signs" )
     , ( LODG, "LODG", "Lodging" )
