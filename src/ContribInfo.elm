@@ -498,6 +498,7 @@ addressRows c =
         , postalCode = c.postalCode
         , disabled = c.disabled
         , id = "createContrib"
+        , cyId = c.cyId
         }
 
 

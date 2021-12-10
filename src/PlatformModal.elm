@@ -10,7 +10,7 @@ import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
 import DeleteInfo
 import Html exposing (Html, h2, span, text)
-import Html.Attributes as Attr exposing (class)
+import Html.Attributes as Attr exposing (attribute, class)
 import Html.Events exposing (onClick)
 import SubmitButton exposing (submitButton)
 
@@ -62,7 +62,7 @@ view config =
                 []
                 [ DeleteInfo.deletionAlert config.alertMsg config.alertVisibility
                 , if config.successViewActive then
-                    successButtonRow config.hideMsg
+                    successButtonRow config.cyId config.hideMsg
 
                   else
                     buttonRow
@@ -125,15 +125,15 @@ buttonRow config =
         ]
 
 
-successButtonRow : msg -> Html msg
-successButtonRow hideMsg =
+successButtonRow : String -> msg -> Html msg
+successButtonRow cyId hideMsg =
     Grid.row
         [ Row.aroundXs ]
         [ Grid.col [ Col.offsetLg10 ]
             [ Button.button
                 [ Button.outlinePrimary
                 , Button.block
-                , Button.attrs [ onClick hideMsg ]
+                , Button.attrs [ onClick hideMsg, attribute "data-cy" (cyId ++ "platformSucessOkBtn") ]
                 ]
                 [ text "OK" ]
             ]

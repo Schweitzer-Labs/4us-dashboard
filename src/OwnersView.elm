@@ -355,6 +355,7 @@ ownerAddressRows model =
         , postalCode = ( model.postalCode, OwnerPostalCodeUpdated )
         , disabled = model.disabled
         , id = "createOwner"
+        , cyId = "ownersView"
         }
 
 

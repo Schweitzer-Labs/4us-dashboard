@@ -66,7 +66,7 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
                         , if isEditable then
                             span [ class "hover-underline hover-pointer", Spacing.ml2, onClick toggleEdit ]
                                 [ if disabled == True then
-                                    Asset.editGlyph []
+                                    Asset.editGlyph [ attribute "data-cy" (cyId ++ "editIcon") ]
 
                                   else
                                     Asset.redoGlyph []
@@ -93,6 +93,7 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
             , postalCode = postalCode
             , disabled = disabled
             , id = "createDisb"
+            , cyId = cyId
             }
         ++ [ Grid.row [ Row.attrs [ Spacing.mt2 ] ] [ Grid.col [] [ PurposeCode.select cyId (toData purposeCode) (toMsg purposeCode) disabled ] ]
            ]
