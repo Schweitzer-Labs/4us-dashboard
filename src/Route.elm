@@ -1,4 +1,4 @@
-module Route exposing (Route(..), fromUrl, href, replaceUrl, routeToString)
+module Route exposing (Route(..), fragmentToQuery, fromUrl, href, replaceUrl, routeToString)
 
 import Browser.Navigation as Nav
 import Html exposing (Attribute)
@@ -45,12 +45,23 @@ replaceUrl key route =
 
 fromUrl : Url -> Maybe Route
 fromUrl =
-    Parser.parse parser
+    fragmentToQuery >> Parser.parse parser
 
 
 routeToString : Route -> String
 routeToString page =
     "/" ++ String.join "/" (routeToPieces page)
+
+
+fragmentToQuery : Url -> Url
+fragmentToQuery url =
+    { protocol = url.protocol
+    , host = url.host
+    , port_ = url.port_
+    , path = url.path
+    , query = Maybe.map2 (\a b -> a ++ "&" ++ b) url.query url.fragment
+    , fragment = url.fragment
+    }
 
 
 routeToPieces : Route -> List String
