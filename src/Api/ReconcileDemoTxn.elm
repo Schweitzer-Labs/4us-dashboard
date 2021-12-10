@@ -1,10 +1,11 @@
-module Api.ReconcileDemoTxn exposing (..)
+module Api.ReconcileDemoTxn exposing (EncodeModel, decoder, encode, query, send, successDecoder)
 
 import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder)
-import Config exposing (Config)
+import Config
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Session
 
 
 query : String
@@ -61,6 +62,6 @@ decoder =
     Decode.oneOf [ successDecoder, mutationValidationFailureDecoder ]
 
 
-send : (Result Http.Error MutationResponse -> msg) -> Config -> Http.Body -> Cmd msg
-send msg config =
-    GraphQL.send decoder msg config
+send : (Result Http.Error MutationResponse -> msg) -> Config.Model -> Session.Model -> Http.Body -> Cmd msg
+send =
+    GraphQL.send decoder

@@ -1,11 +1,15 @@
-module Config exposing (Config)
+module Config exposing (Model, toApiEndpoint)
 
 
-type alias Config =
+type alias Model =
     { cognitoDomain : String
     , cognitoClientId : String
     , redirectUri : String
     , donorUrl : String
     , apiEndpoint : String
-    , token : String
     }
+
+
+toApiEndpoint : Model -> String
+toApiEndpoint model =
+    model.apiEndpoint

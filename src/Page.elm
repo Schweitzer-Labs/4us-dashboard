@@ -1,4 +1,4 @@
-module Page exposing (Page(..), view)
+module Page exposing (Page(..), committeeLayout, userLayout)
 
 import Aggregations
 import Asset as Asset exposing (Image)
@@ -9,7 +9,6 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser exposing (Document)
 import Committee
-import Config exposing (Config)
 import Html exposing (Html, a, div, h1, img, text, ul)
 import Html.Attributes as Attr exposing (class, classList)
 import Route exposing (Route)
@@ -39,19 +38,27 @@ isLoading is for determining whether we should show a loading spinner
 in the header. (This comes up during slow page transitions.)
 
 -}
-view : Config -> Aggregations.Model -> Committee.Model -> Page -> { title : String, content : Html msg } -> Document msg
-view config aggregations committee page { title, content } =
+committeeLayout : Aggregations.Model -> Committee.Model -> Page -> { title : String, content : Html msg } -> Document msg
+committeeLayout aggregations committee page { title, content } =
     { title = title ++ " - Treasury Manager"
     , body =
-        sidebar page committee :: mainContainer aggregations content :: []
+        committeeSidebar page committee :: mainContainer (header aggregations) content :: []
     }
 
 
-mainContainer : Aggregations.Model -> Html msg -> Html msg
-mainContainer aggregations content =
+userLayout : Page -> { title : String, content : Html msg } -> Document msg
+userLayout page { title, content } =
+    { title = title ++ " - Treasury Manager"
+    , body =
+        userSidebar page :: mainContainer (div [] []) content :: []
+    }
+
+
+mainContainer : Html msg -> Html msg -> Html msg
+mainContainer topContent lowerContent =
     div [ class "app-container" ]
-        [ header aggregations
-        , contentContainer content
+        [ topContent
+        , contentContainer lowerContent
         ]
 
 
@@ -119,10 +126,10 @@ ruleInfoRow committee =
         ]
 
 
-logo : Committee.Model -> Html msg
-logo committee =
+logo : Html msg
+logo =
     div [ class "text-center" ]
-        [ a [ Route.href <| Route.Transactions committee.id ]
+        [ a [ Route.href <| Route.Home Nothing Nothing ]
             [ img [ Asset.src Asset.usLogo, class "header-logo" ] [] ]
         ]
 
@@ -158,12 +165,19 @@ committeeInfoContainer committee =
         ]
 
 
-sidebar : Page -> Committee.Model -> Html msg
-sidebar page committee =
+committeeSidebar : Page -> Committee.Model -> Html msg
+committeeSidebar page committee =
     div [ class "sidebar-container border-right border-blue", Spacing.pl0 ]
         [ committeeInfoContainer committee
         , navContainer page committee
-        , logo committee
+        , logo
+        ]
+
+
+userSidebar : Page -> Html msg
+userSidebar page =
+    div [ class "sidebar-container border-right border-blue", Spacing.pl0 ]
+        [ logo
         ]
 
 

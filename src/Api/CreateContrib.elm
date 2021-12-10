@@ -2,8 +2,7 @@ module Api.CreateContrib exposing (EncodeModel, encode, send)
 
 import Api.GraphQL as GraphQL exposing (MutationResponse(..), encodeQuery, mutationValidationFailureDecoder, optionalFieldNotZero, optionalFieldOwners, optionalFieldString, optionalFieldStringInt)
 import Cents
-import Config exposing (Config)
-import Date
+import Config
 import EmploymentStatus
 import EntityType
 import Http
@@ -12,6 +11,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Owners
 import PaymentMethod
+import Session
 import Timestamp exposing (dateStringToMillis)
 import TransactionType
 
@@ -173,6 +173,6 @@ successDecoder =
                     Decode.string
 
 
-send : (Result Http.Error MutationResponse -> msg) -> Config -> Http.Body -> Cmd msg
-send msg config =
-    GraphQL.send decoder msg config
+send : (Result Http.Error MutationResponse -> msg) -> Config.Model -> Session.Model -> Http.Body -> Cmd msg
+send =
+    GraphQL.send decoder

@@ -1,7 +1,8 @@
-port module Cognito exposing (goToCommitteeUrl, loginUrl, urlToCommitteeId, urlToRedirectQS)
+port module Cognito exposing (fromConfig, fromFlags, goToCommitteeUrl, toLoginUrl, urlToCommitteeId, urlToRedirectQS)
 
 import Browser.Navigation exposing (load)
-import Config exposing (Config)
+import Config
+import Flags
 import Json.Decode exposing (Value)
 import Json.Encode as Encode
 import Url exposing (Url)
@@ -15,9 +16,38 @@ port storeCache : Maybe Value -> Cmd msg
 port onStoreChange : (Value -> msg) -> Sub msg
 
 
-loginUrl : Config -> String -> String
-loginUrl { cognitoDomain, cognitoClientId, redirectUri } committeeId =
-    cognitoDomain ++ "/login?client_id=" ++ cognitoClientId ++ "&response_type=token&scope=email+openid+profile&redirect_uri=" ++ redirectUri ++ "&state=" ++ committeeId
+type alias Args =
+    { cognitoDomain : String
+    , cognitoClientId : String
+    , redirectUri : String
+    }
+
+
+fromConfig : Config.Model -> Args
+fromConfig { cognitoDomain, cognitoClientId, redirectUri } =
+    { cognitoDomain = cognitoDomain
+    , cognitoClientId = cognitoClientId
+    , redirectUri = redirectUri
+    }
+
+
+fromFlags : Flags.Model -> Args
+fromFlags { cognitoDomain, cognitoClientId, redirectUri } =
+    { cognitoDomain = cognitoDomain
+    , cognitoClientId = cognitoClientId
+    , redirectUri = redirectUri
+    }
+
+
+toLoginUrl : Maybe String -> Args -> String
+toLoginUrl maybeCommitteeId { cognitoDomain, cognitoClientId, redirectUri } =
+    let
+        state =
+            maybeCommitteeId
+                |> Maybe.map (\cid -> "&state=" ++ cid)
+                |> Maybe.withDefault ""
+    in
+    cognitoDomain ++ "/login?client_id=" ++ cognitoClientId ++ "&response_type=token&scope=email+openid+profile&redirect_uri=" ++ redirectUri ++ state
 
 
 type alias RedirectQS =
@@ -65,12 +95,12 @@ setTokenToStorage token =
     storeCache <| Just json
 
 
-configToCommitteeUrl : Config -> String -> String
+configToCommitteeUrl : Config.Model -> String -> String
 configToCommitteeUrl { redirectUri } committeeId =
     redirectUri ++ "?committeeId=" ++ committeeId
 
 
-goToCommitteeUrl : Config -> String -> Cmd msg
+goToCommitteeUrl : Config.Model -> String -> Cmd msg
 goToCommitteeUrl config str =
     load <| configToCommitteeUrl config str
 

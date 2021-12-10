@@ -28,8 +28,8 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
 import Cents exposing (toDollarData)
-import Cognito exposing (loginUrl)
-import Config exposing (Config)
+import Cognito
+import Config
 import Copy
 import DataTable exposing (DataRow)
 import Direction
@@ -44,6 +44,7 @@ import LabelWithData exposing (labelWithContent, labelWithData)
 import Loading
 import PaymentMethod
 import PurposeCode exposing (PurposeCode)
+import Session
 import SubmitButton exposing (submitButton)
 import Task
 import Time exposing (utc)
@@ -81,15 +82,16 @@ type alias Model =
     , createDisbIsSubmitting : Bool
     , reconcileButtonIsDisabled : Bool
     , maybeError : Maybe String
-    , config : Config
+    , config : Config.Model
+    , session : Session.Model
     , lastCreatedTxnId : String
     , timezone : Time.Zone
     , loading : Bool
     }
 
 
-init : Config -> Transaction.Model -> ( Model, Cmd Msg )
-init config bankTxn =
+init : Config.Model -> Session.Model -> Transaction.Model -> ( Model, Cmd Msg )
+init config session bankTxn =
     let
         model =
             { bankTxn = bankTxn
@@ -121,6 +123,7 @@ init config bankTxn =
             , lastCreatedTxnId = ""
             , timezone = america__new_york ()
             , loading = True
+            , session = session
             }
     in
     ( model, getTxns model )
@@ -522,7 +525,12 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| loginUrl model.config model.committeeId )
+                    ( model
+                    , model.config
+                        |> Cognito.fromConfig
+                        |> Cognito.toLoginUrl (Just model.committeeId)
+                        |> load
+                    )
 
         NoOp ->
             ( model, Cmd.none )
@@ -666,12 +674,12 @@ toEncodeModel model =
 
 createDisb : Model -> Cmd Msg
 createDisb model =
-    CreateDisb.send CreateDisbGotResp model.config <| CreateDisb.encode toEncodeModel model
+    CreateDisb.send CreateDisbGotResp model.config model.session <| CreateDisb.encode toEncodeModel model
 
 
 getTxns : Model -> Cmd Msg
 getTxns model =
-    GetTxns.send GetTxnsGotResp model.config <| GetTxns.encode model.committeeId (Just TransactionType.Disbursement) Nothing Nothing
+    GetTxns.send GetTxnsGotResp model.config model.session <| GetTxns.encode model.committeeId (Just TransactionType.Disbursement) Nothing Nothing
 
 
 reconcileTxnEncoder : Model -> ReconcileTxn.EncodeModel

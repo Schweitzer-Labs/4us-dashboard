@@ -3,10 +3,11 @@ module Api.GetTxns exposing (Model, encode, send, toAggs, toCommittee, toTxns)
 import Aggregations
 import Api.GraphQL as GraphQL exposing (encodeQuery)
 import Committee
-import Config exposing (Config)
+import Config
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode exposing (Value)
+import Session
 import TransactionType exposing (TransactionType)
 import Transactions
 
@@ -180,6 +181,6 @@ decode =
         (Decode.field "data" decodeObject)
 
 
-send : (Result Http.Error Model -> msg) -> Config -> Http.Body -> Cmd msg
-send msg config =
-    GraphQL.send decode msg config
+send : (Result Http.Error Model -> msg) -> Config.Model -> Session.Model -> Http.Body -> Cmd msg
+send =
+    GraphQL.send decode

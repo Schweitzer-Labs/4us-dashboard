@@ -25,6 +25,7 @@
     "email-validator": "^2.0.4",
     "faker": "^5.5.3",
     "phone": "^3.1.6",
+    "prettier": "^2.5.1",
     "string-extra": "github:elm-community/string-extra"
   },
   "devDependencies": {
