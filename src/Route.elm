@@ -1,4 +1,4 @@
-module Route exposing (Route(..), fromUrl, href, replaceUrl)
+module Route exposing (Route(..), fromUrl, href, replaceUrl, routeToString)
 
 import Browser.Navigation as Nav
 import Html exposing (Attribute)
@@ -46,10 +46,6 @@ replaceUrl key route =
 fromUrl : Url -> Maybe Route
 fromUrl =
     Parser.parse parser
-
-
-
--- INTERNAL
 
 
 routeToString : Route -> String

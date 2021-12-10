@@ -78,6 +78,30 @@ changeRouteTo flags maybeRoute model =
                         |> Nav.load
                     )
 
+        ( Just (Route.Transactions committeeId), Nothing ) ->
+            ( Redirect config session Nothing
+            , flags
+                |> Cognito.fromFlags
+                |> Cognito.toLoginUrl (Just committeeId)
+                |> Nav.load
+            )
+
+        ( Just (Route.LinkBuilder committeeId), Nothing ) ->
+            ( Redirect config session Nothing
+            , flags
+                |> Cognito.fromFlags
+                |> Cognito.toLoginUrl (Just committeeId)
+                |> Nav.load
+            )
+
+        ( Just (Route.Demo committeeId), Nothing ) ->
+            ( Redirect config session Nothing
+            , flags
+                |> Cognito.fromFlags
+                |> Cognito.toLoginUrl (Just committeeId)
+                |> Nav.load
+            )
+
         ( _, Nothing ) ->
             ( Redirect config session Nothing
             , flags
@@ -223,10 +247,19 @@ update msg model =
             in
             case maybeCommitteeId of
                 Just committeeId ->
-                    changeRouteTo flags (Just (Route.Transactions committeeId)) model
+                    ( model
+                    , committeeId
+                        |> Route.Transactions
+                        |> Route.routeToString
+                        |> Nav.load
+                    )
 
                 Nothing ->
-                    changeRouteTo flags (Just <| Route.Home Nothing Nothing) model
+                    ( model
+                    , Route.Home Nothing Nothing
+                        |> Route.routeToString
+                        |> Nav.load
+                    )
 
         ( ClickedLink urlRequest, _ ) ->
             case urlRequest of
