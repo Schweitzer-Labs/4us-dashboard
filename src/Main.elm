@@ -5,6 +5,7 @@ import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Cognito
 import Committee
+import CommitteeId
 import Config
 import Flags
 import Html exposing (Html)
@@ -67,7 +68,7 @@ changeRouteTo flags maybeRoute model =
         ( Just (Route.Home maybeToken maybeCommitteeId), Nothing ) ->
             case ( maybeToken, maybeCommitteeId ) of
                 ( Just token, _ ) ->
-                    ( Redirect config session maybeCommitteeId, putTokenInLocalStorage token )
+                    ( Redirect config session (CommitteeId.fromMaybe maybeCommitteeId), putTokenInLocalStorage token )
 
                 _ ->
                     ( Redirect config session maybeCommitteeId

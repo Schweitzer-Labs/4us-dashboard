@@ -59,8 +59,19 @@ fragmentToQuery url =
     , host = url.host
     , port_ = url.port_
     , path = url.path
-    , query = Maybe.map2 (\a b -> a ++ "&" ++ b) url.query url.fragment
+    , query = url.fragment --Maybe.map2 (\a b -> a ++ "&" ++ b) url.query url.fragment
     , fragment = url.fragment
+    }
+
+
+cleanUrl : Url -> Url
+cleanUrl url =
+    { protocol = url.protocol
+    , host = url.host
+    , port_ = url.port_
+    , path = url.path
+    , query = Nothing
+    , fragment = Nothing
     }
 
 

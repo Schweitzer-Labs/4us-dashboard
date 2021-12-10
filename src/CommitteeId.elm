@@ -1,4 +1,4 @@
-module CommitteeId exposing (parse)
+module CommitteeId exposing (fromMaybe, parse)
 
 import Url
 import Url.Parser as Parser
@@ -11,3 +11,12 @@ parse url =
         |> Parser.parse (Parser.query (Query.string "committeeId"))
         |> Maybe.withDefault (Just "")
         |> Maybe.withDefault ""
+
+
+fromMaybe : Maybe String -> Maybe String
+fromMaybe maybeSlug =
+    if maybeSlug == Just "null" then
+        Nothing
+
+    else
+        maybeSlug
