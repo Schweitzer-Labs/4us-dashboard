@@ -273,3 +273,34 @@ body {
 //}
 
 
+
+.elm-form-error {
+  color: $danger;
+
+}
+
+.elm-form {
+  @extend .form-group;
+  input {
+    @extend .form-control;
+  }
+  button {
+    @extend .btn, .btn-primary;
+  }
+  .elm-form-field-error input {
+    @extend .border-danger
+  }
+}
+
+
+.login-form {
+  .elm-form {
+    .elm-form-field {
+      @extend .my-3;
+      display: block;
+    }
+    button {
+      @extend .float-right
+    };
+  }
+}

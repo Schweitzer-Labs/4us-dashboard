@@ -2,6 +2,7 @@ module Page.LinkBuilder exposing
     ( Model
     , Msg
     , init
+    , setSession
     , subscriptions
     , toConfig
     , toSession
@@ -254,3 +255,8 @@ toSession model =
 toConfig : Model -> Config.Model
 toConfig model =
     model.config
+
+
+setSession : Session.Model -> Model -> Model
+setSession session model =
+    { model | session = session }

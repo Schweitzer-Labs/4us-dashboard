@@ -1,8 +1,7 @@
-module Page.Home exposing
+module Auth.SignIn exposing
     ( Model
     , Msg(..)
     , init
-    , setSession
     , subscriptions
     , toConfig
     , toSession
@@ -44,7 +43,7 @@ init config session =
 
 view : Model -> { title : String, content : Html Msg }
 view model =
-    { title = "Home", content = div [] [ text "this is home" ] }
+    { title = "Login", content = div [] [ text "this is home" ] }
 
 
 
@@ -83,8 +82,3 @@ toSession model =
 toConfig : Model -> Config.Model
 toConfig model =
     model.config
-
-
-setSession : Session.Model -> Model -> Model
-setSession session model =
-    { model | session = session }

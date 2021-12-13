@@ -1,4 +1,11 @@
-module Session exposing (Model(..), build, setToken, toNavKey, toToken)
+module Session exposing
+    ( Model(..)
+    , build
+    , init
+    , setToken
+    , toNavKey
+    , toToken
+    )
 
 import Browser.Navigation as Nav
 
@@ -14,6 +21,11 @@ type Model
 
 
 -- INFO
+
+
+init : Nav.Key -> Model
+init key =
+    LoggedOut key
 
 
 toToken : Model -> Maybe String

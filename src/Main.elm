@@ -5,7 +5,6 @@ import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Cognito
 import Committee
-import CommitteeId
 import Config
 import Flags
 import Html exposing (Html)
@@ -14,14 +13,12 @@ import Page.Blank as Blank
 import Page.Demo as Demo
 import Page.Home as Home
 import Page.LinkBuilder as LinkBuilder
+import Page.LogIn as LogIn
 import Page.NotFound as NotFound
 import Page.Transactions as Transactions
 import Route exposing (Route)
 import Session
 import Url exposing (Url)
-
-
-port putTokenInLocalStorage : String -> Cmd msg
 
 
 port tokenHasBeenSet : (String -> msg) -> Sub msg
@@ -33,11 +30,12 @@ port tokenHasBeenSet : (String -> msg) -> Sub msg
 
 type Model
     = NotFound Config.Model Session.Model
-    | Redirect Config.Model Session.Model (Maybe String)
+    | Redirect Config.Model Session.Model
     | LinkBuilder LinkBuilder.Model
     | Transactions Transactions.Model
     | Demo Demo.Model
     | Home Home.Model
+    | LogIn LogIn.Model
 
 
 init : Flags.Model -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -45,7 +43,7 @@ init flags url navKey =
     changeRouteTo
         flags
         (Route.fromUrl url)
-        (Redirect (Flags.toConfig flags) (Session.build navKey <| Flags.toMaybeToken flags) Nothing)
+        (Redirect (Flags.toConfig flags) (Session.build navKey <| Flags.toMaybeToken flags))
 
 
 changeRouteTo : Flags.Model -> Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -65,52 +63,13 @@ changeRouteTo flags maybeRoute model =
     in
     case ( maybeRoute, Flags.toMaybeToken flags ) of
         -- No token behavior
-        ( Just (Route.Home maybeToken maybeCommitteeId), Nothing ) ->
-            case ( maybeToken, maybeCommitteeId ) of
-                ( Just token, _ ) ->
-                    ( Redirect config session (CommitteeId.fromMaybe maybeCommitteeId), putTokenInLocalStorage token )
-
-                _ ->
-                    ( Redirect config session maybeCommitteeId
-                    , flags
-                        |> Cognito.fromFlags
-                        |> Cognito.toLoginUrl maybeCommitteeId
-                        |> Nav.load
-                    )
-
-        ( Just (Route.Transactions committeeId), Nothing ) ->
-            ( Redirect config session Nothing
-            , flags
-                |> Cognito.fromFlags
-                |> Cognito.toLoginUrl (Just committeeId)
-                |> Nav.load
-            )
-
-        ( Just (Route.LinkBuilder committeeId), Nothing ) ->
-            ( Redirect config session Nothing
-            , flags
-                |> Cognito.fromFlags
-                |> Cognito.toLoginUrl (Just committeeId)
-                |> Nav.load
-            )
-
-        ( Just (Route.Demo committeeId), Nothing ) ->
-            ( Redirect config session Nothing
-            , flags
-                |> Cognito.fromFlags
-                |> Cognito.toLoginUrl (Just committeeId)
-                |> Nav.load
-            )
-
         ( _, Nothing ) ->
-            ( Redirect config session Nothing
-            , flags
-                |> Cognito.fromFlags
-                |> Cognito.toLoginUrl Nothing
-                |> Nav.load
-            )
+            LogIn.init
+                config
+                (toSession model)
+                |> updateWith LogIn GotLogInMsg
 
-        ( Just (Route.Home _ _), Just token ) ->
+        ( Just Route.Home, Just token ) ->
             Home.init
                 config
                 (Session.setToken token session)
@@ -154,7 +113,7 @@ changeRouteTo flags maybeRoute model =
 toSession : Model -> Session.Model
 toSession page =
     case page of
-        Redirect _ session _ ->
+        Redirect _ session ->
             session
 
         NotFound _ session ->
@@ -168,6 +127,9 @@ toSession page =
 
         Demo session ->
             Demo.toSession session
+
+        LogIn session ->
+            LogIn.toSession session
 
         Home session ->
             Home.toSession session
@@ -217,14 +179,42 @@ toConfig page =
         Demo demo ->
             Demo.toConfig demo
 
-        Redirect config _ _ ->
+        Redirect config _ ->
             config
+
+        LogIn logIn ->
+            LogIn.toConfig logIn
+
+        Home home ->
+            Home.toConfig home
 
         NotFound config _ ->
             config
 
+
+setSession : Session.Model -> Model -> Model
+setSession session model =
+    case model of
+        Transactions transactions ->
+            Transactions { transactions | session = session }
+
+        LinkBuilder linkBuilder ->
+            LinkBuilder <| LinkBuilder.setSession session linkBuilder
+
+        Demo demo ->
+            Demo <| Demo.setSession session demo
+
+        Redirect config _ ->
+            Redirect config session
+
+        LogIn logIn ->
+            LogIn <| LogIn.setSession session logIn
+
         Home home ->
-            Home.toConfig home
+            Home <| Home.setSession session home
+
+        NotFound config _ ->
+            NotFound config session
 
 
 type Msg
@@ -234,32 +224,24 @@ type Msg
     | GotTransactionsMsg Transactions.Msg
     | GotDemoMsg Demo.Msg
     | GotHomeMsg Home.Msg
+    | GotLogInMsg LogIn.Msg
     | TokenHasBeenSet String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
-        ( TokenHasBeenSet str, Redirect config session maybeCommitteeId ) ->
+        ( TokenHasBeenSet token, _ ) ->
             let
-                flags =
-                    Flags.fromSessionAndConfig (toSession model) (toConfig model)
-            in
-            case maybeCommitteeId of
-                Just committeeId ->
-                    ( model
-                    , committeeId
-                        |> Route.Transactions
-                        |> Route.routeToString
-                        |> Nav.load
-                    )
+                newSession =
+                    Session.setToken token (toSession model)
 
-                Nothing ->
-                    ( model
-                    , Route.Home Nothing Nothing
-                        |> Route.routeToString
-                        |> Nav.load
-                    )
+                newModel =
+                    setSession newSession model
+            in
+            ( model
+            , Cmd.none
+            )
 
         ( ClickedLink urlRequest, _ ) ->
             case urlRequest of
@@ -293,6 +275,10 @@ update msg model =
         ( GotTransactionsMsg subMsg, Transactions home ) ->
             Transactions.update subMsg home
                 |> updateWith Transactions GotTransactionsMsg
+
+        ( GotLogInMsg subMsg, LogIn logIn ) ->
+            LogIn.update subMsg logIn
+                |> updateWith LogIn GotLogInMsg
 
         ( GotLinkBuilderMsg subMsg, LinkBuilder linkBuilder ) ->
             LinkBuilder.update subMsg linkBuilder
@@ -353,7 +339,7 @@ view model =
         Home home ->
             userViewPage Page.Home GotHomeMsg (Home.view home)
 
-        Redirect _ _ _ ->
+        Redirect _ _ ->
             Page.userLayout Page.Other Blank.view
 
         NotFound _ _ ->
@@ -367,6 +353,9 @@ view model =
 
         Demo demo ->
             committeeViewPage Page.Demo GotDemoMsg (Demo.view demo)
+
+        LogIn logIn ->
+            userViewPage Page.LogIn GotLogInMsg (LogIn.view logIn)
 
 
 
@@ -386,6 +375,9 @@ subscriptions model =
 
                 Demo demo ->
                     Sub.map GotDemoMsg (Demo.subscriptions demo)
+
+                LogIn login ->
+                    Sub.map GotLogInMsg (LogIn.subscriptions login)
 
                 _ ->
                     Sub.none

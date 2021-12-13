@@ -2,6 +2,7 @@ module Page.Transactions exposing
     ( Model
     , Msg
     , init
+    , setSession
     , subscriptions
     , toConfig
     , toSession
@@ -1609,3 +1610,8 @@ type DiscDropdownContext
     = Download
     | Preview
     | Closed
+
+
+setSession : Session.Model -> Model -> Model
+setSession session model =
+    { model | session = session }
