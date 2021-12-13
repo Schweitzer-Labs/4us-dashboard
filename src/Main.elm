@@ -63,10 +63,11 @@ changeRouteTo flags maybeRoute model =
     in
     case ( maybeRoute, Flags.toMaybeToken flags ) of
         -- No token behavior
-        ( _, Nothing ) ->
+        ( Just route, Nothing ) ->
             LogIn.init
                 config
                 (toSession model)
+                route
                 |> updateWith LogIn GotLogInMsg
 
         ( Just Route.Home, Just token ) ->

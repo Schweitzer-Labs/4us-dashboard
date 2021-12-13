@@ -49,25 +49,15 @@ function runApp() {
         const token = res.getSignInUserSession().getIdToken().getJwtToken();
         console.log(token);
         // res.user.
-        app.ports.loginSuccessful.send(token);
+        localStorage.setItem(storageKey, token);
+        setTimeout(() => {
+          app.ports.loginSuccessful.send(token);
+        }, 1000);
       })
       .catch((err) => {
         app.ports.loginFailed.send(err.message);
       });
   });
-
-  // Auth.signIn({
-  //   username: "dev.evanpiro@gmail.com",
-  //   password: "Guid12321!12!",
-  // }).then((res) => {
-  //   console.log("success");
-  //   console.log(res);
-  // });
-
-  // app.ports.putTokenInLocalStorage.subscribe((token) => {
-  //   localStorage.setItem(storageKey, token);
-  //   app.ports.tokenHasBeenSet.send("ok");
-  // });
 }
 
 runApp();

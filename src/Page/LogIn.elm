@@ -12,11 +12,13 @@ port module Page.LogIn exposing
 
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
+import Browser.Navigation as Nav
 import Config
 import Form exposing (Form)
 import Form.View
 import Html exposing (..)
 import Html.Attributes exposing (class)
+import Route
 import Session
 
 
@@ -44,6 +46,7 @@ type alias Model =
     , config : Config.Model
     , formState : Form.View.Model Values
     , serverError : Maybe String
+    , redirectRoute : Route.Route
     }
 
 
@@ -61,14 +64,15 @@ type alias Values =
     }
 
 
-init : Config.Model -> Session.Model -> ( Model, Cmd Msg )
-init config session =
+init : Config.Model -> Session.Model -> Route.Route -> ( Model, Cmd Msg )
+init config session route =
     let
         model =
             { session = session
             , config = config
             , formState = initFormState
             , serverError = Nothing
+            , redirectRoute = route
             }
     in
     ( model
@@ -201,7 +205,15 @@ update msg model =
             ( model, sendCredsForLogIn <| flattenCreds creds )
 
         LogInSuccessful token ->
-            ( { model | session = Session.setToken token model.session }, Cmd.none )
+            let
+                newSession =
+                    Session.setToken token model.session
+            in
+            ( { model | session = newSession }
+            , Nav.pushUrl
+                (Session.toNavKey newSession)
+                (Route.routeToString model.redirectRoute)
+            )
 
         LogInFailed error ->
             ( { model | serverError = Just error }, Cmd.none )
