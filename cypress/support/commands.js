@@ -100,7 +100,7 @@ Cypress.Commands.add('generateReconcileDisbDemo', () => {
 
 Cypress.Commands.add('contribSubmit', ()=> {
     cy.get('[data-cy=createContribsubmitButton]').click()
-    cy.wait(5000)
+    cy.wait(8000)
 })
 
 Cypress.Commands.add('disbSubmit', ()=> {

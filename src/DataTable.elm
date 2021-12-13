@@ -3,7 +3,7 @@ module DataTable exposing (DataRow, emptyText, labelRow, view)
 import Bootstrap.Table as Table exposing (Cell)
 import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Html, div, img, span, text)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (attribute, class)
 import Html.Events exposing (onClick)
 
 
@@ -46,7 +46,7 @@ view emptyCopy labels mapper data =
         table
 
     else
-        div [] [ table, emptyText emptyCopy ]
+        div [ attribute "data-cy" "emptyTxnsText" ] [ table, emptyText emptyCopy ]
 
 
 emptyText : String -> Html msg
