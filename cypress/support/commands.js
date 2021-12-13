@@ -97,12 +97,6 @@ Cypress.Commands.add('generateReconcileDisbDemo', () => {
     cy.get('tbody > .hover-pointer > :nth-child(1)').click()
 })
 
-Cypress.Commands.add('generateAmendDisbDemo', () => {
-    cy.createDemo()
-    cy.get('.col-12 > a').then((e)=>{
-        cy.visit(e.text())
-    })
-})
 
 Cypress.Commands.add('contribSubmit', ()=> {
     cy.get('[data-cy=createContribsubmitButton]').click()

@@ -52,7 +52,14 @@ view { checkNumber, entityName, addressLine1, addressLine2, city, state, postalC
         errorContent =
             case maybeError of
                 Just error ->
-                    [ Grid.row [ Row.attrs [ Spacing.mt2, class "text-danger" ] ] [ Grid.col [] [ text error ] ] ]
+                    [ Grid.row
+                        [ Row.attrs [ Spacing.mt2, class "text-danger" ]
+                        ]
+                        [ Grid.col []
+                            [ span [ attribute "data-cy" (cyId ++ "errorRow") ] [ text error ]
+                            ]
+                        ]
+                    ]
 
                 Nothing ->
                     []

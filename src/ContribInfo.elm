@@ -78,14 +78,14 @@ view c =
         []
     <|
         []
-            ++ donorHeadingRow c.toggleEdit c.disabled c.isEditable
+            ++ donorHeadingRow c.cyId c.toggleEdit c.disabled c.isEditable
             ++ (if c.isEditable == False then
                     amountDateRow c
 
                 else
                     []
                )
-            ++ errorRow c.maybeError
+            ++ errorRow c.cyId c.maybeError
             ++ donorInfoRows c
             ++ (case c.isEditable of
                     True ->
@@ -109,14 +109,14 @@ view c =
                )
 
 
-donorHeadingRow : msg -> Bool -> Bool -> List (Html msg)
-donorHeadingRow toggleMsg disabled isEditable =
+donorHeadingRow : String -> msg -> Bool -> Bool -> List (Html msg)
+donorHeadingRow cyId toggleMsg disabled isEditable =
     [ div [ Spacing.mt3 ]
         [ h5 [ class "font-weight-bold d-inline" ] [ text "Donor Info" ]
         , if isEditable then
             span [ class "hover-underline hover-pointer align-middle", Spacing.ml2, onClick toggleMsg ]
                 [ if disabled == True then
-                    Asset.editGlyph []
+                    Asset.editGlyph [ attribute "data-cy" (cyId ++ "editIcon") ]
 
                   else
                     Asset.redoGlyph []
@@ -293,15 +293,15 @@ ownersOnModelToErrors { owners, maybeEntityType } =
     fromOwners owners maybeEntityType
 
 
-errorRow : Maybe String -> List (Html msg)
-errorRow maybeStr =
+errorRow : String -> Maybe String -> List (Html msg)
+errorRow cyId maybeStr =
     case maybeStr of
         Nothing ->
             []
 
         Just str ->
             [ Grid.row [ Row.attrs [ Spacing.mt2 ] ]
-                [ Grid.col [] [ span [ class "text-danger" ] [ text str ] ] ]
+                [ Grid.col [] [ span [ class "text-danger", attribute "data-cy" (cyId ++ "errorRow") ] [ text str ] ] ]
             ]
 
 
@@ -358,7 +358,7 @@ processingRow c =
     case ( toData c.paymentMethod, c.processPayment ) of
         ( Just PaymentMethod.Credit, True ) ->
             []
-                ++ errorRow (Just "Contributions via credit will be processed on submission of this form.")
+                ++ errorRow c.cyId (Just "Contributions via credit will be processed on submission of this form.")
                 ++ creditRow c
 
         ( Just PaymentMethod.Check, _ ) ->
@@ -517,10 +517,10 @@ piiRows c =
         [ Row.attrs [ Spacing.mt1 ] ]
         [ Grid.col
             []
-            [ inputText (toMsg c.firstName) (toData c.firstName) c.disabled "createContribFirstName" "*First Name" ]
+            [ inputText (toMsg c.firstName) (toData c.firstName) c.disabled (c.cyId ++ "FirstName") "*First Name" ]
         , Grid.col
             []
-            [ inputText (toMsg c.lastName) (toData c.lastName) c.disabled "createContribLastName" "*Last Name" ]
+            [ inputText (toMsg c.lastName) (toData c.lastName) c.disabled (c.cyId ++ "LastName") "*Last Name" ]
         ]
     ]
         ++ addressRows c

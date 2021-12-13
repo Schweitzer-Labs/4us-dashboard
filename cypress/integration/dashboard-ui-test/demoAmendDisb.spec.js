@@ -5,14 +5,21 @@ const faker = require("faker")
 
 
 describe('Demo Amending Disbursements',()=>{
+
     before(()=>{
-        cy.generateAmendDisbDemo()
+        cy.generateDemo()
         cy.initDisb()
         cy.fillDisbForm()
         cy.get('[data-cy=createDisbpaymentMethod]').select('ACH')
         cy.disbSubmit()
     })
-    it('a user can amend a disbursement information', ()=>{
+
+    afterEach(()=> {
+        cy.get(':nth-child(8) > .modal > .elm-bootstrap-modal > .modal-content > .modal-header > .close').click()
+
+    })
+
+    it('allows a user to amend disbursement information', ()=>{
         const newName  = `${faker.name.firstName()} ${faker.name.lastName()}`
 
         const newAddressLine1  = faker.address.streetAddress()
@@ -47,4 +54,67 @@ describe('Demo Amending Disbursements',()=>{
         cy.get('[data-cy=disbRuleVerifiedpurposeCode] option:selected').should('have.value', newPurposeCode)
 
     })
+
+    it('displays the correct entity name error to the user',()=>{
+
+        cy.get('tbody > .hover-pointer > :nth-child(1)').click()
+        cy.get('[data-cy=disbRuleVerifiededitIcon]').click()
+
+        cy.get('[data-cy=disbRuleVerifiedrecipientName]').clear()
+        cy.get('[data-cy=disbRuleVerifiedsubmitButton]').click()
+        cy.get('[data-cy=disbRuleVerifiederrorRow]').should('have.text', 'Entity name is missing.')
+    })
+
+    it('displays the correct street address error to the user',()=>{
+
+        cy.get('tbody > .hover-pointer > :nth-child(1)').click()
+        cy.get('[data-cy=disbRuleVerifiededitIcon]').click()
+
+        cy.get('[data-cy=disbRuleVerifiedaddressLine1]').clear()
+        cy.get('[data-cy=disbRuleVerifiedsubmitButton]').click()
+        cy.get('[data-cy=disbRuleVerifiederrorRow]').should('have.text', 'Address 1 is missing.')
+    })
+
+    it('displays the correct city error to the user',()=>{
+
+        cy.get('tbody > .hover-pointer > :nth-child(1)').click()
+        cy.get('[data-cy=disbRuleVerifiededitIcon]').click()
+
+        cy.get('[data-cy=disbRuleVerifiedcity]').clear()
+        cy.get('[data-cy=disbRuleVerifiedsubmitButton]').click()
+        cy.get('[data-cy=disbRuleVerifiederrorRow]').should('have.text', 'City is missing.')
+    })
+
+    it('displays the correct state error to the user',()=>{
+
+        cy.get('tbody > .hover-pointer > :nth-child(1)').click()
+        cy.get('[data-cy=disbRuleVerifiededitIcon]').click()
+
+        cy.get('[data-cy=disbRuleVerifiedstate]').select('-- State --')
+        cy.get('[data-cy=disbRuleVerifiedsubmitButton]').click()
+        cy.get('[data-cy=disbRuleVerifiederrorRow]').should('have.text', 'State is missing.')
+    })
+
+    it('displays the correct postal code error to the user',()=>{
+
+        cy.get('tbody > .hover-pointer > :nth-child(1)').click()
+        cy.get('[data-cy=disbRuleVerifiededitIcon]').click()
+
+        cy.get('[data-cy=disbRuleVerifiedpostalCode]').clear()
+        cy.get('[data-cy=disbRuleVerifiedsubmitButton]').click()
+        cy.get('[data-cy=disbRuleVerifiederrorRow]').should('have.text', 'Postal Code is missing.')
+    })
+
+
+    it('displays the correct purpose code error to the user',()=>{
+
+        cy.get('tbody > .hover-pointer > :nth-child(1)').click()
+        cy.get('[data-cy=disbRuleVerifiededitIcon]').click()
+
+        cy.get('[data-cy=disbRuleVerifiedpurposeCode]').select('-- Purpose --')
+        cy.get('[data-cy=disbRuleVerifiedsubmitButton]').click()
+        cy.get('[data-cy=disbRuleVerifiederrorRow]').should('have.text', 'Purpose Code is missing.')
+    })
+
+
 })

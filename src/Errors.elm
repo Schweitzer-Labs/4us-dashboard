@@ -270,10 +270,13 @@ fromPurposeCodeOther code explanation =
         Just OTHER ->
             case String.isEmpty explanation of
                 True ->
-                    [ "Explanation is missing" ]
+                    [ "Explanation is missing." ]
 
                 False ->
                     []
+
+        Nothing ->
+            [ "Purpose Code is missing." ]
 
         _ ->
             []

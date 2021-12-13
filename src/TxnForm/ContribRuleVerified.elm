@@ -519,12 +519,12 @@ requiredFieldValidators =
     [ ifBlank .amount "Payment Amount is missing"
     , ifBlank .paymentDate "Payment Date is missing"
     , ifNothing .paymentMethod "Processing Info is missing"
-    , ifBlank .firstName "First Name is missing"
-    , ifBlank .lastName "Last name is missing"
-    , ifBlank .city "City is missing"
-    , ifBlank .state "State is missing"
+    , ifBlank .firstName "First Name is missing."
+    , ifBlank .lastName "Last Name is missing."
+    , ifBlank .city "City is missing."
+    , ifBlank .state "State is missing."
     , ifBlank .postalCode "Postal Code is missing."
-    , ifBlank .addressLine1 "Address is missing"
+    , ifBlank .addressLine1 "Address 1 is missing."
     ]
 
 
