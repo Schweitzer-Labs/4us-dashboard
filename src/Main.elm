@@ -240,7 +240,7 @@ update msg model =
                 newModel =
                     setSession newSession model
             in
-            ( model
+            ( newModel
             , Cmd.none
             )
 

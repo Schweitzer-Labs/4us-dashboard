@@ -28,10 +28,11 @@ COGNITO_DOMAIN	:= https://platform-user-$(PRODUCT)-$(RUNENV).auth.$(REGION).amaz
 COGNITO_REDIRECT_URI	:= https://$(SUBDOMAIN).$(DOMAIN).$(TLD)
 DONOR_URL		:= https://donate.$(DOMAIN).$(TLD)
 API_ENDPOINT		:= https://committee-api.$(DOMAIN).$(TLD)/api/committee/graphql
+COGNITO_USER_POOL_CLIENT_NAME  := $(RUNENV)-4us-dashboard
 
 COGNITO_USER_POOL = $(eval COGNITO_USER_POOL := $$(shell aws cognito-idp list-user-pools --region $(REGION) --max-results 10 --query 'UserPools[?starts_with(Name, `PlatformUserPool`)].Id' --output text))$(COGNITO_USER_POOL)
 
-COGNITO_CLIENT_ID = $(eval COGNITO_CLIENT_ID := $$(shell aws cognito-idp list-user-pool-clients --region $(REGION) --user-pool-id $(COGNITO_USER_POOL) --query 'UserPoolClients[*].ClientId' --output text))$(COGNITO_CLIENT_ID)
+COGNITO_CLIENT_ID = $(eval COGNITO_CLIENT_ID := $$(shell aws cognito-idp list-user-pool-clients --region $(REGION) --user-pool-id $(COGNITO_USER_POOL) --query 'UserPoolClients[?ClientName == `$(COGNITO_USER_POOL_CLIENT_NAME)`].ClientId' --output text))$(COGNITO_CLIENT_ID)
 
 .PHONY: all dep build clean
 
@@ -56,4 +57,5 @@ build: dep $(BUILD_DIR)
 		--apiendpoint=$(API_ENDPOINT) \
 		--donorurl=$(DONOR_URL) \
 		--clientid=$(COGNITO_CLIENT_ID) \
+		--cognito_user_pool_id=$(COGNITO_USER_POOL)
 		run build

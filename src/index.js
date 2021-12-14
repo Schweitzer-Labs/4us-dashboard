@@ -8,13 +8,13 @@ const storageKey = "token";
 
 const cognitoDomain = process.env.ELM_APP_COGNITO_DOMAIN;
 const cognitoClientId = process.env.ELM_APP_COGNITO_CLIENT_ID;
-const cognitoUserPoolId = process.env.ELM_APP_COGNITO_CLIENT_ID;
+const cognitoUserPoolId = process.env.ELM_APP_COGNITO_USER_POOL_ID;
 const redirectUri = window.location.origin;
 const donorUrl = process.env.ELM_APP_DONOR_URL;
 const apiEndpoint = process.env.ELM_APP_API_ENDPOINT;
 
 Auth.configure({
-  userPoolId: "us-west-2_9XWswzIhi",
+  userPoolId: cognitoUserPoolId,
   userPoolWebClientId: cognitoClientId,
 });
 
@@ -39,16 +39,13 @@ function runApp() {
   });
 
   app.ports.sendCredsForLogIn.subscribe(({ email, password }) => {
-    console.log(email);
-    console.log(password);
     Auth.signIn({
       username: email,
       password: password,
     })
       .then((res) => {
         const token = res.getSignInUserSession().getIdToken().getJwtToken();
-        console.log(token);
-        // res.user.
+
         localStorage.setItem(storageKey, token);
         setTimeout(() => {
           app.ports.loginSuccessful.send(token);
