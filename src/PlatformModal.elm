@@ -50,7 +50,7 @@ view config =
         |> Modal.body
             [ Attr.id config.id ]
             (if config.successViewActive then
-                [ successMessage config.successViewMessage ]
+                [ successMessage config.cyId config.successViewMessage ]
 
              else
                 [ Html.map config.updateMsg <|
@@ -150,13 +150,14 @@ exitButton hideMsg =
         [ text "Exit" ]
 
 
-successMessage : String -> Html msg
-successMessage successViewMessage =
+successMessage : String -> String -> Html msg
+successMessage cyId successViewMessage =
     h2 [ class "align-middle text-green", Spacing.p3 ]
         [ Asset.circleCheckGlyph []
         , span
             [ class "align-middle text-green"
             , Spacing.ml3
+            , attribute "data-cy" (cyId ++ "platformSucessMessage")
             ]
             [ text <| successViewMessage ]
         ]

@@ -209,6 +209,18 @@ Cypress.Commands.add("fillContribFormInd", () => {
   ).click();
 });
 
+Cypress.Commands.add("fillReconcileContrib", (amount) => {
+  cy.get("#actions-dropdown").click();
+  cy.get("button").contains("Create Contribution").click();
+
+  cy.get("[data-cy=paymentAmountcreateContrib]").first().type(amount);
+  cy.get("[data-cy=paymentDatecreateContrib]").first().type("2021-09-17");
+  cy.selectInd();
+  cy.fillContribFormInd();
+  cy.fillCash();
+  cy.contribSubmit();
+});
+
 // Disbursement Commands
 
 Cypress.Commands.add("initDisb", () => {
