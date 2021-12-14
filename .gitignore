@@ -21,3 +21,5 @@ src/Config/EnvConfig.elm
 .env
 
 cypress/screenshots/
+
+cypress.env.json

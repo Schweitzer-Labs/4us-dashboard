@@ -22,6 +22,13 @@ let donor = {
   organizationName: "PDT Co",
 };
 
+const credentials = {
+  email: Cypress.env("email"),
+  password: Cypress.env("password"),
+};
+
+console.log(credentials);
+
 const appUrl = "http://localhost:3000/committee/nelson-lopez";
 const demoPassword = "f4jp1i";
 
@@ -72,6 +79,11 @@ export const purposeCodes = [
 Cypress.Commands.add("createDemo", () => {
   cy.visit(appUrl);
   cy.visit(`${appUrl}/demo`);
+
+  cy.get(":nth-child(1) > input").type(Cypress.env("cognito_email"));
+  cy.get(":nth-child(2) > input").type(Cypress.env("cognito_password"));
+  cy.get("button").click();
+  cy.wait(5000);
 
   cy.get("#password").type(demoPassword);
   cy.get(".btn").click();
