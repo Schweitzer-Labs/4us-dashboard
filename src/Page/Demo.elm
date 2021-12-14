@@ -4,6 +4,7 @@ module Page.Demo exposing
     , formRow
     , getTransactions
     , init
+    , setSession
     , subscriptions
     , toConfig
     , toSession
@@ -688,3 +689,8 @@ toSession model =
 toConfig : Model -> Config.Model
 toConfig model =
     model.config
+
+
+setSession : Session.Model -> Model -> Model
+setSession session model =
+    { model | session = session }

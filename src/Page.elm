@@ -27,6 +27,7 @@ type Page
     | LinkBuilder
     | Transactions
     | Demo
+    | LogIn
 
 
 {-| Take a page's Html and frames it with a header and footer.
@@ -129,7 +130,7 @@ ruleInfoRow committee =
 logo : Html msg
 logo =
     div [ class "text-center" ]
-        [ a [ Route.href <| Route.Home Nothing Nothing ]
+        [ a [ Route.href Route.Home ]
             [ img [ Asset.src Asset.usLogo, class "header-logo" ] [] ]
         ]
 

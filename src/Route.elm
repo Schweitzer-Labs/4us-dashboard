@@ -13,7 +13,7 @@ import Url.Parser.Query as Query
 
 
 type Route
-    = Home (Maybe String) (Maybe String)
+    = Home
     | LinkBuilder String
     | Transactions String
     | Demo String
@@ -22,7 +22,7 @@ type Route
 parser : Parser (Route -> a) a
 parser =
     oneOf
-        [ Parser.map Home (Parser.top <?> Query.string "id_token" <?> Query.string "state")
+        [ Parser.map Home Parser.top
         , Parser.map Transactions (s "committee" </> string)
         , Parser.map LinkBuilder (s "committee" </> string </> s "link-builder")
         , Parser.map Demo (s "committee" </> string </> s "demo")
@@ -45,7 +45,7 @@ replaceUrl key route =
 
 fromUrl : Url -> Maybe Route
 fromUrl =
-    fragmentToQuery >> Parser.parse parser
+    Parser.parse parser
 
 
 routeToString : Route -> String
