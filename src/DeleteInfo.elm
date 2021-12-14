@@ -2,7 +2,7 @@ module DeleteInfo exposing (Model(..), deletionAlert)
 
 import Bootstrap.Alert as Alert
 import Html exposing (Html, text)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (attribute, class)
 
 
 type Model
@@ -20,7 +20,7 @@ deletionAlert msg visibility =
                 |> Alert.dismissableWithAnimation alertMsg
                 |> Alert.children
                     [ Alert.h5 [ class "font-weight-bold" ] [ text "Warning" ]
-                    , Alert.h6 [] [ text "This action is irreversible" ]
+                    , Alert.h6 [ attribute "data-cy" "deleteInfo" ] [ text "This action is irreversible" ]
                     ]
                 |> Alert.view alertVisibility
 

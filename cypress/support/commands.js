@@ -249,3 +249,34 @@ Cypress.Commands.add("fillDisbForm", () => {
     );
   cy.get("[data-cy=paymentDatecreateDisb]").first().type("2021-09-17");
 });
+
+Cypress.Commands.add("fillReconcileDisb", (amount) => {
+  cy.initDisb();
+  cy.get("[data-cy=createDisbrecipientName]").type(
+    `${faker.name.firstName()} ${faker.name.lastName()}`
+  );
+  cy.get("[data-cy=createDisbaddressLine1]")
+    .first()
+    .type(faker.address.streetAddress());
+  cy.get("[data-cy=createDisbaddressLine2]").first().type("Apartment 5");
+  cy.get("[data-cy=createDisbcity]").first().type(faker.address.city());
+  cy.get("[data-cy=createDisbstate]").first().select(faker.address.state());
+  cy.get("[data-cy=createDisbpostalCode]")
+    .first()
+    .type(faker.address.zipCode().substring(0, 5));
+
+  cy.get("[data-cy=createDisbpurposeCode]")
+    .first()
+    .select(faker.random.arrayElement(purposeCodes));
+
+  cy.get("[data-cy=createDisbisSubcontractedyes]").click();
+  cy.get("[data-cy=createDisbisPartialPaymentno]").click();
+  cy.get("[data-cy=createDisbisExistingLiabilityno]").click();
+  cy.get("[data-cy=createDisbisInKindno]").click();
+
+  cy.get("[data-cy=paymentAmountcreateDisb]").first().type(amount);
+
+  cy.get("[data-cy=paymentDatecreateDisb]").first().type("2021-09-17");
+  cy.get("[data-cy=createDisbpaymentMethod]").select("ACH");
+  cy.disbSubmit();
+});
