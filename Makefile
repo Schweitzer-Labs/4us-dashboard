@@ -57,5 +57,5 @@ build: dep $(BUILD_DIR)
 		--apiendpoint=$(API_ENDPOINT) \
 		--donorurl=$(DONOR_URL) \
 		--clientid=$(COGNITO_CLIENT_ID) \
-		--cognito_user_pool_id=$(COGNITO_USER_POOL)
+		--cognito_user_pool_id=$(COGNITO_USER_POOL) \
 		run build
