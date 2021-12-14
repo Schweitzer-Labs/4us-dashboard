@@ -13,18 +13,20 @@
     "watch-css": "npm run build-css && node-sass-chokidar src/ -o src/ --watch --recursive",
     "start": "PORT=3000 ELM_APP_COGNITO_DOMAIN=https://platform-user-4us-qa.auth.us-west-2.amazoncognito.com ELM_APP_COGNITO_CLIENT_ID=2bhednmrtdiiab13k7qs2k1n7n ELM_APP_COGNITO_REDIRECT_URI=http://localhost:3000 ELM_APP_DONOR_URL=http://localhost:3001 ELM_APP_API_ENDPOINT=http://localhost:8011/proxy elm-app start",
     "proxy-qa": "lcp --proxyUrl=https://dashboard.build4.us/api/committee/graphql --port=8011",
-    "start-local": "PORT=3000 ELM_APP_COGNITO_DOMAIN=http://localhost:3030 ELM_APP_COGNITO_CLIENT_ID=30knht1q778i0qls8n0v8prsfm ELM_APP_COGNITO_REDIRECT_URI=http://localhost:3000 ELM_APP_DONOR_URL=http://localhost:3001 ELM_APP_API_ENDPOINT=http://localhost:4000 elm-app start",
-    "build": "ELM_APP_COGNITO_DOMAIN=$npm_config_domain ELM_APP_COGNITO_CLIENT_ID=$npm_config_clientid ELM_APP_COGNITO_REDIRECT_URI=$npm_config_redirect ELM_APP_DONOR_URL=$npm_config_donorurl ELM_APP_API_ENDPOINT=$npm_config_apiendpoint elm-app build"
+    "start-local": "PORT=3000 ELM_APP_COGNITO_DOMAIN=http://localhost:3030 ELM_APP_COGNITO_CLIENT_ID=5bve87vba4o5n1a81dvgqtthc5 ELM_APP_COGNITO_REDIRECT_URI=http://localhost:3000 ELM_APP_DONOR_URL=http://localhost:3001 ELM_APP_API_ENDPOINT=http://localhost:4000 ELM_APP_COGNITO_USER_POOL_ID=us-west-2_9XWswzIhi elm-app start",
+    "build": "ELM_APP_COGNITO_USER_POOL_ID=$npm_config_cognito_user_pool_id ELM_APP_COGNITO_DOMAIN=$npm_config_domain ELM_APP_COGNITO_CLIENT_ID=$npm_config_clientid ELM_APP_COGNITO_REDIRECT_URI=$npm_config_redirect ELM_APP_DONOR_URL=$npm_config_donorurl ELM_APP_API_ENDPOINT=$npm_config_apiendpoint elm-app build"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-amplify/auth": "^4.3.18",
     "@fortawesome/fontawesome-free": "^5.15.2",
     "bootstrap": "^4.5.3",
     "dotenv": "^10.0.0",
     "email-validator": "^2.0.4",
     "faker": "^5.5.3",
     "phone": "^3.1.6",
+    "prettier": "^2.5.1",
     "string-extra": "github:elm-community/string-extra"
   },
   "devDependencies": {

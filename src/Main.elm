@@ -1,21 +1,27 @@
-module Main exposing (Model(..), Msg(..), changeRouteTo, init, main, subscriptions, toSession, update, updateWith, view)
+port module Main exposing (Model(..), Msg(..), changeRouteTo, init, main, subscriptions, toSession, update, updateWith, view)
 
 import Aggregations
 import Browser exposing (Document)
 import Browser.Navigation as Nav
+import Cognito
 import Committee
-import CommitteeId
-import Config exposing (Config)
+import Config
+import Flags
 import Html exposing (Html)
 import Page
 import Page.Blank as Blank
 import Page.Demo as Demo
+import Page.Home as Home
 import Page.LinkBuilder as LinkBuilder
+import Page.LogIn as LogIn
 import Page.NotFound as NotFound
 import Page.Transactions as Transactions
 import Route exposing (Route)
-import Session exposing (Session)
+import Session
 import Url exposing (Url)
+
+
+port tokenHasBeenSet : (String -> msg) -> Sub msg
 
 
 
@@ -23,99 +29,95 @@ import Url exposing (Url)
 
 
 type Model
-    = NotFound Session
-    | Redirect Session
+    = NotFound Config.Model Session.Model
+    | Redirect Config.Model Session.Model
     | LinkBuilder LinkBuilder.Model
     | Transactions Transactions.Model
     | Demo Demo.Model
+    | Home Home.Model
+    | LogIn LogIn.Model
 
 
-init : Config -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init config url navKey =
+init : Flags.Model -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url navKey =
     changeRouteTo
-        url
-        config
+        flags
         (Route.fromUrl url)
-        (Redirect (Session.fromViewer navKey config.token))
+        (Redirect (Flags.toConfig flags) (Session.build navKey <| Flags.toMaybeToken flags))
 
 
-changeRouteTo : Url -> Config -> Maybe Route -> Model -> ( Model, Cmd Msg )
-changeRouteTo url config maybeRoute model =
+changeRouteTo : Flags.Model -> Maybe Route -> Model -> ( Model, Cmd Msg )
+changeRouteTo flags maybeRoute model =
     let
         session =
             toSession model
-
-        committeeId =
-            CommitteeId.parse url
 
         aggregations =
             toAggregations model
 
         committee =
             toCommittee model
+
+        config =
+            toConfig model
     in
-    case maybeRoute of
-        Nothing ->
-            ( NotFound session, Cmd.none )
+    case ( maybeRoute, Flags.toMaybeToken flags ) of
+        -- No token behavior
+        ( Just route, Nothing ) ->
+            LogIn.init
+                config
+                (toSession model)
+                route
+                |> updateWith LogIn GotLogInMsg
 
-        -- rest of the routes
-        Just Route.Home ->
+        ( Just Route.Home, Just token ) ->
+            Home.init
+                config
+                (Session.setToken token session)
+                |> updateWith Home GotHomeMsg
+
+        ( Just (Route.Transactions id), Just token ) ->
             Transactions.init
                 config
-                session
-                aggregations
-                committee
-                committeeId
-                |> updateWith Transactions GotTransactionsMsg
-
-        Just (Route.Transactions id) ->
-            Transactions.init
-                config
-                session
+                (Session.setToken token session)
                 aggregations
                 committee
                 id
                 |> updateWith Transactions GotTransactionsMsg
 
-        Just (Route.LinkBuilder id) ->
+        ( Just (Route.LinkBuilder id), Just token ) ->
             LinkBuilder.init
                 config
-                session
+                (Session.setToken token session)
                 aggregations
                 committee
                 id
                 |> updateWith LinkBuilder GotLinkBuilderMsg
 
-        Just (Route.Demo id) ->
+        ( Just (Route.Demo id), Just token ) ->
             Demo.init
                 config
-                session
+                (Session.setToken token session)
                 aggregations
                 committee
                 id
                 |> updateWith Demo GotDemoMsg
+
+        ( _, _ ) ->
+            ( NotFound config session, Cmd.none )
 
 
 
 ---- UPDATE ----
 
 
-type Msg
-    = ChangedUrl Url
-    | ClickedLink Browser.UrlRequest
-    | GotLinkBuilderMsg LinkBuilder.Msg
-    | GotSession Session
-    | GotTransactionsMsg Transactions.Msg
-    | GotDemoMsg Demo.Msg
-
-
-toSession : Model -> Session
+toSession : Model -> Session.Model
 toSession page =
     case page of
-        Redirect session ->
+        Redirect _ session ->
             session
 
-        NotFound session ->
+        NotFound _ session ->
             session
 
         Transactions transactions ->
@@ -127,16 +129,16 @@ toSession page =
         Demo session ->
             Demo.toSession session
 
+        LogIn session ->
+            LogIn.toSession session
+
+        Home session ->
+            Home.toSession session
+
 
 toAggregations : Model -> Aggregations.Model
 toAggregations page =
     case page of
-        Redirect session ->
-            Aggregations.init
-
-        NotFound session ->
-            Aggregations.init
-
         Transactions transactions ->
             transactions.aggregations
 
@@ -146,16 +148,13 @@ toAggregations page =
         Demo demo ->
             demo.aggregations
 
+        _ ->
+            Aggregations.init
+
 
 toCommittee : Model -> Committee.Model
 toCommittee page =
     case page of
-        Redirect session ->
-            Committee.init
-
-        NotFound session ->
-            Committee.init
-
         Transactions transactions ->
             transactions.committee
 
@@ -165,46 +164,98 @@ toCommittee page =
         Demo demo ->
             demo.committee
 
+        _ ->
+            Committee.init
 
-toConfig : Model -> Config
+
+toConfig : Model -> Config.Model
 toConfig page =
     case page of
-        Redirect session ->
-            { apiEndpoint = ""
-            , cognitoClientId = ""
-            , redirectUri = ""
-            , donorUrl = ""
-            , token = ""
-            , cognitoDomain = ""
-            }
-
-        NotFound session ->
-            { apiEndpoint = ""
-            , cognitoClientId = ""
-            , redirectUri = ""
-            , donorUrl = ""
-            , token = ""
-            , cognitoDomain = ""
-            }
-
         Transactions transactions ->
-            transactions.config
+            Transactions.toConfig transactions
 
         LinkBuilder linkBuilder ->
-            linkBuilder.config
+            LinkBuilder.toConfig linkBuilder
 
         Demo demo ->
-            demo.config
+            Demo.toConfig demo
+
+        Redirect config _ ->
+            config
+
+        LogIn logIn ->
+            LogIn.toConfig logIn
+
+        Home home ->
+            Home.toConfig home
+
+        NotFound config _ ->
+            config
+
+
+setSession : Session.Model -> Model -> Model
+setSession session model =
+    case model of
+        Transactions transactions ->
+            Transactions { transactions | session = session }
+
+        LinkBuilder linkBuilder ->
+            LinkBuilder <| LinkBuilder.setSession session linkBuilder
+
+        Demo demo ->
+            Demo <| Demo.setSession session demo
+
+        Redirect config _ ->
+            Redirect config session
+
+        LogIn logIn ->
+            LogIn <| LogIn.setSession session logIn
+
+        Home home ->
+            Home <| Home.setSession session home
+
+        NotFound config _ ->
+            NotFound config session
+
+
+type Msg
+    = ChangedUrl Url
+    | ClickedLink Browser.UrlRequest
+    | GotLinkBuilderMsg LinkBuilder.Msg
+    | GotTransactionsMsg Transactions.Msg
+    | GotDemoMsg Demo.Msg
+    | GotHomeMsg Home.Msg
+    | GotLogInMsg LogIn.Msg
+    | TokenHasBeenSet String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
+        ( TokenHasBeenSet token, _ ) ->
+            let
+                newSession =
+                    Session.setToken token (toSession model)
+
+                newModel =
+                    setSession newSession model
+            in
+            ( newModel
+            , Cmd.none
+            )
+
         ( ClickedLink urlRequest, _ ) ->
             case urlRequest of
                 Browser.Internal url ->
+                    let
+                        navKey =
+                            Session.toNavKey (toSession model)
+
+                        urlStr =
+                            Url.toString url
+                    in
                     ( model
-                    , Nav.pushUrl (Session.navKey (toSession model)) (Url.toString url)
+                    , Nav.pushUrl navKey urlStr
                     )
 
                 Browser.External href ->
@@ -213,11 +264,22 @@ update msg model =
                     )
 
         ( ChangedUrl url, _ ) ->
-            changeRouteTo url (toConfig model) (Route.fromUrl url) model
+            let
+                flags =
+                    Flags.fromSessionAndConfig (toSession model) (toConfig model)
+
+                route =
+                    Route.fromUrl url
+            in
+            changeRouteTo flags route model
 
         ( GotTransactionsMsg subMsg, Transactions home ) ->
             Transactions.update subMsg home
                 |> updateWith Transactions GotTransactionsMsg
+
+        ( GotLogInMsg subMsg, LogIn logIn ) ->
+            LogIn.update subMsg logIn
+                |> updateWith LogIn GotLogInMsg
 
         ( GotLinkBuilderMsg subMsg, LinkBuilder linkBuilder ) ->
             LinkBuilder.update subMsg linkBuilder
@@ -227,10 +289,9 @@ update msg model =
             Demo.update subMsg demo
                 |> updateWith Demo GotDemoMsg
 
-        ( GotSession session, Redirect _ ) ->
-            ( Redirect session
-            , Route.replaceUrl (Session.navKey session) Route.Home
-            )
+        ( GotHomeMsg subMsg, Home home ) ->
+            Home.update subMsg home
+                |> updateWith Home GotHomeMsg
 
         ( _, _ ) ->
             -- Disregard messages that arrived for the wrong page.
@@ -257,33 +318,45 @@ view model =
         committee =
             toCommittee model
 
-        config =
-            toConfig model
-
-        viewPage page toMsg conf =
+        userViewPage page toMsg conf =
             let
                 { title, body } =
-                    Page.view config aggregations committee page conf
+                    Page.userLayout page conf
+            in
+            { title = title
+            , body = List.map (Html.map toMsg) body
+            }
+
+        committeeViewPage page toMsg conf =
+            let
+                { title, body } =
+                    Page.committeeLayout aggregations committee page conf
             in
             { title = title
             , body = List.map (Html.map toMsg) body
             }
     in
     case model of
-        Redirect _ ->
-            Page.view config aggregations committee Page.Other Blank.view
+        Home home ->
+            userViewPage Page.Home GotHomeMsg (Home.view home)
 
-        NotFound _ ->
-            Page.view config aggregations committee Page.Other NotFound.view
+        Redirect _ _ ->
+            Page.userLayout Page.Other Blank.view
+
+        NotFound _ _ ->
+            Page.userLayout Page.Other NotFound.view
 
         Transactions transactions ->
-            viewPage Page.Transactions GotTransactionsMsg (Transactions.view transactions)
+            committeeViewPage Page.Transactions GotTransactionsMsg (Transactions.view transactions)
 
         LinkBuilder linkBuilder ->
-            viewPage Page.LinkBuilder GotLinkBuilderMsg (LinkBuilder.view linkBuilder)
+            committeeViewPage Page.LinkBuilder GotLinkBuilderMsg (LinkBuilder.view linkBuilder)
 
         Demo demo ->
-            viewPage Page.Demo GotDemoMsg (Demo.view demo)
+            committeeViewPage Page.Demo GotDemoMsg (Demo.view demo)
+
+        LogIn logIn ->
+            userViewPage Page.LogIn GotLogInMsg (LogIn.view logIn)
 
 
 
@@ -292,21 +365,28 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model of
-        Transactions transactions ->
-            Sub.map GotTransactionsMsg (Transactions.subscriptions transactions)
+    let
+        pageSub =
+            case model of
+                Transactions transactions ->
+                    Sub.map GotTransactionsMsg (Transactions.subscriptions transactions)
 
-        LinkBuilder linkBuilder ->
-            Sub.map GotLinkBuilderMsg (LinkBuilder.subscriptions linkBuilder)
+                LinkBuilder linkBuilder ->
+                    Sub.map GotLinkBuilderMsg (LinkBuilder.subscriptions linkBuilder)
 
-        Demo demo ->
-            Sub.map GotDemoMsg (Demo.subscriptions demo)
+                Demo demo ->
+                    Sub.map GotDemoMsg (Demo.subscriptions demo)
 
-        _ ->
-            Sub.none
+                LogIn login ->
+                    Sub.map GotLogInMsg (LogIn.subscriptions login)
+
+                _ ->
+                    Sub.none
+    in
+    Sub.batch [ tokenHasBeenSet TokenHasBeenSet, pageSub ]
 
 
-main : Program Config Model Msg
+main : Program Flags.Model Model Msg
 main =
     Browser.application
         { init = init

@@ -1,15 +1,17 @@
-const app = require('express')();
+const app = require("express")();
 
-const HOST = "http://localhost:3000"
-const PORT = 3030
+const HOST = "http://localhost:3000";
+const PORT = 3030;
 
-app.get('/login', (req, res) => {
+app.get("/login", (req, res) => {
   const committeeId = req.query.state
-  res.redirect(`${HOST}?id_token=abc&state=${committeeId}`);
+    ? `&state=${req.query.state}`
+    : "&state=null";
+  res.redirect(`${HOST}#id_token=abc${committeeId}&token_type=Bearer`);
 });
 
 const run = async () => {
   await app.listen(PORT);
-}
+};
 
 run();

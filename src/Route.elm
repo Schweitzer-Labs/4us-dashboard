@@ -1,10 +1,11 @@
-module Route exposing (Route(..), fromUrl, href, replaceUrl)
+module Route exposing (Route(..), fragmentToQuery, fromUrl, href, replaceUrl, routeToString)
 
 import Browser.Navigation as Nav
 import Html exposing (Attribute)
 import Html.Attributes as Attr
 import Url exposing (Url)
-import Url.Parser as Parser exposing ((</>), Parser, oneOf, s, string)
+import Url.Parser as Parser exposing ((</>), (<?>), Parser, oneOf, s, string)
+import Url.Parser.Query as Query
 
 
 
@@ -21,7 +22,8 @@ type Route
 parser : Parser (Route -> a) a
 parser =
     oneOf
-        [ Parser.map Transactions (s "committee" </> string)
+        [ Parser.map Home Parser.top
+        , Parser.map Transactions (s "committee" </> string)
         , Parser.map LinkBuilder (s "committee" </> string </> s "link-builder")
         , Parser.map Demo (s "committee" </> string </> s "demo")
         ]
@@ -46,21 +48,36 @@ fromUrl =
     Parser.parse parser
 
 
-
--- INTERNAL
-
-
 routeToString : Route -> String
 routeToString page =
     "/" ++ String.join "/" (routeToPieces page)
 
 
+fragmentToQuery : Url -> Url
+fragmentToQuery url =
+    { protocol = url.protocol
+    , host = url.host
+    , port_ = url.port_
+    , path = url.path
+    , query = url.fragment --Maybe.map2 (\a b -> a ++ "&" ++ b) url.query url.fragment
+    , fragment = url.fragment
+    }
+
+
+cleanUrl : Url -> Url
+cleanUrl url =
+    { protocol = url.protocol
+    , host = url.host
+    , port_ = url.port_
+    , path = url.path
+    , query = Nothing
+    , fragment = Nothing
+    }
+
+
 routeToPieces : Route -> List String
 routeToPieces page =
     case page of
-        Home ->
-            []
-
         Transactions id ->
             [ "committee", id ]
 
@@ -69,3 +86,6 @@ routeToPieces page =
 
         Demo id ->
             [ "committee", id, "demo" ]
+
+        _ ->
+            []

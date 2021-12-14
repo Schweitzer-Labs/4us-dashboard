@@ -1,4 +1,14 @@
-module Page.Transactions exposing (Model, Msg, init, subscriptions, toSession, update, view)
+module Page.Transactions exposing
+    ( Model
+    , Msg
+    , init
+    , setSession
+    , subscriptions
+    , toConfig
+    , toSession
+    , update
+    , view
+    )
 
 import Aggregations as Aggregations
 import Api exposing (Token)
@@ -22,9 +32,9 @@ import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Dom as Dom
 import Browser.Navigation exposing (load)
-import Cognito exposing (loginUrl)
+import Cognito
 import Committee
-import Config exposing (Config)
+import Config
 import ContribInfo
 import CreateContribution
 import CreateDisbursement
@@ -43,7 +53,7 @@ import Loading
 import Pagination
 import PaymentSource
 import PlatformModal
-import Session exposing (Session)
+import Session
 import SubmitButton exposing (submitButton)
 import Task exposing (Task)
 import Time
@@ -63,7 +73,7 @@ import Validate exposing (validate)
 
 
 type alias Model =
-    { session : Session
+    { session : Session.Model
     , loading : Bool
     , heading : String
     , committeeId : String
@@ -113,7 +123,7 @@ type alias Model =
     , contribRuleVerifiedSubmitting : Bool
     , contribRuleVerifiedSuccessViewActive : Bool
     , contribRuleVerifiedModalVisibility : Modal.Visibility
-    , config : Config
+    , config : Config.Model
 
     -- Transaction Feed Pagination Setting
     , fromId : Maybe String
@@ -128,7 +138,7 @@ type alias Model =
     }
 
 
-init : Config -> Session -> Aggregations.Model -> Committee.Model -> String -> ( Model, Cmd Msg )
+init : Config.Model -> Session.Model -> Aggregations.Model -> Committee.Model -> String -> ( Model, Cmd Msg )
 init config session aggs committee committeeId =
     let
         initModel =
@@ -160,19 +170,19 @@ init config session aggs committee committeeId =
             , getTransactionCanceled = False
 
             -- Disb rule unverified state
-            , disbRuleUnverifiedModal = Tuple.first <| DisbRuleUnverified.init config Transaction.init
+            , disbRuleUnverifiedModal = Tuple.first <| DisbRuleUnverified.init config session Transaction.init
             , disbRuleUnverifiedSubmitting = False
             , disbRuleUnverifiedSuccessViewActive = False
             , disbRuleUnverifiedModalVisibility = Modal.hidden
 
-            -- Disb rule verified state
+            -- Disb rule verified states
             , disbRuleVerifiedModal = DisbRuleVerified.init Transaction.init
             , disbRuleVerifiedSubmitting = False
             , disbRuleVerifiedSuccessViewActive = False
             , disbRuleVerifiedModalVisibility = Modal.hidden
 
             -- Contrib rule unverified state
-            , contribRuleUnverifiedModal = Tuple.first <| ContribRuleUnverified.init config Transaction.init
+            , contribRuleUnverifiedModal = Tuple.first <| ContribRuleUnverified.init config session Transaction.init
             , contribRuleUnverifiedSubmitting = False
             , contribRuleUnverifiedSuccessViewActive = False
             , contribRuleUnverifiedModalVisibility = Modal.hidden
@@ -588,7 +598,7 @@ openTxnFormModalLoading model txn =
         TxnForm.DisbRuleUnverified ->
             let
                 ( subModel, subMsg ) =
-                    DisbRuleUnverified.init model.config txn
+                    DisbRuleUnverified.init model.config model.session txn
 
                 newModel =
                     { model
@@ -611,7 +621,7 @@ openTxnFormModalLoading model txn =
         TxnForm.ContribRuleUnverified ->
             let
                 ( subModel, subMsg ) =
-                    ContribRuleUnverified.init model.config txn
+                    ContribRuleUnverified.init model.config model.session txn
 
                 newModel =
                     { model
@@ -646,6 +656,21 @@ openTxnFormModalLoading model txn =
 openTxnFormModalLoaded : Model -> Transaction.Model -> ( Model, Cmd Msg )
 openTxnFormModalLoaded model txn =
     case TxnForm.fromTxn txn of
+        TxnForm.DisbRuleUnverified ->
+            let
+                ( subModel, subMsg ) =
+                    DisbRuleUnverified.init model.config model.session txn
+
+                newModel =
+                    { model
+                        | disbRuleUnverifiedModalVisibility = Modal.shown
+                        , disbRuleUnverifiedModal = subModel
+                    }
+            in
+            ( newModel
+            , Cmd.map DisbRuleUnverifiedModalUpdate subMsg
+            )
+
         TxnForm.DisbRuleVerified ->
             ( { model
                 | disbRuleVerifiedModalVisibility = Modal.shown
@@ -675,8 +700,7 @@ openTxnFormModalLoaded model txn =
 
 
 type Msg
-    = GotSession Session
-    | GotTxnsData (Result Http.Error GetTxns.Model)
+    = GotTxnsData (Result Http.Error GetTxns.Model)
     | GenerateReport FileFormat Bool
     | HideCreateContributionModal
     | ShowCreateContributionModal
@@ -769,13 +793,15 @@ update msg model =
                             ( { model
                                 | isDeleting = False
                                 , contribRuleVerifiedModal =
-                                    ContribRuleVerified.fromError model.contribRuleVerifiedModal <|
-                                        Maybe.withDefault "Unexplained error" <|
-                                            List.head errList
+                                    errList
+                                        |> List.head
+                                        |> Maybe.withDefault "Unexplained error"
+                                        |> ContribRuleVerified.fromError model.contribRuleVerifiedModal
                                 , disbRuleVerifiedModal =
-                                    DisbRuleVerified.fromError model.disbRuleVerifiedModal <|
-                                        Maybe.withDefault "Unexplained error" <|
-                                            List.head errList
+                                    errList
+                                        |> List.head
+                                        |> Maybe.withDefault "Unexplained error"
+                                        |> DisbRuleVerified.fromError model.disbRuleVerifiedModal
                               }
                             , Cmd.none
                             )
@@ -783,15 +809,17 @@ update msg model =
                 Err err ->
                     ( { model
                         | contribRuleVerifiedModal =
-                            ContribRuleVerified.fromError model.contribRuleVerifiedModal <|
-                                Maybe.withDefault "Server Error" <|
-                                    List.head <|
-                                        Api.decodeError err
+                            err
+                                |> Api.decodeError
+                                |> List.head
+                                |> Maybe.withDefault "Server Error"
+                                |> ContribRuleVerified.fromError model.contribRuleVerifiedModal
                         , disbRuleVerifiedModal =
-                            DisbRuleVerified.fromError model.disbRuleVerifiedModal <|
-                                Maybe.withDefault "Server Error" <|
-                                    List.head <|
-                                        Api.decodeError err
+                            err
+                                |> Api.decodeError
+                                |> List.head
+                                |> Maybe.withDefault "Server Error"
+                                |> DisbRuleVerified.fromError model.disbRuleVerifiedModal
                       }
                     , Cmd.none
                     )
@@ -838,7 +866,7 @@ update msg model =
                                 , disbRuleUnverifiedSubmitting = False
 
                                 -- @Todo make this state impossible
-                                , disbRuleUnverifiedModal = Tuple.first <| DisbRuleUnverified.init model.config model.disbRuleUnverifiedModal.bankTxn
+                                , disbRuleUnverifiedModal = Tuple.first <| DisbRuleUnverified.init model.config model.session model.disbRuleUnverifiedModal.bankTxn
                               }
                             , getTransactions model Nothing
                             )
@@ -1080,10 +1108,6 @@ update msg model =
             in
             ( { model | contribRuleVerifiedModal = subModel }, Cmd.map ContribRuleVerifiedModalUpdate subCmd )
 
-        -- Main page stuff
-        GotSession session ->
-            ( { model | session = session }, Cmd.none )
-
         GenerateReport format includeHeaders ->
             case format of
                 FileFormat.CSV ->
@@ -1100,7 +1124,12 @@ update msg model =
                             ( model, Download.string "report.csv" "text/csv" <| GetReport.toCsvData body )
 
                         Err _ ->
-                            ( model, load <| loginUrl model.config model.committeeId )
+                            ( model
+                            , model.config
+                                |> Cognito.fromConfig
+                                |> Cognito.toLoginUrl (Just model.committeeId)
+                                |> load
+                            )
 
                 Preview ->
                     case res of
@@ -1108,7 +1137,12 @@ update msg model =
                             ( { model | generateDisclosureModalPreview = Just (GetReport.toCsvData body) }, Cmd.none )
 
                         Err _ ->
-                            ( model, load <| loginUrl model.config model.committeeId )
+                            ( model
+                            , model.config
+                                |> Cognito.fromConfig
+                                |> Cognito.toLoginUrl (Just model.committeeId)
+                                |> load
+                            )
 
                 Closed ->
                     ( model, Cmd.none )
@@ -1153,7 +1187,12 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| loginUrl model.config model.committeeId )
+                    ( model
+                    , model.config
+                        |> Cognito.fromConfig
+                        |> Cognito.toLoginUrl (Just model.committeeId)
+                        |> load
+                    )
 
         --( model, Cmd.none )
         ShowCreateContributionModal ->
@@ -1409,7 +1448,12 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, load <| loginUrl model.config model.committeeId )
+                    ( model
+                    , model.config
+                        |> Cognito.fromConfig
+                        |> Cognito.toLoginUrl (Just model.committeeId)
+                        |> load
+                    )
 
         ToggleDeletePrompt ->
             ( { model | alertVisibility = Alert.shown, isDeletionConfirmed = DeleteInfo.Confirmed }, Cmd.none )
@@ -1436,27 +1480,27 @@ deleteTxnMapper txnId model =
 
 createDisbursement : Model -> Cmd Msg
 createDisbursement model =
-    CreateDisb.send GotCreateDisbursementResponse model.config <| CreateDisb.encode CreateDisbursement.toEncodeModel model.createDisbursementModal
+    CreateDisb.send GotCreateDisbursementResponse model.config model.session <| CreateDisb.encode CreateDisbursement.toEncodeModel model.createDisbursementModal
 
 
 createContribution : Model -> Cmd Msg
 createContribution model =
-    CreateContrib.send GotCreateContributionResponse model.config <| CreateContrib.encode CreateContribution.toEncodeModel model.createContributionModal
+    CreateContrib.send GotCreateContributionResponse model.config model.session <| CreateContrib.encode CreateContribution.toEncodeModel model.createContributionModal
 
 
 reconcileDisb : Model -> Cmd Msg
 reconcileDisb model =
-    ReconcileTxn.send DisbRuleUnverifiedGotReconcileMutResp model.config <| ReconcileTxn.encode DisbRuleUnverified.reconcileTxnEncoder model.disbRuleUnverifiedModal
+    ReconcileTxn.send DisbRuleUnverifiedGotReconcileMutResp model.config model.session <| ReconcileTxn.encode DisbRuleUnverified.reconcileTxnEncoder model.disbRuleUnverifiedModal
 
 
 reconcileContrib : Model -> Cmd Msg
 reconcileContrib model =
-    ReconcileTxn.send ContribRuleUnverifiedGotReconcileMutResp model.config <| ReconcileTxn.encode ContribRuleUnverified.reconcileTxnEncoder model.contribRuleUnverifiedModal
+    ReconcileTxn.send ContribRuleUnverifiedGotReconcileMutResp model.config model.session <| ReconcileTxn.encode ContribRuleUnverified.reconcileTxnEncoder model.contribRuleUnverifiedModal
 
 
 deleteTxn : Model -> String -> Cmd Msg
 deleteTxn model txnId =
-    DeleteTxn.send GotDeleteTxnMutResp model.config <| DeleteTxn.encode (deleteTxnMapper txnId) model
+    DeleteTxn.send GotDeleteTxnMutResp model.config model.session <| DeleteTxn.encode (deleteTxnMapper txnId) model
 
 
 getNextTxnsSet : Model -> Cmd Msg
@@ -1464,6 +1508,7 @@ getNextTxnsSet model =
     GetTxns.send
         GotTxnSet
         model.config
+        model.session
     <|
         GetTxns.encode model.committeeId
             model.filterTransactionType
@@ -1473,32 +1518,32 @@ getNextTxnsSet model =
 
 getRehydrateTxnsSet : Model -> Maybe TransactionType -> Cmd Msg
 getRehydrateTxnsSet model maybeTxnType =
-    GetTxns.send GotTxnsData model.config <| GetTxns.encode model.committeeId maybeTxnType (Just model.paginationSize) Nothing
+    GetTxns.send GotTxnsData model.config model.session <| GetTxns.encode model.committeeId maybeTxnType (Just model.paginationSize) Nothing
 
 
 getTransactions : Model -> Maybe TransactionType -> Cmd Msg
 getTransactions model maybeTxnType =
-    GetTxns.send GotTxnsData model.config <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
+    GetTxns.send GotTxnsData model.config model.session <| GetTxns.encode model.committeeId maybeTxnType Nothing Nothing
 
 
 getTransaction : Model -> String -> Cmd Msg
 getTransaction model txnId =
-    GetTxn.send GotTxnData model.config <| GetTxn.encode model.committeeId txnId
+    GetTxn.send GotTxnData model.config model.session <| GetTxn.encode model.committeeId txnId
 
 
 getReport : Model -> Bool -> Cmd Msg
 getReport model includeHeaders =
-    GetReport.send GotReportData model.config <| GetReport.encode model.committeeId includeHeaders
+    GetReport.send GotReportData model.config model.session <| GetReport.encode model.committeeId includeHeaders
 
 
 amendDisb : Model -> Cmd Msg
 amendDisb model =
-    AmendDisb.send DisbRuleVerifiedGotMutResp model.config <| AmendDisb.encode model.disbRuleVerifiedModal
+    AmendDisb.send DisbRuleVerifiedGotMutResp model.config model.session <| AmendDisb.encode model.disbRuleVerifiedModal
 
 
 amendContrib : Model -> Cmd Msg
 amendContrib model =
-    AmendContrib.send ContribRuleVerifiedGotMutResp model.config <| AmendContrib.encode ContribRuleVerified.amendTxnEncoder model.contribRuleVerifiedModal
+    AmendContrib.send ContribRuleVerifiedGotMutResp model.config model.session <| AmendContrib.encode ContribRuleVerified.amendTxnEncoder model.contribRuleVerifiedModal
 
 
 
@@ -1539,9 +1584,14 @@ subscriptions model =
 -- EXPORT
 
 
-toSession : Model -> Session
+toSession : Model -> Session.Model
 toSession model =
     model.session
+
+
+toConfig : Model -> Config.Model
+toConfig model =
+    model.config
 
 
 
@@ -1566,3 +1616,8 @@ type DiscDropdownContext
     = Download
     | Preview
     | Closed
+
+
+setSession : Session.Model -> Model -> Model
+setSession session model =
+    { model | session = session }
