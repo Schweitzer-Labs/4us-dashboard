@@ -106,13 +106,22 @@ Cypress.Commands.add("generateReconcileDisbDemo", () => {
   cy.get("tbody > .hover-pointer > :nth-child(1)").click();
 });
 
+Cypress.Commands.add("interceptResAndWait", () => {
+  cy.intercept({
+    method: "POST",
+    url: "http://localhost:4000/",
+  }).as("getRes");
+  cy.wait("@getRes", { timeout: 15000 });
+});
+
 Cypress.Commands.add("contribSubmit", () => {
   cy.get("[data-cy=createContribsubmitButton]").click();
-  cy.wait(8000);
+  cy.interceptResAndWait();
 });
 
 Cypress.Commands.add("disbSubmit", () => {
   cy.get("[data-cy=createDisbsubmitButton]").click();
+  cy.interceptResAndWait();
 });
 
 // Generic Form Commands
