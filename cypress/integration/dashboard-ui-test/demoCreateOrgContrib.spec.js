@@ -37,27 +37,27 @@ describe("demo organization contributions", () => {
 
   it("can create a Partnership Check contribution", () => {
     cy.selectEntityType("Part");
-    cy.fillContribOwnersForm();
+    cy.fillContribOwnersForm("100");
     cy.fillContribOrgPii();
     cy.fillCheck();
   });
   it("can create a Partnership Credit contribution", () => {
     cy.selectEntityType("Part");
-    cy.fillContribOwnersForm();
+    cy.fillContribOwnersForm("100");
     cy.fillContribOrgPii();
     cy.fillCCForm();
   });
 
   it("can create a Partnership Cash contribution", () => {
     cy.selectEntityType("Part");
-    cy.fillContribOwnersForm();
+    cy.fillContribOwnersForm("100");
     cy.fillContribOrgPii();
     cy.fillCash();
   });
 
   it("can create a Partnership In-kind contribution", () => {
     cy.selectEntityType("Part");
-    cy.fillContribOwnersForm();
+    cy.fillContribOwnersForm("100");
     cy.fillContribOrgPii();
     cy.fillInKind();
   });
@@ -132,27 +132,27 @@ describe("demo organization contributions", () => {
 
   it("can create a LLC Check contribution", () => {
     cy.selectEntityType("Llc");
-    cy.fillContribOwnersForm();
+    cy.fillContribOwnersForm("100");
     cy.fillContribOrgPii();
     cy.fillCheck();
   });
   it("can create a LLC Credit contribution", () => {
     cy.selectEntityType("Llc");
-    cy.fillContribOwnersForm();
+    cy.fillContribOwnersForm("100");
     cy.fillContribOrgPii();
     cy.fillCCForm();
   });
 
   it("can create a LLC Cash contribution", () => {
     cy.selectEntityType("Llc");
-    cy.fillContribOwnersForm();
+    cy.fillContribOwnersForm("100");
     cy.fillContribOrgPii();
     cy.fillCash();
   });
 
   it("can create a LLC In-kind contribution", () => {
     cy.selectEntityType("Llc");
-    cy.fillContribOwnersForm();
+    cy.fillContribOwnersForm("100");
     cy.fillContribOrgPii();
     cy.fillInKind();
   });

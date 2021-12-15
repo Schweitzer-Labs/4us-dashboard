@@ -177,7 +177,7 @@ Cypress.Commands.add("fillContribOrgPii", () => {
   );
 });
 
-Cypress.Commands.add("fillContribOwnersForm", () => {
+Cypress.Commands.add("fillContribOwnersForm", (amount) => {
   cy.get("[data-cy=addOwner]").click();
   cy.get("[data-cy=createOwnerFirstName]").type(faker.name.firstName());
   cy.get("[data-cy=createOwnerLastName]").type(faker.name.lastName());
@@ -190,9 +190,10 @@ Cypress.Commands.add("fillContribOwnersForm", () => {
   cy.get("[data-cy=ownersViewpostalCode]").type(
     faker.address.zipCode().substring(0, 5)
   );
-  cy.get("[data-cy=createOwnerPercent]").type("100");
+  cy.get("[data-cy=createOwnerPercent]").type(amount);
   cy.get(".col-3 > .btn").click();
 });
+
 Cypress.Commands.add("selectEntityType", (entityType) => {
   cy.get("#entityType").select(entityType);
 });
