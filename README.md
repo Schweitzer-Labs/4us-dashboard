@@ -25,3 +25,24 @@ Run SCSS file watch
 
 ## Deploy
 ```make clean deploy```
+
+## Testing
+
+Make a Cypress Env Config file inside the root directory to store your Cognito credentials
+
+```touch cypress.env.json```
+
+Afterwards provide the following JSON for the test suite to run
+
+```
+{
+  "cognito_email": "email@schweitzerlabs.com",
+  "cognito_password": "password"
+}
+```
+
+Finally run the test suite
+
+```npm run test```
+
+
