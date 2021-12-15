@@ -10,16 +10,19 @@ port module Page.LogIn exposing
     , view
     )
 
+import Bootstrap.Form.Input as Form exposing (email, password)
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
+import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Navigation as Nav
 import Config
-import Form exposing (Form)
-import Form.View
+import Errors
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, placeholder, value)
+import Html.Events exposing (onInput)
 import Route
 import Session
+import SubmitButton
 
 
 port sendCredsForLogIn : FlattenedCreds -> Cmd msg
@@ -44,18 +47,12 @@ type alias FlattenedCreds =
 type alias Model =
     { session : Session.Model
     , config : Config.Model
-    , formState : Form.View.Model Values
     , serverError : Maybe String
     , redirectRoute : Route.Route
+    , email : String
+    , password : String
+    , loading : Bool
     }
-
-
-initFormState : Form.View.Model Values
-initFormState =
-    { email = ""
-    , password = ""
-    }
-        |> Form.View.idle
 
 
 type alias Values =
@@ -70,9 +67,11 @@ init config session route =
         model =
             { session = session
             , config = config
-            , formState = initFormState
             , serverError = Nothing
             , redirectRoute = route
+            , email = ""
+            , password = ""
+            , loading = False
             }
     in
     ( model
@@ -80,40 +79,42 @@ init config session route =
     )
 
 
-flattenCreds : Creds -> FlattenedCreds
-flattenCreds creds =
-    case ( creds.email, creds.password ) of
-        ( Email email, Password password ) ->
-            { email = email, password = password }
-
-
-type Email
-    = Email String
-
-
-type Password
-    = Password String
-
-
-type alias InputValues =
-    { email : String
-    , password : String
-    }
-
-
-type alias Creds =
-    { email : Email
-    , password : Password
-    }
-
-
-
--- VIEW
+toCreds : Model -> FlattenedCreds
+toCreds model =
+    { email = model.email, password = model.password }
 
 
 view : Model -> { title : String, content : Html Msg }
 view model =
-    { title = "Log In", content = layout [] [ h1 [] [ text "Log in" ], div [ class "login-form" ] [ formView model ] ] }
+    let
+        authError =
+            model.serverError
+                |> Maybe.map (\error -> Errors.view [ error ])
+                |> Maybe.withDefault []
+
+        content =
+            layout [] <|
+                [ h1 [] [ text "Log in" ] ]
+                    ++ authError
+                    ++ [ div
+                            []
+                            [ div [ Spacing.mb3 ]
+                                [ email
+                                    [ Form.attrs
+                                        [ onInput EmailUpdated, placeholder "Enter Email" ]
+                                    ]
+                                ]
+                            , div [ Spacing.mb3 ]
+                                [ password
+                                    [ Form.attrs
+                                        [ onInput PasswordUpdated, placeholder "Enter Password" ]
+                                    ]
+                                ]
+                            , SubmitButton.block [] "Log In" LogInAttempted model.loading model.loading
+                            ]
+                       ]
+    in
+    { title = "Log In", content = content }
 
 
 layout : List (Attribute Msg) -> List (Html Msg) -> Html Msg
@@ -123,74 +124,28 @@ layout _ content =
         [ Grid.row [] [ Grid.col [ Col.lg5, Col.md6, Col.sm8 ] content ] ]
 
 
-form : Form InputValues Creds
-form =
-    Form.succeed
-        (\email password ->
-            Creds email password
-        )
-        |> Form.append emailField
-        |> Form.append passwordField
-
-
-formView : Model -> Html Msg
-formView model =
-    Form.View.asHtml
-        { onChange = FormChanged
-        , action = "Log in"
-        , loading = "Logging in"
-        , validation = Form.View.ValidateOnSubmit
-        }
-        (Form.map LogInAttempted form)
-        model.formState
-
-
+parseEmail : String -> Result String String
 parseEmail s =
     if String.contains "@" s then
-        Ok <| Email s
+        Ok <| s
 
     else
         Err "Invalid email"
 
 
-emailField : Form InputValues Email
-emailField =
-    Form.emailField
-        { parser = parseEmail
-        , value = .email
-        , update = \value values -> { values | email = value }
-        , attributes =
-            { label = "Email"
-            , placeholder = "you@example.com"
-            }
-        }
-
-
-parsePassword : String -> Result String Password
+parsePassword : String -> Result String String
 parsePassword s =
-    if String.length s >= 6 then
-        Ok <| Password s
+    if String.length s >= 1 then
+        Ok <| s
 
     else
-        Err "Password must be at least 6 characters"
-
-
-passwordField : Form InputValues Password
-passwordField =
-    Form.passwordField
-        { parser = parsePassword
-        , value = .password
-        , update = \value values -> { values | password = value }
-        , attributes =
-            { label = "Password"
-            , placeholder = "Your password"
-            }
-        }
+        Err "Must include a password to authenticate"
 
 
 type Msg
-    = FormChanged (Form.View.Model InputValues)
-    | LogInAttempted Creds
+    = EmailUpdated String
+    | PasswordUpdated String
+    | LogInAttempted
     | LogInSuccessful String
     | LogInFailed String
 
@@ -198,11 +153,16 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        FormChanged newForm ->
-            ( { model | formState = newForm }, Cmd.none )
+        EmailUpdated str ->
+            ( { model | email = str }, Cmd.none )
 
-        LogInAttempted creds ->
-            ( model, sendCredsForLogIn <| flattenCreds creds )
+        PasswordUpdated str ->
+            ( { model | password = str }, Cmd.none )
+
+        LogInAttempted ->
+            ( { model | loading = True }
+            , sendCredsForLogIn { email = model.email, password = model.password }
+            )
 
         LogInSuccessful token ->
             let
@@ -216,7 +176,7 @@ update msg model =
             )
 
         LogInFailed error ->
-            ( { model | serverError = Just error }, Cmd.none )
+            ( { model | serverError = Just error, loading = False }, Cmd.none )
 
 
 
