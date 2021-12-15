@@ -21,12 +21,13 @@ type alias Config msg =
     , postalCode : DataMsg.MsgString msg
     , disabled : Bool
     , id : String
+    , cyId : String
     }
 
 
 view : Config msg -> List (Html msg)
-view { addressLine1, addressLine2, city, state, postalCode, disabled, id } =
-    rows addressLine1 addressLine2 city state postalCode disabled id
+view { addressLine1, addressLine2, city, state, postalCode, disabled, id, cyId } =
+    rows addressLine1 addressLine2 city state postalCode disabled id cyId
 
 
 rows :
@@ -37,8 +38,9 @@ rows :
     -> ( String, String -> msg )
     -> Bool
     -> String
+    -> String
     -> List (Html msg)
-rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg ) ( state, stateMsg ) ( postalCode, postalCodeMsg ) disabled id =
+rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg ) ( state, stateMsg ) ( postalCode, postalCodeMsg ) disabled id cyId =
     [ Form.form []
         [ Form.row [ Row.centerLg, Row.attrs [ Spacing.mt2, attribute "id" (id ++ "addressRow") ] ]
             [ Form.col [ Col.lg6 ]
@@ -46,7 +48,7 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
                     address1Msg
                     addressLine1
                     disabled
-                    (id ++ "addressLine1")
+                    (cyId ++ "addressLine1")
                     "*Street Address"
                 ]
             , Form.col [ Col.lg6 ]
@@ -54,7 +56,7 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
                     address2Msg
                     addressLine2
                     disabled
-                    (id ++ "addressLine2")
+                    (cyId ++ "addressLine2")
                     "Secondary Address"
                 ]
             ]
@@ -64,17 +66,17 @@ rows ( addressLine1, address1Msg ) ( addressLine2, address2Msg ) ( city, cityMsg
                     cityMsg
                     city
                     disabled
-                    (id ++ "city")
+                    (cyId ++ "city")
                     "*City"
                 ]
             , Form.col [ Col.lg3 ]
-                [ State.view stateMsg state disabled id ]
+                [ State.view stateMsg state disabled id cyId ]
             , Form.col [ Col.lg3 ]
                 [ inputText
                     postalCodeMsg
                     postalCode
                     disabled
-                    (id ++ "postalCode")
+                    (cyId ++ "postalCode")
                     "*Postal Code"
                 ]
             ]

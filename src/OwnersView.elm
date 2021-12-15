@@ -151,14 +151,20 @@ update msg model =
                     , postalCode = model.postalCode
                     , percentOwnership = model.percentOwnership
                     }
-
-                state =
-                    editOwnerInfo newOwner model
-
-                stateWithClearForm =
-                    clearForm state
             in
-            ( { stateWithClearForm | isFormEnabled = False }, Cmd.none )
+            case validate Owner.validator newOwner of
+                Err messages ->
+                    ( { model | errors = messages }, scrollToError (Maybe.withDefault "" model.modalID) )
+
+                _ ->
+                    let
+                        state =
+                            editOwnerInfo newOwner model
+
+                        stateWithClearForm =
+                            clearForm state
+                    in
+                    ( { stateWithClearForm | isFormEnabled = False }, Cmd.none )
 
         OwnerOwnershipUpdated str ->
             ( { model | percentOwnership = str }, Cmd.none )
@@ -339,7 +345,7 @@ errorMessages errors =
                 [ Grid.col
                     []
                   <|
-                    List.map (\error -> div [ class "text-danger list-unstyled mt-2", Attr.id "errors" ] [ text error ]) errors
+                    List.map (\error -> div [ class "text-danger list-unstyled mt-2", Attr.id "errors", attribute "data-cy" "ownersViewError" ] [ text error ]) errors
                 ]
             ]
         ]
@@ -355,6 +361,7 @@ ownerAddressRows model =
         , postalCode = ( model.postalCode, OwnerPostalCodeUpdated )
         , disabled = model.disabled
         , id = "createOwner"
+        , cyId = "ownersView"
         }
 
 
@@ -393,7 +400,7 @@ tableBody model =
                             span
                                 [ onClick <| EditOwner owner
                                 ]
-                                [ Asset.editGlyph [ class "hover-pointer" ] ]
+                                [ Asset.editGlyph [ class "hover-pointer", attribute "data-cy" (owner.percentOwnership ++ "ownerEditBtn") ] ]
                         ]
                     , Table.td []
                         [ if model.disabled then
@@ -403,7 +410,7 @@ tableBody model =
                             span
                                 [ onClick <| OwnerDeleted owner
                                 ]
-                                [ Asset.deleteGlyph [ class "text-danger hover-pointer" ] ]
+                                [ Asset.deleteGlyph [ class "text-danger hover-pointer", attribute "data-cy" (owner.percentOwnership ++ "ownerDeleteBtn") ] ]
                         ]
                     ]
             )
@@ -456,6 +463,7 @@ ownersSubmitButton msg btnName =
         , Button.onClick msg
         , Button.disabled False
         , Button.block
+        , Button.attrs [ attribute "data-cy" "addMember" ]
         ]
         [ text btnName ]
     ]

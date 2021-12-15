@@ -161,6 +161,7 @@ disbFormRow model =
         , maybeError = model.maybeError
         , txnID = Just model.txn.id
         , explanation = ( model.explanation, ExplanationUpdated )
+        , cyId = "disbRuleVerified"
         }
 
 

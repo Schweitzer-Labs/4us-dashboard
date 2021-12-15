@@ -14,12 +14,13 @@ type alias Config msg =
     , paymentDate : DataMsg.MsgString msg
     , disabled : Bool
     , label : String
+    , cyId : String
     }
 
 
 view : Config msg -> List (Html msg)
-view { amount, paymentDate, disabled, label } =
-    [ row amount paymentDate disabled label ]
+view { amount, paymentDate, disabled, label, cyId } =
+    [ row amount paymentDate disabled label cyId ]
 
 
 row :
@@ -27,8 +28,9 @@ row :
     -> ( String, String -> msg )
     -> Bool
     -> String
+    -> String
     -> Html msg
-row ( amount, amountMsg ) ( paymentDate, paymentDateMsg ) disabled label =
+row ( amount, amountMsg ) ( paymentDate, paymentDateMsg ) disabled label cyId =
     Grid.row [ Row.attrs [ Spacing.mt3 ] ]
         [ Grid.col
             []
@@ -36,11 +38,11 @@ row ( amount, amountMsg ) ( paymentDate, paymentDateMsg ) disabled label =
                 amountMsg
                 amount
                 disabled
-                "paymentAmount"
+                ("paymentAmount" ++ cyId)
                 "*Payment Amount"
             ]
         , Grid.col
             []
-            [ inputDate paymentDateMsg paymentDate disabled "paymentDate" label
+            [ inputDate paymentDateMsg paymentDate disabled ("paymentDate" ++ cyId) label
             ]
         ]

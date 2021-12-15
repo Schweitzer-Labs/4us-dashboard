@@ -279,6 +279,7 @@ contribFormRow model =
             , maybeError = model.maybeError
             , txnId = Just model.bankTxn.id
             , processPayment = False
+            , cyId = "contribRuleUnverified"
             }
         ]
             ++ [ buttonRow CreateContribToggled "Create" "Cancel" CreateContribSubmitted model.createContribIsSubmitting (not <| Validate.any requiredFieldValidators model) ]
@@ -685,7 +686,7 @@ buttonRow hideMsg displayText exitText msg submitting disabled =
             [ exitButton hideMsg exitText ]
         , Grid.col
             [ Col.lg4 ]
-            [ submitButton displayText msg submitting disabled ]
+            [ submitButton "contribRuleUnverified" displayText msg submitting disabled ]
         ]
 
 

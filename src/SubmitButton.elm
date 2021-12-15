@@ -6,6 +6,7 @@ import Bootstrap.Spinner as Spinner
 import Bootstrap.Utilities.Spacing as Spacing
 import DeleteInfo
 import Html exposing (Attribute, Html, text)
+import Html.Attributes exposing (attribute)
 import Html.Events exposing (onClick)
 import List exposing (singleton)
 import LoadingBar
@@ -42,13 +43,14 @@ block attrs label submitMsg loading disabled =
         ]
 
 
-delete : msg -> Bool -> DeleteInfo.Model -> Html msg
-delete submitMsg isSending isDeleteConfirmed =
+delete : String -> msg -> Bool -> DeleteInfo.Model -> Html msg
+delete cyId submitMsg isSending isDeleteConfirmed =
     Button.button
         [ Button.outlineDanger
         , Button.onClick submitMsg
         , Button.disabled isSending
         , Button.block
+        , Button.attrs [ attribute "data-cy" (cyId ++ "deleteButton") ]
         ]
         [ if isSending then
             spinner
@@ -77,12 +79,12 @@ blockWithLoadingBar attrs label submitMsg isSubmitting progress =
             singleton <| block attrs label submitMsg isSubmitting isSubmitting
 
 
-submitButton : String -> msg -> Bool -> Bool -> Html msg
-submitButton label submitMsg loading disabled =
+submitButton : String -> String -> msg -> Bool -> Bool -> Html msg
+submitButton cyId label submitMsg loading disabled =
     Button.button
         [ Button.success
         , Button.block
-        , Button.attrs [ onClick submitMsg ]
+        , Button.attrs [ onClick submitMsg, attribute "data-cy" (cyId ++ "submitButton") ]
         , Button.disabled disabled
         ]
         [ if loading then

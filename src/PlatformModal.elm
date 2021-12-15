@@ -10,7 +10,7 @@ import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
 import DeleteInfo
 import Html exposing (Html, h2, span, text)
-import Html.Attributes as Attr exposing (class)
+import Html.Attributes as Attr exposing (attribute, class)
 import Html.Events exposing (onClick)
 import SubmitButton exposing (submitButton)
 
@@ -35,6 +35,7 @@ type alias MakeModalConfig msg subMsg subModel =
     , alertVisibility : Maybe Alert.Visibility
     , isDeleteConfirmed : DeleteInfo.Model
     , id : String
+    , cyId : String
     }
 
 
@@ -49,7 +50,7 @@ view config =
         |> Modal.body
             [ Attr.id config.id ]
             (if config.successViewActive then
-                [ successMessage config.successViewMessage ]
+                [ successMessage config.cyId config.successViewMessage ]
 
              else
                 [ Html.map config.updateMsg <|
@@ -61,7 +62,7 @@ view config =
                 []
                 [ DeleteInfo.deletionAlert config.alertMsg config.alertVisibility
                 , if config.successViewActive then
-                    successButtonRow config.hideMsg
+                    successButtonRow config.cyId config.hideMsg
 
                   else
                     buttonRow
@@ -75,6 +76,7 @@ view config =
                         , submitMsg = config.submitMsg
                         , isDeleting = config.isDeleting
                         , isDeleteConfirmed = config.isDeleteConfirmed
+                        , cyId = config.cyId
                         }
                 ]
             ]
@@ -92,6 +94,7 @@ type alias ButtonRowConfig hideMsg submitMsg =
     , disabled : Bool
     , isDeleting : Bool
     , isDeleteConfirmed : DeleteInfo.Model
+    , cyId : String
     }
 
 
@@ -104,7 +107,7 @@ buttonRow config =
           <|
             case ( config.enableExit, config.maybeDeleteMsg ) of
                 ( True, Just deleteMsg ) ->
-                    [ SubmitButton.delete deleteMsg config.isDeleting config.isDeleteConfirmed ]
+                    [ SubmitButton.delete config.cyId deleteMsg config.isDeleting config.isDeleteConfirmed ]
 
                 ( True, Nothing ) ->
                     [ exitButton config.hideMsg ]
@@ -117,20 +120,20 @@ buttonRow config =
                 []
 
              else
-                [ submitButton config.submitText config.submitMsg config.submitting config.disabled ]
+                [ submitButton config.cyId config.submitText config.submitMsg config.submitting config.disabled ]
             )
         ]
 
 
-successButtonRow : msg -> Html msg
-successButtonRow hideMsg =
+successButtonRow : String -> msg -> Html msg
+successButtonRow cyId hideMsg =
     Grid.row
         [ Row.aroundXs ]
         [ Grid.col [ Col.offsetLg10 ]
             [ Button.button
                 [ Button.outlinePrimary
                 , Button.block
-                , Button.attrs [ onClick hideMsg ]
+                , Button.attrs [ onClick hideMsg, attribute "data-cy" (cyId ++ "platformSucessOkBtn") ]
                 ]
                 [ text "OK" ]
             ]
@@ -147,13 +150,14 @@ exitButton hideMsg =
         [ text "Exit" ]
 
 
-successMessage : String -> Html msg
-successMessage successViewMessage =
+successMessage : String -> String -> Html msg
+successMessage cyId successViewMessage =
     h2 [ class "align-middle text-green", Spacing.p3 ]
         [ Asset.circleCheckGlyph []
         , span
             [ class "align-middle text-green"
             , Spacing.ml3
+            , attribute "data-cy" (cyId ++ "platformSucessMessage")
             ]
             [ text <| successViewMessage ]
         ]

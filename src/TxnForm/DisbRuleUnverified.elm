@@ -287,6 +287,7 @@ disbFormRow model =
             , maybeError = model.maybeError
             , txnID = Just model.bankTxn.id
             , explanation = ( model.explanation, ExplanationUpdated )
+            , cyId = "disbRuleUnverified"
             }
             ++ [ buttonRow CreateDisbToggled "Create" "Cancel" CreateDisbSubmitted model.createDisbIsSubmitting <| not (Validate.any requiredFieldValidators model) ]
 
@@ -308,7 +309,7 @@ buttonRow hideMsg displayText exitText msg submitting disabled =
             [ exitButton hideMsg exitText ]
         , Grid.col
             [ Col.lg4 ]
-            [ submitButton displayText msg submitting disabled ]
+            [ submitButton "disbRuleUnverified" displayText msg submitting disabled ]
         ]
 
 

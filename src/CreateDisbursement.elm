@@ -95,6 +95,7 @@ view model =
             , toggleEdit = NoOp
             , maybeError = model.maybeError
             , txnID = Nothing
+            , cyId = "createDisb"
             }
 
 
