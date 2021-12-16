@@ -11,7 +11,7 @@ export default class Recaptcha extends HTMLElement {
   connectedCallback() {
     this._grecaptcha = grecaptcha.render(this, {
       hl: "en",
-      sitekey: "6LeYuKQdAAAAAH1DkOMQ8pyeSa8p1ijz66jUbSnf",
+      sitekey: "6LfmWqkdAAAAAJIA_wzXFufrLjLOHM8ZjnAhJyME",
       callback: (token) => {
         this._token = token;
         this.dispatchEvent(new CustomEvent("gotToken"));

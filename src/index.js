@@ -19,18 +19,10 @@ Auth.configure({
   userPoolWebClientId: cognitoClientId,
 });
 
-window.onloadCallback = () => {
-  const formContainer = document.querySelector("#form_container");
-
-  if (formContainer) {
-    Elm.Main.embed(formContainer);
-  }
-};
+window.customElements.define("g-recaptcha", Recaptcha);
 
 function runApp() {
   const token = localStorage.getItem(storageKey);
-  window.customElements.define("g-recaptcha", Recaptcha);
-
   const app = Elm.Main.init({
     node: document.getElementById("root"),
     flags: {
@@ -42,6 +34,7 @@ function runApp() {
       apiEndpoint,
     },
   });
+
   app.ports.sendEmail.subscribe((email) => {
     app.ports.isValidEmailReceiver.send(verifyEmail(email));
   });

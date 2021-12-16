@@ -101,7 +101,7 @@ view model =
                 [ h1 [] [ text "Log in" ] ]
                     ++ authError
                     ++ [ div
-                            []
+                            [ Html.id "form_container" ]
                             [ div [ Spacing.mb3 ]
                                 [ email
                                     [ Form.attrs
