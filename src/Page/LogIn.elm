@@ -18,8 +18,10 @@ import Browser.Navigation as Nav
 import Config
 import Errors
 import Html exposing (..)
-import Html.Attributes exposing (class, placeholder, value)
-import Html.Events exposing (onInput)
+import Html.Attributes as Html exposing (class, placeholder, value)
+import Html.Events as Html exposing (onInput)
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Route
 import Session
 import SubmitButton
@@ -52,6 +54,7 @@ type alias Model =
     , email : String
     , password : String
     , loading : Bool
+    , recaptchaToken : Maybe String
     }
 
 
@@ -72,6 +75,7 @@ init config session route =
             , email = ""
             , password = ""
             , loading = False
+            , recaptchaToken = Nothing
             }
     in
     ( model
@@ -111,6 +115,7 @@ view model =
                                     ]
                                 ]
                             , SubmitButton.block [] "Log In" LogInAttempted model.loading model.loading
+                            , recaptchaView
                             ]
                        ]
     in
@@ -122,6 +127,34 @@ layout _ content =
     Grid.container
         []
         [ Grid.row [] [ Grid.col [ Col.lg5, Col.md6, Col.sm8 ] content ] ]
+
+
+recaptchaView : Html Msg
+recaptchaView =
+    Html.div
+        [ Html.class "field" ]
+        [ Html.node "g-recaptcha"
+            [ Html.id "recaptcha"
+            , Html.property "token" <| encodeRecaptchaToken Nothing
+            , Html.on "gotToken" decodeGotToken
+            ]
+            []
+        ]
+
+
+encodeRecaptchaToken : Maybe String -> Encode.Value
+encodeRecaptchaToken maybeRecaptchaToken =
+    case maybeRecaptchaToken of
+        Just recaptchaToken ->
+            Encode.string recaptchaToken
+
+        Nothing ->
+            Encode.null
+
+
+decodeGotToken : Decode.Decoder Msg
+decodeGotToken =
+    Decode.map SetRecaptchaToken <| Decode.at [ "target", "token" ] <| Decode.string
 
 
 parseEmail : String -> Result String String
@@ -148,6 +181,7 @@ type Msg
     | LogInAttempted
     | LogInSuccessful String
     | LogInFailed String
+    | SetRecaptchaToken String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -177,6 +211,9 @@ update msg model =
 
         LogInFailed error ->
             ( { model | serverError = Just error, loading = False }, Cmd.none )
+
+        SetRecaptchaToken token ->
+            ( { model | recaptchaToken = Just token }, Cmd.none )
 
 
 

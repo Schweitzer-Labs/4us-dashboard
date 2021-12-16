@@ -3,6 +3,7 @@ import { Elm } from "./Main.elm";
 import { verifyEmail } from "./js/email-validator";
 import { verifyPhone } from "./js/phone";
 import { Auth } from "@aws-amplify/auth";
+import Recaptcha from "./js/components/recaptcha";
 
 const storageKey = "token";
 
@@ -18,8 +19,18 @@ Auth.configure({
   userPoolWebClientId: cognitoClientId,
 });
 
+window.onloadCallback = () => {
+  const formContainer = document.querySelector("#form_container");
+
+  if (formContainer) {
+    Elm.Main.embed(formContainer);
+  }
+};
+
 function runApp() {
   const token = localStorage.getItem(storageKey);
+  window.customElements.define("g-recaptcha", Recaptcha);
+
   const app = Elm.Main.init({
     node: document.getElementById("root"),
     flags: {
