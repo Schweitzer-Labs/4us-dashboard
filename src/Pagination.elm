@@ -3,4 +3,4 @@ module Pagination exposing (size)
 
 size : Int
 size =
-    15
+    100
