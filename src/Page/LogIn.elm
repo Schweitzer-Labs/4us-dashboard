@@ -16,6 +16,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Navigation as Nav
 import Config
+import Env
 import Errors
 import Html exposing (..)
 import Html.Attributes as Html exposing (class, placeholder, value)
@@ -91,10 +92,16 @@ toCreds model =
 view : Model -> { title : String, content : Html Msg }
 view model =
     let
+        env =
+            Env.toEnv model.config.environment
+
         authError =
             model.serverError
                 |> Maybe.map (\error -> Errors.view [ error ])
                 |> Maybe.withDefault []
+
+        submitDisabled =
+            env /= Just Env.LOCAL && model.recaptchaToken == Nothing
 
         content =
             layout [] <|
@@ -114,8 +121,8 @@ view model =
                                         [ onInput PasswordUpdated, placeholder "Enter Password" ]
                                     ]
                                 ]
-                            , SubmitButton.block [] "Log In" LogInAttempted model.loading model.loading
-                            , recaptchaView
+                            , div [ Spacing.mb3 ] [ SubmitButton.submitButton "logInSubmit" "Log In" LogInAttempted model.loading submitDisabled ]
+                            , recaptchaView env model
                             ]
                        ]
     in
@@ -129,17 +136,22 @@ layout _ content =
         [ Grid.row [] [ Grid.col [ Col.lg5, Col.md6, Col.sm8 ] content ] ]
 
 
-recaptchaView : Html Msg
-recaptchaView =
-    Html.div
-        [ Html.class "field" ]
-        [ Html.node "g-recaptcha"
-            [ Html.id "recaptcha"
-            , Html.property "token" <| encodeRecaptchaToken Nothing
-            , Html.on "gotToken" decodeGotToken
-            ]
-            []
-        ]
+recaptchaView : Maybe Env.Model -> Model -> Html Msg
+recaptchaView env { recaptchaToken } =
+    case env of
+        Just Env.LOCAL ->
+            div [] []
+
+        _ ->
+            Html.div
+                [ Html.class "field" ]
+                [ Html.node "g-recaptcha"
+                    [ Html.id "recaptcha"
+                    , Html.property "token" <| encodeRecaptchaToken recaptchaToken
+                    , Html.on "gotToken" decodeGotToken
+                    ]
+                    []
+                ]
 
 
 encodeRecaptchaToken : Maybe String -> Encode.Value

@@ -13,6 +13,7 @@ const cognitoUserPoolId = process.env.ELM_APP_COGNITO_USER_POOL_ID;
 const redirectUri = window.location.origin;
 const donorUrl = process.env.ELM_APP_DONOR_URL;
 const apiEndpoint = process.env.ELM_APP_API_ENDPOINT;
+const environment = process.env.ELM_APP_ENV;
 
 Auth.configure({
   userPoolId: cognitoUserPoolId,
@@ -32,6 +33,7 @@ function runApp() {
       redirectUri,
       donorUrl,
       apiEndpoint,
+      environment,
     },
   });
 

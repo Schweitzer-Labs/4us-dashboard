@@ -11,6 +11,7 @@ type alias Model =
     , donorUrl : String
     , apiEndpoint : String
     , token : Maybe String
+    , environment : String
     }
 
 
@@ -21,6 +22,7 @@ toConfig flags =
     , redirectUri = flags.redirectUri
     , donorUrl = flags.donorUrl
     , apiEndpoint = flags.apiEndpoint
+    , environment = flags.environment
     }
 
 
@@ -37,4 +39,5 @@ fromSessionAndConfig session config =
     , donorUrl = config.donorUrl
     , apiEndpoint = config.apiEndpoint
     , token = Session.toToken session
+    , environment = config.environment
     }
