@@ -20,9 +20,8 @@ Auth.configure({
   userPoolWebClientId: cognitoClientId,
 });
 
-window.customElements.define("g-recaptcha", Recaptcha);
-
 function runApp() {
+  window.customElements.define("g-recaptcha", Recaptcha);
   const token = localStorage.getItem(storageKey);
   const app = Elm.Main.init({
     node: document.getElementById("root"),
