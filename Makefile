@@ -58,4 +58,5 @@ build: dep $(BUILD_DIR)
 		--donorurl=$(DONOR_URL) \
 		--clientid=$(COGNITO_CLIENT_ID) \
 		--cognito_user_pool_id=$(COGNITO_USER_POOL) \
+		--env=$(RUNENV) \
 		run build

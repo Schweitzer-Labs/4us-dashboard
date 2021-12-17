@@ -3,6 +3,7 @@ import { Elm } from "./Main.elm";
 import { verifyEmail } from "./js/email-validator";
 import { verifyPhone } from "./js/phone";
 import { Auth } from "@aws-amplify/auth";
+import Recaptcha from "./js/components/recaptcha";
 
 const storageKey = "token";
 
@@ -12,6 +13,7 @@ const cognitoUserPoolId = process.env.ELM_APP_COGNITO_USER_POOL_ID;
 const redirectUri = window.location.origin;
 const donorUrl = process.env.ELM_APP_DONOR_URL;
 const apiEndpoint = process.env.ELM_APP_API_ENDPOINT;
+const environment = process.env.ELM_APP_ENV;
 
 Auth.configure({
   userPoolId: cognitoUserPoolId,
@@ -19,6 +21,7 @@ Auth.configure({
 });
 
 function runApp() {
+  window.customElements.define("g-recaptcha", Recaptcha);
   const token = localStorage.getItem(storageKey);
   const app = Elm.Main.init({
     node: document.getElementById("root"),
@@ -29,8 +32,10 @@ function runApp() {
       redirectUri,
       donorUrl,
       apiEndpoint,
+      environment,
     },
   });
+
   app.ports.sendEmail.subscribe((email) => {
     app.ports.isValidEmailReceiver.send(verifyEmail(email));
   });

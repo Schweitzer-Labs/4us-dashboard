@@ -7,6 +7,7 @@ type alias Model =
     , redirectUri : String
     , donorUrl : String
     , apiEndpoint : String
+    , environment : String
     }
 
 

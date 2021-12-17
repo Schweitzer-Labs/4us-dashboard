@@ -16,10 +16,13 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser.Navigation as Nav
 import Config
+import Env
 import Errors
 import Html exposing (..)
-import Html.Attributes exposing (class, placeholder, value)
-import Html.Events exposing (onInput)
+import Html.Attributes as Html exposing (class, placeholder, value)
+import Html.Events as Html exposing (onInput)
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Route
 import Session
 import SubmitButton
@@ -52,6 +55,7 @@ type alias Model =
     , email : String
     , password : String
     , loading : Bool
+    , recaptchaToken : Maybe String
     }
 
 
@@ -72,6 +76,7 @@ init config session route =
             , email = ""
             , password = ""
             , loading = False
+            , recaptchaToken = Nothing
             }
     in
     ( model
@@ -87,17 +92,23 @@ toCreds model =
 view : Model -> { title : String, content : Html Msg }
 view model =
     let
+        env =
+            Env.toEnv model.config.environment
+
         authError =
             model.serverError
                 |> Maybe.map (\error -> Errors.view [ error ])
                 |> Maybe.withDefault []
+
+        submitDisabled =
+            env /= Just Env.LOCAL && model.recaptchaToken == Nothing
 
         content =
             layout [] <|
                 [ h1 [] [ text "Log in" ] ]
                     ++ authError
                     ++ [ div
-                            []
+                            [ Html.id "form_container" ]
                             [ div [ Spacing.mb3 ]
                                 [ email
                                     [ Form.attrs
@@ -110,7 +121,8 @@ view model =
                                         [ onInput PasswordUpdated, placeholder "Enter Password" ]
                                     ]
                                 ]
-                            , SubmitButton.block [] "Log In" LogInAttempted model.loading model.loading
+                            , div [ Spacing.mb3 ] [ SubmitButton.submitButton "logInSubmit" "Log In" LogInAttempted model.loading submitDisabled ]
+                            , recaptchaView env model
                             ]
                        ]
     in
@@ -122,6 +134,39 @@ layout _ content =
     Grid.container
         []
         [ Grid.row [] [ Grid.col [ Col.lg5, Col.md6, Col.sm8 ] content ] ]
+
+
+recaptchaView : Maybe Env.Model -> Model -> Html Msg
+recaptchaView env { recaptchaToken } =
+    case env of
+        Just Env.LOCAL ->
+            div [] []
+
+        _ ->
+            Html.div
+                [ Html.class "field" ]
+                [ Html.node "g-recaptcha"
+                    [ Html.id "recaptcha"
+                    , Html.property "token" <| encodeRecaptchaToken recaptchaToken
+                    , Html.on "gotToken" decodeGotToken
+                    ]
+                    []
+                ]
+
+
+encodeRecaptchaToken : Maybe String -> Encode.Value
+encodeRecaptchaToken maybeRecaptchaToken =
+    case maybeRecaptchaToken of
+        Just recaptchaToken ->
+            Encode.string recaptchaToken
+
+        Nothing ->
+            Encode.null
+
+
+decodeGotToken : Decode.Decoder Msg
+decodeGotToken =
+    Decode.map SetRecaptchaToken <| Decode.at [ "target", "token" ] <| Decode.string
 
 
 parseEmail : String -> Result String String
@@ -148,6 +193,7 @@ type Msg
     | LogInAttempted
     | LogInSuccessful String
     | LogInFailed String
+    | SetRecaptchaToken String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -177,6 +223,9 @@ update msg model =
 
         LogInFailed error ->
             ( { model | serverError = Just error, loading = False }, Cmd.none )
+
+        SetRecaptchaToken token ->
+            ( { model | recaptchaToken = Just token }, Cmd.none )
 
 
 
